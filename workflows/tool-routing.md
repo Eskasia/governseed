@@ -14,13 +14,13 @@
 | 大 repo 查 symbol、route、call graph、impact | CodeGraph，前提是已有 `.codegraph/` 或使用者明確要求建立索引 | `rg`、語言伺服器、測試 |
 | 里程碑 review、交接、壓縮上下文 | repomix | `OPEN_LOOPS.md`、handoff markdown |
 | 常見命令輸出很大、想壓縮 token：`ls/tree/read/grep/git diff/test/lint/tsc/playwright/docker logs` | RTK：`rtk <command>` | 原生命令加範圍限制 |
-| 階段完成同步文件 | `neat-freak` | 手動更新 `OPEN_LOOPS.md` / handoff |
+| 階段完成或 diff 影響 docs，要同步文件 | `update-docs` pattern；session cleanup 才用 `neat-freak` | 手動更新 docs / `OPEN_LOOPS.md` / handoff |
 | 長 thread 或隔天接續 | `handoff` | `OPEN_LOOPS.md` + continuation note |
 | 長任務、大輸出、context 快爆、compaction 後接不上 | `docs/experiments/context-mode.md` | 小範圍讀檔與中途 handoff |
 | 可跨專案重用的經驗 | LLMwiki | 專案內 docs 或 ad hoc note |
 | 不確定規則、經驗、流程該寫到哪裡 | `workflows/agent-file-structure.md` | 保留在 `OPEN_LOOPS.md` |
 | 論文、文獻、citation | `academic-research`，只在研究任務啟用 | 手動文獻表與 citation check |
-| 本機或 preview web UI 自動化測試 | Playwright | Browser / Chrome manual QA |
+| 本機或 preview web UI 自動化測試 | `webapp-testing` / Playwright | Browser / Chrome manual QA |
 | React/shadcn animated icons、hover/tap micro-interaction | Its Hover，依 `workflows/ui-ux.md` 使用 | CSS transition / local component |
 | App 截圖 → Design System → 前端初稿 | `workflows/design-system-from-screenshots.md` | `DESIGN_SYSTEM.md` |
 | 既有 UI 像模板、視覺普通、需要 anti-slop polish | `design-taste-frontend` | `DESIGN_REVIEW.md` |
@@ -32,8 +32,10 @@
 | RAG、AI agent、MCP、eval、AI 系統設計 | `workflows/ai-system-design.md` | `RAG_DESIGN.md` / `EVAL_PLAN.md` / `AI_SECURITY_REVIEW.md` |
 | PDF 讀取、產出、版面檢查 | `pdf` skill | 本機 PDF library 或 manual review |
 | 一頁紙、白皮書、履歷、作品集、landing page | `kami` | Markdown / HTML artifact |
-| 技能建立或安裝 | 先讀 `workflows/skill-and-plugin-adoption.md`，再用 `skill-creator` / `skill-installer` | 手動文件與本機 scripts |
-| PRD、issue、triage、review | `to-prd` / `to-issues` / `triage`；無 issue tracker 時用 `TASK_CONTRACT.md` | `TASK_CONTRACT.md` |
+| 技能搜尋、建立或安裝 | 先讀 `workflows/skill-and-plugin-adoption.md`；搜尋用 `find-skills`，建立 / 安裝用 `skill-creator` / `skill-installer` | 手動文件與本機 scripts |
+| PRD、issue、triage | `to-prd` / `to-issues` / `triage`；無 issue tracker 時用 `TASK_CONTRACT.md` | `TASK_CONTRACT.md` |
+| 通用 code review、PR review、local diff review | `code-reviewer` workflow 參考 | 本 repo review stance + project tests |
+| 使用者明確要求建立 PR | `pr-creator` pattern | 手動 `gh pr create`，先跑驗證 |
 | 安全審查、靜態分析、依賴風險 | `audit-prep-assistant` / `semgrep` / `codeql`；大型 cybersecurity skill pack 只作 taxonomy 參考 | threat checklist + package audit |
 | PPT、簡報、slide deck | `workflows/presentation.md` | Markdown deck / local HTML slides |
 | 跨前端/後端/DB/安全/AI/部署任兩類以上 | lead agent 先判斷是否分工 | 主 agent 本地切小步 |
@@ -44,7 +46,11 @@
 - Understand-Anything 只用於大型陌生 repo / knowledge graph onboarding；`.understand-anything/` 輸出視為衍生 artifact，不是 starter 必備文件。
 - CodeGraph 只在 `.codegraph/` 已存在或使用者明確要求建立索引時使用；它不取代 `rg`、直接讀檔與測試。
 - Taste、Frontend Design、Shadcn、Its Hover 等 UI 能力只能在 UI 任務中依 `UI_SPEC.md` 或 `DESIGN_SYSTEM.md` 選一條主路線。
-- Skill Creator / Find Skill 只用於重複流程的建立或搜尋，不作日常 coding 預設。
+- `webapp-testing` 只在 web UI / Playwright 驗證任務啟用；非 web 專案不需要它。
+- `code-reviewer` 只作 review workflow 參考；前端 UI review 仍依 `UI_SPEC.md`、`DESIGN_SYSTEM.md` 與專案 review 標準。
+- `pr-creator` 只在使用者明確要求建立 PR 時使用；不得自動 push `main`，不得略過專案 PR template 與驗證命令。
+- `update-docs` 只吸收 docs impact / docs sync workflow；不要採用來源 repo 的專案專用 docs mapping。
+- Skill Creator / Find Skill 只用於重複流程的建立或搜尋；`find-skills` 的輸出只是候選，不作日常 coding 預設。
 
 ## RTK 使用規則
 

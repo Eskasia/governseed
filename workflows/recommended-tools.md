@@ -16,7 +16,7 @@
 | `affaan-m/ECC` | reference-only | 參考單一路線、分層規則、薄 adapter | 不複製 install system、hooks、agent catalog |
 | `mukul975/Anthropic-Cybersecurity-Skills` | reference-only | 安全任務可參考 MITRE / NIST taxonomy | 不導入數百個安全技能 |
 | academic research skill repos | conditional workflow | 研究、論文、citation 任務才啟用 | 不放進日常 coding path |
-| `pi`、Skill Creator Cloud、Find Skill、Awesome Shadcn UI | 暫不採用 | 先確認 repo 指向、license、維護狀態與任務匹配 | 不寫成主線規則 |
+| `pi`、Skill Creator Cloud、Awesome Shadcn UI | 暫不採用 | 先確認 repo 指向、license、維護狀態與任務匹配 | 不寫成主線規則 |
 
 ## 核心 Skill 來源
 
@@ -29,6 +29,22 @@
 | `voidful/academic-skills` | 論文研究 | academic-research | 學術任務時安裝 |
 | `op7418/guizang-ppt-skill` | 簡報 | guizang-ppt-skill | HTML 網頁簡報用 |
 | `tw93/Kami` | 文件排版 | kami | one-pager, resume, portfolio, landing page |
+
+## Developer lifecycle skills
+
+這些來源只作候選路由，不複製 `SKILL.md`、不安裝整包、不跳過 `workflows/skill-and-plugin-adoption.md`。
+
+| Skill | 來源 | 採用層級 | 觸發條件 | 邊界 |
+|---|---|---|---|---|
+| `webapp-testing` | `anthropics/skills` | conditional workflow | web UI、Playwright、瀏覽器驗證、截圖與 console log 任務 | 只在 web app 驗證時啟用，不取代專案測試命令 |
+| `code-reviewer` | `google-gemini/gemini-cli` | conditional workflow | 使用者要求 code review、PR review、local diff review | 只作 review workflow 參考，不覆蓋專案內 review 標準 |
+| `pr-creator` | `google-gemini/gemini-cli` | conditional workflow | 使用者明確要求建立 PR | 不自動 push `main`，必須遵守專案 PR template 與驗證命令 |
+| `update-docs` | `vercel/next.js` | reference-only / conditional workflow | diff 影響 docs、使用者要求同步文件、階段收尾 | 只吸收 docs impact workflow，不採用 Next.js 專用 docs mapping |
+| `find-skills` | `vercel-labs/skills` | skill discovery only | 使用者要求找 skill，或任務明顯需要外部能力搜尋 | 只產生候選清單，搜尋結果仍必須走 adoption gate |
+| `cache-components` / `next-cache-components` | `vercel/next.js`、`vercel-labs/next-skills` | conditional workflow | `TECH_STACK.md` 已選 Next.js，且 `next.config.*` 啟用 `cacheComponents: true` | 不作通用前端預設，不把 starter 綁到 Next.js |
+| `frontend-code-review` | `langgenius/dify` | reference-only | 想設計前端 review rule catalog 與 references 結構 | 不直接採用 Dify / React Flow 專案規則 |
+| `fullstack-developer` | `Shubhamsaboo/awesome-llm-apps` | 不納入 | n/a | 預設 React / Next.js / Node / Prisma 等路線，會破壞技術路線 gate |
+| `fix` | `facebook/react` | 不納入 | n/a | 綁定 React repo 的 `yarn prettier` / `yarn linc`，不能作跨專案 bugfix 預設 |
 
 ## UI / 前端補強
 
