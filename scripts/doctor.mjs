@@ -2,6 +2,12 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  evaluateRouteDecision,
+  evaluateTraceability,
+  formatGovernanceFinding,
+  safeReadGovernanceFile,
+} from './lib/governance-checks.mjs';
 
 const STARTER_ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const PROFILES_DIR = path.join(STARTER_ROOT, 'profiles');
@@ -99,21 +105,37 @@ try {
 
 const projectDir = options.projectDir;
 const displayProjectDir = path.relative(process.cwd(), projectDir) || '.';
+const projectReadCache = new Map();
+
+function safeProjectRead(relativePath) {
+  if (!projectReadCache.has(relativePath)) {
+    projectReadCache.set(relativePath, safeReadGovernanceFile(projectDir, relativePath));
+  }
+  return projectReadCache.get(relativePath);
+}
 
 function exists(relativePath) {
-  return fs.existsSync(path.join(projectDir, relativePath));
+  return safeProjectRead(relativePath).ok;
 }
 
 function readFile(relativePath) {
-  return fs.readFileSync(path.join(projectDir, relativePath), 'utf8');
+  const result = safeProjectRead(relativePath);
+  if (result.ok) return result.content;
+  if (result.finding) throw new Error(formatGovernanceFinding(result.finding));
+  throw new Error(`Missing governance file: ${relativePath}`);
 }
 
 function projectProfileName() {
   if (options.profile) return options.profile;
-  const configPath = path.join(projectDir, PROJECT_CONFIG_FILE);
-  if (!fs.existsSync(configPath)) return 'base';
-  const config = readJson(configPath);
-  return config.profile || 'base';
+  const configRead = safeProjectRead(PROJECT_CONFIG_FILE);
+  if (configRead.missing) return 'base';
+  if (!configRead.ok) throw new Error(formatGovernanceFinding(configRead.finding));
+  try {
+    const config = JSON.parse(configRead.content);
+    return config.profile || 'base';
+  } catch {
+    throw new Error('[PROJECT_CONFIG_INVALID] .agent-governance.json: project config is not valid JSON');
+  }
 }
 
 function hasContent(relativePath) {
@@ -144,6 +166,37 @@ function hasContent(relativePath) {
   return filledLines.length > 5;
 }
 
+function hasRouteMode(content) {
+  return /^-\s*決策模式[：:]\s*(user-declared route|ai-recommended route)\s*$/im.test(content);
+}
+
+function hasFilledLine(content, label) {
+  return new RegExp(`^-\\s*${label}[：:]\\s*\\S.+$`, 'im').test(content);
+}
+
+function hasProductShapeDecision() {
+  if (!exists('PROJECT_BRIEF.md')) return false;
+  const content = readFile('PROJECT_BRIEF.md');
+  return content.includes('## 產品形態決策')
+    && hasRouteMode(content)
+    && hasFilledLine(content, '第一版產品形態')
+    && hasFilledLine(content, 'Q1-Q9 依據');
+}
+
+function hasTechnologyRouteDecision() {
+  if (!exists('TECH_STACK.md')) return false;
+  const content = readFile('TECH_STACK.md');
+  return content.includes('## 技術路線決策')
+    && hasRouteMode(content)
+    && hasFilledLine(content, '唯一主路線')
+    && hasFilledLine(content, '選擇理由')
+    && content.includes('| Frontend |')
+    && content.includes('| Backend |')
+    && content.includes('| Database |')
+    && content.includes('| Main framework / SDK |')
+    && content.includes('| Deployment |');
+}
+
 function statusForRequired(doc) {
   if (!exists(doc.file)) return 'missing';
   if (!hasContent(doc.file)) return 'unfilled';
@@ -155,6 +208,15 @@ function buildResult(profile) {
   const requiredDocs = profile.documents.filter((doc) => doc.required);
   const recommendedDocs = profile.documents.filter((doc) => !doc.required);
   const profileFiles = new Set(profile.documents.map((doc) => doc.file));
+  const projectFiles = new Set([
+    ...profile.documents.map((doc) => doc.file),
+    ...profile.conditionalHints.map((doc) => doc.file),
+  ]);
+
+  for (const file of projectFiles) {
+    const result = safeProjectRead(file);
+    if (result.finding) warnings.push(formatGovernanceFinding(result.finding));
+  }
 
   const required = requiredDocs.map((doc) => ({
     file: doc.file,
@@ -164,7 +226,13 @@ function buildResult(profile) {
 
   const recommended = recommendedDocs.map((doc) => {
     const present = exists(doc.file);
-    if (!present) warnings.push(`${doc.file} is included by profile ${profile.name} but is missing`);
+    if (!present) {
+      warnings.push(formatGovernanceFinding({
+        code: 'PROFILE_DOCUMENT_MISSING',
+        subject: doc.file,
+        message: `profile ${profile.name} document is missing`,
+      }));
+    }
     return {
       file: doc.file,
       status: present ? 'present' : 'absent',
@@ -182,22 +250,71 @@ function buildResult(profile) {
 
   for (const check of required) {
     if (check.status === 'unfilled') {
-      warnings.push(`${check.file} exists but appears to be an unfilled template`);
+      warnings.push(formatGovernanceFinding({
+        code: 'UNFILLED_TEMPLATE',
+        subject: check.file,
+        message: 'document appears to be an unfilled template',
+      }));
     }
   }
 
   if (exists('SPEC.md')) {
     const spec = readFile('SPEC.md');
     if (!spec.includes('yes') && !spec.includes('no') && !spec.includes('是') && !spec.includes('否') && !spec.includes('[ ]') && !spec.includes('[x]')) {
-      warnings.push('SPEC.md: acceptance criteria should be yes/no testable');
+      warnings.push(formatGovernanceFinding({
+        code: 'ACCEPTANCE_NOT_TESTABLE',
+        subject: 'SPEC.md',
+        message: 'acceptance criteria should be yes/no testable',
+      }));
     }
   }
 
   if (exists('TASK_CONTRACT.md')) {
     const tc = readFile('TASK_CONTRACT.md');
     if (!tc.includes('驗證') && !tc.includes('verif') && !tc.includes('test')) {
-      warnings.push('TASK_CONTRACT.md: tasks should each have a verification method');
+      warnings.push(formatGovernanceFinding({
+        code: 'TASK_VERIFICATION_MISSING',
+        subject: 'TASK_CONTRACT.md',
+        message: 'tasks should each have a verification method',
+      }));
     }
+  }
+
+  if (exists('PROJECT_BRIEF.md') && !hasProductShapeDecision()) {
+    warnings.push(formatGovernanceFinding({
+      code: 'ROUTE_DECISION_INCOMPLETE',
+      subject: 'PROJECT_BRIEF.md',
+      message: 'product shape decision should be documented',
+    }));
+  }
+
+  if (exists('TECH_STACK.md') && !hasTechnologyRouteDecision()) {
+    warnings.push(formatGovernanceFinding({
+      code: 'ROUTE_DECISION_INCOMPLETE',
+      subject: 'TECH_STACK.md',
+      message: 'technology route decision should be documented',
+    }));
+  }
+
+  const projectBriefRead = safeProjectRead('PROJECT_BRIEF.md');
+  const techStackRead = safeProjectRead('TECH_STACK.md');
+  if (projectBriefRead.ok && techStackRead.ok) {
+    warnings.push(...evaluateRouteDecision(
+      projectBriefRead.content,
+      techStackRead.content,
+    ).map(formatGovernanceFinding));
+  }
+
+  const specRead = safeProjectRead('SPEC.md');
+  const taskContractRead = safeProjectRead('TASK_CONTRACT.md');
+  const openLoopsRead = safeProjectRead('OPEN_LOOPS.md');
+  if (projectBriefRead.ok && specRead.ok && taskContractRead.ok && openLoopsRead.ok) {
+    warnings.push(...evaluateTraceability(
+      projectBriefRead.content,
+      specRead.content,
+      taskContractRead.content,
+      openLoopsRead.content,
+    ).map(formatGovernanceFinding));
   }
 
   const missing = required.filter((check) => check.status === 'missing').map((check) => check.file);
