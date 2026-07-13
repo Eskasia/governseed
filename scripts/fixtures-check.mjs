@@ -69,7 +69,7 @@ function runMutationChecks() {
   const cases = [
     {
       name: 'route-mode-conflict',
-      code: 'ROUTE_MODE_CONFLICT',
+      expectedWarning: '[ROUTE_MODE_CONFLICT] GATE-ROUTE-001: route decision modes do not match',
       mutate(projectDir) {
         mutateFile(projectDir, 'TECH_STACK.md', (content) => content.replace(
           '決策模式：user-declared route',
@@ -79,7 +79,7 @@ function runMutationChecks() {
     },
     {
       name: 'route-placeholder',
-      code: 'ROUTE_PLACEHOLDER',
+      expectedWarning: '[ROUTE_PLACEHOLDER] PROJECT_BRIEF.md: route decision contains an unfilled field',
       mutate(projectDir) {
         mutateFile(projectDir, 'PROJECT_BRIEF.md', (content) => content.replace(
           /(^-\s*第一版產品形態[：:].*$)/m,
@@ -89,7 +89,7 @@ function runMutationChecks() {
     },
     {
       name: 'stale-decision',
-      code: 'STALE_DECISION',
+      expectedWarning: '[STALE_DECISION] TECH_STACK.md: route decision requires re-evaluation',
       mutate(projectDir) {
         mutateFile(projectDir, 'TECH_STACK.md', (content) => {
           if (/^-\s*(?:Decision status|決策狀態)[：:].*$/m.test(content)) {
@@ -123,8 +123,8 @@ function runMutationChecks() {
       } catch {
         throw new Error(`strict doctor returned invalid JSON for mutation ${mutation.name}`);
       }
-      if (!output.warnings?.some((warning) => warning.startsWith(`[${mutation.code}] `))) {
-        throw new Error(`strict doctor omitted ${mutation.code} for mutation ${mutation.name}`);
+      if (!output.warnings?.includes(mutation.expectedWarning)) {
+        throw new Error(`strict doctor warning contract mismatch for mutation ${mutation.name}`);
       }
     }
   } finally {

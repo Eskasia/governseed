@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 
 const MAX_GOVERNANCE_FILE_BYTES = 1024 * 1024;
+const MAX_GOVERNANCE_FILE_BYTES_BIGINT = BigInt(MAX_GOVERNANCE_FILE_BYTES);
 const PLACEHOLDER = /^(?:todo|tbd|待定|待補|<[^>]+>)$/i;
 const GOVERNANCE_FILE_ALLOWLIST = new Set([
   '.agent-governance.json',
@@ -50,6 +51,19 @@ function blocked(code, relativePath) {
   return { ok: false, finding: finding(code, relativePath, message) };
 }
 
+function hasStableFileIdentity(stat) {
+  return typeof stat?.dev === 'bigint'
+    && typeof stat?.ino === 'bigint'
+    && stat.ino > 0n;
+}
+
+function hasSameFileIdentity(left, right) {
+  return hasStableFileIdentity(left)
+    && hasStableFileIdentity(right)
+    && left.dev === right.dev
+    && left.ino === right.ino;
+}
+
 export function formatGovernanceFinding(item) {
   return `[${item.code}] ${safeSubject(item.subject)}: ${item.message}`;
 }
@@ -73,13 +87,18 @@ export function safeReadGovernanceFile(projectDir, relativePath) {
 
   let stat;
   try {
-    stat = fs.lstatSync(candidate);
+    stat = fs.lstatSync(candidate, { bigint: true });
   } catch (error) {
     if (error?.code === 'ENOENT') return { ok: false, missing: true };
     return blocked('PRIVACY_PATH_BLOCKED', relativePath);
   }
 
-  if (stat.isSymbolicLink() || !stat.isFile() || stat.size > MAX_GOVERNANCE_FILE_BYTES) {
+  if (
+    stat.isSymbolicLink()
+    || !stat.isFile()
+    || stat.size > MAX_GOVERNANCE_FILE_BYTES_BIGINT
+    || !hasStableFileIdentity(stat)
+  ) {
     return blocked('PRIVACY_PATH_BLOCKED', relativePath);
   }
 
@@ -95,12 +114,37 @@ export function safeReadGovernanceFile(projectDir, relativePath) {
   let descriptor;
   let bytes;
   try {
-    descriptor = fs.openSync(
-      candidate,
-      fs.constants.O_RDONLY | (fs.constants.O_NOFOLLOW ?? 0),
-    );
-    const openedStat = fs.fstatSync(descriptor);
-    if (!openedStat.isFile() || openedStat.size > MAX_GOVERNANCE_FILE_BYTES) {
+    const noFollowFlag = fs.constants.O_NOFOLLOW;
+    const hasNoFollowFlag = Number.isInteger(noFollowFlag) && noFollowFlag !== 0;
+    // When O_NOFOLLOW is unavailable, the dev/ino checks remain the equivalent fail-closed guard.
+    const openFlags = hasNoFollowFlag
+      ? fs.constants.O_RDONLY | noFollowFlag
+      : fs.constants.O_RDONLY;
+    descriptor = fs.openSync(candidate, openFlags);
+    const openedStat = fs.fstatSync(descriptor, { bigint: true });
+    if (
+      !openedStat.isFile()
+      || openedStat.size > MAX_GOVERNANCE_FILE_BYTES_BIGINT
+      || !hasSameFileIdentity(stat, openedStat)
+    ) {
+      return blocked('PRIVACY_PATH_BLOCKED', relativePath);
+    }
+
+    let postOpenStat;
+    let postOpenRealPath;
+    try {
+      postOpenStat = fs.lstatSync(candidate, { bigint: true });
+      postOpenRealPath = fs.realpathSync(candidate);
+    } catch {
+      return blocked('PRIVACY_PATH_BLOCKED', relativePath);
+    }
+    if (
+      postOpenStat.isSymbolicLink()
+      || !postOpenStat.isFile()
+      || !hasSameFileIdentity(stat, postOpenStat)
+      || !hasSameFileIdentity(openedStat, postOpenStat)
+      || (postOpenRealPath !== root && !postOpenRealPath.startsWith(`${root}${path.sep}`))
+    ) {
       return blocked('PRIVACY_PATH_BLOCKED', relativePath);
     }
 
