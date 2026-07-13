@@ -1,0 +1,255 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/agent-governance-starter/governance-impact-result.schema.json",
+  "title": "Governance Impact Scored Result",
+  "type": "object",
+  "required": ["schemaVersion", "runId", "seed", "arms", "comparison"],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "runId": {
+      "type": "string",
+      "minLength": 1
+    },
+    "seed": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "arms": {
+      "type": "object",
+      "required": ["baseline", "governed"],
+      "properties": {
+        "baseline": {
+          "$ref": "#/$defs/scoredArm"
+        },
+        "governed": {
+          "$ref": "#/$defs/scoredArm"
+        }
+      },
+      "additionalProperties": false
+    },
+    "comparison": {
+      "$ref": "#/$defs/comparison"
+    }
+  },
+  "$defs": {
+    "scoredArm": {
+      "type": "object",
+      "required": [
+        "scenarioHash",
+        "runtime",
+        "model",
+        "config",
+        "starterCommit",
+        "execution",
+        "acceptance",
+        "requirements",
+        "scope",
+        "prohibitions",
+        "documents",
+        "privacy",
+        "repairRounds",
+        "firstPassSuccess",
+        "time",
+        "tokens",
+        "deliveryScore",
+        "deliveryPass"
+      ],
+      "properties": {
+        "scenarioHash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        },
+        "runtime": {
+          "type": "string",
+          "enum": ["synthetic", "codex", "claude", "antigravity"]
+        },
+        "model": {
+          "type": "string",
+          "minLength": 1
+        },
+        "config": {
+          "type": "string",
+          "minLength": 1
+        },
+        "starterCommit": {
+          "type": "string",
+          "pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$"
+        },
+        "execution": {
+          "$ref": "#/$defs/execution"
+        },
+        "acceptance": {
+          "$ref": "#/$defs/acceptanceSummary"
+        },
+        "requirements": {
+          "$ref": "#/$defs/requirementSummary"
+        },
+        "scope": {
+          "$ref": "#/$defs/scopeSummary"
+        },
+        "prohibitions": {
+          "$ref": "#/$defs/prohibitionSummary"
+        },
+        "documents": {
+          "$ref": "#/$defs/documentSummary"
+        },
+        "privacy": {
+          "$ref": "#/$defs/checkSummary"
+        },
+        "repairRounds": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "firstPassSuccess": {
+          "type": "boolean"
+        },
+        "time": {
+          "$ref": "#/$defs/timeTelemetry"
+        },
+        "tokens": {
+          "$ref": "#/$defs/tokenTelemetry"
+        },
+        "deliveryScore": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "deliveryPass": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "execution": {
+      "type": "object",
+      "required": ["status", "errorCode"],
+      "properties": {
+        "status": {
+          "type": "string",
+          "enum": ["completed", "failed", "timeout"]
+        },
+        "errorCode": {
+          "type": ["string", "null"]
+        }
+      },
+      "additionalProperties": false
+    },
+    "acceptanceSummary": {
+      "type": "object",
+      "required": ["total", "passed", "failed", "rate", "criticalFailureCount"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 1 },
+        "passed": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "rate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "criticalFailureCount": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "requirementSummary": {
+      "type": "object",
+      "required": ["total", "omitted", "omissionRate"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 1 },
+        "omitted": { "type": "integer", "minimum": 0 },
+        "omissionRate": { "type": "number", "minimum": 0, "maximum": 1 }
+      },
+      "additionalProperties": false
+    },
+    "scopeSummary": {
+      "type": "object",
+      "required": ["changedPathCount", "violationCount", "violationRate", "forbiddenPathCount"],
+      "properties": {
+        "changedPathCount": { "type": "integer", "minimum": 0 },
+        "violationCount": { "type": "integer", "minimum": 0 },
+        "violationRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "forbiddenPathCount": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "prohibitionSummary": {
+      "type": "object",
+      "required": ["total", "violated", "violationRate", "criticalFailureCount"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 1 },
+        "violated": { "type": "integer", "minimum": 0 },
+        "violationRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "criticalFailureCount": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "documentSummary": {
+      "type": "object",
+      "required": ["total", "drifted", "criticalDriftCount"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "drifted": { "type": "integer", "minimum": 0 },
+        "criticalDriftCount": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "checkSummary": {
+      "type": "object",
+      "required": ["total", "failed", "criticalFailureCount"],
+      "properties": {
+        "total": { "type": "integer", "minimum": 0 },
+        "failed": { "type": "integer", "minimum": 0 },
+        "criticalFailureCount": { "type": "integer", "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "timeTelemetry": {
+      "type": "object",
+      "required": ["availability", "wallTimeMs"],
+      "properties": {
+        "availability": { "type": "string", "enum": ["available", "unavailable"] },
+        "wallTimeMs": { "type": ["number", "null"], "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "tokenTelemetry": {
+      "type": "object",
+      "required": ["availability", "total"],
+      "properties": {
+        "availability": { "type": "string", "enum": ["available", "unavailable"] },
+        "total": { "type": ["integer", "null"], "minimum": 0 }
+      },
+      "additionalProperties": false
+    },
+    "comparison": {
+      "type": "object",
+      "required": [
+        "winner",
+        "reason",
+        "comparableFields",
+        "deliveryPassDelta",
+        "scoreDelta",
+        "repairRoundsDelta",
+        "timeDeltaMs",
+        "tokenDelta"
+      ],
+      "properties": {
+        "winner": { "type": "string", "enum": ["baseline", "governed", "tie"] },
+        "reason": { "type": "string", "enum": ["delivery-pass", "delivery-score", "repair-rounds", "tie"] },
+        "comparableFields": {
+          "type": "array",
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "enum": ["deliveryPass", "deliveryScore", "repairRounds", "time", "tokens"]
+          }
+        },
+        "deliveryPassDelta": { "type": "integer", "minimum": -1, "maximum": 1 },
+        "scoreDelta": { "type": "number", "minimum": -100, "maximum": 100 },
+        "repairRoundsDelta": { "type": "integer" },
+        "timeDeltaMs": { "type": ["number", "null"] },
+        "tokenDelta": { "type": ["integer", "null"] }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

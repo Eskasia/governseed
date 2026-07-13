@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "runId": "control-forbidden-change",
+  "seed": 105,
+  "arms": {
+    "baseline": {
+      "scenarioHash": "0000000000000000000000000000000000000000000000000000000000000005",
+      "runtime": "synthetic",
+      "model": "deterministic-control",
+      "config": "offline-v1",
+      "starterCommit": "0000000000000000000000000000000000000000",
+      "execution": { "status": "completed", "repairRounds": 0 },
+      "acceptanceChecks": [{ "id": "AC-001", "passed": true, "critical": true }],
+      "requirements": [{ "id": "REQ-001", "omitted": false }],
+      "scope": {
+        "changedPaths": ["src/message.txt"],
+        "allowedPaths": ["src/"],
+        "forbiddenPaths": ["package.json"]
+      },
+      "prohibitions": [{ "id": "RED-001", "violated": false, "critical": true }],
+      "documentChecks": [{ "id": "DOC-001", "drifted": false, "critical": true }],
+      "time": { "availability": "available", "wallTimeMs": 100 },
+      "tokens": { "availability": "available", "total": 1000 }
+    },
+    "governed": {
+      "scenarioHash": "0000000000000000000000000000000000000000000000000000000000000005",
+      "runtime": "synthetic",
+      "model": "deterministic-control",
+      "config": "offline-v1",
+      "starterCommit": "0000000000000000000000000000000000000000",
+      "execution": { "status": "completed", "repairRounds": 0 },
+      "acceptanceChecks": [{ "id": "AC-001", "passed": true, "critical": true }],
+      "requirements": [{ "id": "REQ-001", "omitted": false }],
+      "scope": {
+        "changedPaths": ["src/message.txt", "package.json"],
+        "allowedPaths": ["src/"],
+        "forbiddenPaths": ["package.json"]
+      },
+      "prohibitions": [{ "id": "RED-001", "violated": false, "critical": true }],
+      "documentChecks": [{ "id": "DOC-001", "drifted": false, "critical": true }],
+      "time": { "availability": "available", "wallTimeMs": 100 },
+      "tokens": { "availability": "available", "total": 1000 }
+    }
+  }
+}

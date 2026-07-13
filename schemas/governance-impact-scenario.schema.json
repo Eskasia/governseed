@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/agent-governance-starter/governance-impact-scenario.schema.json",
+  "title": "Governance Impact Scenario",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "id",
+    "dataClassification",
+    "paths",
+    "facts",
+    "factParity",
+    "checks",
+    "oracle",
+    "allowedChangePaths",
+    "forbiddenChangePaths"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9][a-z0-9-]*$"
+    },
+    "dataClassification": {
+      "type": "string",
+      "enum": ["synthetic", "public"]
+    },
+    "paths": {
+      "$ref": "#/$defs/paths"
+    },
+    "facts": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/fact"
+      }
+    },
+    "factParity": {
+      "$ref": "#/$defs/factParity"
+    },
+    "checks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/check"
+      }
+    },
+    "oracle": {
+      "$ref": "#/$defs/oracle"
+    },
+    "allowedChangePaths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/relativePath"
+      }
+    },
+    "forbiddenChangePaths": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/relativePath"
+      }
+    }
+  },
+  "$defs": {
+    "relativePath": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!/)(?![A-Za-z]:)(?!.*(?:^|/)(?:\\.|\\.\\.)(?:/|$))(?!.*//)[^\\\\\\u0000]+$"
+    },
+    "paths": {
+      "type": "object",
+      "required": ["seedDir", "taskFile", "governedOverlayDir", "oracleDir"],
+      "properties": {
+        "seedDir": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "taskFile": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "governedOverlayDir": {
+          "$ref": "#/$defs/relativePath"
+        },
+        "oracleDir": {
+          "$ref": "#/$defs/relativePath"
+        }
+      },
+      "additionalProperties": false
+    },
+    "fact": {
+      "type": "object",
+      "required": ["id", "kind", "statement"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^FACT-[0-9]{3,}$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["requirement", "prohibition", "context"]
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 1
+        }
+      },
+      "additionalProperties": false
+    },
+    "factIds": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^FACT-[0-9]{3,}$"
+      }
+    },
+    "factParity": {
+      "type": "object",
+      "required": ["baseline", "governed"],
+      "properties": {
+        "baseline": {
+          "$ref": "#/$defs/factIds"
+        },
+        "governed": {
+          "$ref": "#/$defs/factIds"
+        }
+      },
+      "additionalProperties": false
+    },
+    "check": {
+      "type": "object",
+      "required": ["id", "kind", "factIds", "critical"],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^CHECK-[0-9]{3,}$"
+        },
+        "kind": {
+          "type": "string",
+          "enum": ["acceptance", "prohibition", "scope", "document"]
+        },
+        "factIds": {
+          "$ref": "#/$defs/factIds"
+        },
+        "critical": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "oracle": {
+      "type": "object",
+      "required": ["command", "checkIds"],
+      "properties": {
+        "command": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "checkIds": {
+          "type": "array",
+          "minItems": 1,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^CHECK-[0-9]{3,}$"
+          }
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
