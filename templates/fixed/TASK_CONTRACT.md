@@ -2,9 +2,9 @@
 
 ## 任務總覽
 
-| # | 任務名稱 | 狀態 | 依賴 | 驗證結果 |
+| Task ID | Status | Requirement | AC | Verification |
 |---|---|---|---|---|
-|  |  | 未開始 / 進行中 / 完成 / 阻塞 |  |  |
+|  |  |  |  |  |
 
 ## 任務詳情
 
@@ -34,6 +34,14 @@
 任務 1 → 任務 2 → 任務 3
          ↘ 任務 4
 ```
+
+## Acceptance evidence ledger
+
+| Evidence ID | AC | Requirement | Safe evidence locator | Result | Verified at |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
+
+Evidence IDs are append-only. Use a safe command, CI check, or public-artifact locator; never store private output, credentials, query tokens, or absolute home paths. A completed task requires a `passing` evidence row for its active requirement and acceptance criterion.
 
 ## 驗收總結
 

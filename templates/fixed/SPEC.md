@@ -14,9 +14,17 @@
 2.
 3.
 
-## Acceptance criteria
+## Requirement revision ledger
 
-- [ ] <yes/no criterion>
+| Revision | Operation | Class | Normalized requirement | Source | Confirmed by | Supersedes |
+|---|---|---|---|---|---|---|
+|  |  |  |  |  |  |  |
+
+## Acceptance criteria ledger
+
+| AC ID | Requirement revision | Yes/no criterion | Failure signal |
+|---|---|---|---|
+|  |  |  |  |
 
 ## Edge cases
 
@@ -29,3 +37,10 @@
 ## Open questions
 
 -
+
+## Lineage rules
+
+- Requirement IDs and revisions are append-only. Use `add`, `replace`, or `withdraw`; never delete an old row.
+- A `replace` or `withdraw` row supersedes an existing earlier revision of the same requirement. Split intent by withdrawing the old ID and adding new IDs.
+- Derive the active revision by replaying the ledger in order. Acceptance criteria reference only active revisions and remain yes/no testable.
+- `Class` is `must` or `redline`; every row cites a confirmed `SRC` attestation. Put anything not stated by a source in `OPEN_LOOPS.md`.

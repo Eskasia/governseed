@@ -1,9 +1,9 @@
 # OPEN_LOOPS.md
 
-| Status | Item | Owner | Next Check |
-|---|---|---|---|
-| closed | Base fixture scope is fixed to governance docs only | maintainer | expected doctor JSON |
-| closed | Runtime framework work is out of scope | maintainer | README boundary |
+| Status | Loop ID | Basis | Question / Risk | Impact | Owner | Next Step | Due | Resolution source |
+|---|---|---|---|---|---|---|---|---|
+| closed | LOOP-001 | not-stated | Is the fixture limited to governance documents? | high | maintainer-role | Keep scope aligned with expected doctor JSON. | resolved | SRC-001 |
+| closed | LOOP-002 | not-stated | Is application runtime work excluded? | high | maintainer-role | Preserve the public README boundary. | resolved | SRC-002 |
 
 ## Notes
 

@@ -2,9 +2,10 @@
 
 ## 任務總覽
 
-| # | 任務名稱 | 狀態 | 依賴 | 驗證結果 |
+| Task ID | Status | Requirement | AC | Verification |
 |---|---|---|---|---|
-| 1 | 建立 base fixture | 完成 | none | doctor JSON ready |
+| TASK-001 | completed | REQ-001@1 | AC-001 | Run strict doctor against the base fixture. |
+| TASK-002 | completed | REQ-002@1 | AC-002 | Inspect generated scope and run fixture validation. |
 
 ## 任務詳情
 
@@ -17,6 +18,13 @@
 - 不做事項：do not add app code
 - 完成標準：fixture status is ready
 - 風險 / 阻塞：profile changes require expected JSON update
+
+## Acceptance evidence ledger
+
+| Evidence ID | AC | Requirement | Safe evidence locator | Result | Verified at |
+|---|---|---|---|---|---|
+| EVD-001 | AC-001 | REQ-001@1 | command:node scripts/doctor.mjs --strict examples/template-adoption/base-minimal | passing | 2026-07-13 |
+| EVD-002 | AC-002 | REQ-002@1 | command:node scripts/fixtures-check.mjs | passing | 2026-07-13 |
 
 ## 驗收總結
 
