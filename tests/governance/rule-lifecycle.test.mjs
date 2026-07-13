@@ -348,6 +348,16 @@ test('starter validator checks a structured gate-row copy in a workflow consumer
   );
 });
 
+test('starter validator fails closed when CHANGELOG.md is missing', (t) => {
+  const starter = copyStarter(t);
+  fs.rmSync(path.join(starter, 'CHANGELOG.md'));
+
+  const result = runStarterValidator(starter);
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /Missing CHANGELOG\.md/);
+});
+
 test('starter validator does not require all active IDs in a startup workflow consumer', (t) => {
   const starter = copyStarter(t);
   const startupFile = path.join(starter, 'startup/01-bootstrap-gates.md');
@@ -357,10 +367,7 @@ test('starter validator does not require all active IDs in a startup workflow co
 
   const result = runStarterValidator(starter);
 
-  assert.doesNotMatch(
-    result.stderr,
-    /Adapter startup\/01-bootstrap-gates\.md must cite GATE-INTENT-001/i,
-  );
+  assert.equal(result.status, 0, result.stderr || result.stdout);
 });
 
 test('product route workflow cites lifecycle fields without copying fallback or review events', () => {

@@ -393,6 +393,7 @@ const errors = [];
 
 for (const file of [
   'README.md',
+  'CHANGELOG.md',
   'package.json',
   'AGENTS.md',
   'CLAUDE.md',
@@ -460,6 +461,10 @@ const gateConsumerPaths = [...new Set([...runtimeAdapterPaths, ...workflowConsum
 const gateCanonicalDocuments = exists('templates/runtime/AGENTS.md')
   ? [{ path: 'templates/runtime/AGENTS.md', content: readFile('templates/runtime/AGENTS.md') }]
   : [];
+const gateLifecycleHistoryDocument = {
+  path: 'CHANGELOG.md',
+  content: exists('CHANGELOG.md') ? readFile('CHANGELOG.md') : '',
+};
 const gateConsumerDocuments = gateConsumerPaths
   .filter((file) => exists(file))
   .map((file) => ({ path: file, content: readFile(file) }));
@@ -470,9 +475,7 @@ errors.push(...validateGateLifecycle({
   canonicalDocuments: gateCanonicalDocuments,
   adapterDocuments: gateConsumerDocuments,
   requiredGateIds: REQUIRED_GATE_IDS,
-  lifecycleHistoryDocument: exists('CHANGELOG.md')
-    ? { path: 'CHANGELOG.md', content: readFile('CHANGELOG.md') }
-    : null,
+  lifecycleHistoryDocument: gateLifecycleHistoryDocument,
 }));
 errors.push(...validateAdapterGateReferences(runtimeAdapterDocuments, gateCanonicalDocuments));
 
