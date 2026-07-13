@@ -11,7 +11,7 @@
 5. 計畫：5-10 步，每步有驗證
 6. 實作：一次只做一個步驟
 7. 驗證：測試、Browser/Chrome、Playwright、DB、部署檢查
-8. 收尾：handoff、neat-freak、repomix、LLMwiki、文件結構分流、gstack-style checklist
+8. 收尾：handoff、neat-freak、repomix、gstack-style checklist
 
 ## Q1-Q9
 
@@ -48,5 +48,5 @@ Generated `AGENTS.md` 唯一定義 `GATE-INTENT-001` 與 `GATE-ROUTE-001` 的 ow
 - TASK_CONTRACT 每個任務都有驗證方式。
 - OPEN_LOOPS 明確列出尚未決定的事。
 - 若包含 production-facing LLM agent / automation / tool use，`AGENT_RUNTIME.md` 已完成。
-- 收尾時已判斷新經驗該進 LLMwiki、AGENTS、Skills、Hooks、Subagents、Plugins 或不回寫。
+- 只有提出 durable rule 時，才記錄 selected destination、canonical owner 與 evidence；沒有提案時不執行文件結構分流。
 - 使用者明確說「確認」。

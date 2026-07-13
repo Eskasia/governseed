@@ -61,14 +61,43 @@ function gateRows(document) {
   return rows;
 }
 
+function gateHistoryRows(document) {
+  const rows = [];
+  for (const line of String(document?.content || '').split(/\r?\n/)) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('|') || !trimmed.includes('GATE-')) continue;
+    const cells = trimmed
+      .replace(/^\|/, '')
+      .replace(/\|$/, '')
+      .split('|')
+      .map((cell) => cell.trim().replace(/^`|`$/g, ''));
+    if (!/^GATE-[A-Z0-9]+(?:-[A-Z0-9]+)*$/.test(cells[0] || '')) continue;
+    rows.push({
+      id: cells[0],
+      change: cells[1] || '',
+      status: cells[3] || '',
+      supersededBy: cells[7] || '',
+    });
+  }
+  return rows;
+}
+
 function referencedGateIds(content) {
   return new Set(String(content || '').match(/\bGATE-[A-Z0-9]+(?:-[A-Z0-9]+)*\b/g) || []);
+}
+
+function activeGateIds(canonicalDocuments) {
+  return [...new Set(canonicalDocuments
+    .flatMap((document) => gateRows(document))
+    .filter((row) => row.status === 'active')
+    .map((row) => row.id))];
 }
 
 export function validateGateLifecycle({
   canonicalDocuments = [],
   adapterDocuments = [],
   requiredGateIds = REQUIRED_GATE_IDS,
+  lifecycleHistoryDocument = null,
 } = {}) {
   const errors = [];
   for (const document of canonicalDocuments) {
@@ -115,18 +144,35 @@ export function validateGateLifecycle({
     if (!rowsById.has(id)) errors.push(`Missing canonical gate ${id}`);
   }
 
-  for (const adapter of adapterDocuments) {
-    for (const definition of gateRows(adapter)) {
-      errors.push(`Adapter restates gate ${definition.id} in ${adapter.path}`);
+  if (lifecycleHistoryDocument) {
+    const canonicalIds = new Set(rows.map((row) => row.id));
+    const history = gateHistoryRows(lifecycleHistoryDocument);
+    for (const id of new Set(history.map((row) => row.id))) {
+      if (canonicalIds.has(id)) continue;
+      const hasTombstone = history.some((row) => (
+        row.id === id
+        && row.change === 'retire'
+        && row.status === 'retired'
+        && row.supersededBy
+      ));
+      if (!hasTombstone) {
+        errors.push(`Historical gate ${id} left the canonical ledger without a CHANGELOG retirement tombstone`);
+      }
     }
-    for (const id of referencedGateIds(adapter.content)) {
+  }
+
+  for (const consumer of adapterDocuments) {
+    for (const definition of gateRows(consumer)) {
+      errors.push(`Gate consumer ${consumer.path} restates gate ${definition.id}`);
+    }
+    for (const id of referencedGateIds(consumer.content)) {
       const definitions = rowsById.get(id);
       if (!definitions) {
-        errors.push(`Adapter ${adapter.path} references undefined gate ${id}`);
+        errors.push(`Gate consumer ${consumer.path} references undefined gate ${id}`);
         continue;
       }
       if (definitions.some((definition) => definition.status === 'suspended')) {
-        errors.push(`Suspended gate ${id} is referenced by adapter ${adapter.path}`);
+        errors.push(`Suspended gate ${id} is referenced by gate consumer ${consumer.path}`);
       }
     }
   }
@@ -136,13 +182,14 @@ export function validateGateLifecycle({
 
 export function validateAdapterGateReferences(
   adapterDocuments,
-  requiredGateIds = REQUIRED_GATE_IDS,
+  canonicalDocuments,
 ) {
   const errors = [];
+  const requiredGateIds = activeGateIds(canonicalDocuments);
   for (const adapter of adapterDocuments) {
     const references = referencedGateIds(adapter.content);
     for (const id of requiredGateIds) {
-      if (!references.has(id)) errors.push(`Adapter ${adapter.path} must cite ${id}`);
+      if (!references.has(id)) errors.push(`Adapter ${adapter.path} must cite active gate ${id}`);
     }
     if (!String(adapter.content || '').includes('AGENTS.md')) {
       errors.push(`Adapter ${adapter.path} must point to canonical AGENTS.md`);
@@ -394,29 +441,40 @@ for (const file of ['startup/00-agent-start-here.md', 'startup/01-bootstrap-gate
   requireFile(errors, file);
 }
 
-const gateAdapterPaths = [
+const runtimeAdapterPaths = [
   'templates/runtime/START_HERE.md',
   'templates/runtime/README.md',
-  'startup/00-agent-start-here.md',
-  'startup/01-bootstrap-gates.md',
-  'startup/02-required-project-docs.md',
   'prompts/codex-new-project.md',
   'prompts/claude-new-project.md',
   'prompts/antigravity-new-project.md',
   'scripts/init.mjs',
 ];
+const workflowConsumerPaths = ['startup', 'workflows']
+  .flatMap((directory) => collectFiles(
+    directory,
+    (relativePath) => relativePath.endsWith('.md'),
+  ))
+  .map((file) => file.split(path.sep).join('/'))
+  .filter((file) => referencedGateIds(readFile(file)).size > 0);
+const gateConsumerPaths = [...new Set([...runtimeAdapterPaths, ...workflowConsumerPaths])];
 const gateCanonicalDocuments = exists('templates/runtime/AGENTS.md')
   ? [{ path: 'templates/runtime/AGENTS.md', content: readFile('templates/runtime/AGENTS.md') }]
   : [];
-const gateAdapterDocuments = gateAdapterPaths
+const gateConsumerDocuments = gateConsumerPaths
+  .filter((file) => exists(file))
+  .map((file) => ({ path: file, content: readFile(file) }));
+const runtimeAdapterDocuments = runtimeAdapterPaths
   .filter((file) => exists(file))
   .map((file) => ({ path: file, content: readFile(file) }));
 errors.push(...validateGateLifecycle({
   canonicalDocuments: gateCanonicalDocuments,
-  adapterDocuments: gateAdapterDocuments,
+  adapterDocuments: gateConsumerDocuments,
   requiredGateIds: REQUIRED_GATE_IDS,
+  lifecycleHistoryDocument: exists('CHANGELOG.md')
+    ? { path: 'CHANGELOG.md', content: readFile('CHANGELOG.md') }
+    : null,
 }));
-errors.push(...validateAdapterGateReferences(gateAdapterDocuments, REQUIRED_GATE_IDS));
+errors.push(...validateAdapterGateReferences(runtimeAdapterDocuments, gateCanonicalDocuments));
 
 const workflowIndexes = ['docs/index.md', 'workflows/tool-routing.md']
   .filter((file) => exists(file))

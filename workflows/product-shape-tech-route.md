@@ -2,7 +2,7 @@
 
 適用：新專案完成 Q1-Q9 後、寫 code 前，要決定第一版做成網站、小程序、App、純後端 API、管理系統、agent service，或其他主形態。
 
-本 workflow 提供 `GATE-ROUTE-001` 的決策與重評估方法；generated `AGENTS.md` 仍是該 gate lifecycle 欄位的唯一 canonical owner。
+本 workflow 只提供決策方法。`GATE-ROUTE-001` 的 owner、status、evidence、event-only review trigger 與 fallback 一律讀 generated `AGENTS.md`，本檔不複製這些 lifecycle 欄位。
 
 ## 核心原則
 
@@ -59,7 +59,7 @@
 - `PROJECT_BRIEF.md`：產品形態決策、決策模式、Q1-Q9 依據、排除的其他形態。
 - `TECH_STACK.md`：唯一主技術路線、前端、後端、資料庫、主要框架 / SDK、部署方式、排除路線、風險、重評估條件、新技術引入 gate。
 - `docs/adr/*.md`：高成本或難回頭的路線決策。
-- `OPEN_LOOPS.md`：仍無法定案的路線問題；只要路線問題是 open，就不得開始實作。
+- `OPEN_LOOPS.md`：仍無法定案的路線問題；後續處置回到 generated `AGENTS.md` 讀 `GATE-ROUTE-001` 的當前 lifecycle 欄位。
 
 ## 新技術引入 Gate
 
@@ -71,12 +71,6 @@
 - 是否讓專案從單一路線變成多 runtime 疊加？
 - 是否需要新增或更新 ADR？
 
-## 重評估條件
+## Lifecycle 引用
 
-只有出現以下情況才重新評估技術路線：
-
-- Q1-Q2 的核心使用者或成功行為改變。
-- Q5 的既有系統、平台、API 約束改變。
-- Q6-Q7 的驗收或部署方式改變。
-- Q9 的效能、規模、資料量或延遲要求超出原路線。
-- 現有路線無法通過驗證，且風險已記錄到 `OPEN_LOOPS.md` 或 ADR。
+何時 review、gate 失敗時採取什麼 fallback，均以 generated `AGENTS.md` 的 `GATE-ROUTE-001` 當前列為準；本 workflow 不另列事件或處置清單。

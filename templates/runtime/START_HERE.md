@@ -28,7 +28,12 @@ This project was initialized from agent-governance-starter. The agent must compl
 - `GATE-INTENT-001`
 - `GATE-ROUTE-001`
 
-Use the product-shape and technology-route workflow for the decision method, then evaluate both gates from `AGENTS.md`.
+## Product Shape / Technology Route Method
+
+- `user-declared route`: when the user has named a product shape or technology route, check it against Q1-Q9 and record gaps or risks.
+- `ai-recommended route`: when the user has not named a route, recommend one first-version product shape and one main technology route from Q1-Q9.
+
+Record the selected mode and product-shape decision in `PROJECT_BRIEF.md`, and the main technology route in `TECH_STACK.md`. Evaluate lifecycle state only from the gate IDs in `AGENTS.md`.
 
 ## Required Documents
 

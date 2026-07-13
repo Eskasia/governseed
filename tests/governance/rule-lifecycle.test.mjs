@@ -31,6 +31,15 @@ ${rows.join('\n')}
 `;
 }
 
+function lifecycleHistory(...rows) {
+  return `# Changelog
+
+| Gate ID | Change | Canonical owner | Status | Evidence | Event-only review trigger | Fallback | Superseded by |
+|---|---|---|---|---|---|---|---|
+${rows.join('\n')}
+`;
+}
+
 function canonical(pathname, content) {
   return { path: pathname, content };
 }
@@ -46,6 +55,31 @@ function runGit(cwd, args) {
     shell: false,
   });
   assert.equal(result.status, 0, result.stderr || result.stdout);
+}
+
+function copyStarter(t) {
+  const sandbox = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'gate-starter-'));
+  const starter = path.join(sandbox, 'starter');
+  t.after(() => fs.rmSync(sandbox, { recursive: true, force: true }));
+  fs.cpSync(ROOT, starter, {
+    recursive: true,
+    filter(source) {
+      const relative = path.relative(ROOT, source);
+      return relative !== '.git' && !relative.startsWith(`.git${path.sep}`);
+    },
+  });
+  return starter;
+}
+
+function runStarterValidator(starter) {
+  return spawnSync(process.execPath, [
+    path.join(starter, 'scripts/validate-starter.mjs'),
+    starter,
+  ], {
+    cwd: starter,
+    encoding: 'utf8',
+    shell: false,
+  });
 }
 
 test('rejects a duplicate gate ID inside one canonical ledger', () => {
@@ -102,17 +136,99 @@ test('rejects a canonical ledger without the complete lifecycle header', () => {
   assert.match(errors.join('\n'), /canonical gate ledger.*AGENTS\.md.*required lifecycle header/i);
 });
 
-test('rejects an adapter reference to a suspended gate', () => {
-  const errors = validateGateLifecycle({
-    canonicalDocuments: [canonical('AGENTS.md', ledger(
+test('requires a CHANGELOG retirement tombstone when a historical gate leaves the ledger', () => {
+  const canonicalDocuments = [canonical('AGENTS.md', ledger(row('GATE-ROUTE-001')))];
+  const added = '| GATE-INTENT-001 | add | AGENTS.md | active | evidence | review | fallback | n/a |';
+  const missingTombstone = validateGateLifecycle({
+    canonicalDocuments,
+    adapterDocuments: [],
+    requiredGateIds: ['GATE-ROUTE-001'],
+    lifecycleHistoryDocument: canonical('CHANGELOG.md', lifecycleHistory(added)),
+  });
+
+  assert.deepEqual(missingTombstone, [
+    'Historical gate GATE-INTENT-001 left the canonical ledger without a CHANGELOG retirement tombstone',
+  ]);
+
+  const retired = '| GATE-INTENT-001 | retire | AGENTS.md | retired | evidence | n/a | n/a | GATE-ROUTE-001 |';
+  assert.deepEqual(validateGateLifecycle({
+    canonicalDocuments,
+    adapterDocuments: [],
+    requiredGateIds: ['GATE-ROUTE-001'],
+    lifecycleHistoryDocument: canonical(
+      'CHANGELOG.md',
+      lifecycleHistory(added, retired),
+    ),
+  }), []);
+});
+
+test('allows a suspended canonical gate after every consumer removes its reference', () => {
+  const canonicalDocuments = [canonical('AGENTS.md', ledger(
+    row('GATE-INTENT-001', 'suspended'),
+    row('GATE-ROUTE-001'),
+  ))];
+  const runtimeAdapters = [
+    adapter('START_HERE.md', 'Follow GATE-ROUTE-001 from AGENTS.md.'),
+  ];
+  const workflowConsumers = [
+    adapter('workflows/tool-routing.md', 'Route with GATE-ROUTE-001 from AGENTS.md.'),
+  ];
+
+  assert.deepEqual(validateGateLifecycle({
+    canonicalDocuments,
+    adapterDocuments: [...runtimeAdapters, ...workflowConsumers],
+    requiredGateIds: REQUIRED_GATE_IDS,
+  }), []);
+  assert.deepEqual(validateAdapterGateReferences(runtimeAdapters, canonicalDocuments), []);
+});
+
+test('rejects a stale consumer reference to a suspended gate when validators are composed', () => {
+  const canonicalDocuments = [canonical('AGENTS.md', ledger(
       row('GATE-INTENT-001', 'suspended'),
       row('GATE-ROUTE-001'),
-    ))],
-    adapterDocuments: [adapter('START_HERE.md', 'Follow GATE-INTENT-001 in AGENTS.md.')],
+  ))];
+  const runtimeAdapters = [
+    adapter('START_HERE.md', 'Follow GATE-INTENT-001 and GATE-ROUTE-001 in AGENTS.md.'),
+  ];
+  const errors = [
+    ...validateGateLifecycle({
+      canonicalDocuments,
+      adapterDocuments: runtimeAdapters,
+      requiredGateIds: REQUIRED_GATE_IDS,
+    }),
+    ...validateAdapterGateReferences(runtimeAdapters, canonicalDocuments),
+  ];
+
+  assert.match(errors.join('\n'), /suspended gate GATE-INTENT-001.*START_HERE\.md/i);
+});
+
+test('requires every active gate ID in a runtime entry adapter', () => {
+  const canonicalDocuments = [canonical('AGENTS.md', ledger(
+    row('GATE-INTENT-001'),
+    row('GATE-ROUTE-001'),
+  ))];
+  const errors = validateAdapterGateReferences([
+    adapter('START_HERE.md', 'Follow GATE-INTENT-001 from AGENTS.md.'),
+  ], canonicalDocuments);
+
+  assert.deepEqual(errors, ['Adapter START_HERE.md must cite active gate GATE-ROUTE-001']);
+});
+
+test('does not require every active gate ID in a non-runtime workflow consumer', () => {
+  const canonicalDocuments = [canonical('AGENTS.md', ledger(
+    row('GATE-INTENT-001'),
+    row('GATE-ROUTE-001'),
+  ))];
+  const errors = validateGateLifecycle({
+    canonicalDocuments,
+    adapterDocuments: [adapter(
+      'workflows/product-shape-tech-route.md',
+      'This method follows GATE-ROUTE-001 from AGENTS.md.',
+    )],
     requiredGateIds: REQUIRED_GATE_IDS,
   });
 
-  assert.match(errors.join('\n'), /suspended gate GATE-INTENT-001.*START_HERE\.md/i);
+  assert.deepEqual(errors, []);
 });
 
 test('rejects an adapter that restates a full gate row', () => {
@@ -125,7 +241,7 @@ test('rejects an adapter that restates a full gate row', () => {
     requiredGateIds: REQUIRED_GATE_IDS,
   });
 
-  assert.match(errors.join('\n'), /adapter restates gate GATE-INTENT-001.*START_HERE\.md/i);
+  assert.match(errors.join('\n'), /gate consumer START_HERE\.md restates gate GATE-INTENT-001/i);
 });
 
 test('requires a present mandatory workflow to be tracked in a git repository', (t) => {
@@ -173,6 +289,102 @@ test('requires the mandatory workflow in every routing index', () => {
   ]);
 });
 
+test('starter validator checks an undefined gate ID in a workflow consumer', (t) => {
+  const starter = copyStarter(t);
+  const workflow = path.join(starter, 'workflows/tool-routing.md');
+  fs.appendFileSync(workflow, '\nUndefined lifecycle reference: GATE-UNKNOWN-001\n');
+
+  const result = runStarterValidator(starter);
+
+  assert.match(
+    result.stderr,
+    /gate consumer workflows\/tool-routing\.md references undefined gate GATE-UNKNOWN-001/i,
+  );
+});
+
+test('starter validator discovers a newly added workflow consumer by its gate reference', (t) => {
+  const starter = copyStarter(t);
+  fs.writeFileSync(
+    path.join(starter, 'workflows/new-gate-consumer.md'),
+    '# New Gate Consumer\n\nFollow GATE-UNKNOWN-002.\n',
+  );
+
+  const result = runStarterValidator(starter);
+
+  assert.match(
+    result.stderr,
+    /gate consumer workflows\/new-gate-consumer\.md references undefined gate GATE-UNKNOWN-002/i,
+  );
+});
+
+test('starter validator checks a suspended gate reference in a workflow consumer', (t) => {
+  const starter = copyStarter(t);
+  const canonicalFile = path.join(starter, 'templates/runtime/AGENTS.md');
+  const content = fs.readFileSync(canonicalFile, 'utf8')
+    .replace(
+      '| GATE-ROUTE-001 | `PROJECT_BRIEF.md` + `TECH_STACK.md` | active |',
+      '| GATE-ROUTE-001 | `PROJECT_BRIEF.md` + `TECH_STACK.md` | suspended |',
+    );
+  fs.writeFileSync(canonicalFile, content);
+
+  const result = runStarterValidator(starter);
+
+  assert.match(
+    result.stderr,
+    /suspended gate GATE-ROUTE-001.*workflows\/product-shape-tech-route\.md/i,
+  );
+});
+
+test('starter validator checks a structured gate-row copy in a workflow consumer', (t) => {
+  const starter = copyStarter(t);
+  const workflow = path.join(starter, 'workflows/product-shape-tech-route.md');
+  fs.appendFileSync(workflow, `\n${row('GATE-ROUTE-001')}\n`);
+
+  const result = runStarterValidator(starter);
+
+  assert.match(
+    result.stderr,
+    /gate consumer workflows\/product-shape-tech-route\.md restates gate GATE-ROUTE-001/i,
+  );
+});
+
+test('starter validator does not require all active IDs in a startup workflow consumer', (t) => {
+  const starter = copyStarter(t);
+  const startupFile = path.join(starter, 'startup/01-bootstrap-gates.md');
+  const content = fs.readFileSync(startupFile, 'utf8')
+    .replaceAll('GATE-INTENT-001', 'intent gate');
+  fs.writeFileSync(startupFile, content);
+
+  const result = runStarterValidator(starter);
+
+  assert.doesNotMatch(
+    result.stderr,
+    /Adapter startup\/01-bootstrap-gates\.md must cite GATE-INTENT-001/i,
+  );
+});
+
+test('product route workflow cites lifecycle fields without copying fallback or review events', () => {
+  const content = fs.readFileSync(
+    path.join(ROOT, 'workflows/product-shape-tech-route.md'),
+    'utf8',
+  );
+
+  assert.match(content, /GATE-ROUTE-001.*generated `AGENTS\.md`/i);
+  assert.doesNotMatch(content, /^## 重評估條件$/m);
+  assert.doesNotMatch(content, /只要路線問題是 open，就不得開始實作/);
+});
+
+test('bootstrap closeout routes only an actual durable-rule proposal', () => {
+  const content = fs.readFileSync(
+    path.join(ROOT, 'startup/01-bootstrap-gates.md'),
+    'utf8',
+  );
+
+  assert.doesNotMatch(content, /收尾：[^\n]*文件結構分流/);
+  assert.doesNotMatch(content, /收尾時已判斷新經驗該進/);
+  assert.match(content, /durable rule[^\n]*destination[^\n]*owner[^\n]*evidence/i);
+});
+
 test('generated canonical ledger and runtime adapters satisfy the reference boundary', (t) => {
   const project = fs.mkdtempSync(path.join(os.tmpdir(), 'gate-runtime-'));
   t.after(() => fs.rmSync(project, { recursive: true, force: true }));
@@ -210,5 +422,10 @@ test('generated canonical ledger and runtime adapters satisfy the reference boun
     adapterDocuments,
     requiredGateIds: REQUIRED_GATE_IDS,
   }), []);
-  assert.deepEqual(validateAdapterGateReferences(adapterDocuments, REQUIRED_GATE_IDS), []);
+  assert.deepEqual(validateAdapterGateReferences(adapterDocuments, canonicalDocuments), []);
+
+  const startHere = adapterDocuments[0].content;
+  assert.match(startHere, /user-declared route/);
+  assert.match(startHere, /ai-recommended route/);
+  assert.doesNotMatch(startHere, /workflow for the decision method/i);
 });
