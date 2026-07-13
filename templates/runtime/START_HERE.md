@@ -21,6 +21,15 @@ This project was initialized from agent-governance-starter. The agent must compl
 
 {{INTAKE_QUESTIONS}}
 
+## Governance Gate References
+
+`AGENTS.md` is the sole canonical owner of gate lifecycle fields. Follow these IDs without copying their owner, status, evidence, review trigger, or fallback into this file:
+
+- `GATE-INTENT-001`
+- `GATE-ROUTE-001`
+
+Use the product-shape and technology-route workflow for the decision method, then evaluate both gates from `AGENTS.md`.
+
 ## Required Documents
 
 {{REQUIRED_DOCUMENTS}}
@@ -35,4 +44,4 @@ This project was initialized from agent-governance-starter. The agent must compl
 
 ## Gate
 
-Do not write code until Q1-Q9 are answered, required documents are filled, open loops are explicit, and the user confirms the task plan.
+Do not write code until `GATE-INTENT-001` and `GATE-ROUTE-001` pass under their current definitions in `AGENTS.md`, required documents are filled, open loops are explicit, and the user confirms the task plan.

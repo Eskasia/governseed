@@ -28,6 +28,18 @@ Describe whether generated base/fullstack/macos fixture output or expected docto
 
 Describe whether Codex, Claude Code, or Antigravity entrypoints changed.
 
+## Rule Lifecycle Impact
+
+- Change type: `none | add | change | suspend | retire`
+- Gate ID:
+- Canonical owner path (exactly one):
+- Status: `active | suspended | retired`
+- Promotion or change evidence:
+- Event-only review trigger:
+- Fallback:
+- Adapter references updated:
+- CHANGELOG tombstone or `superseded-by` target:
+
 ## Docs Updated
 
 - [ ] `README.md`

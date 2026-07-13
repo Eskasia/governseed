@@ -1,8 +1,185 @@
 #!/usr/bin/env node
+import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const root = process.argv[2] ? path.resolve(process.argv[2]) : path.resolve('.');
+const isMain = Boolean(process.argv[1])
+  && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url);
+
+export const REQUIRED_GATE_IDS = Object.freeze([
+  'GATE-INTENT-001',
+  'GATE-ROUTE-001',
+]);
+
+const REQUIRED_GATE_HEADER = [
+  'ID',
+  'Owner path',
+  'Status',
+  'Evidence',
+  'Event-only review trigger',
+  'Fallback',
+];
+
+function hasRequiredGateHeader(content) {
+  return String(content || '').split(/\r?\n/).some((line) => {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('|')) return false;
+    const cells = trimmed
+      .replace(/^\|/, '')
+      .replace(/\|$/, '')
+      .split('|')
+      .map((cell) => cell.trim());
+    return cells.length === REQUIRED_GATE_HEADER.length
+      && cells.every((cell, index) => cell === REQUIRED_GATE_HEADER[index]);
+  });
+}
+
+function gateRows(document) {
+  const rows = [];
+  for (const [index, line] of String(document.content || '').split(/\r?\n/).entries()) {
+    const trimmed = line.trim();
+    if (!trimmed.startsWith('|') || !trimmed.includes('GATE-')) continue;
+    const cells = trimmed
+      .replace(/^\|/, '')
+      .replace(/\|$/, '')
+      .split('|')
+      .map((cell) => cell.trim().replace(/^`|`$/g, ''));
+    if (!/^GATE-[A-Z0-9]+(?:-[A-Z0-9]+)*$/.test(cells[0] || '')) continue;
+    rows.push({
+      id: cells[0],
+      ownerPath: cells[1] || '',
+      status: cells[2] || '',
+      evidence: cells[3] || '',
+      reviewTrigger: cells[4] || '',
+      fallback: cells[5] || '',
+      documentPath: document.path,
+      line: index + 1,
+    });
+  }
+  return rows;
+}
+
+function referencedGateIds(content) {
+  return new Set(String(content || '').match(/\bGATE-[A-Z0-9]+(?:-[A-Z0-9]+)*\b/g) || []);
+}
+
+export function validateGateLifecycle({
+  canonicalDocuments = [],
+  adapterDocuments = [],
+  requiredGateIds = REQUIRED_GATE_IDS,
+} = {}) {
+  const errors = [];
+  for (const document of canonicalDocuments) {
+    if (!hasRequiredGateHeader(document.content)) {
+      errors.push(`Canonical gate ledger ${document.path} is missing the required lifecycle header`);
+    }
+  }
+  const rows = canonicalDocuments.flatMap((document) => gateRows(document));
+  const rowsById = new Map();
+
+  for (const row of rows) {
+    const byDocument = rows.filter((candidate) => (
+      candidate.id === row.id && candidate.documentPath === row.documentPath
+    ));
+    if (byDocument.length > 1 && byDocument[0] === row) {
+      errors.push(`Duplicate gate ID ${row.id} in canonical owner ${row.documentPath}`);
+    }
+
+    if (!rowsById.has(row.id)) rowsById.set(row.id, []);
+    rowsById.get(row.id).push(row);
+
+    if (!['active', 'suspended'].includes(row.status)) {
+      errors.push(`Invalid status for ${row.id}: ${row.status || '(empty)'}`);
+    }
+
+    for (const [field, label] of [
+      ['ownerPath', 'owner path'],
+      ['evidence', 'evidence'],
+      ['reviewTrigger', 'event-only review trigger'],
+      ['fallback', 'fallback'],
+    ]) {
+      if (!row[field]) errors.push(`${row.id} in ${row.documentPath} is missing ${label}`);
+    }
+  }
+
+  for (const [id, definitions] of rowsById) {
+    const owners = [...new Set(definitions.map((definition) => definition.documentPath))];
+    if (owners.length > 1) {
+      errors.push(`Multiple canonical owners for ${id}: ${owners.join(', ')}`);
+    }
+  }
+
+  for (const id of requiredGateIds) {
+    if (!rowsById.has(id)) errors.push(`Missing canonical gate ${id}`);
+  }
+
+  for (const adapter of adapterDocuments) {
+    for (const definition of gateRows(adapter)) {
+      errors.push(`Adapter restates gate ${definition.id} in ${adapter.path}`);
+    }
+    for (const id of referencedGateIds(adapter.content)) {
+      const definitions = rowsById.get(id);
+      if (!definitions) {
+        errors.push(`Adapter ${adapter.path} references undefined gate ${id}`);
+        continue;
+      }
+      if (definitions.some((definition) => definition.status === 'suspended')) {
+        errors.push(`Suspended gate ${id} is referenced by adapter ${adapter.path}`);
+      }
+    }
+  }
+
+  return errors;
+}
+
+export function validateAdapterGateReferences(
+  adapterDocuments,
+  requiredGateIds = REQUIRED_GATE_IDS,
+) {
+  const errors = [];
+  for (const adapter of adapterDocuments) {
+    const references = referencedGateIds(adapter.content);
+    for (const id of requiredGateIds) {
+      if (!references.has(id)) errors.push(`Adapter ${adapter.path} must cite ${id}`);
+    }
+    if (!String(adapter.content || '').includes('AGENTS.md')) {
+      errors.push(`Adapter ${adapter.path} must point to canonical AGENTS.md`);
+    }
+  }
+  return errors;
+}
+
+export function validateWorkflowIndexing(workflowPath, indexDocuments) {
+  const errors = [];
+  for (const document of indexDocuments) {
+    if (!String(document.content || '').includes(workflowPath)) {
+      errors.push(`${document.path} does not index ${workflowPath}`);
+    }
+  }
+  return errors;
+}
+
+export function validateMandatoryWorkflowTracking(
+  repoRoot,
+  mandatoryFiles,
+  spawnCommand = spawnSync,
+) {
+  if (!fs.existsSync(path.join(repoRoot, '.git'))) return [];
+
+  const errors = [];
+  for (const file of mandatoryFiles) {
+    if (!fs.existsSync(path.join(repoRoot, file))) continue;
+    const result = spawnCommand('git', ['ls-files', '--error-unmatch', '--', file], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      shell: false,
+    });
+    if (result.status !== 0) errors.push(`Mandatory workflow is not tracked by git: ${file}`);
+  }
+  return errors;
+}
 
 function readFile(relativePath) {
   return fs.readFileSync(path.join(root, relativePath), 'utf8');
@@ -164,6 +341,7 @@ function packageScripts(errors) {
   }
 }
 
+if (isMain) {
 const errors = [];
 
 for (const file of [
@@ -212,9 +390,39 @@ for (const dir of ['startup', 'workflows', 'templates', 'scripts', 'docs', 'prom
   if (!exists(dir)) fail(errors, `Missing directory: ${dir}`);
 }
 
-for (const file of ['startup/00-agent-start-here.md', 'startup/01-bootstrap-gates.md', 'startup/02-required-project-docs.md']) {
+for (const file of ['startup/00-agent-start-here.md', 'startup/01-bootstrap-gates.md', 'startup/02-required-project-docs.md', 'workflows/product-shape-tech-route.md']) {
   requireFile(errors, file);
 }
+
+const gateAdapterPaths = [
+  'templates/runtime/START_HERE.md',
+  'templates/runtime/README.md',
+  'startup/00-agent-start-here.md',
+  'startup/01-bootstrap-gates.md',
+  'startup/02-required-project-docs.md',
+  'prompts/codex-new-project.md',
+  'prompts/claude-new-project.md',
+  'prompts/antigravity-new-project.md',
+  'scripts/init.mjs',
+];
+const gateCanonicalDocuments = exists('templates/runtime/AGENTS.md')
+  ? [{ path: 'templates/runtime/AGENTS.md', content: readFile('templates/runtime/AGENTS.md') }]
+  : [];
+const gateAdapterDocuments = gateAdapterPaths
+  .filter((file) => exists(file))
+  .map((file) => ({ path: file, content: readFile(file) }));
+errors.push(...validateGateLifecycle({
+  canonicalDocuments: gateCanonicalDocuments,
+  adapterDocuments: gateAdapterDocuments,
+  requiredGateIds: REQUIRED_GATE_IDS,
+}));
+errors.push(...validateAdapterGateReferences(gateAdapterDocuments, REQUIRED_GATE_IDS));
+
+const workflowIndexes = ['docs/index.md', 'workflows/tool-routing.md']
+  .filter((file) => exists(file))
+  .map((file) => ({ path: file, content: readFile(file) }));
+errors.push(...validateWorkflowIndexing('workflows/product-shape-tech-route.md', workflowIndexes));
+errors.push(...validateMandatoryWorkflowTracking(root, ['workflows/product-shape-tech-route.md']));
 
 for (const file of [
   'prompts/codex-new-project.md',
@@ -240,17 +448,36 @@ requireIncludes(errors, 'README.md', [
   'node-%3E%3D20',
   'startup/01-bootstrap-gates.md',
   'startup/02-required-project-docs.md',
+  'workflows/product-shape-tech-route.md',
   'Generated base project tree',
   '## Runtime Proof',
   '## Community',
   'CODE_OF_CONDUCT.md',
   'README.md',
   'node agent-governance-starter/scripts/doctor.mjs ./my-new-project',
+  'product shape / technology route',
+]);
+
+requireIncludes(errors, 'startup/01-bootstrap-gates.md', [
+  '產品形態 / 技術路線 Gate',
+  'user-declared route',
+  'ai-recommended route',
+  'workflows/product-shape-tech-route.md',
+]);
+
+requireIncludes(errors, 'workflows/product-shape-tech-route.md', [
+  'user-declared route',
+  'ai-recommended route',
+  'Q1-Q9',
+  'PROJECT_BRIEF.md',
+  'TECH_STACK.md',
+  '新技術引入 Gate',
 ]);
 
 requireIncludes(errors, 'AGENTS.md', [
   'canonical source of truth',
   'thin adapters',
+  '## Rule Lifecycle',
 ]);
 
 requireIncludes(errors, 'CLAUDE.md', [
@@ -314,6 +541,7 @@ requireIncludes(errors, '.github/pull_request_template.md', [
   '## Validation',
   '## Generated Fixture Impact',
   '## Runtime Adapter Impact',
+  '## Rule Lifecycle Impact',
   '## Docs Updated',
 ]);
 
@@ -352,6 +580,7 @@ requireIncludes(errors, 'templates/runtime/START_HERE.md', [
   '{{PROFILE_NAME}}',
   '{{INTAKE_QUESTIONS}}',
   '{{REQUIRED_DOCUMENTS}}',
+  '## Governance Gate References',
 ]);
 
 requireIncludes(errors, 'templates/runtime/README.md', [
@@ -359,6 +588,51 @@ requireIncludes(errors, 'templates/runtime/README.md', [
   '{{PROFILE_NAME}}',
   '{{REQUIRED_DOCUMENTS}}',
   'doctor.mjs',
+]);
+
+requireIncludes(errors, 'templates/runtime/AGENTS.md', [
+  '## Governance Gates',
+]);
+
+requireIncludes(errors, 'templates/fixed/PROJECT_BRIEF.md', [
+  '## 產品形態決策',
+  '決策模式',
+  '第一版產品形態',
+  'Q1-Q9 依據',
+]);
+
+requireIncludes(errors, 'templates/fixed/TECH_STACK.md', [
+  '## 技術路線決策',
+  '決策模式',
+  '唯一主路線',
+  '新技術引入 gate',
+  '| Frontend |',
+  '| Backend |',
+  '| Database |',
+  '| Main framework / SDK |',
+]);
+
+requireIncludes(errors, 'docs/adr/000-template.md', [
+  '## Reevaluation Triggers',
+  '## Switching Cost',
+  '## Adoption Gate',
+]);
+
+for (const file of [
+  'prompts/codex-new-project.md',
+  'prompts/claude-new-project.md',
+  'prompts/antigravity-new-project.md',
+]) {
+  requireIncludes(errors, file, [
+    'user-declared route',
+    'ai-recommended route',
+  ]);
+}
+
+requireIncludes(errors, 'scripts/init.mjs', [
+  'product shape / technology route mode',
+  'user-declared route',
+  'ai-recommended route',
 ]);
 
 for (const file of ['README.md', 'CLAUDE.md', 'ANTIGRAVITY.md']) {
@@ -573,3 +847,4 @@ if (errors.length > 0) {
 }
 
 console.log('Starter validation passed.');
+}

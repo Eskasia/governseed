@@ -2,7 +2,8 @@
 
 ## 不可跳過的規則
 
-- 不准在 Q1-Q9 問診完成前寫 code。
+- 開工條件只引用 generated `AGENTS.md` 的 `GATE-INTENT-001` 與 `GATE-ROUTE-001`；本文件不重述 owner、status、evidence、review trigger 或 fallback。
+- Q1-Q9 後讀 `workflows/product-shape-tech-route.md` 取得決策方法，再依 `AGENTS.md` 評估兩個 gate。
 - 不准直接把使用者的一句想法變成完整實作。
 - 不准同時啟用所有 skill；只能依風險選工具。
 - 每個任務都要有輸入、可用工具、預期輸出、驗證方式、不做事項。
@@ -26,6 +27,7 @@ Agent 讀完本資料夾後，先回報：
 - 條件式文件：
 - 可能使用的 skill / tool：
 - 可能需要的文件結構分流：
+- 產品形態 / 技術路線模式：user-declared route / ai-recommended route
 - 是否需要 AGENT_RUNTIME.md：
 - 是否需要 RAG_DESIGN.md / EVAL_PLAN.md / AI_SECURITY_REVIEW.md：
 - 目前不能開始寫 code 的原因：

@@ -5,9 +5,10 @@ This project was initialized with `agent-governance-starter`.
 ## Start Here
 
 1. Read `START_HERE.md`.
-2. Read the runtime entrypoint for the active agent.
-3. Fill the required documents before implementation starts.
-4. Run `doctor` from the starter repo after the documents are filled.
+2. Read canonical `AGENTS.md`, then the runtime adapter for the active agent.
+3. Complete Q1-Q9, then follow `GATE-INTENT-001` and `GATE-ROUTE-001` from `AGENTS.md`.
+4. Fill the required documents before implementation starts.
+5. Run `doctor` from the starter repo after the documents are filled.
 
 ## Runtime
 

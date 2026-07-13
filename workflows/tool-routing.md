@@ -7,6 +7,7 @@
 | 情況 | 主要路由 | fallback |
 |---|---|---|
 | 需求、名詞、邊界不清 | `grill-with-docs` | 先補 `PROJECT_BRIEF.md`、`SPEC.md`、`CONTEXT.md` |
+| Q1-Q9 完成，要決定第一版產品形態與技術路線 | `workflows/product-shape-tech-route.md` | 依 generated `AGENTS.md` 的 `GATE-ROUTE-001` |
 | 新功能、bugfix、狀態流程 | `tdd` 或 smoke check | 手寫最小 regression check |
 | bug 原因不明、測試反覆掛 | `diagnose` | reproduce / minimise / hypothesise / instrument / fix |
 | 不熟悉既有 repo / 模組、需要先理解系統脈絡 | `zoom-out`；若已有 `.codegraph/` 再用 CodeGraph | `rg`、直接讀檔、局部架構筆記 |

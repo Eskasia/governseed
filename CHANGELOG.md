@@ -1,5 +1,16 @@
 # Changelog
 
+## 2026-07-13 — Canonical Gate Lifecycle
+
+### Rule Lifecycle Records
+
+| Gate ID | Change | Canonical owner | Status | Evidence | Event-only review trigger | Fallback | Superseded by |
+|---|---|---|---|---|---|---|---|
+| GATE-INTENT-001 | add | `templates/runtime/AGENTS.md` | active | Approved intent-lineage design and lifecycle negative tests | Intent evidence, acceptance, or trace validation changes | Block implementation and open a governed loop | n/a |
+| GATE-ROUTE-001 | add | `templates/runtime/AGENTS.md` | active | Approved route-decision design and lifecycle negative tests | Immutable constraints, deployment, acceptance, scale, or route validation changes | Mark route recheck-required and block implementation | n/a |
+
+Future gate additions, changes, suspensions, and retirements must append the same fields. Retirement removes the canonical definition and keeps a `retired` or `superseded-by` tombstone here.
+
 ## 2026-06-01 — Major Restructure
 
 ### Directory Reorganization

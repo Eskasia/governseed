@@ -17,8 +17,9 @@ Then report:
 - Files read
 - Fixed documents present
 - Conditional documents likely needed
+- Product shape / technology route mode: user-declared route or ai-recommended route
 - Missing decisions or blockers
 - Why code cannot start yet
 
-Start Q1-Q9 intake. Ask one question at a time. Do not write code until Q1-Q9, required documents, and the task contract are confirmed.
+Start Q1-Q9 intake. Ask one question at a time. Follow `GATE-INTENT-001` and `GATE-ROUTE-001` only from canonical `AGENTS.md`; do not restate their lifecycle fields here.
 ```
