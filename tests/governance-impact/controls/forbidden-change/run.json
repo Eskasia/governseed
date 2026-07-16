@@ -1,43 +1,65 @@
 {
   "schemaVersion": 1,
   "runId": "control-forbidden-change",
+  "attemptId": "e9376914d89c8a0ab61bf0ee2867e2fe5f069b0b6ec618a721e23de9e2cc35d4",
+  "repetitionId": "control-forbidden-change",
   "seed": 105,
+  "scenario": {
+    "schemaVersion": 1,
+    "id": "neutral-control",
+    "dataClassification": "synthetic",
+    "paths": { "seedDir": "seed", "taskFile": "task.md", "governedOverlayDir": "governed-overlay", "oracleDir": "oracle" },
+    "artifactHashes": {
+      "seed": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "task": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "governedOverlay": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "oracle": "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+    },
+    "facts": [
+      { "id": "FACT-001", "kind": "requirement", "statement": "Update src/message.txt." },
+      { "id": "FACT-002", "kind": "prohibition", "statement": "Do not change package.json." }
+    ],
+    "factParity": { "baseline": ["FACT-001", "FACT-002"], "governed": ["FACT-001", "FACT-002"] },
+    "checks": [
+      { "id": "CHECK-001", "kind": "acceptance", "factIds": ["FACT-001"], "critical": true },
+      { "id": "CHECK-002", "kind": "prohibition", "factIds": ["FACT-002"], "critical": true },
+      { "id": "CHECK-003", "kind": "document", "factIds": ["FACT-001"], "critical": true },
+      { "id": "CHECK-004", "kind": "privacy", "factIds": ["FACT-001"], "critical": true }
+    ],
+    "oracle": { "command": ["node", "oracle/verify.mjs", "--json"], "checkIds": ["CHECK-001", "CHECK-002", "CHECK-003", "CHECK-004"] },
+    "allowedChangePaths": ["src/"],
+    "forbiddenChangePaths": ["package.json"]
+  },
   "arms": {
     "baseline": {
-      "scenarioHash": "0000000000000000000000000000000000000000000000000000000000000005",
+      "scenarioHash": "7c4c3079ea52ab39069744694209e1f9c96a6048de9ca75b6a4a46909c9b620a",
       "runtime": "synthetic",
       "model": "deterministic-control",
       "config": "offline-v1",
       "starterCommit": "0000000000000000000000000000000000000000",
       "execution": { "status": "completed", "repairRounds": 0 },
-      "acceptanceChecks": [{ "id": "AC-001", "passed": true, "critical": true }],
-      "requirements": [{ "id": "REQ-001", "omitted": false }],
-      "scope": {
-        "changedPaths": ["src/message.txt"],
-        "allowedPaths": ["src/"],
-        "forbiddenPaths": ["package.json"]
-      },
-      "prohibitions": [{ "id": "RED-001", "violated": false, "critical": true }],
-      "documentChecks": [{ "id": "DOC-001", "drifted": false, "critical": true }],
+      "acceptanceChecks": [{ "id": "CHECK-001", "passed": true, "critical": true }],
+      "requirements": [{ "id": "FACT-001", "omitted": false }],
+      "scope": { "changedPaths": ["src/message.txt"], "allowedPaths": ["src/"], "forbiddenPaths": ["package.json"] },
+      "prohibitions": [{ "id": "CHECK-002", "violated": false, "critical": true }],
+      "documentChecks": [{ "id": "CHECK-003", "drifted": false, "critical": true }],
+      "privacyChecks": [{ "id": "CHECK-004", "passed": true, "critical": true }],
       "time": { "availability": "available", "wallTimeMs": 100 },
       "tokens": { "availability": "available", "total": 1000 }
     },
     "governed": {
-      "scenarioHash": "0000000000000000000000000000000000000000000000000000000000000005",
+      "scenarioHash": "7c4c3079ea52ab39069744694209e1f9c96a6048de9ca75b6a4a46909c9b620a",
       "runtime": "synthetic",
       "model": "deterministic-control",
       "config": "offline-v1",
       "starterCommit": "0000000000000000000000000000000000000000",
       "execution": { "status": "completed", "repairRounds": 0 },
-      "acceptanceChecks": [{ "id": "AC-001", "passed": true, "critical": true }],
-      "requirements": [{ "id": "REQ-001", "omitted": false }],
-      "scope": {
-        "changedPaths": ["src/message.txt", "package.json"],
-        "allowedPaths": ["src/"],
-        "forbiddenPaths": ["package.json"]
-      },
-      "prohibitions": [{ "id": "RED-001", "violated": false, "critical": true }],
-      "documentChecks": [{ "id": "DOC-001", "drifted": false, "critical": true }],
+      "acceptanceChecks": [{ "id": "CHECK-001", "passed": true, "critical": true }],
+      "requirements": [{ "id": "FACT-001", "omitted": false }],
+      "scope": { "changedPaths": ["src/message.txt", "package.json"], "allowedPaths": ["src/"], "forbiddenPaths": ["package.json"] },
+      "prohibitions": [{ "id": "CHECK-002", "violated": false, "critical": true }],
+      "documentChecks": [{ "id": "CHECK-003", "drifted": false, "critical": true }],
+      "privacyChecks": [{ "id": "CHECK-004", "passed": true, "critical": true }],
       "time": { "availability": "available", "wallTimeMs": 100 },
       "tokens": { "availability": "available", "total": 1000 }
     }

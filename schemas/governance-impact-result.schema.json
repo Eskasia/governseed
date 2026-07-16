@@ -1,40 +1,50 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://example.com/agent-governance-starter/governance-impact-result.schema.json",
-  "title": "Governance Impact Scored Result",
+  "title": "Governance Impact Recomputed Result",
   "type": "object",
-  "required": ["schemaVersion", "runId", "seed", "arms", "comparison"],
+  "required": [
+    "schemaVersion",
+    "runId",
+    "attemptId",
+    "repetitionId",
+    "seed",
+    "scenarioHash",
+    "arms",
+    "comparison"
+  ],
   "properties": {
-    "schemaVersion": {
-      "type": "integer",
-      "const": 1
-    },
-    "runId": {
-      "type": "string",
-      "minLength": 1
-    },
+    "schemaVersion": { "type": "integer", "const": 1 },
+    "runId": { "$ref": "#/$defs/identifier" },
+    "attemptId": { "$ref": "#/$defs/sha256" },
+    "repetitionId": { "$ref": "#/$defs/identifier" },
     "seed": {
       "type": "integer",
-      "minimum": 0
+      "minimum": 0,
+      "maximum": 9007199254740991
     },
+    "scenarioHash": { "$ref": "#/$defs/sha256" },
     "arms": {
       "type": "object",
       "required": ["baseline", "governed"],
       "properties": {
-        "baseline": {
-          "$ref": "#/$defs/scoredArm"
-        },
-        "governed": {
-          "$ref": "#/$defs/scoredArm"
-        }
+        "baseline": { "$ref": "#/$defs/scoredArm" },
+        "governed": { "$ref": "#/$defs/scoredArm" }
       },
       "additionalProperties": false
     },
-    "comparison": {
-      "$ref": "#/$defs/comparison"
-    }
+    "comparison": { "$ref": "#/$defs/comparison" }
   },
   "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "identifier": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^(?!\\s)(?!.*\\s$)[^\\u0000]+$"
+    },
     "scoredArm": {
       "type": "object",
       "required": [
@@ -58,68 +68,34 @@
         "deliveryPass"
       ],
       "properties": {
-        "scenarioHash": {
-          "type": "string",
-          "pattern": "^[a-f0-9]{64}$"
-        },
+        "scenarioHash": { "$ref": "#/$defs/sha256" },
         "runtime": {
           "type": "string",
           "enum": ["synthetic", "codex", "claude", "antigravity"]
         },
-        "model": {
-          "type": "string",
-          "minLength": 1
-        },
-        "config": {
-          "type": "string",
-          "minLength": 1
-        },
+        "model": { "$ref": "#/$defs/identifier" },
+        "config": { "$ref": "#/$defs/identifier" },
         "starterCommit": {
           "type": "string",
           "pattern": "^(?:[a-f0-9]{40}|[a-f0-9]{64})$"
         },
-        "execution": {
-          "$ref": "#/$defs/execution"
-        },
-        "acceptance": {
-          "$ref": "#/$defs/acceptanceSummary"
-        },
-        "requirements": {
-          "$ref": "#/$defs/requirementSummary"
-        },
-        "scope": {
-          "$ref": "#/$defs/scopeSummary"
-        },
-        "prohibitions": {
-          "$ref": "#/$defs/prohibitionSummary"
-        },
-        "documents": {
-          "$ref": "#/$defs/documentSummary"
-        },
-        "privacy": {
-          "$ref": "#/$defs/checkSummary"
-        },
+        "execution": { "$ref": "#/$defs/execution" },
+        "acceptance": { "$ref": "#/$defs/acceptanceSummary" },
+        "requirements": { "$ref": "#/$defs/requirementSummary" },
+        "scope": { "$ref": "#/$defs/scopeSummary" },
+        "prohibitions": { "$ref": "#/$defs/prohibitionSummary" },
+        "documents": { "$ref": "#/$defs/documentSummary" },
+        "privacy": { "$ref": "#/$defs/checkSummary" },
         "repairRounds": {
           "type": "integer",
-          "minimum": 0
-        },
-        "firstPassSuccess": {
-          "type": "boolean"
-        },
-        "time": {
-          "$ref": "#/$defs/timeTelemetry"
-        },
-        "tokens": {
-          "$ref": "#/$defs/tokenTelemetry"
-        },
-        "deliveryScore": {
-          "type": "number",
           "minimum": 0,
-          "maximum": 100
+          "maximum": 9007199254740991
         },
-        "deliveryPass": {
-          "type": "boolean"
-        }
+        "firstPassSuccess": { "type": "boolean" },
+        "time": { "$ref": "#/$defs/timeTelemetry" },
+        "tokens": { "$ref": "#/$defs/tokenTelemetry" },
+        "deliveryScore": { "type": "number", "minimum": 0, "maximum": 100 },
+        "deliveryPass": { "type": "boolean" }
       },
       "additionalProperties": false
     },
@@ -132,7 +108,8 @@
           "enum": ["completed", "failed", "timeout"]
         },
         "errorCode": {
-          "type": ["string", "null"]
+          "type": ["string", "null"],
+          "pattern": "^[A-Z][A-Z0-9_]*$"
         }
       },
       "additionalProperties": false
@@ -141,11 +118,15 @@
       "type": "object",
       "required": ["total", "passed", "failed", "rate", "criticalFailureCount"],
       "properties": {
-        "total": { "type": "integer", "minimum": 1 },
-        "passed": { "type": "integer", "minimum": 0 },
-        "failed": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+        "passed": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "failed": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
         "rate": { "type": "number", "minimum": 0, "maximum": 1 },
-        "criticalFailureCount": { "type": "integer", "minimum": 0 }
+        "criticalFailureCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
       },
       "additionalProperties": false
     },
@@ -153,8 +134,8 @@
       "type": "object",
       "required": ["total", "omitted", "omissionRate"],
       "properties": {
-        "total": { "type": "integer", "minimum": 1 },
-        "omitted": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+        "omitted": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
         "omissionRate": { "type": "number", "minimum": 0, "maximum": 1 }
       },
       "additionalProperties": false
@@ -163,10 +144,22 @@
       "type": "object",
       "required": ["changedPathCount", "violationCount", "violationRate", "forbiddenPathCount"],
       "properties": {
-        "changedPathCount": { "type": "integer", "minimum": 0 },
-        "violationCount": { "type": "integer", "minimum": 0 },
+        "changedPathCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
+        "violationCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        },
         "violationRate": { "type": "number", "minimum": 0, "maximum": 1 },
-        "forbiddenPathCount": { "type": "integer", "minimum": 0 }
+        "forbiddenPathCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
       },
       "additionalProperties": false
     },
@@ -174,10 +167,14 @@
       "type": "object",
       "required": ["total", "violated", "violationRate", "criticalFailureCount"],
       "properties": {
-        "total": { "type": "integer", "minimum": 1 },
-        "violated": { "type": "integer", "minimum": 0 },
+        "total": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+        "violated": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
         "violationRate": { "type": "number", "minimum": 0, "maximum": 1 },
-        "criticalFailureCount": { "type": "integer", "minimum": 0 }
+        "criticalFailureCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
       },
       "additionalProperties": false
     },
@@ -185,9 +182,13 @@
       "type": "object",
       "required": ["total", "drifted", "criticalDriftCount"],
       "properties": {
-        "total": { "type": "integer", "minimum": 0 },
-        "drifted": { "type": "integer", "minimum": 0 },
-        "criticalDriftCount": { "type": "integer", "minimum": 0 }
+        "total": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "drifted": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "criticalDriftCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
       },
       "additionalProperties": false
     },
@@ -195,29 +196,67 @@
       "type": "object",
       "required": ["total", "failed", "criticalFailureCount"],
       "properties": {
-        "total": { "type": "integer", "minimum": 0 },
-        "failed": { "type": "integer", "minimum": 0 },
-        "criticalFailureCount": { "type": "integer", "minimum": 0 }
+        "total": { "type": "integer", "minimum": 1, "maximum": 9007199254740991 },
+        "failed": { "type": "integer", "minimum": 0, "maximum": 9007199254740991 },
+        "criticalFailureCount": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 9007199254740991
+        }
       },
       "additionalProperties": false
     },
     "timeTelemetry": {
-      "type": "object",
-      "required": ["availability", "wallTimeMs"],
-      "properties": {
-        "availability": { "type": "string", "enum": ["available", "unavailable"] },
-        "wallTimeMs": { "type": ["number", "null"], "minimum": 0 }
-      },
-      "additionalProperties": false
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["availability", "wallTimeMs"],
+          "properties": {
+            "availability": { "type": "string", "const": "available" },
+            "wallTimeMs": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["availability", "wallTimeMs"],
+          "properties": {
+            "availability": { "type": "string", "const": "unavailable" },
+            "wallTimeMs": { "type": "null" }
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "tokenTelemetry": {
-      "type": "object",
-      "required": ["availability", "total"],
-      "properties": {
-        "availability": { "type": "string", "enum": ["available", "unavailable"] },
-        "total": { "type": ["integer", "null"], "minimum": 0 }
-      },
-      "additionalProperties": false
+      "oneOf": [
+        {
+          "type": "object",
+          "required": ["availability", "total"],
+          "properties": {
+            "availability": { "type": "string", "const": "available" },
+            "total": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            }
+          },
+          "additionalProperties": false
+        },
+        {
+          "type": "object",
+          "required": ["availability", "total"],
+          "properties": {
+            "availability": { "type": "string", "const": "unavailable" },
+            "total": { "type": "null" }
+          },
+          "additionalProperties": false
+        }
+      ]
     },
     "comparison": {
       "type": "object",
@@ -233,7 +272,10 @@
       ],
       "properties": {
         "winner": { "type": "string", "enum": ["baseline", "governed", "tie"] },
-        "reason": { "type": "string", "enum": ["delivery-pass", "delivery-score", "repair-rounds", "tie"] },
+        "reason": {
+          "type": "string",
+          "enum": ["delivery-pass", "delivery-score", "repair-rounds", "tie"]
+        },
         "comparableFields": {
           "type": "array",
           "uniqueItems": true,
@@ -244,9 +286,21 @@
         },
         "deliveryPassDelta": { "type": "integer", "minimum": -1, "maximum": 1 },
         "scoreDelta": { "type": "number", "minimum": -100, "maximum": 100 },
-        "repairRoundsDelta": { "type": "integer" },
-        "timeDeltaMs": { "type": ["number", "null"] },
-        "tokenDelta": { "type": ["integer", "null"] }
+        "repairRoundsDelta": {
+          "type": "integer",
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "timeDeltaMs": {
+          "type": ["number", "null"],
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        },
+        "tokenDelta": {
+          "type": ["integer", "null"],
+          "minimum": -9007199254740991,
+          "maximum": 9007199254740991
+        }
       },
       "additionalProperties": false
     }

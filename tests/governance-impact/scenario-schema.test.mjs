@@ -9,9 +9,42 @@ const schemaUrls = [
 ];
 
 const schemas = schemaUrls.map((file) => JSON.parse(fs.readFileSync(file, 'utf8')));
-const { sha256Canonical, validateScenario } = await import(
+const { scoreRun, sha256Canonical, validateScenario } = await import(
   '../../scripts/lib/governance-impact-core.mjs'
 );
+
+function loadControl(name) {
+  const file = new URL('./controls/' + name + '/run.json', import.meta.url);
+  return JSON.parse(fs.readFileSync(file, 'utf8'));
+}
+
+function matchesSchemaType(schema, value) {
+  if (schema.type === 'null') return value === null;
+  if (schema.type === 'string') return typeof value === 'string';
+  if (schema.type === 'number') return typeof value === 'number' && Number.isFinite(value);
+  if (schema.type === 'integer') return Number.isSafeInteger(value);
+  if (schema.type !== 'object' || value === null || typeof value !== 'object' || Array.isArray(value)) {
+    return false;
+  }
+  const keys = Object.keys(value);
+  if (schema.additionalProperties === false && keys.some((key) => !Object.hasOwn(schema.properties, key))) {
+    return false;
+  }
+  if ((schema.required ?? []).some((key) => !Object.hasOwn(value, key))) return false;
+  return Object.entries(schema.properties).every(([key, property]) => {
+    if (!Object.hasOwn(value, key)) return true;
+    const entry = value[key];
+    if (!matchesSchemaType(property, entry)) return false;
+    if (Object.hasOwn(property, 'const') && entry !== property.const) return false;
+    if (typeof entry === 'number' && property.minimum !== undefined && entry < property.minimum) return false;
+    if (typeof entry === 'number' && property.maximum !== undefined && entry > property.maximum) return false;
+    return true;
+  });
+}
+
+function matchesExactlyOneBranch(schema, value) {
+  return schema.oneOf.filter((branch) => matchesSchemaType(branch, value)).length === 1;
+}
 
 function validScenario() {
   return {
@@ -24,6 +57,12 @@ function validScenario() {
       governedOverlayDir: 'governed-overlay',
       oracleDir: 'oracle',
     },
+    artifactHashes: {
+      seed: 'a'.repeat(64),
+      task: 'b'.repeat(64),
+      governedOverlay: 'c'.repeat(64),
+      oracle: 'd'.repeat(64),
+    },
     facts: [
       { id: 'FACT-001', kind: 'requirement', statement: 'Update src/message.txt.' },
       { id: 'FACT-002', kind: 'prohibition', statement: 'Do not change package.json.' },
@@ -35,10 +74,12 @@ function validScenario() {
     checks: [
       { id: 'CHECK-001', kind: 'acceptance', factIds: ['FACT-001'], critical: true },
       { id: 'CHECK-002', kind: 'prohibition', factIds: ['FACT-002'], critical: true },
+      { id: 'CHECK-003', kind: 'document', factIds: ['FACT-001'], critical: true },
+      { id: 'CHECK-004', kind: 'privacy', factIds: ['FACT-001'], critical: true },
     ],
     oracle: {
       command: ['node', 'oracle/verify.mjs', '--json'],
-      checkIds: ['CHECK-001', 'CHECK-002'],
+      checkIds: ['CHECK-001', 'CHECK-002', 'CHECK-003', 'CHECK-004'],
     },
     allowedChangePaths: ['src/'],
     forbiddenChangePaths: ['package.json'],
@@ -59,12 +100,35 @@ function assertClosedObjects(value, at = '$') {
   }
 }
 
+function assertObjectContract(value, schema, label) {
+  assert.equal(value !== null && typeof value === 'object' && !Array.isArray(value), true, label);
+  const required = new Set(schema.required ?? []);
+  const allowed = new Set(Object.keys(schema.properties ?? {}));
+  for (const key of required) assert.equal(Object.hasOwn(value, key), true, `${label}.${key}`);
+  for (const key of Object.keys(value)) assert.equal(allowed.has(key), true, `${label}.${key}`);
+}
+
 test('all governance impact schemas are draft 2020-12 closed contracts', () => {
   for (const schema of schemas) {
     assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
     assert.equal(schema.additionalProperties, false);
     assertClosedObjects(schema);
   }
+});
+
+test('every distributed schema regex compiles under Node.js', () => {
+  function visit(value, at = '$') {
+    if (Array.isArray(value)) {
+      value.forEach((entry, index) => visit(entry, `${at}[${index}]`));
+      return;
+    }
+    if (!value || typeof value !== 'object') return;
+    if (Object.hasOwn(value, 'pattern')) {
+      assert.doesNotThrow(() => new RegExp(value.pattern), `${at}.pattern`);
+    }
+    for (const [key, entry] of Object.entries(value)) visit(entry, `${at}.${key}`);
+  }
+  schemas.forEach((schema, index) => visit(schema, `$schemas[${index}]`));
 });
 
 test('run schema closes runtime and starter commit label ambiguity', () => {
@@ -76,6 +140,155 @@ test('run schema closes runtime and starter commit label ambiguity', () => {
     'antigravity',
   ]);
   assert.equal(runSchema.$defs.arm.properties.starterCommit.pattern, '^(?:[a-f0-9]{40}|[a-f0-9]{64})$');
+});
+
+test('schemas require immutable artifacts, raw scenario identity, repetition identity, and privacy evidence', () => {
+  const [scenarioSchema, runSchema, resultSchema] = schemas;
+  assert.equal(scenarioSchema.required.includes('artifactHashes'), true);
+  assert.equal(scenarioSchema.properties.checks.minContains, 1);
+  assert.equal(
+    scenarioSchema.properties.checks.contains.allOf[1].properties.kind.const,
+    'privacy',
+  );
+  assert.deepEqual(
+    ['attemptId', 'repetitionId', 'seed', 'scenario'].map((key) => runSchema.required.includes(key)),
+    [true, true, true, true],
+  );
+  assert.equal(runSchema.$defs.arm.required.includes('privacyChecks'), true);
+  assert.equal(runSchema.$defs.attemptManifest.properties.attempts.uniqueItems, true);
+  assert.equal(resultSchema.required.includes('attemptId'), true);
+  assert.equal(resultSchema.required.includes('repetitionId'), true);
+});
+
+test('all raw controls and recomputed results match the schemas exact object surfaces', () => {
+  const runSchema = schemas[1];
+  const resultSchema = schemas[2];
+  for (const name of [
+    'baseline-wins',
+    'governed-wins',
+    'tie',
+    'missing-telemetry',
+    'forbidden-change',
+  ]) {
+    const run = loadControl(name);
+    assertObjectContract(run, runSchema, `${name}.run`);
+    assertObjectContract(run.arms, runSchema.properties.arms, `${name}.run.arms`);
+    for (const armName of ['baseline', 'governed']) {
+      const arm = run.arms[armName];
+      assertObjectContract(arm, runSchema.$defs.arm, `${name}.run.arms.${armName}`);
+      assertObjectContract(
+        arm.execution,
+        runSchema.$defs.execution,
+        `${name}.run.arms.${armName}.execution`,
+      );
+      assertObjectContract(
+        arm.scope,
+        runSchema.$defs.scopeEvidence,
+        `${name}.run.arms.${armName}.scope`,
+      );
+    }
+
+    const result = scoreRun(run);
+    assertObjectContract(result, resultSchema, `${name}.result`);
+    assertObjectContract(result.arms, resultSchema.properties.arms, `${name}.result.arms`);
+    assertObjectContract(result.comparison, resultSchema.$defs.comparison, `${name}.comparison`);
+    for (const armName of ['baseline', 'governed']) {
+      const arm = result.arms[armName];
+      assertObjectContract(arm, resultSchema.$defs.scoredArm, `${name}.result.arms.${armName}`);
+      for (const [field, definition] of [
+        ['execution', 'execution'],
+        ['acceptance', 'acceptanceSummary'],
+        ['requirements', 'requirementSummary'],
+        ['scope', 'scopeSummary'],
+        ['prohibitions', 'prohibitionSummary'],
+        ['documents', 'documentSummary'],
+        ['privacy', 'checkSummary'],
+      ]) {
+        assertObjectContract(
+          arm[field],
+          resultSchema.$defs[definition],
+          `${name}.result.arms.${armName}.${field}`,
+        );
+      }
+    }
+  }
+});
+
+test('telemetry schemas encode available/null states and JavaScript safe integer limits', () => {
+  const runSchema = schemas[1];
+  assert.equal(runSchema.$defs.timeTelemetry.oneOf.length, 2);
+  assert.equal(runSchema.$defs.tokenTelemetry.oneOf.length, 2);
+  assert.equal(
+    runSchema.$defs.execution.properties.repairRounds.maximum,
+    Number.MAX_SAFE_INTEGER,
+  );
+  assert.equal(
+    runSchema.properties.seed.maximum,
+    Number.MAX_SAFE_INTEGER,
+  );
+});
+
+test('telemetry oneOf schemas and manual scoring accept and reject the same edge cases', () => {
+  const tokenSchema = schemas[1].$defs.tokenTelemetry;
+  const cases = [
+    [{ availability: 'available', total: 1 }, true],
+    [{ availability: 'unavailable', total: null }, true],
+    [{ availability: 'available', total: null }, false],
+    [{ availability: 'unavailable', total: 1 }, false],
+    [{ availability: 'available', total: 1, estimated: true }, false],
+    [{ availability: 'available', total: Number.MAX_SAFE_INTEGER + 1 }, false],
+  ];
+
+  for (const [tokens, expected] of cases) {
+    assert.equal(matchesExactlyOneBranch(tokenSchema, tokens), expected);
+    const run = loadControl('tie');
+    run.arms.baseline.tokens = tokens;
+    let manualAccepted = true;
+    try {
+      scoreRun(run);
+    } catch {
+      manualAccepted = false;
+    }
+    assert.equal(manualAccepted, expected);
+  }
+});
+
+test('execution error codes are stable schema/manual identifiers, never raw messages or paths', () => {
+  const runErrorCode = schemas[1].$defs.execution.properties.errorCode;
+  const resultErrorCode = schemas[2].$defs.execution.properties.errorCode;
+  assert.equal(runErrorCode.pattern, '^[A-Z][A-Z0-9_]*$');
+  assert.equal(resultErrorCode.pattern, runErrorCode.pattern);
+  const pattern = new RegExp(runErrorCode.pattern);
+  const cases = [
+    [null, true],
+    ['RUNTIME_TIMEOUT', true],
+    ['runtime timeout', false],
+    ['/Users/private/error.txt', false],
+    ['RUNTIME_TIMEOUT\0private', false],
+  ];
+
+  for (const [errorCode, expected] of cases) {
+    const schemaAccepted = errorCode === null || pattern.test(errorCode);
+    assert.equal(schemaAccepted, expected);
+    const run = loadControl('tie');
+    run.arms.baseline.execution.errorCode = errorCode;
+    let manualAccepted = true;
+    try {
+      scoreRun(run);
+    } catch {
+      manualAccepted = false;
+    }
+    assert.equal(manualAccepted, expected);
+  }
+});
+
+test('schema bounds and manual scoring both reject unsafe seeds', () => {
+  const seedSchema = schemas[1].properties.seed;
+  const unsafeSeed = Number.MAX_SAFE_INTEGER + 1;
+  assert.equal(matchesSchemaType(seedSchema, unsafeSeed), false);
+  const run = loadControl('tie');
+  run.seed = unsafeSeed;
+  assert.throws(() => scoreRun(run), /seed/i);
 });
 
 test('schema relative paths use the same normalized POSIX semantics as validation', () => {
@@ -96,6 +309,22 @@ test('valid scenario returns a canonical scenario hash without absolute paths', 
     errors: [],
     scenarioHash: sha256Canonical(scenario),
   });
+});
+
+test('artifact digest schema and manual validation fail closed on missing or invalid hashes', () => {
+  const artifactSchema = schemas[0].$defs.artifactHashes;
+  assert.equal(artifactSchema.required.includes('oracle'), true);
+  const digestPattern = new RegExp(schemas[0].$defs.sha256.pattern);
+  assert.equal(digestPattern.test('f'.repeat(64)), true);
+  assert.equal(digestPattern.test('not-a-digest'), false);
+
+  const missing = validScenario();
+  delete missing.artifactHashes.oracle;
+  assert.equal(validateScenario(missing, '/tmp/scenario').valid, false);
+
+  const invalid = validScenario();
+  invalid.artifactHashes.oracle = 'not-a-digest';
+  assert.equal(validateScenario(invalid, '/tmp/scenario').valid, false);
 });
 
 test('scenario validation enforces exact required and allowed keys', () => {
@@ -128,6 +357,22 @@ test('oracle command must be an argv array rather than a shell command string', 
   const scenario = validScenario();
   scenario.oracle.command = 'node oracle/verify.mjs';
   assert.deepEqual(validateScenario(scenario, '/tmp/scenario').errors, [
+    { code: 'COMMAND_ARGV', path: 'oracle.command' },
+  ]);
+});
+
+test('scenario schema and manual validation both reject edge whitespace paths and NUL argv', () => {
+  const relativePath = new RegExp(schemas[0].$defs.relativePath.pattern);
+  const argv = new RegExp(schemas[0].$defs.argv.properties.command.items.pattern);
+  assert.equal(relativePath.test(' task.md'), false);
+  assert.equal(relativePath.test('task.md '), false);
+  assert.equal(argv.test('oracle/verify.mjs\0--leak'), false);
+
+  const scenario = validScenario();
+  scenario.paths.taskFile = ' task.md';
+  scenario.oracle.command[1] = 'oracle/verify.mjs\0--leak';
+  assert.deepEqual(validateScenario(scenario, '/tmp/scenario').errors, [
+    { code: 'RELATIVE_PATH', path: 'paths.taskFile' },
     { code: 'COMMAND_ARGV', path: 'oracle.command' },
   ]);
 });
