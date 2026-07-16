@@ -43,5 +43,5 @@
 
 - 沒有某一層時填 `n/a` 並寫原因。
 - 每次引入新框架、SDK、provider、資料庫、queue、agent framework 或 MCP server，都要回到本文件檢查是否符合唯一主路線。
-- `Decision status` is `active` or `recheck-required`; `Evidence` cites valid `SRC` IDs and active `REQ` revisions.
+- `Decision status` is `active` or `recheck-required`; `Evidence` contains at least one confirmed `SRC` ID and one active `REQ` revision, and exactly matches `PROJECT_BRIEF.md`.
 - Record the nearest alternative and the event-only review trigger. Do not present an AI-recommended route as a user statement.

@@ -20,6 +20,7 @@
 
 - 不把未決事項當已決定處理。
 - Every not-stated item receives an append-only `LOOP` ID and `Basis: not-stated`.
-- 每個 open loop 必須有明確的 blocker 標籤和 next step。
-- 只在決策或證據記錄到專案文件後才關閉；closed rows must cite the confirmed resolution `SRC` without copying private content.
+- 每個 open loop 必須有明確的 blocker 標籤和 next step；`Owner` 只用小寫 `*-role` 標籤。
+- Free-text cells contain only privacy-safe normalized descriptions: no personal identifier, credential, private URL/query, absolute home path, content hash, or masked excerpt.
+- 只在決策或證據記錄到專案文件後才關閉；closed rows must cite the confirmed resolution `SRC` without copying private content; open/blocked rows keep `Resolution source` as `n/a`.
 - 定期檢查：每個 phase 結束時掃一次。

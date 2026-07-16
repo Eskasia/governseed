@@ -1,5 +1,7 @@
 # OPEN_LOOPS.md
 
+## 未決事項
+
 | Status | Loop ID | Basis | Question / Risk | Impact | Owner | Next Step | Due | Resolution source |
 |---|---|---|---|---|---|---|---|---|
 | open | LOOP-101 | not-stated | Preview login 是否用 magic link? | high | product-owner-role | 選擇 auth 方案。 | before implementation | n/a |

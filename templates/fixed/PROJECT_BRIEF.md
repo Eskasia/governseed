@@ -26,9 +26,11 @@
 
 - This registry stores attestations and pointers, never private source content.
 - Source IDs are append-only. Do not delete or reuse an ID when intent changes.
-- Private sources use only `opaque-pointer` or `attestation-only`, and `Content retained` must be `no`.
+- `public` uses a canonical HTTPS `public-pointer`; `approved-private-external` uses an `external-record:<opaque-id>` pointer; `private-interactive` uses `attestation-only` plus `n/a`; `synthetic` uses `attestation-only` plus `n/a` or a canonical public pointer.
+- Private and synthetic sources set `Content retained` to `no`.
 - Do not store an ordinary hash or masked excerpt of private content, a private URL or query token, an absolute home path, a real person identifier, or a credential.
-- Record confirmation with a role label and ISO date; keep every not-stated item in `OPEN_LOOPS.md`.
+- Record confirmation with a lowercase `*-role` label and ISO date; pending/rejected rows may leave the date `n/a`. The requirement revision must repeat a confirmed source role exactly. Keep every not-stated item in `OPEN_LOOPS.md`.
+- Product-shape `Evidence` contains at least one confirmed `SRC` and one active `REQ@revision`, and exactly matches the evidence set in `TECH_STACK.md`.
 
 ## 產品形態決策
 

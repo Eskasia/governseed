@@ -1,5 +1,7 @@
 # OPEN_LOOPS.md
 
+## 未決事項
+
 | Status | Loop ID | Basis | Question / Risk | Impact | Owner | Next Step | Due | Resolution source |
 |---|---|---|---|---|---|---|---|---|
 | open | LOOP-201 | not-stated | Which synthetic tester environment will run first-use QA? | high | tester-role | Select a disposable local test account. | before release | n/a |

@@ -333,6 +333,7 @@ function buildResult(profile) {
       specRead.content,
       taskContractRead.content,
       openLoopsRead.content,
+      techStackRead.ok ? techStackRead.content : '',
     )) addFinding(item);
   }
 

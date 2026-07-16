@@ -299,6 +299,12 @@ const OPEN_LOOP_HEADERS = [
   'Due',
   'Resolution source',
 ];
+const SOURCE_SECTIONS = ['Privacy-safe source attestations'];
+const REQUIREMENT_SECTIONS = ['Requirement revision ledger'];
+const ACCEPTANCE_SECTIONS = ['Acceptance criteria ledger'];
+const TASK_SECTIONS = ['任務總覽', 'Task coverage ledger'];
+const EVIDENCE_SECTIONS = ['Acceptance evidence ledger'];
+const OPEN_LOOP_SECTIONS = ['未決事項'];
 
 const SOURCE_ID = /^SRC-\d{3,}$/;
 const REQUIREMENT_REVISION = /^(REQ-\d{3,})@([1-9]\d*)$/;
@@ -308,7 +314,6 @@ const EVIDENCE_ID = /^EVD-\d{3,}$/;
 const LOOP_ID = /^LOOP-\d{3,}$/;
 const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
 const EMPTY_LEDGER_VALUE = /^(?:|n\/a|none|-|—)$/i;
-const PRIVATE_SOURCE_CLASSES = new Set(['approved-private-external', 'private-interactive']);
 const SOURCE_CLASSES = new Set(['public', 'approved-private-external', 'private-interactive', 'synthetic']);
 const TRACE_MODES = new Set(['public-pointer', 'opaque-pointer', 'attestation-only']);
 const SOURCE_ATTESTATIONS = new Set(['confirmed', 'rejected', 'pending']);
@@ -319,8 +324,13 @@ const LOOP_STATUSES = new Set(['open', 'closed', 'blocked']);
 const HOME_PATH = /(?:\/Users\/|\/home\/|[A-Za-z]:\\Users\\)/i;
 const CREDENTIAL = /(?:\b(?:sk|ghp)-[A-Za-z0-9_]+|\bgithub_pat_[A-Za-z0-9_]+|\bAKIA[0-9A-Z]{16}\b|\b(?:token|password|secret|api[_-]?key)\s*[=:])/i;
 const PRIVATE_HASH = /\b(?:md5|sha(?:1|224|256|384|512)?|hash)\s*[:=]/i;
-const MASKED_EXCERPT = /\b(?:masked|redacted|excerpt)\b|(?:遮罩|遮蔽|節錄|摘錄)/i;
+const MASKED_EXCERPT = /\b(?:(?:masked|redacted)\s+excerpt|(?:masked|redacted|excerpt)\s*[:=])|(?:遮罩|遮蔽)(?:節錄|摘錄)|(?:節錄|摘錄)\s*[：:]/i;
 const SECRET_QUERY = /[?&](?:access[_-]?token|token|api[_-]?key|key|secret|signature|auth|password)=/i;
+const EMAIL_ADDRESS = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
+const PHONE_NUMBER = /(?:\+\d[\d .()-]{7,}\d|\(\d{2,4}\)[ -]?\d{3,4}[ -]?\d{3,4})/;
+const ROLE_LABEL = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*-role$/;
+const OPAQUE_POINTER = /^external-record:[a-z0-9][a-z0-9._-]{0,127}$/i;
+const EVIDENCE_CHECK = /^(?:check|ci):[a-z0-9][a-z0-9._-]{0,127}$/i;
 
 function markdownCells(line) {
   const trimmed = String(line).trim();
@@ -334,24 +344,103 @@ function isTableSeparator(cells, width) {
     && cells.every((cell) => /^:?-{3,}:?$/.test(cell));
 }
 
-function parseExactTable(content, headers) {
-  const lines = String(content).split(/\r?\n/);
-  for (let index = 0; index < lines.length - 1; index += 1) {
-    const cells = markdownCells(lines[index]);
-    if (!cells || cells.length !== headers.length) continue;
-    if (!cells.every((cell, cellIndex) => cell === headers[cellIndex])) continue;
-    if (!isTableSeparator(markdownCells(lines[index + 1]), headers.length)) continue;
-
-    const rows = [];
-    for (let rowIndex = index + 2; rowIndex < lines.length; rowIndex += 1) {
-      const row = markdownCells(lines[rowIndex]);
-      if (!row) break;
-      if (row.length !== headers.length || row.every((cell) => cell === '')) continue;
-      rows.push(Object.fromEntries(headers.map((header, cellIndex) => [header, row[cellIndex]])));
+function visibleMarkdownLines(content) {
+  const withoutComments = String(content).replace(/<!--[\s\S]*?(?:-->|$)/g, (comment) => (
+    '\n'.repeat((comment.match(/\n/g) || []).length)
+  ));
+  const lines = withoutComments.split(/\r?\n/);
+  let fence = null;
+  return lines.map((line) => {
+    const fenceMatch = line.match(/^ {0,3}(`{3,}|~{3,})/);
+    if (fenceMatch) {
+      const marker = fenceMatch[1][0];
+      if (fence === null) fence = marker;
+      else if (fence === marker) fence = null;
+      return null;
     }
-    return { found: true, rows };
+    if (fence !== null || /^(?: {4}|\t)/.test(line)) return null;
+    return line;
+  });
+}
+
+function markdownHeading(line) {
+  if (typeof line !== 'string') return null;
+  const match = line.match(/^\s*(#{1,6})\s+(.+?)\s*#*\s*$/);
+  return match ? { level: match[1].length, title: match[2].trim() } : null;
+}
+
+function findSections(lines, sectionTitles) {
+  const wanted = new Set(sectionTitles.map((title) => title.toLowerCase()));
+  const sections = [];
+  for (let index = 0; index < lines.length; index += 1) {
+    const heading = markdownHeading(lines[index]);
+    if (!heading || !wanted.has(heading.title.toLowerCase())) continue;
+    let end = lines.length;
+    for (let cursor = index + 1; cursor < lines.length; cursor += 1) {
+      const nextHeading = markdownHeading(lines[cursor]);
+      if (nextHeading && nextHeading.level <= heading.level) {
+        end = cursor;
+        break;
+      }
+    }
+    sections.push({ start: index + 1, end });
   }
-  return { found: false, rows: [] };
+  return sections;
+}
+
+function parseExactTable(content, headers, sectionTitles) {
+  const lines = visibleMarkdownLines(content);
+  const sections = findSections(lines, sectionTitles);
+  if (sections.length !== 1) {
+    return { found: false, valid: false, rows: [] };
+  }
+
+  const [{ start, end }] = sections;
+  const headersAt = [];
+  for (let index = start; index < end; index += 1) {
+    const cells = markdownCells(lines[index]);
+    if (
+      cells?.length === headers.length
+      && cells.every((cell, cellIndex) => cell === headers[cellIndex])
+    ) {
+      headersAt.push(index);
+    }
+  }
+  if (headersAt.length !== 1) {
+    return { found: headersAt.length > 0, valid: false, rows: [] };
+  }
+
+  const headerIndex = headersAt[0];
+  if (!isTableSeparator(markdownCells(lines[headerIndex + 1]), headers.length)) {
+    return { found: true, valid: false, rows: [] };
+  }
+
+  const rows = [];
+  let malformed = false;
+  for (let rowIndex = headerIndex + 2; rowIndex < end; rowIndex += 1) {
+    const line = lines[rowIndex];
+    if (line === null) break;
+    const row = markdownCells(line);
+    if (!row) {
+      if (String(line).trim().startsWith('|')) malformed = true;
+      break;
+    }
+    if (row.length !== headers.length) {
+      malformed = true;
+      break;
+    }
+    if (row.every((cell) => cell === '')) continue;
+    if (isTableSeparator(row, headers.length)) {
+      malformed = true;
+      break;
+    }
+    rows.push(Object.fromEntries(headers.map((header, cellIndex) => [header, row[cellIndex]])));
+  }
+  return {
+    found: true,
+    valid: !malformed && rows.length > 0,
+    rows: malformed ? [] : rows,
+  };
 }
 
 function traceSubject(value, pattern, fallback) {
@@ -365,6 +454,22 @@ function splitReferences(value) {
     .filter(Boolean);
 }
 
+function decisionEvidence(content, sectionTitle) {
+  const lines = visibleMarkdownLines(content);
+  const sections = findSections(lines, [sectionTitle]);
+  if (sections.length !== 1) return { valid: false, value: '' };
+  const [{ start, end }] = sections;
+  const values = [];
+  for (let index = start; index < end; index += 1) {
+    const match = String(lines[index] ?? '').match(/^\s*-\s*Evidence\s*[：:]\s*(.*?)\s*$/i);
+    if (match) values.push(match[1]);
+  }
+  return {
+    valid: values.length === 1 && values[0].length > 0 && !isPlaceholder(values[0]),
+    value: values.length === 1 ? values[0] : '',
+  };
+}
+
 function isEmptyLedgerValue(value) {
   return EMPTY_LEDGER_VALUE.test(String(value).trim());
 }
@@ -375,22 +480,87 @@ function isYesNoCriterion(value) {
     || (text.includes('是') && text.includes('否'));
 }
 
-function locatorHasSecret(value) {
-  return HOME_PATH.test(value) || CREDENTIAL.test(value) || SECRET_QUERY.test(value);
+function publicHttpsUrlIsSafe(value) {
+  try {
+    const url = new URL(String(value));
+    const hostname = url.hostname.toLowerCase();
+    if (url.protocol !== 'https:' || url.username || url.password || url.search || url.hash) return false;
+    if (!hostname.includes('.') || /(?:^|\.)(?:localhost|local|invalid|test|example)$/.test(hostname)) return false;
+    if (/^\d+(?:\.\d+){3}$/.test(hostname) || hostname.includes(':')) return false;
+    return /^[a-z0-9.-]+$/.test(hostname);
+  } catch {
+    return false;
+  }
 }
 
-function privateSourceLocatorIsUnsafe(sourceClass, traceMode, sourceRef, retained) {
-  if (!PRIVATE_SOURCE_CLASSES.has(sourceClass)) return false;
-  if (!['opaque-pointer', 'attestation-only'].includes(traceMode)) return true;
-  if (retained !== 'no') return true;
-  if (locatorHasSecret(sourceRef) || PRIVATE_HASH.test(sourceRef) || MASKED_EXCERPT.test(sourceRef)) {
-    return true;
+function scalarPrivacyBlocked(value) {
+  const text = String(value);
+  return HOME_PATH.test(text)
+    || CREDENTIAL.test(text)
+    || PRIVATE_HASH.test(text)
+    || MASKED_EXCERPT.test(text)
+    || SECRET_QUERY.test(text)
+    || EMAIL_ADDRESS.test(text)
+    || PHONE_NUMBER.test(text);
+}
+
+function privacyBlocked(value) {
+  const text = String(value);
+  if (scalarPrivacyBlocked(text)) return true;
+
+  for (const match of text.matchAll(/https?:\/\/[^\s<>()]+/gi)) {
+    try {
+      const url = new URL(match[0].replace(/[.,;!?]+$/, ''));
+      if (url.username || url.password || SECRET_QUERY.test(url.search)) return true;
+      if (scalarPrivacyBlocked(decodeURIComponent(url.pathname))) return true;
+      if (!publicHttpsUrlIsSafe(url.href)) return true;
+    } catch {
+      return true;
+    }
   }
-  if (/^[a-z][a-z0-9+.-]*:\/\//i.test(sourceRef) || sourceRef.includes('?')) return true;
+  return false;
+}
+
+function sourceMatrixIsSafe(sourceClass, traceMode, sourceRef, retained) {
+  if (!SOURCE_CLASSES.has(sourceClass) || !TRACE_MODES.has(traceMode)) return false;
+  if (!['yes', 'no'].includes(retained)) return false;
+  if (sourceClass === 'public') {
+    return traceMode === 'public-pointer' && publicHttpsUrlIsSafe(sourceRef);
+  }
+  if (sourceClass === 'approved-private-external') {
+    return traceMode === 'opaque-pointer' && retained === 'no' && OPAQUE_POINTER.test(sourceRef);
+  }
   if (sourceClass === 'private-interactive') {
-    return traceMode !== 'attestation-only' || !isEmptyLedgerValue(sourceRef);
+    return traceMode === 'attestation-only' && retained === 'no' && isEmptyLedgerValue(sourceRef);
   }
-  return traceMode === 'attestation-only' && !isEmptyLedgerValue(sourceRef);
+  return retained === 'no' && (
+    (traceMode === 'attestation-only' && isEmptyLedgerValue(sourceRef))
+    || (traceMode === 'public-pointer' && publicHttpsUrlIsSafe(sourceRef))
+  );
+}
+
+function roleLabelIsSafe(value) {
+  return ROLE_LABEL.test(String(value));
+}
+
+function evidenceLocatorIsSafe(value) {
+  const locator = String(value).trim();
+  if (privacyBlocked(locator)) return false;
+  if (EVIDENCE_CHECK.test(locator)) return true;
+  if (locator.startsWith('public-artifact:')) {
+    return publicHttpsUrlIsSafe(locator.slice('public-artifact:'.length));
+  }
+  if (!locator.startsWith('command:')) return false;
+  const command = locator.slice('command:'.length);
+  if (
+    !/^[A-Za-z0-9][A-Za-z0-9._/@:=+-]*(?: [A-Za-z0-9-][A-Za-z0-9._/@:=+-]*)*$/.test(command)
+  ) return false;
+  return command.split(' ').every((token) => (
+    !token.startsWith('/')
+    && !token.startsWith('~')
+    && !token.split('/').includes('..')
+    && !/(?:token|secret|password|api[_-]?key|auth)/i.test(token)
+  ));
 }
 
 function hasSupersedesCycle(rowsByRevision) {
@@ -411,7 +581,7 @@ function hasSupersedesCycle(rowsByRevision) {
   return [...rowsByRevision.keys()].some(visit);
 }
 
-export function evaluateTraceability(projectBrief, spec, taskContract, openLoops) {
+export function evaluateTraceability(projectBrief, spec, taskContract, openLoops, techStack) {
   const findings = [];
   const findingKeys = new Set();
   const add = (code, subject, message) => {
@@ -422,13 +592,21 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
       findings.push(item);
     }
   };
+  const requireTable = (table, code, file, label) => {
+    if (!table.valid) add(code, file, `${label} ledger is missing, empty, duplicated, or malformed`);
+    return table.valid ? table.rows : [];
+  };
+  const pairKey = (revision, acceptanceId) => `${revision}\u0000${acceptanceId}`;
 
-  const sourceTable = parseExactTable(projectBrief, SOURCE_HEADERS);
+  const sourceTable = parseExactTable(projectBrief, SOURCE_HEADERS, SOURCE_SECTIONS);
+  const sourceRows = requireTable(
+    sourceTable,
+    'TRACE_SOURCE_MISSING',
+    'PROJECT_BRIEF.md',
+    'source attestation',
+  );
   const sources = new Map();
-  if (!sourceTable.found || sourceTable.rows.length === 0) {
-    add('TRACE_SOURCE_MISSING', 'PROJECT_BRIEF.md', 'source attestation ledger is missing');
-  }
-  for (const row of sourceTable.rows) {
+  for (const row of sourceRows) {
     const sourceId = row['Source ID'];
     const subject = traceSubject(sourceId, SOURCE_ID, 'PROJECT_BRIEF.md');
     if (!SOURCE_ID.test(sourceId) || sources.has(sourceId)) {
@@ -443,37 +621,46 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
     const attestation = row['Attestation'].toLowerCase();
     const confirmedBy = row['Confirmed by'];
     const confirmedAt = row['Confirmed at'];
+    const enumValid = SOURCE_CLASSES.has(sourceClass)
+      && TRACE_MODES.has(traceMode)
+      && SOURCE_ATTESTATIONS.has(attestation);
+    const rolePresent = !isEmptyLedgerValue(confirmedBy);
+    const dateValid = ISO_DATE.test(confirmedAt)
+      || (attestation !== 'confirmed' && isEmptyLedgerValue(confirmedAt));
+    const privacySafe = !privacyBlocked(sourceRef)
+      && (!rolePresent || (!privacyBlocked(confirmedBy) && roleLabelIsSafe(confirmedBy)))
+      && !privacyBlocked(confirmedAt)
+      && sourceMatrixIsSafe(sourceClass, traceMode, sourceRef, retained);
 
-    if (!SOURCE_CLASSES.has(sourceClass) || !TRACE_MODES.has(traceMode) || !SOURCE_ATTESTATIONS.has(attestation)) {
-      add('TRACE_SOURCE_MISSING', sourceId, 'source attestation row is invalid');
-    }
-    if (
-      privateSourceLocatorIsUnsafe(sourceClass, traceMode, sourceRef, retained)
-      || (!PRIVATE_SOURCE_CLASSES.has(sourceClass) && locatorHasSecret(sourceRef))
-    ) {
+    if (!enumValid) add('TRACE_SOURCE_MISSING', sourceId, 'source attestation row is invalid');
+    if (!privacySafe) {
       add('PRIVACY_SOURCE_BLOCKED', sourceId, 'source attestation violates the privacy policy');
     }
-    if (
-      attestation === 'confirmed'
-      && (isEmptyLedgerValue(confirmedBy) || !ISO_DATE.test(confirmedAt))
-    ) {
-      add('TRACE_CONFIRMATION_MISSING', sourceId, 'confirmed source attestation is incomplete');
+    if ((attestation === 'confirmed' && !rolePresent) || !dateValid) {
+      add('TRACE_CONFIRMATION_MISSING', sourceId, 'source attestation confirmation metadata is invalid');
     }
 
     sources.set(sourceId, {
       attestation,
-      confirmed: attestation === 'confirmed'
-        && !isEmptyLedgerValue(confirmedBy)
-        && ISO_DATE.test(confirmedAt),
+      confirmedBy,
+      confirmed: enumValid
+        && privacySafe
+        && attestation === 'confirmed'
+        && rolePresent
+        && dateValid,
     });
   }
 
-  const requirementTable = parseExactTable(spec, REQUIREMENT_HEADERS);
+  const requirementTable = parseExactTable(spec, REQUIREMENT_HEADERS, REQUIREMENT_SECTIONS);
+  const requirementRows = requireTable(
+    requirementTable,
+    'TRACE_REVISION_INVALID',
+    'SPEC.md',
+    'requirement revision',
+  );
   const requirementRowsByRevision = new Map();
-  if (!requirementTable.found || requirementTable.rows.length === 0) {
-    add('TRACE_REVISION_INVALID', 'SPEC.md', 'requirement revision ledger is missing');
-  }
-  for (const row of requirementTable.rows) {
+  const provenanceValidByRevision = new Map();
+  for (const row of requirementRows) {
     const revision = row['Revision'];
     const subject = traceSubject(revision, REQUIREMENT_REVISION, 'SPEC.md');
     if (!REQUIREMENT_REVISION.test(revision) || requirementRowsByRevision.has(revision)) {
@@ -482,12 +669,28 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
     }
     requirementRowsByRevision.set(revision, row);
 
+    const normalizedRequirement = row['Normalized requirement'];
+    const confirmedBy = row['Confirmed by'];
+    const safeFreeText = !privacyBlocked(normalizedRequirement)
+      && !privacyBlocked(confirmedBy)
+      && roleLabelIsSafe(confirmedBy);
+    if (!safeFreeText) {
+      add('PRIVACY_SOURCE_BLOCKED', revision, 'requirement lineage violates the privacy policy');
+    }
+
     const sourceId = row['Source'];
+    let provenanceValid = safeFreeText;
     if (!SOURCE_ID.test(sourceId) || !sources.has(sourceId)) {
       add('TRACE_SOURCE_MISSING', revision, 'requirement source attestation is missing');
-    } else if (!sources.get(sourceId).confirmed || isEmptyLedgerValue(row['Confirmed by'])) {
-      add('TRACE_CONFIRMATION_MISSING', revision, 'requirement confirmation is missing');
+      provenanceValid = false;
+    } else {
+      const source = sources.get(sourceId);
+      if (!source.confirmed || confirmedBy !== source.confirmedBy) {
+        add('TRACE_CONFIRMATION_MISSING', revision, 'requirement confirmation does not match its source attestation');
+        provenanceValid = false;
+      }
     }
+    provenanceValidByRevision.set(revision, provenanceValid);
   }
 
   if (hasSupersedesCycle(requirementRowsByRevision)) {
@@ -498,7 +701,7 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
   const seenRequirementIds = new Set();
   const activeByRequirement = new Map();
   const graphValidRevisions = new Set();
-  for (const row of requirementTable.rows) {
+  for (const row of requirementRows) {
     const revision = row['Revision'];
     const revisionMatch = revision.match(REQUIREMENT_REVISION);
     if (!revisionMatch || seenRevisions.has(revision)) continue;
@@ -508,7 +711,8 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
     const operation = row['Operation'].toLowerCase();
     const requirementClass = row['Class'].toLowerCase();
     const supersedes = row['Supersedes'];
-    let graphValid = REQUIREMENT_OPERATIONS.has(operation)
+    let graphValid = provenanceValidByRevision.get(revision) === true
+      && REQUIREMENT_OPERATIONS.has(operation)
       && REQUIREMENT_CLASSES.has(requirementClass)
       && !isEmptyLedgerValue(row['Normalized requirement']);
 
@@ -543,10 +747,59 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
   }
   const activeRevisions = new Set(activeByRequirement.values());
 
-  const acceptanceTable = parseExactTable(spec, ACCEPTANCE_HEADERS);
+  const routeEvidenceByFile = new Map();
+  for (const [content, file, section] of [
+    [projectBrief, 'PROJECT_BRIEF.md', '產品形態決策'],
+    [techStack, 'TECH_STACK.md', '技術路線決策'],
+  ]) {
+    const evidence = decisionEvidence(content, section);
+    const tokens = splitReferences(evidence.value);
+    const uniqueTokens = new Set(tokens);
+    const sourceTokens = tokens.filter((token) => SOURCE_ID.test(token));
+    const revisionTokens = tokens.filter((token) => REQUIREMENT_REVISION.test(token));
+    const malformed = tokens.filter((token) => !SOURCE_ID.test(token) && !REQUIREMENT_REVISION.test(token));
+    if (privacyBlocked(evidence.value)) {
+      add('PRIVACY_SOURCE_BLOCKED', file, 'route evidence violates the privacy policy');
+    }
+    if (!evidence.valid || sourceTokens.length === 0 || malformed.length > 0 || uniqueTokens.size !== tokens.length) {
+      add('TRACE_SOURCE_MISSING', file, 'route evidence must contain unique confirmed source IDs');
+    }
+    if (!evidence.valid || revisionTokens.length === 0 || malformed.length > 0 || uniqueTokens.size !== tokens.length) {
+      add('TRACE_REVISION_INVALID', file, 'route evidence must contain unique active requirement revisions');
+    }
+    for (const sourceId of sourceTokens) {
+      if (!sources.has(sourceId)) {
+        add('TRACE_SOURCE_MISSING', file, 'route evidence references an unknown source attestation');
+      } else if (!sources.get(sourceId).confirmed) {
+        add('TRACE_CONFIRMATION_MISSING', file, 'route evidence references an unconfirmed source attestation');
+      }
+    }
+    for (const revision of revisionTokens) {
+      if (!activeRevisions.has(revision)) {
+        add('TRACE_REVISION_INVALID', file, 'route evidence references an inactive requirement revision');
+      }
+    }
+    routeEvidenceByFile.set(file, uniqueTokens);
+  }
+  const projectEvidence = routeEvidenceByFile.get('PROJECT_BRIEF.md');
+  const stackEvidence = routeEvidenceByFile.get('TECH_STACK.md');
+  if (
+    projectEvidence.size !== stackEvidence.size
+    || [...projectEvidence].some((token) => !stackEvidence.has(token))
+  ) {
+    add('ROUTE_MODE_CONFLICT', 'GATE-ROUTE-001', 'route evidence does not match across decision documents');
+  }
+
+  const acceptanceTable = parseExactTable(spec, ACCEPTANCE_HEADERS, ACCEPTANCE_SECTIONS);
+  const acceptanceRows = requireTable(
+    acceptanceTable,
+    'TRACE_ACCEPTANCE_MISSING',
+    'SPEC.md',
+    'acceptance criteria',
+  );
   const acceptances = new Map();
   const acceptanceIdsByRevision = new Map();
-  for (const row of acceptanceTable.rows) {
+  for (const row of acceptanceRows) {
     const acceptanceId = row['AC ID'];
     const revision = row['Requirement revision'];
     const subject = traceSubject(acceptanceId, ACCEPTANCE_ID, 'SPEC.md');
@@ -556,6 +809,10 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
     }
     if (!graphValidRevisions.has(revision) || !activeRevisions.has(revision)) {
       add('TRACE_REVISION_INVALID', subject, 'acceptance criterion references an inactive requirement revision');
+      continue;
+    }
+    if (privacyBlocked(row['Yes/no criterion']) || privacyBlocked(row['Failure signal'])) {
+      add('PRIVACY_SOURCE_BLOCKED', acceptanceId, 'acceptance criterion violates the privacy policy');
       continue;
     }
     if (!isYesNoCriterion(row['Yes/no criterion']) || isEmptyLedgerValue(row['Failure signal'])) {
@@ -572,10 +829,16 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
     }
   }
 
-  const taskTable = parseExactTable(taskContract, TASK_HEADERS);
+  const taskTable = parseExactTable(taskContract, TASK_HEADERS, TASK_SECTIONS);
+  const taskRows = requireTable(
+    taskTable,
+    'TRACE_TASK_COVERAGE_MISSING',
+    'TASK_CONTRACT.md',
+    'task coverage',
+  );
   const tasks = new Map();
-  const coveredRevisions = new Set();
-  for (const row of taskTable.rows) {
+  const taskedPairs = new Set();
+  for (const row of taskRows) {
     const taskId = row['Task ID'];
     const subject = traceSubject(taskId, TASK_ID, 'TASK_CONTRACT.md');
     if (!TASK_ID.test(taskId) || tasks.has(taskId)) {
@@ -590,7 +853,13 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
     let referencesValid = TASK_STATUSES.has(status)
       && requirements.length > 0
       && acceptanceIds.length > 0
-      && !isEmptyLedgerValue(row['Verification']);
+      && !isEmptyLedgerValue(row['Verification'])
+      && !privacyBlocked(row['Verification'])
+      && new Set(requirements).size === requirements.length
+      && new Set(acceptanceIds).size === acceptanceIds.length;
+    if (privacyBlocked(row['Verification'])) {
+      add('PRIVACY_SOURCE_BLOCKED', taskId, 'task verification violates the privacy policy');
+    }
 
     for (const revision of requirements) {
       if (!activeRevisions.has(revision)) {
@@ -607,22 +876,39 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
         pairs.push({ acceptanceId, revision: acceptance.revision });
       }
     }
+    for (const revision of requirements) {
+      if (!pairs.some((pair) => pair.revision === revision)) {
+        add('TRACE_TASK_COVERAGE_MISSING', taskId, 'task requirement has no matching acceptance criterion');
+        referencesValid = false;
+      }
+    }
 
     if (referencesValid) {
-      for (const { revision } of pairs) coveredRevisions.add(revision);
+      for (const { revision, acceptanceId } of pairs) taskedPairs.add(pairKey(revision, acceptanceId));
     }
     tasks.set(taskId, { status, pairs: referencesValid ? pairs : [] });
   }
+  for (const [acceptanceId, { revision }] of acceptances) {
+    if (!taskedPairs.has(pairKey(revision, acceptanceId))) {
+      add('TRACE_TASK_COVERAGE_MISSING', acceptanceId, 'acceptance criterion has no matching task pair');
+    }
+  }
   for (const revision of activeRevisions) {
-    if (!coveredRevisions.has(revision)) {
+    if (![...taskedPairs].some((key) => key.startsWith(`${revision}\u0000`))) {
       add('TRACE_TASK_COVERAGE_MISSING', revision, 'active requirement has no task coverage');
     }
   }
 
-  const evidenceTable = parseExactTable(taskContract, EVIDENCE_HEADERS);
+  const evidenceTable = parseExactTable(taskContract, EVIDENCE_HEADERS, EVIDENCE_SECTIONS);
+  const evidenceRows = requireTable(
+    evidenceTable,
+    'TRACE_EVIDENCE_MISSING',
+    'TASK_CONTRACT.md',
+    'acceptance evidence',
+  );
   const evidenceIds = new Set();
   const passingEvidence = new Set();
-  for (const row of evidenceTable.rows) {
+  for (const row of evidenceRows) {
     const evidenceId = row['Evidence ID'];
     const subject = traceSubject(evidenceId, EVIDENCE_ID, 'TASK_CONTRACT.md');
     if (!EVIDENCE_ID.test(evidenceId) || evidenceIds.has(evidenceId)) {
@@ -634,6 +920,7 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
     const acceptanceId = row['AC'];
     const revision = row['Requirement'];
     const acceptance = acceptances.get(acceptanceId);
+    const key = pairKey(revision, acceptanceId);
     let evidenceValid = true;
     if (!activeRevisions.has(revision)) {
       add('TRACE_REVISION_INVALID', evidenceId, 'evidence references an inactive requirement revision');
@@ -643,15 +930,21 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
       add('TRACE_ACCEPTANCE_MISSING', evidenceId, 'evidence acceptance reference is invalid');
       evidenceValid = false;
     }
-    if (locatorHasSecret(row['Safe evidence locator'])) {
+    if (!taskedPairs.has(key)) {
+      add('TRACE_EVIDENCE_MISSING', evidenceId, 'evidence has no matching task pair');
+      evidenceValid = false;
+    }
+    if (!evidenceLocatorIsSafe(row['Safe evidence locator'])) {
       add('PRIVACY_PATH_BLOCKED', evidenceId, 'evidence locator violates the safe-path policy');
       evidenceValid = false;
     }
-    if (isEmptyLedgerValue(row['Safe evidence locator']) || !ISO_DATE.test(row['Verified at'])) {
+    const result = row['Result'].toLowerCase();
+    if (!['passing', 'failing', 'blocked'].includes(result) || !ISO_DATE.test(row['Verified at'])) {
+      add('TRACE_EVIDENCE_MISSING', evidenceId, 'evidence result is incomplete');
       evidenceValid = false;
     }
-    if (evidenceValid && row['Result'].toLowerCase() === 'passing') {
-      passingEvidence.add(`${acceptanceId}\u0000${revision}`);
+    if (evidenceValid) {
+      if (result === 'passing') passingEvidence.add(key);
     }
   }
 
@@ -659,32 +952,59 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
     if (task.status !== 'completed') continue;
     if (
       task.pairs.length === 0
-      || task.pairs.some(({ acceptanceId, revision }) => !passingEvidence.has(`${acceptanceId}\u0000${revision}`))
+      || task.pairs.some(({ acceptanceId, revision }) => !passingEvidence.has(pairKey(revision, acceptanceId)))
     ) {
       add('TRACE_EVIDENCE_MISSING', taskId, 'completed task has no passing acceptance evidence');
     }
   }
 
-  const openLoopTable = parseExactTable(openLoops, OPEN_LOOP_HEADERS);
+  const openLoopTable = parseExactTable(openLoops, OPEN_LOOP_HEADERS, OPEN_LOOP_SECTIONS);
+  const openLoopRows = requireTable(
+    openLoopTable,
+    'TRACE_CONFIRMATION_MISSING',
+    'OPEN_LOOPS.md',
+    'open-loop lineage',
+  );
   const loopIds = new Set();
-  for (const row of openLoopTable.rows) {
+  for (const row of openLoopRows) {
     const loopId = row['Loop ID'];
     const subject = traceSubject(loopId, LOOP_ID, 'OPEN_LOOPS.md');
-    if (!LOOP_ID.test(loopId) || loopIds.has(loopId) || !LOOP_STATUSES.has(row['Status'].toLowerCase())) {
+    const status = row['Status'].toLowerCase();
+    if (!LOOP_ID.test(loopId) || loopIds.has(loopId) || !LOOP_STATUSES.has(status)) {
       add('TRACE_CONFIRMATION_MISSING', subject, 'open-loop lineage row is invalid');
       continue;
     }
     loopIds.add(loopId);
-    if (row['Basis'].toLowerCase() !== 'not-stated') {
-      add('TRACE_CONFIRMATION_MISSING', loopId, 'open-loop basis is not recorded');
+    const freeText = [
+      row['Basis'],
+      row['Question / Risk'],
+      row['Impact'],
+      row['Owner'],
+      row['Next Step'],
+      row['Due'],
+    ];
+    const resolutionSource = row['Resolution source'];
+    if (
+      freeText.some(privacyBlocked)
+      || privacyBlocked(resolutionSource)
+      || !roleLabelIsSafe(row['Owner'])
+    ) {
+      add('PRIVACY_SOURCE_BLOCKED', loopId, 'open-loop lineage violates the privacy policy');
     }
-    if (row['Status'].toLowerCase() === 'closed') {
-      const resolutionSource = row['Resolution source'];
+    if (
+      row['Basis'].toLowerCase() !== 'not-stated'
+      || freeText.some(isEmptyLedgerValue)
+    ) {
+      add('TRACE_CONFIRMATION_MISSING', loopId, 'open-loop lineage row is incomplete');
+    }
+    if (status === 'closed') {
       if (!SOURCE_ID.test(resolutionSource) || !sources.has(resolutionSource)) {
         add('TRACE_SOURCE_MISSING', loopId, 'open-loop resolution source is missing');
       } else if (!sources.get(resolutionSource).confirmed) {
         add('TRACE_CONFIRMATION_MISSING', loopId, 'open-loop resolution source is not confirmed');
       }
+    } else if (!isEmptyLedgerValue(resolutionSource)) {
+      add('TRACE_CONFIRMATION_MISSING', loopId, 'unresolved open loop must not cite a resolution source');
     }
   }
 
