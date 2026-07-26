@@ -563,6 +563,7 @@ const requiredRepositoryFiles = [
   'CODE_OF_CONDUCT.md',
   'SECURITY.md',
   'ROADMAP.md',
+  '.gitattributes',
   '.gitignore',
   'VALIDATION.md',
   'docs/index.md',
@@ -706,6 +707,10 @@ const workflowIndexes = ['docs/index.md', 'workflows/tool-routing.md']
 errors.push(...validateWorkflowIndexing('workflows/product-shape-tech-route.md', workflowIndexes));
 errors.push(...validateMandatoryWorkflowTracking(root, ['workflows/product-shape-tech-route.md']));
 errors.push(...validateRequiredArtifactCommit(root, requiredRepositoryFiles));
+
+requireIncludes(errors, '.gitattributes', [
+  '* text=auto eol=lf',
+]);
 
 for (const file of [
   'prompts/codex-new-project.md',

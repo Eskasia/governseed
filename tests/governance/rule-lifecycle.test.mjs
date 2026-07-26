@@ -482,6 +482,19 @@ test('starter validator keeps the public CI workflow in the committed release un
   );
 });
 
+test('starter validator requires deterministic LF checkouts', (t) => {
+  const starter = copyStarter(t);
+  fs.writeFileSync(path.join(starter, '.gitattributes'), '* text=auto\n');
+
+  const result = runStarterValidator(starter);
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /\.gitattributes missing required text: \* text=auto eol=lf/,
+  );
+});
+
 test('requires the mandatory workflow in every routing index', () => {
   const errors = validateWorkflowIndexing(
     'workflows/product-shape-tech-route.md',

@@ -15,6 +15,7 @@
 - Kept the upstream key host-only and passed only an attempt-scoped bearer to the container. Proxy policy locks exact attempt/model/deadline, `store: false`, foreground progressive SSE, no provider-held response/conversation/prompt or nested item/file/container references, no remote input URLs, stripped client identifiers, and client-executed tools; `tool_search` must explicitly use client execution.
 - Bounded the no-server-state client tool loop to 32 sequential requests, one active request, 1 MiB per request, 4 MiB per response, and one attempt deadline. Progressive SSE preserves backpressure and fails closed on quota, relay, transport, provider, or cleanup uncertainty.
 - Public push/pull-request CI remains offline and credential-free. The separate real workflow is manual, Linux-only, Environment-approval-gated, success-only for artifact upload, and cleanup-finalized.
+- Pinned repository text checkouts to LF so byte-bound scenario digests, workflow parsing, and runtime-proof frontmatter remain deterministic across Windows, macOS, and Linux.
 
 ### Evidence Status
 
