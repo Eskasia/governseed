@@ -98,16 +98,32 @@ npm run fixtures
 npm run ci
 ```
 
+In a Git checkout, `npm run validate` and `npm run ci` also require every release artifact to exist in and match `HEAD`; untracked, index-only, staged, or unstaged release-unit drift fails closed.
+
 Fixture examples live under `examples/template-adoption/` and include expected doctor JSON for the base-minimal case.
+
+## Governance Impact
+
+The governance-impact evaluator compares the same committed synthetic task in baseline and governed arms, then applies deterministic oracles and a preregistered evidence gate. Its offline controls verify the harness only; they do not prove that governance improves delivery.
+
+```bash
+npm run test:governance-impact
+npm run validate:governance-impact
+npm run eval:governance
+```
+
+See `docs/governance-impact-eval.md` for scenario registration, privacy and containment rules, the fail-closed runtime matrix, paired aggregation, claim thresholds, and non-claims.
 
 ## Runtime Proof
 
-Runtime proof commands validate generated Codex, Claude Code, and Antigravity entrypoints in mock mode by default. Real runtime proof is opt-in and only runs when `RUNTIME_PROOF_REAL=1` is set with the matching local CLI available.
+Runtime proof commands validate generated Codex, Claude Code, and Antigravity entrypoints in mock mode by default. Local real runtime proof is synthetic-only, explicit, and fails closed when the matching CLI or required safety capability is unavailable. Public CI always stays in mock mode.
 
 ```bash
 npm run runtime:proof
 RUNTIME_PROOF_REAL=1 npm run runtime:proof
 ```
+
+`npm run runtime:proof:mock` forces mock mode even when the caller's environment contains a real-mode opt-in; public CI uses this command.
 
 ## Source repo map
 
@@ -116,6 +132,7 @@ RUNTIME_PROOF_REAL=1 npm run runtime:proof
 | `.github/` | CI workflows, issue templates, PR template, and release notes config |
 | `AGENTS.md` | Canonical maintenance rules for this starter |
 | `docs/runtime-proof.md` | Mock and opt-in real runtime proof contract |
+| `docs/governance-impact-eval.md` | Paired evaluator, privacy boundary, evidence gate, and non-claims |
 | `startup/00-agent-start-here.md` | Mandatory behavior and reporting format |
 | `startup/01-bootstrap-gates.md` | Q1-Q9 intake gates |
 | `startup/02-required-project-docs.md` | Fixed and conditional output docs |
@@ -125,8 +142,11 @@ RUNTIME_PROOF_REAL=1 npm run runtime:proof
 | `profiles/` | Profile manifests |
 | `schemas/` | JSON Schemas for profile docs and doctor output |
 | `scripts/` | `init`, `doctor`, and starter validation |
+| `scripts/governance-impact-eval.mjs` | Offline controls and fail-closed paired evaluation CLI |
 | `prompts/` | Pasteable first prompts for supported runtime adapters |
 | `tests/runtime/` | Runtime proof expected headings, schema, and skill fixture |
+| `tests/governance-impact/` | Deterministic scorer, CLI, adapter, and synthetic scenario tests |
+| `tests/privacy/` | Negative privacy and unsafe-input regression tests |
 | `workflows/` | Human-readable workflow routing |
 | `examples/template-adoption/` | Filled fixtures and expected doctor output |
 

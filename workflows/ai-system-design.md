@@ -35,17 +35,21 @@
 - MCP：只當 agent-to-tool 邊界；不要把 agent-to-agent 協調混在同一層。
 - Human approval：付款、刪除、權限、外部發布、資料遷移、客戶可見行為必須問人。
 - Sandbox：shell、browser、filesystem、network、credential access 都要有邊界。
-- Audit：每次 tool call、輸入摘要、輸出摘要、決策原因可追蹤。
+- Audit：只追蹤核准的 prompt-template version、stable tool / decision / check ID、相對路徑與 aggregate metadata；不保存原始輸入輸出。
 - Kill switch：能停用背景 loop、外部 action、危險 tool。
 
 ## Eval / Observability Gate
 
 - Golden set：至少覆蓋 happy path、權限錯誤、資料缺失、模糊需求、惡意輸入。
 - Error taxonomy：把失敗分成 retrieval、reasoning、tool、permission、format、latency、cost。
-- Traces：保留 prompt、context source、tool call、structured output、verifier result。
+- Traces：保留核准的 prompt-template version 與 privacy-safe trace metadata；不得保存 private prompt、masked excerpt、raw model stdout/stderr、raw tool trace、environment variables、absolute home path 或 raw diff hunk。
 - LLM-as-judge：只當輔助評估；要有人工抽查或 deterministic metric 校準。
 - Regression gate：每次改 prompt、retriever、tool schema、model、chunking 都要跑。
 - Online monitoring：quality、cost、latency、fallback、rate limit、user correction。
+- Evidence persistence：先做 closed-schema validation 與 fail-closed privacy scan，cleanup 證明完成後才保存 normalized evidence；scanner 或 cleanup 不確定時只回 stable code，不留 artifact。
+- Real mode：governance-impact 只接受乾淨、已 commit 的 synthetic scenario；runtime proof 只接受生成的 synthetic fixture。
+- Claim boundary：runtime proof 只驗證 entrypoint first-response contract；governance-impact evaluator 評估 intake 完成後的 delivery artifact，不宣稱測到 Q1-Q9 interview quality。
+- Runtime capability：Codex governance-impact real adapter 因 detached / re-parented descendant containment 未證明而回 `SESSION_SAFETY_UNAVAILABLE`；Claude 因 workspace containment 未證明而拒絕；Antigravity 缺 binary 時 unavailable，日後有 binary 仍須先證明 non-persistence 與 containment。
 
 ## Security Gate
 

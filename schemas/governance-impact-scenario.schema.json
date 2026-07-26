@@ -28,7 +28,33 @@
     "facts": {
       "type": "array",
       "minItems": 1,
-      "items": { "$ref": "#/$defs/fact" }
+      "items": { "$ref": "#/$defs/fact" },
+      "allOf": [
+        {
+          "contains": {
+            "allOf": [
+              { "$ref": "#/$defs/fact" },
+              {
+                "properties": { "kind": { "const": "requirement" } },
+                "required": ["kind"]
+              }
+            ]
+          },
+          "minContains": 1
+        },
+        {
+          "contains": {
+            "allOf": [
+              { "$ref": "#/$defs/fact" },
+              {
+                "properties": { "kind": { "const": "prohibition" } },
+                "required": ["kind"]
+              }
+            ]
+          },
+          "minContains": 1
+        }
+      ]
     },
     "factParity": { "$ref": "#/$defs/factParity" },
     "checks": {
@@ -44,7 +70,45 @@
           }
         ]
       },
-      "minContains": 1
+      "minContains": 1,
+      "allOf": [
+        {
+          "contains": {
+            "allOf": [
+              { "$ref": "#/$defs/check" },
+              {
+                "properties": { "kind": { "const": "acceptance" } },
+                "required": ["kind"]
+              }
+            ]
+          },
+          "minContains": 1
+        },
+        {
+          "contains": {
+            "allOf": [
+              { "$ref": "#/$defs/check" },
+              {
+                "properties": { "kind": { "const": "prohibition" } },
+                "required": ["kind"]
+              }
+            ]
+          },
+          "minContains": 1
+        },
+        {
+          "contains": {
+            "allOf": [
+              { "$ref": "#/$defs/check" },
+              {
+                "properties": { "kind": { "const": "privacy" } },
+                "required": ["kind"]
+              }
+            ]
+          },
+          "minContains": 1
+        }
+      ]
     },
     "oracle": { "$ref": "#/$defs/argv" },
     "allowedChangePaths": {
@@ -125,7 +189,7 @@
         "id": { "type": "string", "pattern": "^CHECK-[0-9]{3,}$" },
         "kind": {
           "type": "string",
-          "enum": ["acceptance", "prohibition", "scope", "document", "privacy"]
+          "enum": ["acceptance", "prohibition", "document", "privacy"]
         },
         "factIds": { "$ref": "#/$defs/factIds" },
         "critical": { "type": "boolean" }

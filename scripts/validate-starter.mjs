@@ -208,22 +208,76 @@ export function validateWorkflowIndexing(workflowPath, indexDocuments) {
   return errors;
 }
 
-export function validateMandatoryWorkflowTracking(
+export function validateAuditStatus(content) {
+  const match = String(content || '').match(/^Status: ([A-Z]+)$/mu);
+  if (!match) return ['Delivery audit is missing an explicit status'];
+  if (!['PASS', 'BLOCKED'].includes(match[1])) {
+    return [`Delivery audit has invalid status: ${match[1]}`];
+  }
+  return [];
+}
+
+function validateTrackedFiles(
   repoRoot,
-  mandatoryFiles,
+  files,
+  errorPrefix,
   spawnCommand = spawnSync,
 ) {
   if (!fs.existsSync(path.join(repoRoot, '.git'))) return [];
 
   const errors = [];
-  for (const file of mandatoryFiles) {
+  for (const file of files) {
     if (!fs.existsSync(path.join(repoRoot, file))) continue;
     const result = spawnCommand('git', ['ls-files', '--error-unmatch', '--', file], {
       cwd: repoRoot,
       encoding: 'utf8',
       shell: false,
     });
-    if (result.status !== 0) errors.push(`Mandatory workflow is not tracked by git: ${file}`);
+    if (result.status !== 0) errors.push(`${errorPrefix}: ${file}`);
+  }
+  return errors;
+}
+
+export function validateMandatoryWorkflowTracking(
+  repoRoot,
+  mandatoryFiles,
+  spawnCommand = spawnSync,
+) {
+  return validateTrackedFiles(
+    repoRoot,
+    mandatoryFiles,
+    'Mandatory workflow is not tracked by git',
+    spawnCommand,
+  );
+}
+
+export function validateRequiredArtifactCommit(
+  repoRoot,
+  requiredFiles,
+  spawnCommand = spawnSync,
+) {
+  if (!fs.existsSync(path.join(repoRoot, '.git'))) return [];
+
+  const errors = [];
+  for (const file of requiredFiles) {
+    if (!fs.existsSync(path.join(repoRoot, file))) continue;
+    const result = spawnCommand('git', ['cat-file', '-e', `HEAD:${file}`], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      shell: false,
+    });
+    if (result.status !== 0) {
+      errors.push(`Required repository artifact is not committed in HEAD: ${file}`);
+      continue;
+    }
+    const diff = spawnCommand('git', ['diff', '--quiet', 'HEAD', '--', file], {
+      cwd: repoRoot,
+      encoding: 'utf8',
+      shell: false,
+    });
+    if (diff.status !== 0) {
+      errors.push(`Required repository artifact does not match committed HEAD: ${file}`);
+    }
   }
   return errors;
 }
@@ -391,7 +445,7 @@ function packageScripts(errors) {
 if (isMain) {
 const errors = [];
 
-for (const file of [
+const requiredRepositoryFiles = [
   'README.md',
   'CHANGELOG.md',
   'package.json',
@@ -408,11 +462,14 @@ for (const file of [
   'docs/index.md',
   'docs/tool-registry.md',
   'docs/runtime-proof.md',
+  'docs/governance-impact-eval.md',
+  'docs/superpowers/reviews/2026-07-26-governance-evidence-overhaul-audit.md',
   '.github/ISSUE_TEMPLATE/bug_report.yml',
   '.github/ISSUE_TEMPLATE/feature_request.yml',
   '.github/ISSUE_TEMPLATE/config.yml',
   '.github/pull_request_template.md',
   '.github/release.yml',
+  '.github/workflows/validate-starter.yml',
   '.github/workflows/runtime-proof.yml',
   'tests/runtime/codex/expected-headings.txt',
   'tests/runtime/claude/first-response.schema.json',
@@ -425,12 +482,51 @@ for (const file of [
   'scripts/runtime-smoke-codex.mjs',
   'scripts/runtime-smoke-claude.mjs',
   'scripts/runtime-smoke-antigravity.mjs',
+  'scripts/runtime-proof-mock.mjs',
+  'scripts/governance-impact-eval.mjs',
+  'scripts/lib/governance-checks.mjs',
+  'scripts/lib/governance-impact-core.mjs',
+  'scripts/lib/governance-impact-adapters.mjs',
   'profiles/base.json',
   'profiles/fullstack-ai.json',
   'profiles/macos.json',
   'schemas/project-doc.schema.json',
   'schemas/doctor-output.schema.json',
-]) {
+  'schemas/governance-impact-scenario.schema.json',
+  'schemas/governance-impact-run.schema.json',
+  'schemas/governance-impact-result.schema.json',
+  'tests/governance/doctor-governance.test.mjs',
+  'tests/governance/rule-lifecycle.test.mjs',
+  'tests/governance/traceability.test.mjs',
+  'tests/governance-impact/scorer.test.mjs',
+  'tests/governance-impact/scenario-schema.test.mjs',
+  'tests/governance-impact/cli.test.mjs',
+  'tests/governance-impact/runner.test.mjs',
+  'tests/governance-impact/fixtures/fake-runtime.mjs',
+  'tests/privacy/doctor-negative.test.mjs',
+  'tests/privacy/eval-negative.test.mjs',
+  'tests/privacy/runtime-proof-negative.test.mjs',
+  'tests/governance-impact/scenarios/ambiguity-no-invention/scenario.json',
+  'tests/governance-impact/scenarios/ambiguity-no-invention/task.md',
+  'tests/governance-impact/scenarios/ambiguity-no-invention/governed-overlay/GOVERNANCE.md',
+  'tests/governance-impact/scenarios/ambiguity-no-invention/oracle/verify.mjs',
+  'tests/governance-impact/scenarios/ambiguity-no-invention/seed/src/confirmation.txt',
+  'tests/governance-impact/scenarios/requirements-sync/scenario.json',
+  'tests/governance-impact/scenarios/requirements-sync/task.md',
+  'tests/governance-impact/scenarios/requirements-sync/governed-overlay/GOVERNANCE.md',
+  'tests/governance-impact/scenarios/requirements-sync/oracle/verify.mjs',
+  'tests/governance-impact/scenarios/requirements-sync/seed/docs/evidence-plan.md',
+  'tests/governance-impact/scenarios/requirements-sync/seed/docs/requirements.md',
+  'tests/governance-impact/scenarios/requirements-sync/seed/docs/task-board.md',
+  'tests/governance-impact/scenarios/scope-guard/scenario.json',
+  'tests/governance-impact/scenarios/scope-guard/task.md',
+  'tests/governance-impact/scenarios/scope-guard/governed-overlay/GOVERNANCE.md',
+  'tests/governance-impact/scenarios/scope-guard/oracle/verify.mjs',
+  'tests/governance-impact/scenarios/scope-guard/seed/app/message.txt',
+  'tests/governance-impact/scenarios/scope-guard/seed/package.json',
+];
+
+for (const file of requiredRepositoryFiles) {
   requireFile(errors, file);
 }
 
@@ -484,6 +580,7 @@ const workflowIndexes = ['docs/index.md', 'workflows/tool-routing.md']
   .map((file) => ({ path: file, content: readFile(file) }));
 errors.push(...validateWorkflowIndexing('workflows/product-shape-tech-route.md', workflowIndexes));
 errors.push(...validateMandatoryWorkflowTracking(root, ['workflows/product-shape-tech-route.md']));
+errors.push(...validateRequiredArtifactCommit(root, requiredRepositoryFiles));
 
 for (const file of [
   'prompts/codex-new-project.md',
@@ -509,14 +606,16 @@ requireIncludes(errors, 'README.md', [
   'node-%3E%3D20',
   'startup/01-bootstrap-gates.md',
   'startup/02-required-project-docs.md',
-  'workflows/product-shape-tech-route.md',
   'Generated base project tree',
   '## Runtime Proof',
   '## Community',
   'CODE_OF_CONDUCT.md',
   'README.md',
   'node agent-governance-starter/scripts/doctor.mjs ./my-new-project',
-  'product shape / technology route',
+  '## Governance Impact',
+  'docs/governance-impact-eval.md',
+  'offline controls',
+  'every release artifact to exist in and match `HEAD`',
 ]);
 
 requireIncludes(errors, 'startup/01-bootstrap-gates.md', [
@@ -563,6 +662,12 @@ requireIncludes(errors, 'package.json', [
   '"runtime:proof:codex"',
   '"runtime:proof:claude"',
   '"runtime:proof:antigravity"',
+  '"runtime:proof:mock"',
+  '"test:governance"',
+  '"test:governance-impact"',
+  '"test:privacy"',
+  '"validate:governance-impact"',
+  '"eval:governance"',
   '"ci"',
 ]);
 
@@ -573,6 +678,48 @@ for (const [name, command] of Object.entries(scripts)) {
   if (/\bgrep\b/.test(command)) fail(errors, `package.json script ${name} uses POSIX-only grep`);
   if (/(^|[\s;&|])diff(\s|$)/.test(command)) fail(errors, `package.json script ${name} uses POSIX-only diff`);
 }
+
+for (const requiredScript of [
+  'check',
+  'validate',
+  'validate:runtime-proof',
+  'test:governance',
+  'test:governance-impact',
+  'test:privacy',
+  'validate:governance-impact',
+  'eval:governance',
+  'smoke:base',
+  'smoke:fullstack',
+  'fixtures',
+  'runtime:proof:mock',
+]) {
+  if (!scripts.ci?.includes(`npm run ${requiredScript}`)) {
+    fail(errors, `package.json script ci must invoke npm run ${requiredScript}`);
+  }
+}
+
+for (const [name, command] of Object.entries(scripts)) {
+  if (command.includes('GOVERNANCE_IMPACT_REAL')) {
+    fail(errors, `package.json script ${name} must not invoke governance-impact real mode`);
+  }
+}
+
+if (
+  scripts['runtime:proof:mock']
+  !== 'npm run validate:runtime-proof && node scripts/runtime-proof-mock.mjs'
+) {
+  fail(errors, 'package.json script runtime:proof:mock must equal the forced-mock wrapper');
+}
+if (String(scripts.ci ?? '').split(/\s*&&\s*/u).includes('npm run runtime:proof')) {
+  fail(errors, 'package.json script ci must not invoke environment-sensitive runtime:proof');
+}
+
+requireIncludes(errors, 'scripts/runtime-proof-mock.mjs', [
+  'runCodexProof',
+  'runClaudeProof',
+  'runAntigravityProof',
+  '{ real: false }',
+]);
 
 requireIncludes(errors, '.github/ISSUE_TEMPLATE/bug_report.yml', [
   'problem_type',
@@ -622,18 +769,101 @@ requireIncludes(errors, 'CODE_OF_CONDUCT.md', [
 
 requireIncludes(errors, 'docs/index.md', [
   'runtime-proof.md',
+  'governance-impact-eval.md',
+  'superpowers/reviews/2026-07-26-governance-evidence-overhaul-audit.md',
   'prompts/codex-new-project.md',
 ]);
+
+requireIncludes(errors, 'docs/superpowers/reviews/2026-07-26-governance-evidence-overhaul-audit.md', [
+  'Status:',
+  '## Review Streams',
+  '## Completion Criteria',
+  '## Local QA Evidence',
+  '## Blocking Decisions And Evidence',
+  '## Criterion 4 Unlock Contract',
+  '## Change Ownership Boundary',
+  'SESSION_SAFETY_UNAVAILABLE',
+  'SCENARIO_NOT_COMMITTED',
+  'No real external runtime CLI, deployment, push, or release was executed.',
+]);
+if (exists('docs/superpowers/reviews/2026-07-26-governance-evidence-overhaul-audit.md')) {
+  errors.push(...validateAuditStatus(
+    readFile('docs/superpowers/reviews/2026-07-26-governance-evidence-overhaul-audit.md'),
+  ));
+}
 
 requireIncludes(errors, 'VALIDATION.md', [
   'npm run runtime:proof',
   'RUNTIME_PROOF_REAL=1 npm run runtime:proof',
   'Ubuntu, macOS, and Windows',
   'npm run fixtures',
+  'npm run test:governance',
+  'npm run test:governance-impact',
+  'npm run test:privacy',
+  'npm run validate:governance-impact',
+  'npm run eval:governance',
+  'must never set `GOVERNANCE_IMPACT_REAL`',
+  'npm run runtime:proof:mock',
+  'required release artifacts must already exist in and match `HEAD`',
+  'The shipped Codex evaluator refuses before launch with `SESSION_SAFETY_UNAVAILABLE`',
+  'It does not imply that the separate governance-impact evaluator supports the same runtime.',
 ]);
 
 requireIncludes(errors, 'CONTRIBUTING.md', [
   'npm run runtime:proof',
+  'npm run test:governance-impact',
+  'npm run validate:governance-impact',
+  'npm run eval:governance',
+  'Keep public CI offline',
+  'Keep runtime-proof claims separate from governance-impact evaluator claims.',
+  'Offline controls, generated fixtures, and mock runtime proof are not effectiveness evidence.',
+  'staging alone and working-tree drift do not satisfy the `HEAD` evidence gate',
+]);
+
+requireIncludes(errors, 'docs/governance-impact-eval.md', [
+  '## Offline Quick Start',
+  '## Scenario Preregistration',
+  '## Privacy, Process, and Persistence Boundary',
+  '## Claim Gate',
+  '## Non-Claims',
+  '### Real-Run Unlock Contract',
+  'Preregistered scenarios',
+  '| 5 |',
+  '| 3 |',
+  '| 90% |',
+  '| 95% |',
+  '| 80% |',
+  'SESSION_SAFETY_UNAVAILABLE',
+  'Public CI must run only deterministic offline checks',
+  'Runtime proof is a separate entrypoint-contract smoke test.',
+  '| Codex / macOS or Linux | Refused with `SESSION_SAFETY_UNAVAILABLE`',
+  'cgroup v2',
+]);
+
+for (const file of [
+  'SECURITY.md',
+  'docs/runtime-proof.md',
+  'workflows/ai-system-design.md',
+  'workflows/validation-release.md',
+  'workflows/production-agent.md',
+  'templates/conditional/EVAL_PLAN.md',
+  'templates/conditional/AGENT_RUNTIME.md',
+  'templates/conditional/AI_SECURITY_REVIEW.md',
+]) {
+  requireIncludes(errors, file, [
+    'Codex',
+    'containment',
+  ]);
+}
+
+requireIncludes(errors, 'SECURITY.md', [
+  'SESSION_SAFETY_UNAVAILABLE',
+]);
+
+requireIncludes(errors, 'docs/runtime-proof.md', [
+  'SESSION_SAFETY_UNAVAILABLE',
+  'entrypoint-contract smoke test',
+  'governance-impact evaluator',
 ]);
 
 requireIncludes(errors, 'templates/runtime/START_HERE.md', [
@@ -671,12 +901,6 @@ requireIncludes(errors, 'templates/fixed/TECH_STACK.md', [
   '| Backend |',
   '| Database |',
   '| Main framework / SDK |',
-]);
-
-requireIncludes(errors, 'docs/adr/000-template.md', [
-  '## Reevaluation Triggers',
-  '## Switching Cost',
-  '## Adoption Gate',
 ]);
 
 for (const file of [
@@ -726,9 +950,24 @@ requireIncludes(errors, '.github/workflows/validate-starter.yml', [
 
 requireIncludes(errors, '.github/workflows/runtime-proof.yml', [
   'workflow_dispatch',
-  'npm run runtime:proof',
-  'RUNTIME_PROOF_REAL',
+  'npm run runtime:proof:mock',
 ]);
+
+for (const workflow of [
+  '.github/workflows/validate-starter.yml',
+  '.github/workflows/runtime-proof.yml',
+]) {
+  if (!exists(workflow)) continue;
+  const content = readFile(workflow);
+  if (content.includes('GOVERNANCE_IMPACT_REAL')) {
+    fail(errors, `${workflow} must not set or invoke GOVERNANCE_IMPACT_REAL`);
+  }
+}
+
+if (exists('.github/workflows/runtime-proof.yml')
+  && readFile('.github/workflows/runtime-proof.yml').includes('RUNTIME_PROOF_REAL')) {
+  fail(errors, '.github/workflows/runtime-proof.yml must keep public runtime proof in mock mode');
+}
 
 if (exists('scripts/init.mjs')) {
   const initScript = readFile('scripts/init.mjs');
@@ -752,6 +991,26 @@ for (const file of [
   'scripts/runtime-smoke-codex.mjs',
   'scripts/runtime-smoke-claude.mjs',
   'scripts/runtime-smoke-antigravity.mjs',
+  'scripts/runtime-proof-mock.mjs',
+  'scripts/governance-impact-eval.mjs',
+  'scripts/lib/governance-checks.mjs',
+  'scripts/lib/governance-impact-core.mjs',
+  'scripts/lib/governance-impact-adapters.mjs',
+  'docs/governance-impact-eval.md',
+  'schemas/governance-impact-scenario.schema.json',
+  'schemas/governance-impact-run.schema.json',
+  'schemas/governance-impact-result.schema.json',
+  'tests/governance/doctor-governance.test.mjs',
+  'tests/governance/rule-lifecycle.test.mjs',
+  'tests/governance/traceability.test.mjs',
+  'tests/governance-impact/scorer.test.mjs',
+  'tests/governance-impact/scenario-schema.test.mjs',
+  'tests/governance-impact/cli.test.mjs',
+  'tests/governance-impact/runner.test.mjs',
+  'tests/governance-impact/fixtures/fake-runtime.mjs',
+  'tests/privacy/doctor-negative.test.mjs',
+  'tests/privacy/eval-negative.test.mjs',
+  'tests/privacy/runtime-proof-negative.test.mjs',
   '.github/workflows/validate-starter.yml',
   '.github/workflows/runtime-proof.yml',
 ]) {

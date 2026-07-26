@@ -1,5 +1,22 @@
 # Changelog
 
+## 2026-07-26 — Governance Evidence Overhaul
+
+### Intent And Rule Evidence
+
+- Added privacy-safe `SRC -> REQ -> AC -> TASK -> EVD` lineage validation, append-only requirement replacement/withdrawal, route-evidence checks, stable doctor codes, and unsafe-input negative tests.
+- Kept `GATE-INTENT-001` and `GATE-ROUTE-001` under the existing canonical lifecycle owner; runtime adapters continue to reference rather than redefine them.
+
+### Paired Evaluator And Runtime Proof
+
+- Added closed governance-impact schemas, deterministic scoring/aggregation/gating, three synthetic paired scenarios, a fail-closed CLI, adapter contracts, and privacy/process/persistence regression tests.
+- Public CI runs deterministic offline controls and mock runtime proof only. It never enables governance-impact real mode or runtime-proof real mode.
+- Codex, Claude, and Antigravity governance-impact real execution remains fail-closed until each runtime's containment and non-persistence contract is proven.
+- Runtime-proof publication preserves prior canonical evidence across failed and identical reruns, uses no-replace publication, and removes only artifacts owned by the current attempt.
+- Release validation now requires every evaluator, scenario, privacy-test, workflow, and audit artifact to exist in and match `HEAD`; index-only, staged, or unstaged drift fails closed. Windows direct resolution accepts only native `.exe` or `.com` executables under `shell: false`.
+- The standalone runtime-proof validator now requires the exact forced-mock public workflow entrypoint and its wrapper script instead of accepting an environment-sensitive substring match.
+- Clarified that runtime proof checks only generated entrypoint responses and that no bundled offline evidence supports a governance-effectiveness claim.
+
 ## 2026-07-13 — Canonical Gate Lifecycle
 
 ### Rule Lifecycle Records

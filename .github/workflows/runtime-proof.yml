@@ -2,12 +2,6 @@ name: Runtime proof
 
 on:
   workflow_dispatch:
-    inputs:
-      real:
-        description: Run real local runtime CLIs instead of mock proof
-        required: false
-        type: boolean
-        default: false
 
 jobs:
   runtime-proof:
@@ -17,6 +11,4 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
-      - run: npm run runtime:proof
-        env:
-          RUNTIME_PROOF_REAL: ${{ inputs.real && '1' || '0' }}
+      - run: npm run runtime:proof:mock

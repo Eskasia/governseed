@@ -324,12 +324,55 @@ const LOOP_STATUSES = new Set(['open', 'closed', 'blocked']);
 const HOME_PATH = /(?:\/Users\/|\/home\/|[A-Za-z]:\\Users\\)/i;
 const CREDENTIAL = /(?:\b(?:sk|ghp)-[A-Za-z0-9_]+|\bgithub_pat_[A-Za-z0-9_]+|\bAKIA[0-9A-Z]{16}\b|\b(?:token|password|secret|api[_-]?key)\s*[=:])/i;
 const PRIVATE_HASH = /\b(?:md5|sha(?:1|224|256|384|512)?|hash)\s*[:=]/i;
-const MASKED_EXCERPT = /\b(?:(?:masked|redacted)\s+excerpt|(?:masked|redacted|excerpt)\s*[:=])|(?:遮罩|遮蔽)(?:節錄|摘錄)|(?:節錄|摘錄)\s*[：:]/i;
+const BARE_DIGEST = /\b(?:[a-f0-9]{128}|[a-f0-9]{96}|[a-f0-9]{64}|[a-f0-9]{56}|[a-f0-9]{40}|[a-f0-9]{32})\b/i;
+const MASKED_EXCERPT = /\b(?:(?:masked|redacted|excerpt)(?:[\s_-]+)(?:masked|redacted|excerpt|private|content|text|record)|(?:masked|redacted|excerpt)\s*[：:=])|(?:已)?(?:遮罩|遮蔽)(?:內容|節錄|摘錄)|(?:節錄|摘錄)\s*[：:]/i;
 const SECRET_QUERY = /[?&](?:access[_-]?token|token|api[_-]?key|key|secret|signature|auth|password)=/i;
 const EMAIL_ADDRESS = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
 const PHONE_NUMBER = /(?:\+\d[\d .()-]{7,}\d|\(\d{2,4}\)[ -]?\d{3,4}[ -]?\d{3,4})/;
-const ROLE_LABEL = /^[a-z][a-z0-9]*(?:-[a-z0-9]+)*-role$/;
-const OPAQUE_POINTER = /^external-record:[a-z0-9][a-z0-9._-]{0,127}$/i;
+const TAIWAN_MOBILE = /\b09\d{2}(?:[- ]?\d{3})[- ]?\d{3}\b/;
+const TAIWAN_LANDLINE = /\b0\d{1,3}(?:[- ]?\d){7,8}\b/;
+const LATIN_IDENTITY_TOKEN = String.raw`(?:[A-Z][a-z]{1,30}|[A-Z]{2,30})`;
+const LATIN_IDENTITY_PAIR = new RegExp(
+  String.raw`^${LATIN_IDENTITY_TOKEN}\s+${LATIN_IDENTITY_TOKEN}$`,
+);
+const LATIN_IDENTITY_PAIR_SCAN = new RegExp(
+  String.raw`(?=(\b${LATIN_IDENTITY_TOKEN}\s+${LATIN_IDENTITY_TOKEN}\b))`,
+  'g',
+);
+const LATIN_IDENTITY_CONTEXT_BEFORE = /(?:\b(?:contact|owner)\s*[:=-]?|\b(?:confirmed|approved|reviewed)\s+by)\s*$/i;
+const LATIN_IDENTITY_CONTEXT_AFTER = /^\s*(?:confirmed|approved|reviewed|contacted|(?:is\s+)?owner)\b/i;
+const SAFE_PUBLIC_ENTITY_PHRASES = ['GitHub Actions'];
+const HIGH_CONFIDENCE_LATIN_GIVEN_NAMES = new Set([
+  'alice', 'amanda', 'andrew', 'anthony', 'barbara', 'benjamin', 'bob',
+  'carol', 'charles', 'christopher', 'daniel', 'david', 'deborah', 'donald',
+  'edward', 'elizabeth', 'emily', 'emma', 'george', 'helen', 'james',
+  'jane', 'jennifer', 'jessica', 'john', 'joseph', 'karen', 'kevin',
+  'laura', 'linda', 'mark', 'mary', 'michael', 'nancy', 'patricia',
+  'paul', 'rebecca', 'richard', 'robert', 'sarah', 'steven', 'susan',
+  'thomas', 'william',
+]);
+const HIGH_CONFIDENCE_LATIN_SURNAMES = new Set([
+  'anderson', 'brown', 'chen', 'davis', 'doe', 'example', 'garcia',
+  'harris', 'jackson', 'johnson', 'jones', 'lee', 'lewis', 'martin',
+  'martinez', 'miller', 'moore', 'robinson', 'smith', 'taylor',
+  'thomas', 'thompson', 'walker', 'wang', 'white', 'williams', 'wilson',
+]);
+const SAFE_STANDALONE_HAN_VALUES = new Set(['程式碼', '高可用']);
+const STANDALONE_HAN_VALUE = /^\p{Script=Han}{2,4}$/u;
+const HAN_IDENTITY_VALUE = String.raw`\p{Script=Han}{2,4}`;
+const CHINESE_IDENTITY_CONTEXT = new RegExp(
+  String.raw`(?:由\s*[：:]?\s*${HAN_IDENTITY_VALUE}\s*(?:確認|核准)|\b(?:confirmed|approved|reviewed|contact|owner)\s*[：:]?\s*${HAN_IDENTITY_VALUE}(?!\p{Script=Han})|(?:由|負責人|聯絡人|確認|核准)\s*[：:]?\s*${HAN_IDENTITY_VALUE}(?!\p{Script=Han})|(?<!\p{Script=Han})${HAN_IDENTITY_VALUE}\s*\b(?:confirmed|approved|reviewed|contact|owner)|(?<!\p{Script=Han})${HAN_IDENTITY_VALUE}\s*(?:確認|核准|負責|聯絡))`,
+  'iu',
+);
+const ROLE_TOKENS = new Set([
+  'admin', 'approver', 'auditor', 'compliance', 'data', 'design', 'developer',
+  'engineering', 'eval', 'legal', 'maintainer', 'operator', 'owner', 'platform',
+  'privacy', 'product', 'qa', 'release', 'reviewer', 'security', 'tester',
+]);
+const OPAQUE_POINTER = /^external-record:([a-z0-9]+(?:[._-][a-z0-9]+)*)$/i;
+const OPAQUE_CATEGORY_PREFIXES = new Set([
+  'artifact', 'case', 'item', 'project', 'record', 'source', 'test',
+]);
 const EVIDENCE_CHECK = /^(?:check|ci):[a-z0-9][a-z0-9._-]{0,127}$/i;
 
 function markdownCells(line) {
@@ -351,11 +394,20 @@ function visibleMarkdownLines(content) {
   const lines = withoutComments.split(/\r?\n/);
   let fence = null;
   return lines.map((line) => {
+    if (fence !== null) {
+      const closingMatch = line.match(/^ {0,3}(`+|~+)([ \t]*)$/);
+      if (
+        closingMatch
+        && closingMatch[1][0] === fence.marker
+        && closingMatch[1].length >= fence.length
+      ) {
+        fence = null;
+      }
+      return null;
+    }
     const fenceMatch = line.match(/^ {0,3}(`{3,}|~{3,})/);
     if (fenceMatch) {
-      const marker = fenceMatch[1][0];
-      if (fence === null) fence = marker;
-      else if (fence === marker) fence = null;
+      fence = { marker: fenceMatch[1][0], length: fenceMatch[1].length };
       return null;
     }
     if (fence !== null || /^(?: {4}|\t)/.test(line)) return null;
@@ -474,6 +526,13 @@ function isEmptyLedgerValue(value) {
   return EMPTY_LEDGER_VALUE.test(String(value).trim());
 }
 
+function isoDateIsValid(value) {
+  const text = String(value);
+  if (!ISO_DATE.test(text)) return false;
+  const date = new Date(`${text}T00:00:00.000Z`);
+  return !Number.isNaN(date.getTime()) && date.toISOString().slice(0, 10) === text;
+}
+
 function isYesNoCriterion(value) {
   const text = String(value).trim();
   return (/\byes\b/i.test(text) && /\bno\b/i.test(text))
@@ -493,15 +552,53 @@ function publicHttpsUrlIsSafe(value) {
   }
 }
 
+function latinPairIsHighConfidenceName(pair) {
+  const tokens = pair.split(/\s+/).map((token) => token.toLowerCase());
+  return tokens.length === 2
+    && HIGH_CONFIDENCE_LATIN_GIVEN_NAMES.has(tokens[0])
+    && HIGH_CONFIDENCE_LATIN_SURNAMES.has(tokens[1]);
+}
+
+function latinNameBlocked(value) {
+  const text = String(value);
+  const trimmed = text.trim();
+  if (LATIN_IDENTITY_PAIR.test(trimmed)) {
+    return latinPairIsHighConfidenceName(trimmed);
+  }
+  for (const match of text.matchAll(LATIN_IDENTITY_PAIR_SCAN)) {
+    const pair = match[1];
+    if (SAFE_PUBLIC_ENTITY_PHRASES.includes(pair)) continue;
+    const before = text.slice(0, match.index);
+    const after = text.slice(match.index + pair.length);
+    if (
+      LATIN_IDENTITY_CONTEXT_BEFORE.test(before)
+      || LATIN_IDENTITY_CONTEXT_AFTER.test(after)
+    ) return true;
+  }
+  return false;
+}
+
+function chineseIdentityBlocked(value) {
+  const text = String(value);
+  const trimmed = text.trim();
+  if (STANDALONE_HAN_VALUE.test(trimmed) && !SAFE_STANDALONE_HAN_VALUES.has(trimmed)) return true;
+  return CHINESE_IDENTITY_CONTEXT.test(text);
+}
+
 function scalarPrivacyBlocked(value) {
   const text = String(value);
   return HOME_PATH.test(text)
     || CREDENTIAL.test(text)
     || PRIVATE_HASH.test(text)
+    || BARE_DIGEST.test(text)
     || MASKED_EXCERPT.test(text)
     || SECRET_QUERY.test(text)
     || EMAIL_ADDRESS.test(text)
-    || PHONE_NUMBER.test(text);
+    || PHONE_NUMBER.test(text)
+    || TAIWAN_MOBILE.test(text)
+    || TAIWAN_LANDLINE.test(text)
+    || latinNameBlocked(text)
+    || chineseIdentityBlocked(text);
 }
 
 function privacyBlocked(value) {
@@ -521,6 +618,21 @@ function privacyBlocked(value) {
   return false;
 }
 
+function rowPrivacyBlocked(row, excludedHeaders = []) {
+  return Object.entries(row).some(([header, value]) => (
+    !excludedHeaders.includes(header) && privacyBlocked(value)
+  ));
+}
+
+function opaquePointerIsSafe(value) {
+  const match = String(value).match(OPAQUE_POINTER);
+  if (!match) return false;
+  const suffix = match[1];
+  if (BARE_DIGEST.test(suffix) || /(?:masked|redacted|excerpt)/i.test(suffix)) return false;
+  const tokens = suffix.split(/[._-]/);
+  return tokens.length === 1 || OPAQUE_CATEGORY_PREFIXES.has(tokens[0].toLowerCase());
+}
+
 function sourceMatrixIsSafe(sourceClass, traceMode, sourceRef, retained) {
   if (!SOURCE_CLASSES.has(sourceClass) || !TRACE_MODES.has(traceMode)) return false;
   if (!['yes', 'no'].includes(retained)) return false;
@@ -528,7 +640,7 @@ function sourceMatrixIsSafe(sourceClass, traceMode, sourceRef, retained) {
     return traceMode === 'public-pointer' && publicHttpsUrlIsSafe(sourceRef);
   }
   if (sourceClass === 'approved-private-external') {
-    return traceMode === 'opaque-pointer' && retained === 'no' && OPAQUE_POINTER.test(sourceRef);
+    return traceMode === 'opaque-pointer' && retained === 'no' && opaquePointerIsSafe(sourceRef);
   }
   if (sourceClass === 'private-interactive') {
     return traceMode === 'attestation-only' && retained === 'no' && isEmptyLedgerValue(sourceRef);
@@ -540,7 +652,10 @@ function sourceMatrixIsSafe(sourceClass, traceMode, sourceRef, retained) {
 }
 
 function roleLabelIsSafe(value) {
-  return ROLE_LABEL.test(String(value));
+  const label = String(value);
+  if (!label.endsWith('-role')) return false;
+  const tokens = label.slice(0, -'-role'.length).split('-');
+  return tokens.length > 0 && tokens.every((token) => ROLE_TOKENS.has(token));
 }
 
 function evidenceLocatorIsSafe(value) {
@@ -609,6 +724,9 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
   for (const row of sourceRows) {
     const sourceId = row['Source ID'];
     const subject = traceSubject(sourceId, SOURCE_ID, 'PROJECT_BRIEF.md');
+    if (rowPrivacyBlocked(row)) {
+      add('PRIVACY_SOURCE_BLOCKED', subject, 'source attestation violates the privacy policy');
+    }
     if (!SOURCE_ID.test(sourceId) || sources.has(sourceId)) {
       add('TRACE_SOURCE_MISSING', subject, 'source attestation identifier is invalid');
       continue;
@@ -625,7 +743,7 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
       && TRACE_MODES.has(traceMode)
       && SOURCE_ATTESTATIONS.has(attestation);
     const rolePresent = !isEmptyLedgerValue(confirmedBy);
-    const dateValid = ISO_DATE.test(confirmedAt)
+    const dateValid = isoDateIsValid(confirmedAt)
       || (attestation !== 'confirmed' && isEmptyLedgerValue(confirmedAt));
     const privacySafe = !privacyBlocked(sourceRef)
       && (!rolePresent || (!privacyBlocked(confirmedBy) && roleLabelIsSafe(confirmedBy)))
@@ -663,6 +781,9 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
   for (const row of requirementRows) {
     const revision = row['Revision'];
     const subject = traceSubject(revision, REQUIREMENT_REVISION, 'SPEC.md');
+    if (rowPrivacyBlocked(row)) {
+      add('PRIVACY_SOURCE_BLOCKED', subject, 'requirement lineage violates the privacy policy');
+    }
     if (!REQUIREMENT_REVISION.test(revision) || requirementRowsByRevision.has(revision)) {
       add('TRACE_REVISION_INVALID', subject, 'requirement revision identifier is invalid');
       continue;
@@ -803,6 +924,9 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
     const acceptanceId = row['AC ID'];
     const revision = row['Requirement revision'];
     const subject = traceSubject(acceptanceId, ACCEPTANCE_ID, 'SPEC.md');
+    if (rowPrivacyBlocked(row)) {
+      add('PRIVACY_SOURCE_BLOCKED', subject, 'acceptance criterion violates the privacy policy');
+    }
     if (!ACCEPTANCE_ID.test(acceptanceId) || acceptances.has(acceptanceId)) {
       add('TRACE_ACCEPTANCE_MISSING', subject, 'acceptance criterion identifier is invalid');
       continue;
@@ -841,6 +965,9 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
   for (const row of taskRows) {
     const taskId = row['Task ID'];
     const subject = traceSubject(taskId, TASK_ID, 'TASK_CONTRACT.md');
+    if (rowPrivacyBlocked(row)) {
+      add('PRIVACY_SOURCE_BLOCKED', subject, 'task verification violates the privacy policy');
+    }
     if (!TASK_ID.test(taskId) || tasks.has(taskId)) {
       add('TRACE_TASK_COVERAGE_MISSING', subject, 'task identifier is invalid');
       continue;
@@ -857,6 +984,17 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
       && !privacyBlocked(row['Verification'])
       && new Set(requirements).size === requirements.length
       && new Set(acceptanceIds).size === acceptanceIds.length;
+    if (
+      !TASK_STATUSES.has(status)
+      || requirements.length === 0
+      || acceptanceIds.length === 0
+      || isEmptyLedgerValue(row['Verification'])
+      || privacyBlocked(row['Verification'])
+      || new Set(requirements).size !== requirements.length
+      || new Set(acceptanceIds).size !== acceptanceIds.length
+    ) {
+      add('TRACE_TASK_COVERAGE_MISSING', taskId, 'task status, verification, or references are invalid');
+    }
     if (privacyBlocked(row['Verification'])) {
       add('PRIVACY_SOURCE_BLOCKED', taskId, 'task verification violates the privacy policy');
     }
@@ -911,6 +1049,12 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
   for (const row of evidenceRows) {
     const evidenceId = row['Evidence ID'];
     const subject = traceSubject(evidenceId, EVIDENCE_ID, 'TASK_CONTRACT.md');
+    if (rowPrivacyBlocked(row, ['Safe evidence locator'])) {
+      add('PRIVACY_SOURCE_BLOCKED', subject, 'evidence lineage violates the privacy policy');
+    }
+    if (privacyBlocked(row['Safe evidence locator'])) {
+      add('PRIVACY_PATH_BLOCKED', subject, 'evidence locator violates the safe-path policy');
+    }
     if (!EVIDENCE_ID.test(evidenceId) || evidenceIds.has(evidenceId)) {
       add('TRACE_EVIDENCE_MISSING', subject, 'evidence identifier is invalid');
       continue;
@@ -939,7 +1083,7 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
       evidenceValid = false;
     }
     const result = row['Result'].toLowerCase();
-    if (!['passing', 'failing', 'blocked'].includes(result) || !ISO_DATE.test(row['Verified at'])) {
+    if (!['passing', 'failing', 'blocked'].includes(result) || !isoDateIsValid(row['Verified at'])) {
       add('TRACE_EVIDENCE_MISSING', evidenceId, 'evidence result is incomplete');
       evidenceValid = false;
     }
@@ -969,6 +1113,9 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
   for (const row of openLoopRows) {
     const loopId = row['Loop ID'];
     const subject = traceSubject(loopId, LOOP_ID, 'OPEN_LOOPS.md');
+    if (rowPrivacyBlocked(row)) {
+      add('PRIVACY_SOURCE_BLOCKED', subject, 'open-loop lineage violates the privacy policy');
+    }
     const status = row['Status'].toLowerCase();
     if (!LOOP_ID.test(loopId) || loopIds.has(loopId) || !LOOP_STATUSES.has(status)) {
       add('TRACE_CONFIRMATION_MISSING', subject, 'open-loop lineage row is invalid');

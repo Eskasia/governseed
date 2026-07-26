@@ -4,6 +4,7 @@ import path from 'node:path';
 
 const root = process.argv[2] ? path.resolve(process.argv[2]) : path.resolve('.');
 const errors = [];
+const FORCED_MOCK_SCRIPT = 'npm run validate:runtime-proof && node scripts/runtime-proof-mock.mjs';
 
 function exists(relativePath) {
   return fs.existsSync(path.join(root, relativePath));
@@ -27,6 +28,7 @@ for (const file of [
   'scripts/runtime-smoke-codex.mjs',
   'scripts/runtime-smoke-claude.mjs',
   'scripts/runtime-smoke-antigravity.mjs',
+  'scripts/runtime-proof-mock.mjs',
   '.github/workflows/runtime-proof.yml',
 ]) {
   if (!exists(file)) fail(`Missing runtime proof file: ${file}`);
@@ -54,16 +56,37 @@ if (exists('package.json')) {
     'runtime:proof:codex',
     'runtime:proof:claude',
     'runtime:proof:antigravity',
+    'runtime:proof:mock',
     'validate:runtime-proof',
   ]) {
     if (!pkg.scripts || !pkg.scripts[script]) fail(`package.json missing script: ${script}`);
+  }
+  if (
+    pkg.scripts?.['runtime:proof:mock']
+    && pkg.scripts['runtime:proof:mock'] !== FORCED_MOCK_SCRIPT
+  ) {
+    fail('package.json script runtime:proof:mock must equal the forced-mock wrapper');
   }
 }
 
 if (exists('.github/workflows/runtime-proof.yml')) {
   const workflow = read('.github/workflows/runtime-proof.yml');
   if (!workflow.includes('workflow_dispatch')) fail('runtime-proof.yml must use workflow_dispatch');
-  if (!workflow.includes('npm run runtime:proof')) fail('runtime-proof.yml must run npm run runtime:proof');
+  if (!/^\s*-\s*run:\s*npm run runtime:proof:mock\s*$/m.test(workflow)) {
+    fail('runtime-proof.yml must run npm run runtime:proof:mock');
+  }
+  const runtimeProofLines = workflow
+    .split(/\r?\n/u)
+    .filter((line) => line.includes('npm run runtime:proof'));
+  if (
+    runtimeProofLines.length !== 1
+    || !/^\s*-\s*run:\s*npm run runtime:proof:mock\s*$/.test(runtimeProofLines[0])
+  ) {
+    fail('runtime-proof.yml must run only npm run runtime:proof:mock');
+  }
+  if (workflow.includes('RUNTIME_PROOF_REAL')) {
+    fail('runtime-proof.yml must keep public runtime proof in mock mode');
+  }
 }
 
 if (errors.length > 0) {

@@ -9,8 +9,10 @@ import test from 'node:test';
 import {
   REQUIRED_GATE_IDS,
   validateAdapterGateReferences,
+  validateAuditStatus,
   validateGateLifecycle,
   validateMandatoryWorkflowTracking,
+  validateRequiredArtifactCommit,
   validateWorkflowIndexing,
 } from '../../scripts/validate-starter.mjs';
 
@@ -56,6 +58,17 @@ function runGit(cwd, args) {
   });
   assert.equal(result.status, 0, result.stderr || result.stdout);
 }
+
+test('delivery audit status is explicit and limited to PASS or BLOCKED', () => {
+  assert.deepEqual(validateAuditStatus('Status: BLOCKED\n'), []);
+  assert.deepEqual(validateAuditStatus('Status: PASS\n'), []);
+  assert.deepEqual(validateAuditStatus('Status: PARTIAL\n'), [
+    'Delivery audit has invalid status: PARTIAL',
+  ]);
+  assert.deepEqual(validateAuditStatus('# Audit\n'), [
+    'Delivery audit is missing an explicit status',
+  ]);
+});
 
 function copyStarter(t) {
   const sandbox = fs.mkdtempSync(path.join(fs.realpathSync(os.tmpdir()), 'gate-starter-'));
@@ -272,6 +285,110 @@ test('does not require git tracking outside a git repository', (t) => {
   assert.deepEqual(
     validateMandatoryWorkflowTracking(directory, ['workflows/product-shape-tech-route.md']),
     [],
+  );
+});
+
+test('requires every present release artifact to match HEAD, not only exist in the index', (t) => {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'release-artifact-tracking-'));
+  t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+  const evaluator = 'scripts/governance-impact-eval.mjs';
+  const scenario = 'tests/governance-impact/scenarios/scope-guard/scenario.json';
+  for (const file of [evaluator, scenario]) {
+    fs.mkdirSync(path.dirname(path.join(repo, file)), { recursive: true });
+    fs.writeFileSync(path.join(repo, file), 'synthetic\n');
+  }
+  runGit(repo, ['init', '--quiet']);
+  runGit(repo, ['add', '--', evaluator]);
+  runGit(repo, [
+    '-c',
+    'user.name=Fixture',
+    '-c',
+    'user.email=fixture@example.invalid',
+    'commit',
+    '--quiet',
+    '-m',
+    'add evaluator',
+  ]);
+
+  assert.deepEqual(
+    validateRequiredArtifactCommit(repo, [evaluator, scenario]),
+    [`Required repository artifact is not committed in HEAD: ${scenario}`],
+  );
+
+  runGit(repo, ['add', '--', scenario]);
+  assert.deepEqual(
+    validateRequiredArtifactCommit(repo, [evaluator, scenario]),
+    [`Required repository artifact is not committed in HEAD: ${scenario}`],
+  );
+
+  runGit(repo, [
+    '-c',
+    'user.name=Fixture',
+    '-c',
+    'user.email=fixture@example.invalid',
+    'commit',
+    '--quiet',
+    '-m',
+    'add scenario',
+  ]);
+  assert.deepEqual(
+    validateRequiredArtifactCommit(repo, [evaluator, scenario]),
+    [],
+  );
+
+  fs.appendFileSync(path.join(repo, evaluator), 'working-tree drift\n');
+  assert.deepEqual(
+    validateRequiredArtifactCommit(repo, [evaluator, scenario]),
+    [`Required repository artifact does not match committed HEAD: ${evaluator}`],
+  );
+
+  runGit(repo, ['add', '--', evaluator]);
+  assert.deepEqual(
+    validateRequiredArtifactCommit(repo, [evaluator, scenario]),
+    [`Required repository artifact does not match committed HEAD: ${evaluator}`],
+  );
+
+  runGit(repo, [
+    '-c',
+    'user.name=Fixture',
+    '-c',
+    'user.email=fixture@example.invalid',
+    'commit',
+    '--quiet',
+    '-m',
+    'update evaluator',
+  ]);
+  assert.deepEqual(
+    validateRequiredArtifactCommit(repo, [evaluator, scenario]),
+    [],
+  );
+});
+
+test('starter validator keeps the public CI workflow in the committed release unit', (t) => {
+  const starter = copyStarter(t);
+  runGit(starter, ['init', '--quiet']);
+  runGit(starter, ['add', '--all']);
+  runGit(starter, [
+    '-c',
+    'user.name=Fixture',
+    '-c',
+    'user.email=fixture@example.invalid',
+    'commit',
+    '--quiet',
+    '-m',
+    'candidate release',
+  ]);
+
+  fs.appendFileSync(
+    path.join(starter, '.github/workflows/validate-starter.yml'),
+    '\n# uncommitted public CI drift\n',
+  );
+  const result = runStarterValidator(starter);
+
+  assert.notEqual(result.status, 0);
+  assert.match(
+    result.stderr,
+    /Required repository artifact does not match committed HEAD: \.github\/workflows\/validate-starter\.yml/,
   );
 });
 

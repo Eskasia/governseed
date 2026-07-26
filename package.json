@@ -9,9 +9,14 @@
     "node": ">=20"
   },
   "scripts": {
-    "check": "node --check scripts/init.mjs && node --check scripts/doctor.mjs && node --check scripts/validate-starter.mjs && node --check scripts/smoke-base.mjs && node --check scripts/smoke-fullstack.mjs && node --check scripts/fixtures-check.mjs && node --check scripts/validate-runtime-proof.mjs && node --check scripts/assert-claude-first-response.mjs && node --check scripts/runtime-smoke-codex.mjs && node --check scripts/runtime-smoke-claude.mjs && node --check scripts/runtime-smoke-antigravity.mjs",
+    "check": "node --check scripts/init.mjs && node --check scripts/doctor.mjs && node --check scripts/validate-starter.mjs && node --check scripts/smoke-base.mjs && node --check scripts/smoke-fullstack.mjs && node --check scripts/fixtures-check.mjs && node --check scripts/validate-runtime-proof.mjs && node --check scripts/assert-claude-first-response.mjs && node --check scripts/runtime-smoke-codex.mjs && node --check scripts/runtime-smoke-claude.mjs && node --check scripts/runtime-smoke-antigravity.mjs && node --check scripts/runtime-proof-mock.mjs && node --check scripts/governance-impact-eval.mjs && node --check scripts/lib/governance-checks.mjs && node --check scripts/lib/governance-impact-core.mjs && node --check scripts/lib/governance-impact-adapters.mjs",
     "validate": "node scripts/validate-starter.mjs .",
     "validate:runtime-proof": "node scripts/validate-runtime-proof.mjs .",
+    "test:governance": "node --test tests/governance/doctor-governance.test.mjs tests/governance/rule-lifecycle.test.mjs tests/governance/traceability.test.mjs",
+    "test:governance-impact": "node --test tests/governance-impact/scorer.test.mjs tests/governance-impact/scenario-schema.test.mjs tests/governance-impact/cli.test.mjs tests/governance-impact/runner.test.mjs",
+    "test:privacy": "node --test tests/privacy/doctor-negative.test.mjs tests/privacy/eval-negative.test.mjs tests/privacy/runtime-proof-negative.test.mjs",
+    "validate:governance-impact": "node --test tests/governance-impact/scenario-schema.test.mjs",
+    "eval:governance": "node scripts/governance-impact-eval.mjs",
     "smoke:base": "node scripts/smoke-base.mjs",
     "smoke:fullstack": "node scripts/smoke-fullstack.mjs",
     "fixtures": "node scripts/fixtures-check.mjs",
@@ -19,7 +24,8 @@
     "runtime:proof:claude": "node scripts/runtime-smoke-claude.mjs",
     "runtime:proof:antigravity": "node scripts/runtime-smoke-antigravity.mjs",
     "runtime:proof": "npm run validate:runtime-proof && npm run runtime:proof:codex && npm run runtime:proof:claude && npm run runtime:proof:antigravity",
-    "ci": "npm run check && npm run validate && npm run validate:runtime-proof && npm run smoke:base && npm run smoke:fullstack && npm run fixtures"
+    "runtime:proof:mock": "npm run validate:runtime-proof && node scripts/runtime-proof-mock.mjs",
+    "ci": "npm run check && npm run validate && npm run validate:runtime-proof && npm run test:governance && npm run test:governance-impact && npm run test:privacy && npm run validate:governance-impact && npm run eval:governance && npm run runtime:proof:mock && npm run smoke:base && npm run smoke:fullstack && npm run fixtures"
   },
   "bin": {
     "agent-governance-init": "./scripts/init.mjs",

@@ -1,81 +1,88 @@
 #!/usr/bin/env node
-import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+
+import {
+  buildMinimalEnv,
+  resolveRuntimeExecutable,
+  runChildSafely,
+  runtimeCapabilities,
+} from './lib/governance-impact-adapters.mjs';
+import { scanPrivacyBuffer } from './governance-impact-eval.mjs';
+import {
+  normalizeExactText,
+  runRuntimeSmoke,
+} from './runtime-smoke-codex.mjs';
 
 const ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
-const FIXTURE_DIR = path.join(ROOT, '.tmp/runtime-antigravity');
-const OUTPUT_FILE = path.join(FIXTURE_DIR, 'antigravity-first-response.txt');
-const REAL_MODE = process.env.RUNTIME_PROOF_REAL === '1';
 
-function run(command, args, options = {}) {
-  const result = spawnSync(command, args, {
-    cwd: options.cwd || ROOT,
-    encoding: 'utf8',
-    shell: false,
+const ANTIGRAVITY_OUTPUT = [
+  'SKILL_USED: intake-audit',
+  'FILES_READ:',
+  '- START_HERE.md',
+  '- AGENTS.md',
+  '- .agents/AGENTS.md',
+  'BLOCKERS:',
+  '- Q1-Q9 intake is not complete.',
+  'NEXT_INTAKE_QUESTION:',
+  'Q1. 這個東西要解決誰的什麼問題？',
+  '',
+].join('\n');
+
+function installSkillFixture(workDirectory) {
+  const source = path.join(ROOT, 'tests/runtime/antigravity/skill-template/SKILL.md');
+  const sourceStat = fs.lstatSync(source);
+  if (sourceStat.isSymbolicLink() || !sourceStat.isFile() || sourceStat.nlink !== 1) {
+    const error = new Error('PATH_POLICY_BLOCKED');
+    error.code = 'PATH_POLICY_BLOCKED';
+    throw error;
+  }
+  const target = path.join(workDirectory, '.agents/skills/intake-audit/SKILL.md');
+  fs.mkdirSync(path.dirname(target), { recursive: true, mode: 0o700 });
+  fs.copyFileSync(source, target, fs.constants.COPYFILE_EXCL);
+}
+
+const ANTIGRAVITY_CONTRACT = Object.freeze({
+  runtime: 'antigravity',
+  initAgent: 'all',
+  artifactName: 'antigravity-first-response.txt',
+  mockOutput: ANTIGRAVITY_OUTPUT,
+  prepareFixture: installSkillFixture,
+  normalize(raw) {
+    return normalizeExactText(raw, ANTIGRAVITY_OUTPUT);
+  },
+  buildInvocation(executable) {
+    return {
+      executable,
+      args: [
+        '-p',
+        [
+          'Use the generated intake-audit skill.',
+          'Read START_HERE.md, AGENTS.md, and .agents/AGENTS.md.',
+          'Return exactly the approved SKILL_USED, FILES_READ, BLOCKERS, and NEXT_INTAKE_QUESTION contract.',
+          'Do not write files.',
+        ].join(' '),
+      ],
+      stdin: '',
+    };
+  },
+});
+
+export async function main(options = {}, deps = {}) {
+  return runRuntimeSmoke(ANTIGRAVITY_CONTRACT, options, {
+    runChildSafely,
+    resolveRuntimeExecutable,
+    runtimeCapabilities,
+    buildMinimalEnv,
+    privacyScanner: scanPrivacyBuffer,
+    ...deps,
   });
-  if (result.status !== 0) {
-    const stderr = result.stderr ? `\n${result.stderr}` : '';
-    throw new Error(`${command} ${args.join(' ')} failed with exit ${result.status}${stderr}`);
-  }
-  return result.stdout || '';
 }
 
-function commandExists(command) {
-  const checker = process.platform === 'win32' ? 'where' : 'command';
-  const args = process.platform === 'win32' ? [command] : ['-v', command];
-  const result = spawnSync(checker, args, { encoding: 'utf8', shell: process.platform !== 'win32' });
-  return result.status === 0;
-}
-
-function installSkillFixture() {
-  const target = path.join(FIXTURE_DIR, '.agents/skills/intake-audit/SKILL.md');
-  fs.mkdirSync(path.dirname(target), { recursive: true });
-  fs.copyFileSync(path.join(ROOT, 'tests/runtime/antigravity/skill-template/SKILL.md'), target);
-}
-
-function mockOutput() {
-  return `SKILL_USED: intake-audit
-FILES_READ:
-- START_HERE.md
-- AGENTS.md
-- .agents/AGENTS.md
-BLOCKERS:
-- Q1-Q9 intake is not complete.
-NEXT_INTAKE_QUESTION:
-Q1. 這個東西要解決誰的什麼問題？
-`;
-}
-
-function realOutput() {
-  const antigravityBin = process.env.ANTIGRAVITY_BIN || 'antigravity';
-  if (!commandExists(antigravityBin)) {
-    throw new Error(`RUNTIME_PROOF_REAL=1 requires Antigravity CLI. Set ANTIGRAVITY_BIN or install ${antigravityBin}.`);
-  }
-  return run(antigravityBin, [
-    '-p',
-    'Use the intake-audit skill. Read START_HERE.md, AGENTS.md, and .agents/AGENTS.md. Output SKILL_USED: intake-audit, FILES_READ:, BLOCKERS:, NEXT_INTAKE_QUESTION:. Do not write code.',
-  ], { cwd: FIXTURE_DIR });
-}
-
-function assertIncludes(content, needle) {
-  if (!content.includes(needle)) {
-    throw new Error(`antigravity-first-response.txt missing ${needle}`);
-  }
-}
-
-try {
-  fs.rmSync(FIXTURE_DIR, { recursive: true, force: true });
-  run(process.execPath, ['scripts/init.mjs', FIXTURE_DIR, '--agent', 'all', '--profile', 'base']);
-  installSkillFixture();
-  fs.writeFileSync(OUTPUT_FILE, REAL_MODE ? realOutput() : mockOutput());
-  const content = fs.readFileSync(OUTPUT_FILE, 'utf8');
-  for (const needle of ['SKILL_USED: intake-audit', 'FILES_READ:', 'BLOCKERS:', 'NEXT_INTAKE_QUESTION:']) {
-    assertIncludes(content, needle);
-  }
-  console.log('antigravity runtime smoke: PASS');
-} catch (error) {
-  console.error(`antigravity runtime smoke: FAIL\n${error.message}`);
-  process.exit(1);
+const entrypoint = process.argv[1]
+  ? pathToFileURL(path.resolve(process.argv[1])).href
+  : null;
+if (entrypoint === import.meta.url) {
+  process.exitCode = await main();
 }

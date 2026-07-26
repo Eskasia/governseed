@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import test from 'node:test';
 
 const schemaUrls = [
@@ -12,6 +13,7 @@ const schemas = schemaUrls.map((file) => JSON.parse(fs.readFileSync(file, 'utf8'
 const { scoreRun, sha256Canonical, validateScenario } = await import(
   '../../scripts/lib/governance-impact-core.mjs'
 );
+const { hashScenarioArtifacts } = await import('../../scripts/governance-impact-eval.mjs');
 
 function loadControl(name) {
   const file = new URL('./controls/' + name + '/run.json', import.meta.url);
@@ -113,6 +115,34 @@ test('all governance impact schemas are draft 2020-12 closed contracts', () => {
     assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
     assert.equal(schema.additionalProperties, false);
     assertClosedObjects(schema);
+  }
+});
+
+test('every distributed synthetic scenario validates and matches its pinned artifact hashes', async () => {
+  const scenariosUrl = new URL('./scenarios/', import.meta.url);
+  const scenarioIds = fs.readdirSync(scenariosUrl, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort();
+  assert.deepEqual(scenarioIds, [
+    'ambiguity-no-invention',
+    'requirements-sync',
+    'scope-guard',
+  ]);
+
+  for (const scenarioId of scenarioIds) {
+    const scenarioRoot = fileURLToPath(new URL(`./scenarios/${scenarioId}/`, import.meta.url));
+    const scenario = JSON.parse(fs.readFileSync(
+      new URL(`./scenarios/${scenarioId}/scenario.json`, import.meta.url),
+      'utf8',
+    ));
+    const validation = validateScenario(scenario, scenarioRoot);
+    assert.equal(validation.valid, true, `${scenarioId}: ${JSON.stringify(validation.errors)}`);
+    assert.deepEqual(
+      await hashScenarioArtifacts(scenarioRoot, scenario),
+      scenario.artifactHashes,
+      scenarioId,
+    );
   }
 });
 
@@ -396,4 +426,155 @@ test('checks and oracle entries must reference declared IDs', () => {
     { code: 'CHECK_REFERENCE', path: 'oracle.checkIds[1]' },
     { code: 'CHECK_COVERAGE', path: 'oracle.checkIds' },
   ]);
+});
+
+test('scenario contracts require every scoreable kind before scoreRun', () => {
+  const scenarioSchema = schemas[0];
+  const factKinds = (scenarioSchema.properties.facts.allOf ?? []).map(
+    (entry) => entry.contains.allOf[1].properties.kind.const,
+  );
+  const checkKinds = (scenarioSchema.properties.checks.allOf ?? []).map(
+    (entry) => entry.contains.allOf[1].properties.kind.const,
+  );
+  assert.deepEqual(factKinds, ['requirement', 'prohibition']);
+  assert.deepEqual(checkKinds, ['acceptance', 'prohibition', 'privacy']);
+
+  const missingRequirement = validScenario();
+  missingRequirement.facts[0].kind = 'context';
+  const validation = validateScenario(missingRequirement, '/tmp/scenario');
+  assert.equal(validation.valid, false);
+  assert.equal(
+    validation.errors.some((error) => error.code === 'FACT_KIND_COVERAGE'),
+    true,
+  );
+
+  const run = loadControl('tie');
+  run.scenario = missingRequirement;
+  assert.throws(() => scoreRun(run), /FACT_KIND_COVERAGE/);
+
+  for (const kind of ['acceptance', 'prohibition', 'privacy']) {
+    const scenario = validScenario();
+    scenario.checks = scenario.checks.filter((check) => check.kind !== kind);
+    scenario.oracle.checkIds = scenario.checks.map((check) => check.id);
+    assert.equal(validateScenario(scenario, '/tmp/scenario').valid, false, kind);
+  }
+});
+
+test('scenario contracts bind acceptance and prohibition checks to complete fact coverage', () => {
+  const acceptanceBoundToProhibition = validScenario();
+  acceptanceBoundToProhibition.checks[0].factIds = ['FACT-002'];
+  assert.equal(
+    validateScenario(acceptanceBoundToProhibition, '/tmp/scenario').errors.some(
+      (error) => error.code === 'CHECK_FACT_BINDING',
+    ),
+    true,
+  );
+
+  const prohibitionBoundToRequirement = validScenario();
+  prohibitionBoundToRequirement.checks[1].factIds = ['FACT-001'];
+  assert.equal(
+    validateScenario(prohibitionBoundToRequirement, '/tmp/scenario').errors.some(
+      (error) => error.code === 'CHECK_FACT_BINDING',
+    ),
+    true,
+  );
+
+  const uncoveredRequirement = validScenario();
+  uncoveredRequirement.facts.push({
+    id: 'FACT-003',
+    kind: 'requirement',
+    statement: 'Keep this requirement covered.',
+  });
+  uncoveredRequirement.factParity = {
+    baseline: ['FACT-001', 'FACT-002', 'FACT-003'],
+    governed: ['FACT-001', 'FACT-002', 'FACT-003'],
+  };
+  assert.equal(
+    validateScenario(uncoveredRequirement, '/tmp/scenario').errors.some(
+      (error) => error.code === 'FACT_CHECK_COVERAGE',
+    ),
+    true,
+  );
+});
+
+test('scenario contracts reserve scope evidence for canonical path contracts', () => {
+  const scenarioSchema = schemas[0];
+  assert.equal(scenarioSchema.$defs.check.properties.kind.enum.includes('scope'), false);
+
+  const scenario = validScenario();
+  scenario.checks[0].kind = 'scope';
+  assert.deepEqual(validateScenario(scenario, '/tmp/scenario').errors, [
+    { code: 'ENUM', path: 'checks[0].kind' },
+    { code: 'CHECK_KIND_COVERAGE', path: 'checks.acceptance' },
+    { code: 'FACT_CHECK_COVERAGE', path: 'facts[0]' },
+  ]);
+});
+
+test('scenario validation is total across malformed nested surfaces', () => {
+  const mutations = [
+    ['paths null', (scenario) => { scenario.paths = null; }],
+    ['paths non-object', (scenario) => { scenario.paths = []; }],
+    ['paths missing fields', (scenario) => { scenario.paths = {}; }],
+    ['artifactHashes null', (scenario) => { scenario.artifactHashes = null; }],
+    ['artifactHashes non-object', (scenario) => { scenario.artifactHashes = []; }],
+    ['artifactHashes missing fields', (scenario) => { scenario.artifactHashes = {}; }],
+    ['facts null', (scenario) => { scenario.facts = null; }],
+    ['facts non-array', (scenario) => { scenario.facts = {}; }],
+    ['facts empty', (scenario) => { scenario.facts = []; }],
+    ['facts null entry', (scenario) => { scenario.facts = [null]; }],
+    ['facts non-object entry', (scenario) => { scenario.facts = ['FACT-001']; }],
+    ['facts entry missing fields', (scenario) => { scenario.facts = [{}]; }],
+    ['factParity null', (scenario) => { scenario.factParity = null; }],
+    ['factParity non-object', (scenario) => { scenario.factParity = []; }],
+    ['factParity missing fields', (scenario) => { scenario.factParity = {}; }],
+    ['checks null', (scenario) => { scenario.checks = null; }],
+    ['checks non-array', (scenario) => { scenario.checks = {}; }],
+    ['checks empty', (scenario) => { scenario.checks = []; }],
+    ['checks null entry', (scenario) => { scenario.checks = [null]; }],
+    ['checks non-object entry', (scenario) => { scenario.checks = ['CHECK-001']; }],
+    ['checks entry missing fields', (scenario) => { scenario.checks = [{}]; }],
+    ['oracle null', (scenario) => { scenario.oracle = null; }],
+    ['oracle non-object', (scenario) => { scenario.oracle = []; }],
+    ['oracle missing fields', (scenario) => { scenario.oracle = {}; }],
+    ['allowedChangePaths null', (scenario) => { scenario.allowedChangePaths = null; }],
+    ['allowedChangePaths non-array', (scenario) => { scenario.allowedChangePaths = {}; }],
+    ['forbiddenChangePaths null', (scenario) => { scenario.forbiddenChangePaths = null; }],
+    ['forbiddenChangePaths non-array', (scenario) => { scenario.forbiddenChangePaths = {}; }],
+    ['facts sparse', (scenario) => { scenario.facts.length += 1; }],
+    ['factParity sparse', (scenario) => { scenario.factParity.baseline.length += 1; }],
+    ['checks sparse', (scenario) => { scenario.checks.length += 1; }],
+    ['oracle command sparse', (scenario) => { scenario.oracle.command.length += 1; }],
+    ['oracle checkIds sparse', (scenario) => { scenario.oracle.checkIds.length += 1; }],
+    ['allowedChangePaths sparse', (scenario) => { scenario.allowedChangePaths.length += 1; }],
+    ['forbiddenChangePaths sparse', (scenario) => { scenario.forbiddenChangePaths.length += 1; }],
+    [
+      'invalid facts with no checks',
+      (scenario) => {
+        scenario.facts = null;
+        scenario.checks = [];
+        scenario.oracle.checkIds = [];
+      },
+    ],
+    [
+      'invalid fact entries with no checks',
+      (scenario) => {
+        scenario.facts = [null];
+        scenario.checks = [];
+        scenario.oracle.checkIds = [];
+      },
+    ],
+  ];
+
+  for (const [label, mutate] of mutations) {
+    const scenario = validScenario();
+    mutate(scenario);
+    let result;
+    assert.doesNotThrow(() => {
+      result = validateScenario(scenario, '/tmp/scenario');
+    }, label);
+    assert.equal(result.valid, false, label);
+    assert.equal(Array.isArray(result.errors), true, label);
+    assert.equal(result.errors.length > 0, true, label);
+    assert.equal(result.scenarioHash, null, label);
+  }
 });

@@ -7,7 +7,7 @@ const COHORT_FIELDS = ['runtime', 'model', 'config', 'starterCommit'];
 const RUNTIMES = new Set(['synthetic', 'codex', 'claude', 'antigravity']);
 const DATA_CLASSIFICATIONS = new Set(['synthetic', 'public']);
 const FACT_KINDS = new Set(['requirement', 'prohibition', 'context']);
-const CHECK_KINDS = new Set(['acceptance', 'prohibition', 'scope', 'document', 'privacy']);
+const CHECK_KINDS = new Set(['acceptance', 'prohibition', 'document', 'privacy']);
 const EXECUTION_STATUSES = new Set(['completed', 'failed', 'timeout']);
 const BOOTSTRAP_ITERATIONS = 2000;
 const HEX_64 = /^[a-f0-9]{64}$/;
@@ -118,8 +118,16 @@ function validateRelativePath(value, errorPath, baseDir, errors) {
   if (!isRelativePosixPath(value, baseDir)) addError(errors, 'RELATIVE_PATH', errorPath);
 }
 
+function isDenseArray(value) {
+  if (!Array.isArray(value)) return false;
+  for (let index = 0; index < value.length; index += 1) {
+    if (!Object.hasOwn(value, index)) return false;
+  }
+  return true;
+}
+
 function validateReferenceArray(value, errorPath, knownIds, referenceCode, errors) {
-  if (!Array.isArray(value) || value.length === 0) {
+  if (!Array.isArray(value) || value.length === 0 || !isDenseArray(value)) {
     addError(errors, 'TYPE', errorPath);
     return [];
   }
@@ -192,9 +200,12 @@ export function validateScenario(value, baseDir) {
   }
 
   const factIds = new Set();
+  const factKinds = new Map();
+  const factPaths = new Map();
   if (!Array.isArray(value.facts) || value.facts.length === 0) {
     addError(errors, 'TYPE', 'facts');
   } else {
+    if (!isDenseArray(value.facts)) addError(errors, 'TYPE', 'facts');
     value.facts.forEach((fact, index) => {
       const errorPath = 'facts[' + index + ']';
       const keys = ['id', 'kind', 'statement'];
@@ -205,6 +216,10 @@ export function validateScenario(value, baseDir) {
         addError(errors, 'DUPLICATE_ID', errorPath + '.id');
       } else {
         factIds.add(fact.id);
+        if (FACT_KINDS.has(fact.kind)) {
+          factKinds.set(fact.id, fact.kind);
+          factPaths.set(fact.id, errorPath);
+        }
       }
       if (!FACT_KINDS.has(fact.kind)) addError(errors, 'ENUM', errorPath + '.kind');
       if (typeof fact.statement !== 'string' || fact.statement.length === 0) {
@@ -254,9 +269,11 @@ export function validateScenario(value, baseDir) {
 
   const checkIds = new Set();
   const checkKinds = new Map();
+  const checks = [];
   if (!Array.isArray(value.checks) || value.checks.length === 0) {
     addError(errors, 'TYPE', 'checks');
   } else {
+    if (!isDenseArray(value.checks)) addError(errors, 'TYPE', 'checks');
     value.checks.forEach((check, index) => {
       const errorPath = 'checks[' + index + ']';
       const keys = ['id', 'kind', 'factIds', 'critical'];
@@ -270,12 +287,63 @@ export function validateScenario(value, baseDir) {
         checkKinds.set(check.id, check.kind);
       }
       if (!CHECK_KINDS.has(check.kind)) addError(errors, 'ENUM', errorPath + '.kind');
-      validateReferenceArray(check.factIds, errorPath + '.factIds', factIds, 'FACT_REFERENCE', errors);
+      const referencedFactIds = validateReferenceArray(
+        check.factIds,
+        errorPath + '.factIds',
+        factIds,
+        'FACT_REFERENCE',
+        errors,
+      );
+      checks.push({
+        kind: check.kind,
+        factIds: referencedFactIds,
+        errorPath,
+        referencesKnown:
+          Array.isArray(check.factIds) &&
+          check.factIds.length > 0 &&
+          check.factIds.every((factId) => typeof factId === 'string' && factIds.has(factId)),
+      });
       if (typeof check.critical !== 'boolean') addError(errors, 'TYPE', errorPath + '.critical');
     });
   }
-  if (![...checkKinds.values()].includes('privacy')) {
-    addError(errors, 'CHECK_KIND_COVERAGE', 'checks.privacy');
+  for (const kind of ['requirement', 'prohibition']) {
+    if (![...factKinds.values()].includes(kind)) {
+      addError(errors, 'FACT_KIND_COVERAGE', 'facts.' + kind);
+    }
+  }
+  for (const kind of ['acceptance', 'prohibition', 'privacy']) {
+    if (![...checkKinds.values()].includes(kind)) {
+      addError(errors, 'CHECK_KIND_COVERAGE', 'checks.' + kind);
+    }
+  }
+
+  const coveredFacts = new Set();
+  for (const check of checks) {
+    const expectedFactKind =
+      check.kind === 'acceptance'
+        ? 'requirement'
+        : check.kind === 'prohibition'
+          ? 'prohibition'
+          : null;
+    if (!expectedFactKind || !check.referencesKnown) continue;
+    const matchingFactIds = check.factIds.filter(
+      (factId) => factKinds.get(factId) === expectedFactKind,
+    );
+    if (matchingFactIds.length === 0) {
+      addError(errors, 'CHECK_FACT_BINDING', check.errorPath + '.factIds');
+      continue;
+    }
+    matchingFactIds.forEach((factId) => coveredFacts.add(factId));
+  }
+  if (checks.every((check) => check.referencesKnown)) {
+    for (const [factId, factKind] of factKinds) {
+      if (
+        (factKind === 'requirement' || factKind === 'prohibition') &&
+        !coveredFacts.has(factId)
+      ) {
+        addError(errors, 'FACT_CHECK_COVERAGE', factPaths.get(factId));
+      }
+    }
   }
 
   if (
@@ -284,6 +352,7 @@ export function validateScenario(value, baseDir) {
     if (
       !Array.isArray(value.oracle.command) ||
       value.oracle.command.length === 0 ||
+      !isDenseArray(value.oracle.command) ||
       value.oracle.command.some(
         (argument) =>
           typeof argument !== 'string' || argument.length === 0 || argument.includes('\0'),
@@ -307,6 +376,10 @@ export function validateScenario(value, baseDir) {
 
   for (const key of ['allowedChangePaths', 'forbiddenChangePaths']) {
     if (!Array.isArray(value[key])) {
+      addError(errors, 'TYPE', key);
+      continue;
+    }
+    if (!isDenseArray(value[key])) {
       addError(errors, 'TYPE', key);
       continue;
     }
@@ -924,10 +997,6 @@ export function scoreRun(value) {
   }
   const scenarioHash = scenarioValidation.scenarioHash;
   const contract = scenarioContract(run.scenario);
-  if (contract.acceptance.size === 0) fail('run.scenario.checks.acceptance');
-  if (contract.requirements.size === 0) fail('run.scenario.facts.requirement');
-  if (contract.prohibitions.size === 0) fail('run.scenario.checks.prohibition');
-  if (contract.privacy.size === 0) fail('run.scenario.checks.privacy');
 
   const arms = requireObject(run.arms, 'run.arms', ['baseline', 'governed']);
   const baseline = scoreArm(arms.baseline, contract, scenarioHash, 'baseline');

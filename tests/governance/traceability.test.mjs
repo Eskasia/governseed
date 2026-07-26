@@ -35,6 +35,14 @@ function withoutLedgerRows(content, prefixes) {
   return prefixes.reduce((result, prefix) => withoutRow(result, prefix), content);
 }
 
+function fenceLedger(content, header, lastRow) {
+  const start = content.indexOf(header);
+  const end = content.indexOf(lastRow, start) + lastRow.length;
+  assert.notEqual(start, -1, `missing ledger header: ${header}`);
+  assert.notEqual(end, lastRow.length - 1, `missing ledger row: ${lastRow}`);
+  return `${content.slice(0, start)}\`\`\`\`markdown\n\`\`\`\n${content.slice(start, end)}\n\`\`\`\`${content.slice(end)}`;
+}
+
 function assertBlockedWithoutReflection(findings, code, canary) {
   assert.ok(findings.some((item) => item.code === code), JSON.stringify(findings));
   const rendered = JSON.stringify(findings);
@@ -193,6 +201,516 @@ test('blocks unsafe private source locators without reflecting their values', ()
     assert.equal(JSON.stringify(findings).includes('CANARY_PRIVATE'), false);
     assert.equal(JSON.stringify(findings).includes('/Users/'), false);
   }
+});
+
+test('scans complete raw ledger rows before semantic rejection without reflecting canaries', () => {
+  const cases = [
+    {
+      name: 'duplicate source ID',
+      code: 'PRIVACY_SOURCE_BLOCKED',
+      canary: 'CANARY_DUPLICATE_SOURCE',
+      overrides: {
+        projectBrief: fixture('PROJECT_BRIEF.md').replace(
+          '| SRC-002 | public | public-pointer | https://github.com/Eskasia/agent-governance-starter | no | confirmed | maintainer-role | 2026-07-13 |',
+          '| SRC-002 | public | public-pointer | https://github.com/Eskasia/agent-governance-starter | no | confirmed | maintainer-role | 2026-07-13 |\n| SRC-002 | approved-private-external | opaque-pointer | token=CANARY_DUPLICATE_SOURCE | no | confirmed | maintainer-role | 2026-07-13 |',
+        ),
+      },
+    },
+    {
+      name: 'invalid requirement ID',
+      code: 'PRIVACY_SOURCE_BLOCKED',
+      canary: 'CANARY_INVALID_REQUIREMENT',
+      overrides: {
+        spec: fixture('SPEC.md').replace(
+          '| REQ-002@1 | add | redline | Generated base output must not include application runtime or external credentials. | SRC-002 | maintainer-role | n/a |',
+          '| REQ-002@1 | add | redline | Generated base output must not include application runtime or external credentials. | SRC-002 | maintainer-role | n/a |\n| REQ-invalid | add | redline | Read /Users/CANARY_INVALID_REQUIREMENT/private before readiness. | SRC-002 | maintainer-role | n/a |',
+        ),
+      },
+    },
+    {
+      name: 'duplicate acceptance ID',
+      code: 'PRIVACY_SOURCE_BLOCKED',
+      canary: 'CANARY_DUPLICATE_ACCEPTANCE',
+      overrides: {
+        spec: fixture('SPEC.md').replace(
+          '| AC-002 | REQ-002@1 | Yes if the fixture contains governance documents only and no credential; no otherwise. | Application runtime or credential material appears in the fixture. |',
+          '| AC-002 | REQ-002@1 | Yes if CANARY_DUPLICATE_ACCEPTANCE@example.org confirms readiness; no otherwise. | ordinary failure signal |',
+        ),
+      },
+    },
+    {
+      name: 'invalid task status',
+      code: 'PRIVACY_SOURCE_BLOCKED',
+      canary: 'CANARY_INVALID_TASK',
+      overrides: {
+        taskContract: fixture('TASK_CONTRACT.md').replace(
+          '| TASK-002 | completed | REQ-002@1 | AC-002 | Inspect generated scope and run fixture validation. |',
+          '| TASK-002 | completed | REQ-002@1 | AC-002 | Inspect generated scope and run fixture validation. |\n| TASK-003 | unknown | sha256:CANARY_INVALID_TASK | AC-002 | ordinary verification |',
+        ),
+      },
+    },
+    {
+      name: 'duplicate evidence ID',
+      code: 'PRIVACY_PATH_BLOCKED',
+      canary: 'CANARY_DUPLICATE_EVIDENCE',
+      overrides: {
+        taskContract: fixture('TASK_CONTRACT.md').replace(
+          '| EVD-002 | AC-002 | REQ-002@1 | command:node scripts/fixtures-check.mjs | passing | 2026-07-13 |',
+          '| EVD-002 | AC-002 | REQ-002@1 | command:node scripts/fixtures-check.mjs | passing | 2026-07-13 |\n| EVD-002 | AC-002 | REQ-002@1 | public-artifact:https://example.org/result?token=CANARY_DUPLICATE_EVIDENCE | passing | 2026-07-13 |',
+        ),
+      },
+    },
+    {
+      name: 'invalid open-loop status',
+      code: 'PRIVACY_SOURCE_BLOCKED',
+      canary: 'CANARY_INVALID_LOOP',
+      overrides: {
+        openLoops: fixture('OPEN_LOOPS.md').replace(
+          '| closed | LOOP-002 | not-stated | Is application runtime work excluded? | high | maintainer-role | Preserve the public README boundary. | resolved | SRC-002 |',
+          '| closed | LOOP-002 | not-stated | Is application runtime work excluded? | high | maintainer-role | Preserve the public README boundary. | resolved | SRC-002 |\n| unknown | LOOP-003 | not-stated | masked excerpt CANARY_INVALID_LOOP | high | maintainer-role | ordinary next step | pending | n/a |',
+        ),
+      },
+    },
+  ];
+
+  for (const { name, code, canary, overrides } of cases) {
+    const findings = evaluateTraceability(...baseInputs(overrides));
+    assertBlockedWithoutReflection(findings, code, canary);
+    assert.equal(JSON.stringify(findings).includes(canary), false, name);
+  }
+});
+
+test('rejects digest and masked opaque-pointer suffixes without reflecting their values', () => {
+  const original = '| SRC-001 | synthetic | attestation-only | n/a | no | confirmed | maintainer-role | 2026-07-13 |';
+  const digest = 'a'.repeat(64);
+  const unsafePointers = [
+    `external-record:${digest}`,
+    'external-record:masked-excerpt-CANARY_OPAQUE_MASKED',
+    'external-record:redacted-record-CANARY_OPAQUE_REDACTED',
+    'external-record:excerpt-private-CANARY_OPAQUE_EXCERPT',
+    'external-record:alice-example-CANARY_OPAQUE_IDENTITY',
+  ];
+
+  for (const sourceRef of unsafePointers) {
+    const projectBrief = fixture('PROJECT_BRIEF.md').replace(
+      original,
+      `| SRC-001 | approved-private-external | opaque-pointer | ${sourceRef} | no | confirmed | maintainer-role | 2026-07-13 |`,
+    );
+    const findings = evaluateTraceability(...baseInputs({ projectBrief }));
+    assert.ok(findings.some((item) => item.code === 'PRIVACY_SOURCE_BLOCKED'), JSON.stringify(findings));
+    assert.equal(JSON.stringify(findings).includes(sourceRef), false);
+  }
+
+  const safePointer = fixture('PROJECT_BRIEF.md').replace(
+    original,
+    '| SRC-001 | approved-private-external | opaque-pointer | external-record:alpha | no | confirmed | maintainer-role | 2026-07-13 |',
+  );
+  assert.deepEqual(evaluateTraceability(...baseInputs({ projectBrief: safePointer })), []);
+});
+
+test('does not parse four-backtick code samples closed by three backticks on every ledger surface', () => {
+  const cases = [
+    {
+      name: 'source',
+      code: 'TRACE_SOURCE_MISSING',
+      label: 'source attestation',
+      overrides: {
+        projectBrief: fenceLedger(
+          fixture('PROJECT_BRIEF.md'),
+          '| Source ID | Source class | Trace mode | Source ref | Content retained | Attestation | Confirmed by | Confirmed at |',
+          '| SRC-002 | public | public-pointer | https://github.com/Eskasia/agent-governance-starter | no | confirmed | maintainer-role | 2026-07-13 |',
+        ),
+      },
+    },
+    {
+      name: 'requirement',
+      code: 'TRACE_REVISION_INVALID',
+      label: 'requirement revision',
+      overrides: {
+        spec: fenceLedger(
+          fixture('SPEC.md'),
+          '| Revision | Operation | Class | Normalized requirement | Source | Confirmed by | Supersedes |',
+          '| REQ-002@1 | add | redline | Generated base output must not include application runtime or external credentials. | SRC-002 | maintainer-role | n/a |',
+        ),
+      },
+    },
+    {
+      name: 'acceptance',
+      code: 'TRACE_ACCEPTANCE_MISSING',
+      label: 'acceptance criteria',
+      overrides: {
+        spec: fenceLedger(
+          fixture('SPEC.md'),
+          '| AC ID | Requirement revision | Yes/no criterion | Failure signal |',
+          '| AC-002 | REQ-002@1 | Yes if the fixture contains governance documents only and no credential; no otherwise. | Application runtime or credential material appears in the fixture. |',
+        ),
+      },
+    },
+    {
+      name: 'task',
+      code: 'TRACE_TASK_COVERAGE_MISSING',
+      label: 'task coverage',
+      overrides: {
+        taskContract: fenceLedger(
+          fixture('TASK_CONTRACT.md'),
+          '| Task ID | Status | Requirement | AC | Verification |',
+          '| TASK-002 | completed | REQ-002@1 | AC-002 | Inspect generated scope and run fixture validation. |',
+        ),
+      },
+    },
+    {
+      name: 'evidence',
+      code: 'TRACE_EVIDENCE_MISSING',
+      label: 'acceptance evidence',
+      overrides: {
+        taskContract: fenceLedger(
+          fixture('TASK_CONTRACT.md'),
+          '| Evidence ID | AC | Requirement | Safe evidence locator | Result | Verified at |',
+          '| EVD-002 | AC-002 | REQ-002@1 | command:node scripts/fixtures-check.mjs | passing | 2026-07-13 |',
+        ),
+      },
+    },
+    {
+      name: 'open loop',
+      code: 'TRACE_CONFIRMATION_MISSING',
+      label: 'open-loop lineage',
+      overrides: {
+        openLoops: fenceLedger(
+          fixture('OPEN_LOOPS.md'),
+          '| Status | Loop ID | Basis | Question / Risk | Impact | Owner | Next Step | Due | Resolution source |',
+          '| closed | LOOP-002 | not-stated | Is application runtime work excluded? | high | maintainer-role | Preserve the public README boundary. | resolved | SRC-002 |',
+        ),
+      },
+    },
+  ];
+
+  for (const { name, code, label, overrides } of cases) {
+    const findings = evaluateTraceability(...baseInputs(overrides));
+    assert.ok(findings.some((item) => (
+      item.code === code && item.message.includes(`${label} ledger is missing`)
+    )), `${name}: ${JSON.stringify(findings)}`);
+  }
+});
+
+test('blocks high-confidence privacy patterns and personal identity labels without reflection', () => {
+  const digestCases = [32, 40, 56, 64, 96, 128].map((length) => {
+    const digest = 'a'.repeat(length);
+    return {
+      canary: digest,
+      overrides: {
+        spec: fixture('SPEC.md').replace(
+          'Strict doctor reports the filled base fixture as ready.',
+          `Digest ${digest} confirms strict readiness.`,
+        ),
+      },
+    };
+  });
+  const cases = [
+    {
+      canary: 'CANARY_TAIWAN_PHONE',
+      overrides: {
+        spec: fixture('SPEC.md').replace(
+          'Strict doctor reports the filled base fixture as ready.',
+          'Contact 0912-345-678 before strict readiness CANARY_TAIWAN_PHONE.',
+        ),
+      },
+    },
+    ...digestCases,
+    {
+      canary: 'CANARY_MASKED_UNDERSCORE',
+      overrides: {
+        spec: fixture('SPEC.md').replace(
+          'Strict doctor reports the filled base fixture as ready.',
+          'masked_excerpt_private_CANARY_MASKED_UNDERSCORE confirms strict readiness.',
+        ),
+      },
+    },
+    {
+      canary: 'CANARY_MASKED_HYPHEN',
+      overrides: {
+        spec: fixture('SPEC.md').replace(
+          'Strict doctor reports the filled base fixture as ready.',
+          'masked-excerpt-private-CANARY_MASKED_HYPHEN confirms strict readiness.',
+        ),
+      },
+    },
+    {
+      canary: 'CANARY_REDACTED_UNDERSCORE',
+      overrides: {
+        spec: fixture('SPEC.md').replace(
+          'Strict doctor reports the filled base fixture as ready.',
+          'redacted_excerpt_private_CANARY_REDACTED_UNDERSCORE confirms strict readiness.',
+        ),
+      },
+    },
+    {
+      canary: 'Alice Example',
+      overrides: {
+        spec: fixture('SPEC.md').replace(
+          'Strict doctor reports the filled base fixture as ready.',
+          'Alice Example confirmed strict readiness.',
+        ),
+      },
+    },
+    {
+      canary: 'alice-example-role',
+      overrides: {
+        projectBrief: fixture('PROJECT_BRIEF.md').replaceAll('maintainer-role', 'alice-example-role'),
+        spec: fixture('SPEC.md').replaceAll('maintainer-role', 'alice-example-role'),
+        openLoops: fixture('OPEN_LOOPS.md').replaceAll('maintainer-role', 'alice-example-role'),
+      },
+    },
+  ];
+
+  for (const { canary, overrides } of cases) {
+    const findings = evaluateTraceability(...baseInputs(overrides));
+    assertBlockedWithoutReflection(findings, 'PRIVACY_SOURCE_BLOCKED', canary);
+  }
+});
+
+test('blocks standalone or human-context Latin name-shaped identities without reflection', () => {
+  const textCases = [
+    'William Smith',
+    'Mary Johnson',
+    'Alice Brown',
+    'WILLIAM CHEN',
+    'William Chen',
+    'Mary Wang',
+    'Alice Example',
+  ];
+  for (const identity of textCases) {
+    const spec = fixture('SPEC.md').replace(
+      'Strict doctor reports the filled base fixture as ready.',
+      `${identity} confirmed strict readiness.`,
+    );
+    const findings = evaluateTraceability(...baseInputs({ spec }));
+    assertBlockedWithoutReflection(findings, 'PRIVACY_SOURCE_BLOCKED', identity);
+  }
+
+  for (const identity of [
+    'William Smith',
+    'Mary Johnson',
+    'Alice Brown',
+    'WILLIAM CHEN',
+    'John Doe',
+    'Sarah Garcia',
+    'Michael Lee',
+    'Robert Wilson',
+  ]) {
+    const spec = fixture('SPEC.md').replace(
+      'Strict doctor reports the filled base fixture as ready.',
+      identity,
+    );
+    const findings = evaluateTraceability(...baseInputs({ spec }));
+    assertBlockedWithoutReflection(findings, 'PRIVACY_SOURCE_BLOCKED', identity);
+  }
+
+  for (const { identity, value } of [
+    { identity: 'William Smith', value: 'contact William Smith before strict readiness.' },
+    { identity: 'Mary Johnson', value: 'owner: Mary Johnson' },
+    { identity: 'Alice Brown', value: 'confirmed by Alice Brown' },
+    { identity: 'WILLIAM CHEN', value: 'approved by WILLIAM CHEN' },
+    { identity: 'William Smith', value: 'reviewed by William Smith' },
+    { identity: 'Mary Johnson', value: 'Mary Johnson contacted the reviewer.' },
+    { identity: 'Alice Brown', value: 'Alice Brown is owner.' },
+  ]) {
+    const spec = fixture('SPEC.md').replace(
+      'Strict doctor reports the filled base fixture as ready.',
+      value,
+    );
+    const findings = evaluateTraceability(...baseInputs({ spec }));
+    assertBlockedWithoutReflection(findings, 'PRIVACY_SOURCE_BLOCKED', identity);
+  }
+
+  const personalRole = 'william-smith-role';
+  const roleFindings = evaluateTraceability(...baseInputs({
+    projectBrief: fixture('PROJECT_BRIEF.md').replaceAll('maintainer-role', personalRole),
+    spec: fixture('SPEC.md').replaceAll('maintainer-role', personalRole),
+    openLoops: fixture('OPEN_LOOPS.md').replaceAll('maintainer-role', personalRole),
+  }));
+  assertBlockedWithoutReflection(roleFindings, 'PRIVACY_SOURCE_BLOCKED', personalRole);
+
+  const personalPointer = 'external-record:william-smith';
+  const projectBrief = fixture('PROJECT_BRIEF.md').replace(
+    '| SRC-001 | synthetic | attestation-only | n/a | no | confirmed | maintainer-role | 2026-07-13 |',
+    `| SRC-001 | approved-private-external | opaque-pointer | ${personalPointer} | no | confirmed | maintainer-role | 2026-07-13 |`,
+  );
+  const pointerFindings = evaluateTraceability(...baseInputs({ projectBrief }));
+  assertBlockedWithoutReflection(pointerFindings, 'PRIVACY_SOURCE_BLOCKED', personalPointer);
+});
+
+test('allows non-human Titlecase pairs outside human identity context', () => {
+  for (const phrase of [
+    'API Contract',
+    'Open Source',
+    'GitHub Actions',
+    'Data Model',
+    'Release Gate',
+    'Runtime Proof',
+    'Agent Workflow',
+    'Build Pipeline',
+    'Package Registry',
+    'Vector Index',
+    'Future Lattice',
+  ]) {
+    const standaloneSpec = fixture('SPEC.md').replace(
+      'Strict doctor reports the filled base fixture as ready.',
+      phrase,
+    );
+    assert.deepEqual(evaluateTraceability(...baseInputs({ spec: standaloneSpec })), []);
+
+    const spec = fixture('SPEC.md').replace(
+      'Strict doctor reports the filled base fixture as ready.',
+      `${phrase} confirms strict readiness.`,
+    );
+    assert.deepEqual(evaluateTraceability(...baseInputs({ spec })), []);
+  }
+});
+
+test('blocks Chinese identity values only when standalone or identity-context shaped', () => {
+  const blockedValues = [
+    '王明',
+    '陳明',
+    '王小明',
+    '王明 confirmed strict readiness.',
+    '陳明 approved strict readiness.',
+    '王小明 reviewed strict readiness.',
+    'contact 王明 before strict readiness.',
+    '由王小明確認 strict readiness.',
+    '負責人：陳明',
+    '翟明 confirmed strict readiness.',
+    '聯絡人：翟明',
+  ];
+  for (const value of blockedValues) {
+    const spec = fixture('SPEC.md').replace(
+      'Strict doctor reports the filled base fixture as ready.',
+      value,
+    );
+    const findings = evaluateTraceability(...baseInputs({ spec }));
+    assertBlockedWithoutReflection(findings, 'PRIVACY_SOURCE_BLOCKED', value);
+  }
+
+  for (const safeTerm of ['程式碼', '高可用']) {
+    const spec = fixture('SPEC.md').replace(
+      'Strict doctor reports the filled base fixture as ready.',
+      safeTerm,
+    );
+    assert.deepEqual(evaluateTraceability(...baseInputs({ spec })), []);
+  }
+});
+
+test('blocks masked and excerpt labels across English and Chinese variants', () => {
+  for (const value of [
+    'excerpt：private CANARY_EXCERPT_FULLWIDTH',
+    'redacted record private CANARY_REDACTED_RECORD',
+    '已遮罩內容不可留存 CANARY_MASKED_CHINESE',
+  ]) {
+    const spec = fixture('SPEC.md').replace(
+      'Strict doctor reports the filled base fixture as ready.',
+      value,
+    );
+    const findings = evaluateTraceability(...baseInputs({ spec }));
+    assertBlockedWithoutReflection(findings, 'PRIVACY_SOURCE_BLOCKED', value);
+  }
+});
+
+test('blocks Taiwan landline and existing international phone formats without reflection', () => {
+  for (const phone of [
+    '02-2345-6789',
+    '03 2345678',
+    '049-123-4567',
+    '089 1234567',
+    '+886 912 345 678',
+  ]) {
+    const spec = fixture('SPEC.md').replace(
+      'Strict doctor reports the filled base fixture as ready.',
+      `Contact ${phone} before strict readiness.`,
+    );
+    const findings = evaluateTraceability(...baseInputs({ spec }));
+    assertBlockedWithoutReflection(findings, 'PRIVACY_SOURCE_BLOCKED', phone);
+  }
+});
+
+test('preserves non-personal role and opaque-pointer controls', () => {
+  for (const role of ['maintainer-role', 'security-reviewer-role']) {
+    assert.deepEqual(evaluateTraceability(...baseInputs({
+      projectBrief: fixture('PROJECT_BRIEF.md').replaceAll('maintainer-role', role),
+      spec: fixture('SPEC.md').replaceAll('maintainer-role', role),
+      openLoops: fixture('OPEN_LOOPS.md').replaceAll('maintainer-role', role),
+    })), []);
+  }
+
+  const projectBrief = fixture('PROJECT_BRIEF.md').replace(
+    '| SRC-001 | synthetic | attestation-only | n/a | no | confirmed | maintainer-role | 2026-07-13 |',
+    '| SRC-001 | approved-private-external | opaque-pointer | external-record:project-alpha | no | confirmed | maintainer-role | 2026-07-13 |',
+  );
+  assert.deepEqual(evaluateTraceability(...baseInputs({ projectBrief })), []);
+
+  const spec = fixture('SPEC.md').replace(
+    'Strict doctor reports the filled base fixture as ready.',
+    'GitHub Actions confirms strict readiness.',
+  );
+  assert.deepEqual(evaluateTraceability(...baseInputs({ spec })), []);
+});
+
+test('rejects redundant tasks with invalid status, verification, or duplicate references', () => {
+  const original = '| TASK-002 | completed | REQ-002@1 | AC-002 | Inspect generated scope and run fixture validation. |';
+  const invalidRows = [
+    '| TASK-999 | bogus | REQ-001@1 | AC-001 | ordinary verification |',
+    '| TASK-999 | planned | REQ-001@1 | AC-001 | n/a |',
+    '| TASK-999 | planned | REQ-001@1, REQ-001@1 | AC-001 | ordinary verification |',
+    '| TASK-999 | planned | REQ-001@1 | AC-001, AC-001 | ordinary verification |',
+  ];
+
+  for (const row of invalidRows) {
+    const taskContract = fixture('TASK_CONTRACT.md').replace(original, `${original}\n${row}`);
+    const findings = evaluateTraceability(...baseInputs({ taskContract }));
+    assert.ok(findings.some((item) => (
+      item.code === 'TRACE_TASK_COVERAGE_MISSING' && item.subject === 'TASK-999'
+    )), JSON.stringify(findings));
+  }
+});
+
+test('rejects redundant tasks with empty requirement or acceptance reference sets', () => {
+  const original = '| TASK-002 | completed | REQ-002@1 | AC-002 | Inspect generated scope and run fixture validation. |';
+  const invalidRows = [
+    '| TASK-999 | planned |  | AC-001 | ordinary verification |',
+    '| TASK-999 | planned | REQ-001@1 |  | ordinary verification |',
+    '| TASK-999 | planned |  |  | ordinary verification |',
+  ];
+
+  for (const row of invalidRows) {
+    const taskContract = fixture('TASK_CONTRACT.md').replace(original, `${original}\n${row}`);
+    const findings = evaluateTraceability(...baseInputs({ taskContract }));
+    assert.ok(findings.some((item) => (
+      item.code === 'TRACE_TASK_COVERAGE_MISSING'
+      && item.subject === 'TASK-999'
+      && item.message.includes('status, verification, or references')
+    )), JSON.stringify(findings));
+  }
+});
+
+test('validates UTC calendar dates and blocks private EVD date cells without reflection', () => {
+  const invalidSourceDate = fixture('PROJECT_BRIEF.md').replace(
+    '| SRC-001 | synthetic | attestation-only | n/a | no | confirmed | maintainer-role | 2026-07-13 |',
+    '| SRC-001 | synthetic | attestation-only | n/a | no | confirmed | maintainer-role | 2026-02-31 |',
+  );
+  const sourceFindings = evaluateTraceability(...baseInputs({ projectBrief: invalidSourceDate }));
+  assert.ok(sourceFindings.some((item) => item.code === 'TRACE_CONFIRMATION_MISSING'));
+
+  const invalidEvidenceDate = fixture('TASK_CONTRACT.md').replace(
+    '| EVD-001 | AC-001 | REQ-001@1 | command:node scripts/doctor.mjs --strict examples/template-adoption/base-minimal | passing | 2026-07-13 |',
+    '| EVD-001 | AC-001 | REQ-001@1 | command:node scripts/doctor.mjs --strict examples/template-adoption/base-minimal | passing | 2026-02-31 |',
+  );
+  const evidenceFindings = evaluateTraceability(...baseInputs({ taskContract: invalidEvidenceDate }));
+  assert.ok(evidenceFindings.some((item) => item.code === 'TRACE_EVIDENCE_MISSING'));
+
+  const privateEvidenceDate = fixture('TASK_CONTRACT.md').replace(
+    '| EVD-001 | AC-001 | REQ-001@1 | command:node scripts/doctor.mjs --strict examples/template-adoption/base-minimal | passing | 2026-07-13 |',
+    '| EVD-001 | AC-001 | REQ-001@1 | command:node scripts/doctor.mjs --strict examples/template-adoption/base-minimal | passing | C:/Users/alice/token=CANARY_EVIDENCE_DATE |',
+  );
+  const privateDateFindings = evaluateTraceability(...baseInputs({ taskContract: privateEvidenceDate }));
+  assertBlockedWithoutReflection(privateDateFindings, 'PRIVACY_SOURCE_BLOCKED', 'CANARY_EVIDENCE_DATE');
 });
 
 test('uses only stable filenames and IDs in findings', () => {

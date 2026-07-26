@@ -9,6 +9,8 @@
 | `../startup/01-bootstrap-gates.md` | Q1-Q9 intake and progression gates |
 | `../startup/02-required-project-docs.md` | Required and conditional project docs |
 | `runtime-proof.md` | Mock and real runtime proof commands for generated adapters |
+| `governance-impact-eval.md` | Paired evaluator contract, privacy boundary, claim gate, and non-claims |
+| `superpowers/reviews/2026-07-26-governance-evidence-overhaul-audit.md` | Independent review, QA evidence, completion matrix, and release blockers |
 
 ## Runtime Entrypoints And Adapters
 
