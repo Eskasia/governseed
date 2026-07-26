@@ -98,6 +98,13 @@ The workflow runs on Ubuntu, macOS, and Windows:
 npm run ci
 ```
 
+Windows runs the portable offline contracts and the relay through a native named
+pipe. Tests that require a Unix-domain socket, POSIX uid/mode enforcement, or a
+Linux OCI execution surface report an explicit platform skip; they do not count
+as Windows containment evidence. Ubuntu and macOS retain those offline test
+surfaces, and only Linux is eligible for the separately gated real Scheme A
+workflow.
+
 Runtime proof has a separate manual workflow:
 
 ```text

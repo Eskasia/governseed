@@ -1319,7 +1319,10 @@ test('validate proves the scenario is tracked and clean before reporting success
   });
   assert.equal(exitCode, 0);
   assert.equal(events[0][0], 'tracked');
-  assert.equal(events[0][1], '/tmp/task5-validate-root/scenario');
+  assert.equal(
+    events[0][1],
+    path.resolve('/tmp/task5-validate-root', 'scenario'),
+  );
   assert.equal(events[0][2], scenario);
   assert.deepEqual(events[1], ['hash']);
   assert.equal(events[2][0], 'tracked');

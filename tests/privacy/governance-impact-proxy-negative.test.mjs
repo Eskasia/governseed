@@ -70,6 +70,9 @@ function proxyOptions(t, overrides = {}) {
 }
 
 test('responses, errors, logs, and returned API never reflect sensitive request surfaces', async (t) => {
+  if (process.platform === 'win32') {
+    return t.skip('Scheme A credential transport requires a Unix-domain socket');
+  }
   const attemptBearer = `bearer-${randomUUID()}`;
   const upstreamKey = `host-key-${randomUUID()}`;
   const attemptId = `attempt-${randomUUID()}`;
@@ -160,6 +163,9 @@ test('configuration failures expose only a stable code', () => {
 });
 
 test('cleanup uncertainty does not reflect filesystem errors or claim socket removal', async (t) => {
+  if (process.platform === 'win32') {
+    return t.skip('Scheme A credential transport requires a Unix-domain socket');
+  }
   const attemptBearer = `bearer-${randomUUID()}`;
   const upstreamKey = `host-key-${randomUUID()}`;
   const attemptId = `attempt-${randomUUID()}`;

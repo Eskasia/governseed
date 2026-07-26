@@ -1070,6 +1070,9 @@ test('Docker CLI client always uses argv tokens with shell false', async () => {
 });
 
 test('production runtime surface grants fixed UID 65532 only the traversal and file access it needs', async (t) => {
+  if (process.platform === 'win32') {
+    return t.skip('Scheme A runtime-surface permissions require POSIX mode bits');
+  }
   const tempRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'oci-supervisor-fs-test-'));
   t.after(() => fs.rmSync(tempRoot, { recursive: true, force: true }));
   const surfaceFs = createSupervisorFs({ tempRoot });

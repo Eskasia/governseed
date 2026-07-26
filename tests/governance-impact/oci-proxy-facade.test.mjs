@@ -165,6 +165,9 @@ test('credential-free reconcile and describePolicy pin the exact core v2 policy'
 });
 
 test('global owner lock blocks a live parallel owner without deleting its state', async (t) => {
+  if (process.platform === 'win32') {
+    return t.skip('Scheme A owner-only lock semantics require POSIX uid and mode bits');
+  }
   const root = temporaryRoot(t);
   const first = createOciCredentialProxyFacade({
     model: MODEL,
@@ -190,6 +193,9 @@ test('global owner lock blocks a live parallel owner without deleting its state'
 });
 
 test('stale lock is reclaimed only after proving its owner dead', async (t) => {
+  if (process.platform === 'win32') {
+    return t.skip('Scheme A owner-only lock semantics require POSIX uid and mode bits');
+  }
   const root = temporaryRoot(t);
   const first = createOciCredentialProxyFacade({
     model: MODEL,

@@ -21,6 +21,15 @@ const UPSTREAM_KEY = 'upstream-key-synthetic-001';
 const MODEL = 'gpt-fixed-synthetic';
 const UPSTREAM = 'https://api.example.invalid/v1/responses';
 
+function unixSocketTest(name, fn) {
+  if (process.platform === 'win32') {
+    return test(name, {
+      skip: 'Scheme A credential transport requires a Unix-domain socket',
+    }, fn);
+  }
+  return test(name, fn);
+}
+
 function policy(overrides = {}) {
   return {
     attemptId: ATTEMPT_ID,
@@ -169,7 +178,7 @@ test('durable policy pins non-storage, client-only tools, and identifier strippi
   });
 });
 
-test('valid request uses only the fixed upstream route and host credential', async (t) => {
+unixSocketTest('valid request uses only the fixed upstream route and host credential', async (t) => {
   const { proxy, socketPath, upstreamCalls } = await runningProxy(t);
 
   const response = await requestProxy(socketPath);
@@ -194,7 +203,7 @@ test('valid request uses only the fixed upstream route and host credential', asy
   assert.equal(JSON.stringify(proxy).includes(ATTEMPT_BEARER), false);
 });
 
-test('text/event-stream reaches the client before the upstream stream ends', async (t) => {
+unixSocketTest('text/event-stream reaches the client before the upstream stream ends', async (t) => {
   let markFirstProduced;
   const firstProduced = new Promise((resolve) => {
     markFirstProduced = resolve;
@@ -260,7 +269,7 @@ test('text/event-stream reaches the client before the upstream stream ends', asy
   );
 });
 
-test('upstream request removes client identifiers and permits only client-executed tools', async (t) => {
+unixSocketTest('upstream request removes client identifiers and permits only client-executed tools', async (t) => {
   const { socketPath, upstreamCalls } = await runningProxy(t);
   const response = await requestProxy(socketPath, {
     body: {
@@ -301,7 +310,7 @@ test('upstream request removes client identifiers and permits only client-execut
   });
 });
 
-test('bounded client-replay continuation supports a two-request tool loop', async (t) => {
+unixSocketTest('bounded client-replay continuation supports a two-request tool loop', async (t) => {
   const { socketPath, upstreamCalls } = await runningProxy(t, {
     policy: { maxRequests: 2 },
   });
@@ -353,7 +362,7 @@ test('bounded client-replay continuation supports a two-request tool loop', asyn
   );
 });
 
-test('closed request policy rejects wrong bearer, attempt, method, path, media type, and body', async (t) => {
+unixSocketTest('closed request policy rejects wrong bearer, attempt, method, path, media type, and body', async (t) => {
   const cases = [
     {
       name: 'bearer',
@@ -542,7 +551,7 @@ test('closed request policy rejects wrong bearer, attempt, method, path, media t
   }
 });
 
-test('request and response byte quotas fail closed before bytes cross the boundary', async (t) => {
+unixSocketTest('request and response byte quotas fail closed before bytes cross the boundary', async (t) => {
   await t.test('request bytes', async (t) => {
     const { socketPath, upstreamCalls } = await runningProxy(t, {
       policy: { maxRequestBytes: 48 },
@@ -579,7 +588,7 @@ test('request and response byte quotas fail closed before bytes cross the bounda
   });
 });
 
-test('attempt bearer replay after the request quota is rejected', async (t) => {
+unixSocketTest('attempt bearer replay after the request quota is rejected', async (t) => {
   const { socketPath, upstreamCalls } = await runningProxy(t);
 
   assert.equal((await requestProxy(socketPath)).statusCode, 200);
@@ -592,7 +601,7 @@ test('attempt bearer replay after the request quota is rejected', async (t) => {
   assert.equal(upstreamCalls.length, 1);
 });
 
-test('expired attempt bearer is rejected using the injected clock', async (t) => {
+unixSocketTest('expired attempt bearer is rejected using the injected clock', async (t) => {
   let now = 1_000;
   const clock = {
     now: () => now,
@@ -614,7 +623,7 @@ test('expired attempt bearer is rejected using the injected clock', async (t) =>
   assert.equal(upstreamCalls.length, 0);
 });
 
-test('deadline also terminates an authenticated request with an unfinished body', async (t) => {
+unixSocketTest('deadline also terminates an authenticated request with an unfinished body', async (t) => {
   let socketExists = false;
   let suppliedListener;
   let deadlineCallback;
@@ -735,7 +744,7 @@ test('deadline also terminates an authenticated request with an unfinished body'
   }
 });
 
-test('only one authenticated upstream request may be active', async (t) => {
+unixSocketTest('only one authenticated upstream request may be active', async (t) => {
   let releaseUpstream;
   let markStarted;
   const started = new Promise((resolve) => {
@@ -769,7 +778,7 @@ test('only one authenticated upstream request may be active', async (t) => {
   assert.equal((await first).statusCode, 200);
 });
 
-test('close removes and proves absence of the Unix socket', async (t) => {
+unixSocketTest('close removes and proves absence of the Unix socket', async (t) => {
   const socketPath = temporarySocket(t);
   const { proxy } = await runningProxy(t, { socketPath });
   assert.equal(fs.lstatSync(socketPath).isSocket(), true);
@@ -780,7 +789,7 @@ test('close removes and proves absence of the Unix socket', async (t) => {
   assert.equal(fs.existsSync(socketPath), false);
 });
 
-test('closed proxy proves a successful attempt safe without exposing request data', async (t) => {
+unixSocketTest('closed proxy proves a successful attempt safe without exposing request data', async (t) => {
   const { proxy, socketPath } = await runningProxy(t);
   assert.equal((await requestProxy(socketPath)).statusCode, 200);
 
@@ -788,7 +797,7 @@ test('closed proxy proves a successful attempt safe without exposing request dat
   assert.deepEqual(await proxy.proveSafe(), { attemptSafe: true });
 });
 
-test('request rejection removes the socket but makes the attempt ineligible', async (t) => {
+unixSocketTest('request rejection removes the socket but makes the attempt ineligible', async (t) => {
   const socketPath = temporarySocket(t);
   const { proxy } = await runningProxy(t, { socketPath });
   const response = await requestProxy(socketPath, {
@@ -809,7 +818,7 @@ test('request rejection removes the socket but makes the attempt ineligible', as
   );
 });
 
-test('upstream transport failure makes the closed attempt ineligible', async (t) => {
+unixSocketTest('upstream transport failure makes the closed attempt ineligible', async (t) => {
   const { proxy, socketPath } = await runningProxy(t, {
     upstreamTransport: async () => {
       throw new Error('private upstream detail');
@@ -827,7 +836,7 @@ test('upstream transport failure makes the closed attempt ineligible', async (t)
   );
 });
 
-test('an unused but cleanly closed proxy is safe delivery evidence', async (t) => {
+unixSocketTest('an unused but cleanly closed proxy is safe delivery evidence', async (t) => {
   const { proxy } = await runningProxy(t);
   await proxy.close();
   assert.deepEqual(await proxy.proveSafe(), { attemptSafe: true });

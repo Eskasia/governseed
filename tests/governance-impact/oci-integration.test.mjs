@@ -25,6 +25,15 @@ const BASE_IMAGE = `registry.example/base/alpine@sha256:${BASE_DIGEST}`;
 const TEST_FILE = fileURLToPath(import.meta.url);
 const FIXTURE_ROOT = path.join(path.dirname(TEST_FILE), 'fixtures', 'oci');
 
+function linuxOnlyTest(name, fn) {
+  if (process.platform === 'win32') {
+    return test(name, {
+      skip: 'Scheme A OCI preflight and execution require Linux',
+    }, fn);
+  }
+  return test(name, fn);
+}
+
 function blockedHarness(overrides = {}) {
   const calls = [];
   const writes = [];
@@ -140,7 +149,7 @@ test('the live integration surface is explicit opt-in', () => {
   assertBlocked({ calls: [], exitCode, writes }, 'OCI_INTEGRATION_OPT_IN_REQUIRED');
 });
 
-test('missing cgroup v2, Docker, or pinned base provenance blocks before node:test', async (t) => {
+linuxOnlyTest('missing cgroup v2, Docker, or pinned base provenance blocks before node:test', async (t) => {
   await t.test('cgroup v2 unavailable', () => {
     const result = blockedHarness({
       env: { GOVERNANCE_IMPACT_OCI_BASE_IMAGE: BASE_IMAGE },
@@ -232,7 +241,7 @@ test('missing cgroup v2, Docker, or pinned base provenance blocks before node:te
   });
 });
 
-test('eligible Linux builds from the pinned local base and spawns only the live test with shell false', () => {
+linuxOnlyTest('eligible Linux builds from the pinned local base and spawns only the live test with shell false', () => {
   const calls = [];
   let cleanupMode = 'ok';
   const files = new Map([

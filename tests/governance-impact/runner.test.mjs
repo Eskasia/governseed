@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
+import { fileURLToPath } from 'node:url';
 
 import {
   buildCodexRuntimeCommand,
@@ -33,7 +34,9 @@ import {
   snapshotWorkspace,
 } from '../../scripts/governance-impact-eval.mjs';
 
-const fakeRuntime = new URL('./fixtures/fake-runtime.mjs', import.meta.url);
+const fakeRuntime = fileURLToPath(
+  new URL('./fixtures/fake-runtime.mjs', import.meta.url),
+);
 
 function tempDirectory(t) {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'governance-impact-task5-'));
@@ -44,7 +47,7 @@ function tempDirectory(t) {
 function safeChild(mode, args = [], options = {}) {
   return runChildSafely(
     process.execPath,
-    [fakeRuntime.pathname, mode, ...args.map(String)],
+    [fakeRuntime, mode, ...args.map(String)],
     {
       cwd: options.cwd ?? process.cwd(),
       env: options.env ?? buildMinimalEnv('synthetic', {
