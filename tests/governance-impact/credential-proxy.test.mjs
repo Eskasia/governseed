@@ -623,7 +623,7 @@ unixSocketTest('expired attempt bearer is rejected using the injected clock', as
   assert.equal(upstreamCalls.length, 0);
 });
 
-unixSocketTest('deadline also terminates an authenticated request with an unfinished body', async (t) => {
+test('deadline also terminates an authenticated request with an unfinished body', async (t) => {
   let socketExists = false;
   let suppliedListener;
   let deadlineCallback;

@@ -24,15 +24,22 @@ const CONFIG_DIGEST = 'c'.repeat(64);
 const BASE_IMAGE = `registry.example/base/alpine@sha256:${BASE_DIGEST}`;
 const TEST_FILE = fileURLToPath(import.meta.url);
 const FIXTURE_ROOT = path.join(path.dirname(TEST_FILE), 'fixtures', 'oci');
-
-function linuxOnlyTest(name, fn) {
-  if (process.platform === 'win32') {
-    return test(name, {
-      skip: 'Scheme A OCI preflight and execution require Linux',
-    }, fn);
-  }
-  return test(name, fn);
-}
+const SYNTHETIC_REPO_ROOT = path.resolve('/repo');
+const SYNTHETIC_TEMP_ROOT = path.resolve('/tmp');
+const SYNTHETIC_NODE_EXECUTABLE = path.resolve('/usr/bin/node');
+const SYNTHETIC_FIXTURE_ROOT = path.join(
+  SYNTHETIC_REPO_ROOT,
+  'tests',
+  'governance-impact',
+  'fixtures',
+  'oci',
+);
+const SYNTHETIC_TEST_FILE = path.join(
+  SYNTHETIC_REPO_ROOT,
+  'tests',
+  'governance-impact',
+  'oci-integration.test.mjs',
+);
 
 function blockedHarness(overrides = {}) {
   const calls = [];
@@ -43,7 +50,7 @@ function blockedHarness(overrides = {}) {
     },
     mkdirSync() {},
     mkdtempSync() {
-      return '/tmp/oci-integration-blocked';
+      return path.join(SYNTHETIC_TEMP_ROOT, 'oci-integration-blocked');
     },
     readFileSync(file) {
       if (file === '/proc/self/cgroup') return '0::/user.slice/test\n';
@@ -63,9 +70,9 @@ function blockedHarness(overrides = {}) {
       ...overrides.env,
     },
     fs,
-    nodeExecutable: '/usr/bin/node',
+    nodeExecutable: SYNTHETIC_NODE_EXECUTABLE,
     platform: overrides.platform ?? 'linux',
-    repoRoot: '/repo',
+    repoRoot: SYNTHETIC_REPO_ROOT,
     spawnSync: overrides.spawnSync ?? spawnSync,
     stderr: {
       write(value) {
@@ -149,7 +156,7 @@ test('the live integration surface is explicit opt-in', () => {
   assertBlocked({ calls: [], exitCode, writes }, 'OCI_INTEGRATION_OPT_IN_REQUIRED');
 });
 
-linuxOnlyTest('missing cgroup v2, Docker, or pinned base provenance blocks before node:test', async (t) => {
+test('missing cgroup v2, Docker, or pinned base provenance blocks before node:test', async (t) => {
   await t.test('cgroup v2 unavailable', () => {
     const result = blockedHarness({
       env: { GOVERNANCE_IMPACT_OCI_BASE_IMAGE: BASE_IMAGE },
@@ -199,9 +206,8 @@ linuxOnlyTest('missing cgroup v2, Docker, or pinned base provenance blocks befor
 
   await t.test('built image provenance absent', () => {
     const calls = [];
-    const fixtureDockerfile =
-      '/repo/tests/governance-impact/fixtures/oci/Dockerfile';
-    const fixtureCodex = '/repo/tests/governance-impact/fixtures/oci/codex';
+    const fixtureDockerfile = path.join(SYNTHETIC_FIXTURE_ROOT, 'Dockerfile');
+    const fixtureCodex = path.join(SYNTHETIC_FIXTURE_ROOT, 'codex');
     const result = blockedHarness({
       env: { GOVERNANCE_IMPACT_OCI_BASE_IMAGE: BASE_IMAGE },
       fs: {
@@ -241,20 +247,20 @@ linuxOnlyTest('missing cgroup v2, Docker, or pinned base provenance blocks befor
   });
 });
 
-linuxOnlyTest('eligible Linux builds from the pinned local base and spawns only the live test with shell false', () => {
+test('eligible Linux builds from the pinned local base and spawns only the live test with shell false', () => {
   const calls = [];
   let cleanupMode = 'ok';
   const files = new Map([
     ['/proc/self/cgroup', '0::/user.slice/test\n'],
-    ['/repo/tests/governance-impact/fixtures/oci/Dockerfile', 'ARG BASE_IMAGE\n'],
-    ['/repo/tests/governance-impact/fixtures/oci/codex', '#!/bin/sh\n'],
+    [path.join(SYNTHETIC_FIXTURE_ROOT, 'Dockerfile'), 'ARG BASE_IMAGE\n'],
+    [path.join(SYNTHETIC_FIXTURE_ROOT, 'codex'), '#!/bin/sh\n'],
   ]);
   const fs = {
     existsSync(file) {
       return file === '/sys/fs/cgroup/cgroup.controllers' || files.has(file);
     },
     mkdtempSync() {
-      return '/tmp/oci-integration-test';
+      return path.join(SYNTHETIC_TEMP_ROOT, 'oci-integration-test');
     },
     readFileSync(file) {
       if (String(file).endsWith('build-metadata.json')) {
@@ -314,7 +320,7 @@ linuxOnlyTest('eligible Linux builds from the pinned local base and spawns only 
         stderr: '',
       };
     }
-    if (executable === '/usr/bin/node') {
+    if (executable === SYNTHETIC_NODE_EXECUTABLE) {
       return { status: 0, stdout: '', stderr: '' };
     }
     if (executable === 'docker' && args.includes('rm')) {
@@ -358,11 +364,13 @@ linuxOnlyTest('eligible Linux builds from the pinned local base and spawns only 
   assert.equal(build.args.includes('pull'), false);
   assert.equal(build.options.shell, false);
 
-  const testCall = calls.find((call) => call.executable === '/usr/bin/node');
-  assert.equal(testCall.executable, '/usr/bin/node');
+  const testCall = calls.find(
+    (call) => call.executable === SYNTHETIC_NODE_EXECUTABLE,
+  );
+  assert.equal(testCall.executable, SYNTHETIC_NODE_EXECUTABLE);
   assert.deepEqual(testCall.args, [
     '--test',
-    '/repo/tests/governance-impact/oci-integration.test.mjs',
+    SYNTHETIC_TEST_FILE,
   ]);
   assert.equal(testCall.options.shell, false);
   assert.equal(testCall.options.stdio, 'inherit');
