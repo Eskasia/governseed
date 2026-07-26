@@ -4,7 +4,7 @@ Date: 2026-07-26
 
 Status: BLOCKED
 
-This report records the independent review and local QA evidence for the governance evidence overhaul. The implementation is captured in local commit `7f32cf9`; its clean detached worktree passed the complete local verification set. This remains local commit evidence, not pushed branch or cloud CI evidence.
+This report records the independent review and local QA evidence for the governance evidence overhaul. The implementation is captured in local commit `7f32cf9`, and the first committed verification report is captured in follow-up commit `281f3c1`; clean detached worktrees at both revisions passed their complete local verification sets. This remains local commit evidence, not pushed branch or cloud CI evidence.
 
 ## Review Streams
 
@@ -14,7 +14,7 @@ This report records the independent review and local QA evidence for the governa
 | Task 5 security reviewer | Process launch, persistence, privacy, and fail-closed behavior | No unresolved evaluator finding; real Codex evaluation refuses before launch with `SESSION_SAFETY_UNAVAILABLE` |
 | Task 6 runtime-proof reviewers | Runtime proof cleanup, publication, concurrency, and negative cases | PASS after regression coverage and independent re-review of prior-artifact preservation |
 | Task 7 public-delivery reviewer | README, validation docs, package scripts, public CI, and claim boundaries | PASS after mechanically locking claim separation and mock-only public CI |
-| Task 8 QA agent | Focused tests, strict doctors, smoke fixtures, full CI, and worktree mutation check | PASS on a clean macOS worktree at local commit `7f32cf9` |
+| Task 8 QA agent | Focused tests, strict doctors, smoke fixtures, full CI, and worktree mutation check | PASS on clean macOS worktrees at local commits `7f32cf9` and `281f3c1` |
 | Task 8 specification auditor | Completion criteria and branch-reproducible evidence | Criterion 4 remains BLOCKED; criterion 5 remains PARTIAL pending the hosted three-platform matrix |
 | Task 8 security reviewer | Evaluator and runtime-proof attack paths | PASS; the prior-artifact deletion finding was reproduced, fixed, and closed by direct re-test |
 | Final diff reviewer | Complete diff, staged ownership boundary, validator, and release-readiness signals | PASS; the reviewed index tree matched the full-CI candidate tree and excluded every user-owned hunk |
@@ -30,9 +30,9 @@ This report records the independent review and local QA evidence for the governa
 | 2. Stable doctor findings | PASS | `scripts/lib/governance-checks.mjs`; governance doctor and traceability tests |
 | 3. Canonical rule ownership and thin adapters | PASS | `templates/runtime/AGENTS.md`, `templates/runtime/START_HERE.md`, `templates/runtime/README.md`; rule-lifecycle tests; mock runtime proof |
 | 4. Real evaluator adapters | BLOCKED | Validate, replay, run, aggregate, and gate paths exist, but every shipped real adapter intentionally refuses until containment and session-safety guarantees are proven |
-| 5. Controls on all CI operating systems | PARTIAL | Complete local CI passes on macOS at commit `7f32cf9`; the committed GitHub Ubuntu/macOS/Windows matrix has not run because no push or PR was authorized |
+| 5. Controls on all CI operating systems | PARTIAL | Complete local CI passes on macOS at commits `7f32cf9` and `281f3c1`; the committed GitHub Ubuntu/macOS/Windows matrix has not run because no push or PR was authorized |
 | 6. Public surfaces agree | PASS | The committed tree aligns public docs, package scripts, CI, schemas, scenarios, privacy tests, runtime adapters, and claim boundaries |
-| 7. Final-worktree commands | PASS | Clean detached worktree at `7f32cf9` passed `npm run ci`, three scenario CLI validations, three strict doctors, `git diff --check`, and package dry-run |
+| 7. Final-worktree commands | PASS | Clean detached worktrees at `7f32cf9` and `281f3c1` passed the applicable full CI, scenario CLI, strict doctor, diff, and package checks |
 | 8. Independent review and QA | PASS | Three independent staged-tree reviewers plus prior security and QA reviewers returned PASS; user-owned hunks remained outside the commit |
 
 ## Local QA Evidence
@@ -54,7 +54,7 @@ The root agent repeated the complete focused and CI sequence after the runtime-p
 
 A completion audit then found that the committed-artifact gate checked only path existence, not blob equality, and omitted the public CI workflow. The gate now requires every listed release artifact to exist in and match `HEAD`, including `.github/workflows/validate-starter.yml`. A separate regression locks the standalone runtime-proof validator to `npm run runtime:proof:mock` and its forced-mock wrapper. Current focused suites pass at governance 83/83, governance-impact 129/129, and privacy 24/24.
 
-Before the first commit, a disposable selective candidate proved that the user-owned surfaces could be excluded without breaking the release unit. The implementation-only staged tree hash `f44d01f5e070061d2f259a9ced61bbdfaa0b02e6` then matched that full-CI candidate tree exactly. The current audit-only staged tree is intentionally different because it records the subsequent commit verification. Three independent implementation-tree reviewers returned PASS for change ownership, distribution/CI completeness, and runtime/privacy claim boundaries.
+Before the first commit, a disposable selective candidate proved that the user-owned surfaces could be excluded without breaking the release unit. The implementation-only staged tree hash `f44d01f5e070061d2f259a9ced61bbdfaa0b02e6` then matched that full-CI candidate tree exactly. A subsequent audit-only staged tree intentionally differed while recording the commit verification; reviewed follow-up commit `281f3c1` captured that report without altering the implementation. Three independent implementation-tree reviewers returned PASS for change ownership, distribution/CI completeness, and runtime/privacy claim boundaries.
 
 Local implementation commit `7f32cf9` was then checked from a clean detached worktree:
 
@@ -62,8 +62,10 @@ Local implementation commit `7f32cf9` was then checked from a clean detached wor
 - Direct `validate` commands returned `OK` for `ambiguity-no-invention` (`686fd67cb59e4bc49a24fe10a2f8b5e042dff1c2ee7b43aa17288a9dba631170`), `requirements-sync` (`7111ee3d95596237a3d70e4e7c820e3ca59945d54f556e1772bb9063af02ea1a`), and `scope-guard` (`d91baacc549e3e15c67ff4bdd66241816d73fbf9369d2c89b066f77ea7ee8c8a`).
 - Strict doctor passed for `base-minimal`, `fullstack-ai-saas`, and `macos-beta-handoff`.
 - `npm pack --dry-run --json` exited 0 with 173 entries and 896,363 unpacked bytes.
-- Immediately after implementation commit `7f32cf9` and before this report update, the original source worktree failed the committed-artifact gate only for `README.md`, exactly because the authorized commit preserved its pre-existing product-route hunks outside `HEAD`. This report update creates an additional temporary audit-file drift until its own reviewed commit; the clean implementation commit itself passes.
+- Immediately after implementation commit `7f32cf9` and before the first report update, the original source worktree failed the committed-artifact gate only for `README.md`, exactly because the authorized commit preserved its pre-existing product-route hunks outside `HEAD`. Editing this report temporarily added audit-file drift; reviewed commit `281f3c1` closed that drift and restored `README.md` as the source worktree's only committed-artifact mismatch.
 - The evaluator still fails closed with `SCENARIO_NOT_COMMITTED` when a selected scenario is absent from `HEAD`; the committed scenario validations above prove the accepted path.
+
+The evidence-only follow-up commit `281f3c1` was also checked from a clean detached worktree. `npm run ci`, three direct scenario validations, three strict doctors, `npm run runtime:proof`, and `git diff --check` passed. `npm pack --dry-run --json` exited 0 with 173 entries and 897,282 unpacked bytes.
 
 No real external runtime CLI, deployment, push, or release was executed.
 
