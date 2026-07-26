@@ -115,6 +115,17 @@ jobs:
     },
   ]), []);
 
+  assert.deepEqual(validateGovernanceImpactWorkflows([
+    {
+      path: '.github\\workflows\\governance-impact-real.yml',
+      content: approved,
+    },
+    {
+      path: '.github\\workflows\\governance-impact-preflight.yml',
+      content: preflight,
+    },
+  ]), []);
+
   assert.match(validateGovernanceImpactWorkflows([{
     path: '.github/workflows/unsafe.yml',
     content: 'on: [push]\nenv:\n  GOVERNANCE_IMPACT_REAL: "1"\n',

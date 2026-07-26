@@ -27,6 +27,10 @@ const GOVERNANCE_IMPACT_REAL_WORKFLOW =
 const GOVERNANCE_IMPACT_PREFLIGHT_WORKFLOW =
   '.github/workflows/governance-impact-preflight.yml';
 
+function normalizeWorkflowPath(value) {
+  return String(value).replaceAll('\\', '/');
+}
+
 function workflowTriggerKeys(content) {
   const lines = String(content).split(/\r?\n/u);
   const start = lines.findIndex((line) => /^on:\s*$/u.test(line));
@@ -49,7 +53,7 @@ function workflowTriggerKeys(content) {
 export function validateGovernanceImpactWorkflows(workflows = []) {
   const errors = [];
   for (const workflow of workflows) {
-    const workflowPath = String(workflow?.path ?? '');
+    const workflowPath = normalizeWorkflowPath(workflow?.path ?? '');
     const content = String(workflow?.content ?? '');
     const touchesRealBoundary =
       content.includes('GOVERNANCE_IMPACT_REAL') ||
