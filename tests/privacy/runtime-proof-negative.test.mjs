@@ -865,9 +865,20 @@ test('standalone runtime-proof validator requires the exact forced-mock public e
   const starter = copyStarter(t);
   const workflowPath = path.join(starter, '.github/workflows/runtime-proof.yml');
   const packagePath = path.join(starter, 'package.json');
+  const skillPath = path.join(
+    starter,
+    'tests/runtime/antigravity/skill-template/SKILL.md',
+  );
 
   const valid = runRuntimeProofValidator(starter);
   assert.equal(valid.status, 0, valid.stderr || valid.stdout);
+
+  fs.writeFileSync(
+    skillPath,
+    fs.readFileSync(skillPath, 'utf8').replace(/\r?\n/gu, '\r\n'),
+  );
+  const validCrLf = runRuntimeProofValidator(starter);
+  assert.equal(validCrLf.status, 0, validCrLf.stderr || validCrLf.stdout);
 
   fs.writeFileSync(
     workflowPath,

@@ -44,7 +44,7 @@ if (exists('tests/runtime/claude/first-response.schema.json')) {
 
 if (exists('tests/runtime/antigravity/skill-template/SKILL.md')) {
   const skill = read('tests/runtime/antigravity/skill-template/SKILL.md');
-  if (!/^---\n[\s\S]*?\n---/m.test(skill)) fail('Antigravity skill template missing frontmatter');
+  if (!/^---\r?\n[\s\S]*?\r?\n---/m.test(skill)) fail('Antigravity skill template missing frontmatter');
   if (!/^name:\s*intake-audit$/m.test(skill)) fail('Antigravity skill template frontmatter missing name');
   if (!/^description:\s*\S+/m.test(skill)) fail('Antigravity skill template frontmatter missing description');
 }
