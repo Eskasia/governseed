@@ -4,20 +4,20 @@ Date: 2026-07-26
 
 Status: BLOCKED
 
-This report records the independent review and local QA evidence for the governance evidence overhaul. It is a worktree artifact, not immutable release evidence until it is committed and the committed revision passes CI.
+This report records the independent review and local QA evidence for the governance evidence overhaul. The implementation is captured in local commit `7f32cf9`; its clean detached worktree passed the complete local verification set. This remains local commit evidence, not pushed branch or cloud CI evidence.
 
 ## Review Streams
 
 | Stream | Scope | Result |
 |---|---|---|
-| Task 5 contract reviewer | Evaluator CLI, runner, schemas, scenarios, and completion contract | Local implementation passed; branch reproducibility is blocked while required files remain untracked |
+| Task 5 contract reviewer | Evaluator CLI, runner, schemas, scenarios, and completion contract | PASS; committed scenarios validate from clean commit `7f32cf9` |
 | Task 5 security reviewer | Process launch, persistence, privacy, and fail-closed behavior | No unresolved evaluator finding; real Codex evaluation refuses before launch with `SESSION_SAFETY_UNAVAILABLE` |
 | Task 6 runtime-proof reviewers | Runtime proof cleanup, publication, concurrency, and negative cases | PASS after regression coverage and independent re-review of prior-artifact preservation |
 | Task 7 public-delivery reviewer | README, validation docs, package scripts, public CI, and claim boundaries | PASS after mechanically locking claim separation and mock-only public CI |
-| Task 8 QA agent | Focused tests, strict doctors, smoke fixtures, full CI, and worktree mutation check | PASS on the current macOS worktree |
-| Task 8 specification auditor | Completion criteria and branch-reproducible evidence | BLOCKED on criteria 4 and 5; criterion 8 is only a worktree artifact until commit |
+| Task 8 QA agent | Focused tests, strict doctors, smoke fixtures, full CI, and worktree mutation check | PASS on a clean macOS worktree at local commit `7f32cf9` |
+| Task 8 specification auditor | Completion criteria and branch-reproducible evidence | Criterion 4 remains BLOCKED; criterion 5 remains PARTIAL pending the hosted three-platform matrix |
 | Task 8 security reviewer | Evaluator and runtime-proof attack paths | PASS; the prior-artifact deletion finding was reproduced, fixed, and closed by direct re-test |
-| Final diff reviewer | Complete diff, untracked artifacts, validator, and release-readiness signals | Found a false-green gap for artifacts absent from `HEAD`; the validator now fails closed until required artifacts are committed |
+| Final diff reviewer | Complete diff, staged ownership boundary, validator, and release-readiness signals | PASS; the reviewed index tree matched the full-CI candidate tree and excluded every user-owned hunk |
 | Cross-platform reviewer | Ubuntu, macOS, and Windows process, path, package, and workflow behavior | Current offline/mock paths passed review; Windows resolution now rejects `.cmd` and `.bat` shims that cannot run under `shell: false` |
 | Distribution and CI completion audit | Package tarball, clean consumer install, public workflows, and committed-release boundary | Closed two release-gate gaps: required artifacts must match `HEAD`, and the public CI workflow is now part of the committed release unit |
 | Runtime-truth completion audit | Mock/real claim separation and standalone runtime-proof validation | Closed the loose substring check; the standalone validator now requires the exact forced-mock public entrypoint and wrapper |
@@ -30,10 +30,10 @@ This report records the independent review and local QA evidence for the governa
 | 2. Stable doctor findings | PASS | `scripts/lib/governance-checks.mjs`; governance doctor and traceability tests |
 | 3. Canonical rule ownership and thin adapters | PASS | `templates/runtime/AGENTS.md`, `templates/runtime/START_HERE.md`, `templates/runtime/README.md`; rule-lifecycle tests; mock runtime proof |
 | 4. Real evaluator adapters | BLOCKED | Validate, replay, run, aggregate, and gate paths exist, but every shipped real adapter intentionally refuses until containment and session-safety guarantees are proven |
-| 5. Controls on all CI operating systems | PARTIAL | Local controls and tests pass on macOS; no committed Ubuntu/macOS/Windows CI run exists for this worktree |
-| 6. Public surfaces agree | PARTIAL | Current worktree is aligned; untracked evaluator, scenario, privacy, and report files are absent from branch history |
-| 7. Final-worktree commands | BLOCKED | A disposable selective candidate commit passed complete local CI after excluding the four user-owned surfaces; the source worktree correctly fails because required release-unit content is absent from or differs from `HEAD` |
-| 8. Independent review and QA | PARTIAL | Independent security re-review and QA pass; the specification audit still blocks release evidence, and this report is not immutable until commit |
+| 5. Controls on all CI operating systems | PARTIAL | Complete local CI passes on macOS at commit `7f32cf9`; the committed GitHub Ubuntu/macOS/Windows matrix has not run because no push or PR was authorized |
+| 6. Public surfaces agree | PASS | The committed tree aligns public docs, package scripts, CI, schemas, scenarios, privacy tests, runtime adapters, and claim boundaries |
+| 7. Final-worktree commands | PASS | Clean detached worktree at `7f32cf9` passed `npm run ci`, three scenario CLI validations, three strict doctors, `git diff --check`, and package dry-run |
+| 8. Independent review and QA | PASS | Three independent staged-tree reviewers plus prior security and QA reviewers returned PASS; user-owned hunks remained outside the commit |
 
 ## Local QA Evidence
 
@@ -54,17 +54,23 @@ The root agent repeated the complete focused and CI sequence after the runtime-p
 
 A completion audit then found that the committed-artifact gate checked only path existence, not blob equality, and omitted the public CI workflow. The gate now requires every listed release artifact to exist in and match `HEAD`, including `.github/workflows/validate-starter.yml`. A separate regression locks the standalone runtime-proof validator to `npm run runtime:proof:mock` and its forced-mock wrapper. Current focused suites pass at governance 83/83, governance-impact 129/129, and privacy 24/24.
 
-To test the intended commit boundary without changing the source branch, the root agent built a disposable Git mirror, excluded `docs/adr/000-template.md`, `templates/README.md`, `workflows/fullstack.md`, and the product-route-only README hunks, committed only the reviewable overhaul candidate in that temporary mirror, and ran `npm run ci`. The complete command passed, including starter validation, runtime-proof validation, all test suites, five controls, forced-mock runtime proof, both smoke projects, and fixtures. This is strong local candidate evidence, but it is not branch or cloud CI evidence.
+Before the first commit, a disposable selective candidate proved that the user-owned surfaces could be excluded without breaking the release unit. The implementation-only staged tree hash `f44d01f5e070061d2f259a9ced61bbdfaa0b02e6` then matched that full-CI candidate tree exactly. The current audit-only staged tree is intentionally different because it records the subsequent commit verification. Three independent implementation-tree reviewers returned PASS for change ownership, distribution/CI completeness, and runtime/privacy claim boundaries.
 
-On the source worktree, the final committed-artifact check reports exactly 29 required paths absent from `HEAD` and 19 required paths whose current content differs from `HEAD`, with no other validation error class.
+Local implementation commit `7f32cf9` was then checked from a clean detached worktree:
+
+- `npm run ci` exited 0: governance 83/83, governance-impact 129/129, privacy 24/24, scenario schema 23/23, offline controls 5/5, forced-mock runtime proof for all three adapters, base/fullstack smoke, and fixtures all passed.
+- Direct `validate` commands returned `OK` for `ambiguity-no-invention` (`686fd67cb59e4bc49a24fe10a2f8b5e042dff1c2ee7b43aa17288a9dba631170`), `requirements-sync` (`7111ee3d95596237a3d70e4e7c820e3ca59945d54f556e1772bb9063af02ea1a`), and `scope-guard` (`d91baacc549e3e15c67ff4bdd66241816d73fbf9369d2c89b066f77ea7ee8c8a`).
+- Strict doctor passed for `base-minimal`, `fullstack-ai-saas`, and `macos-beta-handoff`.
+- `npm pack --dry-run --json` exited 0 with 173 entries and 896,363 unpacked bytes.
+- Immediately after implementation commit `7f32cf9` and before this report update, the original source worktree failed the committed-artifact gate only for `README.md`, exactly because the authorized commit preserved its pre-existing product-route hunks outside `HEAD`. This report update creates an additional temporary audit-file drift until its own reviewed commit; the clean implementation commit itself passes.
+- The evaluator still fails closed with `SCENARIO_NOT_COMMITTED` when a selected scenario is absent from `HEAD`; the committed scenario validations above prove the accepted path.
 
 No real external runtime CLI, deployment, push, or release was executed.
 
 ## Blocking Decisions And Evidence
 
-1. Required evaluator, scenario, privacy, audit, workflow, and related implementation content is either absent from or different from `HEAD`. The evaluator correctly returns `SCENARIO_NOT_COMMITTED`, and an archive of the source branch cannot reproduce the candidate validation path. A local commit requires explicit authorization.
-2. Completion criterion 4 is not literal evidence of a real run. The safe current boundary is “real adapters are wired but fail closed pending containment proof.” Proving a live runtime requires a separately approved safety-supervisor workstream.
-3. Ubuntu, macOS, and Windows CI evidence must come from the committed revision.
+1. Completion criterion 4 is not literal evidence of a real run. The safe current boundary is “real adapters are wired but fail closed pending containment proof.” Proving a live runtime requires a separately approved safety-supervisor workstream.
+2. Ubuntu, macOS, and Windows hosted CI evidence requires a separately authorized push or PR. Local macOS commit evidence must not be presented as the hosted matrix.
 
 ## Criterion 4 Unlock Contract
 
@@ -76,16 +82,16 @@ This route requires explicit approval because it introduces a containment depend
 
 ## Change Ownership Boundary
 
-The reviewed overhaul cannot be staged by whole-file assumption:
+The reviewed overhaul was committed with a hunk-level ownership boundary:
 
-- `README.md` contains both overhaul documentation and pre-existing product-route wording. Only reviewed overhaul hunks may enter an overhaul commit.
-- `docs/adr/000-template.md`, `templates/README.md`, and `workflows/fullstack.md` contain pre-existing user changes and require an explicit inclusion decision.
+- Commit `7f32cf9` contains only the governance-impact/runtime-proof/committed-artifact README hunks; its pre-existing product-route wording remains unstaged in the source worktree.
+- `docs/adr/000-template.md`, `templates/README.md`, and `workflows/fullstack.md` remain unstaged and unchanged by the commit.
 - The validator no longer depends on the pre-existing `README.md` product-route wording or the `docs/adr/000-template.md` additions, so those user-owned hunks can remain outside an overhaul commit without creating a false dependency.
-- A disposable selective candidate proved that excluding those user-owned surfaces still passes complete local CI. Because release validation intentionally rejects any dirty required file, final release validation must run from the clean reviewed commit rather than from a source worktree that still contains preserved README hunks.
+- The clean reviewed commit passed complete local CI after excluding those user-owned surfaces. Because release validation intentionally rejects any dirty required file, release validation must run from the clean commit rather than from the source worktree that still contains preserved README hunks.
 - Evaluator/runtime-proof code, all three scenario trees, privacy tests, public docs, package/CI wiring, and this audit report form one dependency-coupled release unit.
 
 ## Release Boundary
 
-Offline controls, synthetic fixtures, mock runtime proof, and local QA do not establish real-world governance effectiveness. Until all blockers above are resolved, this overhaul must not be described as release-ready or as proven to improve arbitrary agents or projects.
+Offline controls, synthetic fixtures, mock runtime proof, and local QA do not establish real-world governance effectiveness. Until Criterion 4 and the hosted matrix are resolved, this overhaul must not be described as release-ready or as proven to improve arbitrary agents or projects.
 
 The current package tarball and clean local consumer install pass, including both CLI binaries and an initialized base project. The package still relies on npm's `.gitignore` fallback rather than an explicit `files` allowlist; that is a publish-surface drift risk, not a current delivery blocker.
