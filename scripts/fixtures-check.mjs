@@ -33,7 +33,12 @@ function runDoctor(fixture) {
     throw new Error(`doctor failed for ${fixture} with exit ${result.status}`);
   }
   try {
-    return JSON.stringify(JSON.parse(result.stdout), null, 2) + '\n';
+    const output = JSON.parse(result.stdout);
+    if (typeof output.projectDir !== 'string') {
+      throw new Error('doctor JSON is missing projectDir');
+    }
+    output.projectDir = output.projectDir.replaceAll('\\', '/');
+    return JSON.stringify(output, null, 2) + '\n';
   } catch {
     throw new Error(`doctor returned invalid JSON for ${fixture}`);
   }
