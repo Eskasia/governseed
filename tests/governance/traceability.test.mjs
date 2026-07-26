@@ -7,7 +7,8 @@ import { evaluateTraceability } from '../../scripts/lib/governance-checks.mjs';
 const FIXTURE_DIR = path.resolve('examples/template-adoption/base-minimal');
 const TEST_FIXTURE_DIR = path.resolve('tests/governance/fixtures');
 function fixture(name, directory = FIXTURE_DIR) {
-  return fs.readFileSync(path.join(directory, name), 'utf8');
+  return fs.readFileSync(path.join(directory, name), 'utf8')
+    .replace(/\r\n/gu, '\n');
 }
 
 function withoutRow(content, prefix) {
@@ -52,6 +53,13 @@ function assertBlockedWithoutReflection(findings, code, canary) {
 
 test('accepts a complete SRC to EVD chain', () => {
   const findings = evaluateTraceability(...baseInputs());
+  assert.deepEqual(findings, []);
+});
+
+test('accepts a complete CRLF SRC to EVD chain', () => {
+  const findings = evaluateTraceability(
+    ...baseInputs().map((content) => content.replace(/\n/gu, '\r\n')),
+  );
   assert.deepEqual(findings, []);
 });
 
