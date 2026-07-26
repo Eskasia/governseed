@@ -19,6 +19,19 @@ const SERVER_STATE_FIELDS = Object.freeze([
   'conversation',
   'prompt',
 ]);
+const SERVER_STATE_REFERENCE_FIELDS = new Set([
+  'container_id',
+  'file_id',
+  'response_id',
+]);
+const SERVER_STATE_REFERENCE_ITEM_TYPES = new Set([
+  'container_reference',
+  'item_reference',
+]);
+const REMOTE_INPUT_URL_FIELDS = new Set([
+  'file_url',
+  'image_url',
+]);
 const CLIENT_IDENTIFIER_FIELDS = Object.freeze([
   'client_metadata',
   'metadata',
@@ -175,6 +188,9 @@ function durablePolicyDescriptor(policy) {
       background: false,
       continuationMode: 'client-replay',
       serverStateFields: Object.freeze([]),
+      serverStateReferenceFields: Object.freeze([]),
+      remoteInputUrls: false,
+      toolSearchExecution: 'client',
       allowedToolTypes: Object.freeze(
         [...CLIENT_EXECUTED_TOOL_TYPES].sort(),
       ),
@@ -357,9 +373,44 @@ function validateBody(bytes, model) {
         !isPlainObject(tool)
         || typeof tool.type !== 'string'
         || !CLIENT_EXECUTED_TOOL_TYPES.has(tool.type)
+        || (
+          tool.type === 'tool_search'
+          && tool.execution !== 'client'
+        )
       ))
     ) {
       fail('PROXY_BODY_MISMATCH');
+    }
+  }
+  const pending = [body.input];
+  while (pending.length > 0) {
+    const value = pending.pop();
+    if (Array.isArray(value)) {
+      pending.push(...value);
+      continue;
+    }
+    if (!isPlainObject(value)) continue;
+    if (
+      SERVER_STATE_REFERENCE_ITEM_TYPES.has(value.type)
+      || (
+        value.type === 'tool_search_call'
+        && value.execution !== 'client'
+      )
+    ) {
+      fail('PROXY_BODY_MISMATCH');
+    }
+    for (const [key, nested] of Object.entries(value)) {
+      if (
+        SERVER_STATE_REFERENCE_FIELDS.has(key)
+        || (
+          REMOTE_INPUT_URL_FIELDS.has(key)
+          && typeof nested === 'string'
+          && /^https?:\/\//iu.test(nested)
+        )
+      ) {
+        fail('PROXY_BODY_MISMATCH');
+      }
+      if (nested !== null && typeof nested === 'object') pending.push(nested);
     }
   }
   for (const field of CLIENT_IDENTIFIER_FIELDS) delete body[field];

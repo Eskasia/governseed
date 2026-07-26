@@ -69,6 +69,10 @@ function positiveInteger(value) {
   return Number.isSafeInteger(value) && value > 0;
 }
 
+function nonNegativeInteger(value) {
+  return Number.isSafeInteger(value) && value >= 0;
+}
+
 function requireFunction(value) {
   if (typeof value !== 'function') fail('PROXY_DEPENDENCY_INVALID');
   return value;
@@ -174,7 +178,9 @@ export function createOciCredentialProxyFacade(options = {}) {
   const tempRoot = options.tempRoot ?? os.tmpdir();
   const ownerPid = options.ownerPid ?? process.pid;
   const ownerUid = options.ownerUid
-    ?? (typeof process.getuid === 'function' ? process.getuid() : null);
+    ?? (typeof process.getuid === 'function' ? process.getuid() : 0);
+  const ownerGid = options.ownerGid
+    ?? (typeof process.getgid === 'function' ? process.getgid() : 0);
   const upstreamKeyOption = options.upstreamKey;
   const getUpstreamKey = options.getUpstreamKey;
   const nodeExecutable = options.nodeExecutable ?? process.execPath;
@@ -195,6 +201,8 @@ export function createOciCredentialProxyFacade(options = {}) {
     )
     || !path.isAbsolute(tempRoot)
     || !positiveInteger(ownerPid)
+    || !nonNegativeInteger(ownerUid)
+    || !nonNegativeInteger(ownerGid)
     || !closedToken(nodeExecutable)
     || !path.isAbsolute(nodeExecutable)
     || relayScriptPath !== 'scripts/governance-impact-uds-relay.mjs'
@@ -715,6 +723,8 @@ export function createOciCredentialProxyFacade(options = {}) {
       '-n',
       'nsenter',
       `--net=/proc/${input.initPid}/ns/net`,
+      `--setgid=${ownerGid}`,
+      `--setuid=${ownerUid}`,
       '--',
       nodeExecutable,
       relayScriptPath,

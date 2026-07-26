@@ -1992,6 +1992,66 @@ export function verifyTrackedEvidenceFiles(filePaths, options = {}) {
   }
 }
 
+export function readTrackedCommittedJson(filePath, options = {}) {
+  const repositoryRoot = options.repositoryRoot ?? REPOSITORY_ROOT;
+  const gitRunner = options.gitRunner ?? spawnSync;
+  const fsApi = options.fs ?? fs;
+  verifyTrackedEvidenceFiles([filePath], {
+    repositoryRoot,
+    gitRunner,
+    fs: fsApi,
+  });
+  const rootReal = fsApi.realpathSync(repositoryRoot);
+  const stat = fsApi.lstatSync(filePath);
+  if (stat.isSymbolicLink() || !stat.isFile() || stat.nlink !== 1) {
+    fail('EVIDENCE_NOT_COMMITTED');
+  }
+  const real = fsApi.realpathSync(filePath);
+  if (real !== rootReal && !real.startsWith(rootReal + path.sep)) {
+    fail('EVIDENCE_NOT_COMMITTED');
+  }
+  const currentBytes = readStableRegularFile(
+    filePath,
+    rootReal,
+    fsApi,
+    stat,
+    real,
+    options.maxBytes ?? MAX_JSON_INPUT_BYTES,
+    'EVIDENCE_NOT_COMMITTED',
+  );
+  const gitPath = path.relative(repositoryRoot, filePath).split(path.sep).join('/');
+  const committed = gitRunner('git', ['cat-file', 'blob', `HEAD:${gitPath}`], {
+    cwd: repositoryRoot,
+    stdio: ['ignore', 'pipe', 'ignore'],
+    shell: false,
+  });
+  if (
+    committed.status !== 0
+    || !Buffer.isBuffer(committed.stdout)
+    || Buffer.compare(currentBytes, committed.stdout) !== 0
+  ) {
+    fail('EVIDENCE_NOT_COMMITTED');
+  }
+  let scanBytes = currentBytes;
+  if (options.privacyScanner === undefined) {
+    try {
+      const decoded = new TextDecoder('utf-8', { fatal: true }).decode(currentBytes);
+      scanBytes = Buffer.from(
+        decoded.replace(
+          /@sha256:[a-f0-9]{64}\b/gu,
+          '@sha256:<reviewed-oci-digest>',
+        ),
+      );
+    } catch {
+      fail('PRIVACY_SCANNER_UNAVAILABLE');
+    }
+  }
+  (options.privacyScanner ?? scanPrivacyBuffer)(scanBytes, {
+    surface: 'json-input',
+  });
+  return parseExactJson(currentBytes);
+}
+
 async function loadScenario(options, deps) {
   const repositoryRoot = deps.repositoryRoot ?? REPOSITORY_ROOT;
   const scenarioRoot = resolveRepositoryPath(options.scenario, repositoryRoot);
@@ -2303,16 +2363,16 @@ async function handleRun(options, deps) {
     options.policy,
     loaded.repositoryRoot,
   );
-  const manifest = reader(manifestPath, {
+  let manifest = reader(manifestPath, {
     root: loaded.repositoryRoot,
   });
-  const policy = reader(policyPath, {
+  let policy = reader(policyPath, {
     root: loaded.repositoryRoot,
   });
-  const normalized = normalizeAndVerifyManifest(manifest, policy, {
+  let normalized = normalizeAndVerifyManifest(manifest, policy, {
     requirePolicyPin: true,
   });
-  const attempt = normalized.manifest.attempts.find(
+  let attempt = normalized.manifest.attempts.find(
     (entry) => entry.attemptId === options['attempt-id'],
   );
   if (!attempt || attempt.scenarioHash !== loaded.scenarioHash) fail('MANIFEST_MISMATCH');
@@ -2323,7 +2383,7 @@ async function handleRun(options, deps) {
     deps.fs ?? fs,
     'PATH_POLICY_BLOCKED',
   );
-  const runtime = normalized.manifest.cohort.runtime;
+  let runtime = normalized.manifest.cohort.runtime;
   const platform = deps.platform ?? process.platform;
   const sourceEnv = deps.env ?? process.env;
   const timeoutMs = options['timeout-ms'] ?? DEFAULT_RUN_TIMEOUT_MS;
@@ -2344,14 +2404,20 @@ async function handleRun(options, deps) {
       options['preflight-receipt'],
       loaded.repositoryRoot,
     );
-    const evidenceVerifier =
-      deps.verifyTrackedEvidence ?? verifyTrackedEvidenceFiles;
-    evidenceVerifier(
-      [manifestPath, policyPath, receiptPath],
-      trackingOptions,
+    const readTrackedCommitted =
+      deps.readTrackedCommittedJson ?? readTrackedCommittedJson;
+    manifest = readTrackedCommitted(manifestPath, trackingOptions);
+    policy = readTrackedCommitted(policyPath, trackingOptions);
+    normalized = normalizeAndVerifyManifest(manifest, policy, {
+      requirePolicyPin: true,
+    });
+    runtime = normalized.manifest.cohort.runtime;
+    attempt = normalized.manifest.attempts.find(
+      (entry) => entry.attemptId === options['attempt-id'],
     );
+    if (!attempt || attempt.scenarioHash !== loaded.scenarioHash) fail('MANIFEST_MISMATCH');
     const reviewedReceipt = validateReviewedPreflightReceipt(
-      reader(receiptPath, { root: loaded.repositoryRoot }),
+      readTrackedCommitted(receiptPath, trackingOptions),
       {
         model: normalized.manifest.cohort.model,
         timeoutMs,

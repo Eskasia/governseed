@@ -53,16 +53,19 @@ not attestation, credential approval, or real-run evidence.
 
 The container remains on Docker `NetworkMode=none`. The host UDS is not mounted
 into it. After the init host PID is known, a host process uses narrowly scoped
-`sudo -n nsenter --net=/proc/<init-pid>/ns/net` to listen on container
-loopback while retaining access to the host-only UDS. One bounded closed stdin
-line configures the relay and subsequent EOF is its lifeline; relay secrets do
+`sudo -n nsenter --net=/proc/<init-pid>/ns/net --setgid=<host-gid>
+--setuid=<host-uid>` to enter container networking, drop back to the invoking
+host identity, listen on container loopback, and retain access to the host-only
+UDS. One bounded closed stdin line configures the relay and subsequent EOF is
+its lifeline; relay secrets do
 not depend on a preserved `sudo` environment or `sudoers env_keep`. The
 upstream key remains host-only; the container receives an attempt bearer.
 
 The host proxy closes the Responses request contract to exact model and
 attempt, `store: false`, foreground progressive SSE, no provider-held response,
-conversation, or prompt state, stripped client identifiers, and
-client-executed tools only. A bounded client replay loop permits at most 32
+conversation, prompt, item, file, or container state, no remote input URLs,
+stripped client identifiers, and client-executed tools with explicit client
+`tool_search`. A bounded client replay loop permits at most 32
 sequential calls, one active call, 1 MiB per request, 4 MiB per response, and
 one attempt deadline. This is implementation and test coverage, not evidence
 that live Codex/provider tool-loop compatibility works.

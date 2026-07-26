@@ -12,6 +12,7 @@ import {
 import {
   main,
   parseCommand,
+  readTrackedCommittedJson,
   verifyTrackedEvidenceFiles,
 } from '../../scripts/governance-impact-eval.mjs';
 
@@ -645,6 +646,14 @@ test('v2 Linux Codex routes through OCI provenance without host binary or CODEX_
     imageReference,
     boundaryEvidence,
   });
+  fs.writeFileSync(path.join(repositoryRoot, 'manifest.json'), JSON.stringify(manifest));
+  fs.writeFileSync(path.join(repositoryRoot, 'policy.json'), JSON.stringify(policy));
+  fs.writeFileSync(path.join(repositoryRoot, 'preflight.json'), JSON.stringify(receipt));
+  runGit(repositoryRoot, ['init', '--quiet']);
+  runGit(repositoryRoot, ['config', 'user.email', 'synthetic@example.invalid']);
+  runGit(repositoryRoot, ['config', 'user.name', 'Synthetic Test']);
+  runGit(repositoryRoot, ['add', 'manifest.json', 'policy.json', 'preflight.json']);
+  runGit(repositoryRoot, ['commit', '--quiet', '-m', 'reviewed evidence']);
   const upstreamKey = 'CANARY_UPSTREAM_KEY_MUST_STAY_ON_HOST';
   const events = [];
   const proxy = Object.freeze({ kind: 'opaque-facade' });
@@ -695,12 +704,6 @@ test('v2 Linux Codex routes through OCI provenance without host binary or CODEX_
       throw new Error('unexpected input');
     },
     verifyTrackedScenario() {},
-    verifyTrackedEvidence(files) {
-      assert.deepEqual(
-        files.map((file) => path.basename(file)),
-        ['manifest.json', 'policy.json', 'preflight.json'],
-      );
-    },
     hashScenarioArtifacts: async () => scenario.artifactHashes,
     resolveRuntimeExecutable() {
       assert.fail('OCI route must not resolve a host runtime');
@@ -794,6 +797,14 @@ test('v2 boundary mismatch stops before credential access or arm execution', asy
       observedImageDigest: 'b'.repeat(64),
     }),
   });
+  fs.writeFileSync(path.join(repositoryRoot, 'manifest.json'), JSON.stringify(manifest));
+  fs.writeFileSync(path.join(repositoryRoot, 'policy.json'), JSON.stringify(policy));
+  fs.writeFileSync(path.join(repositoryRoot, 'preflight.json'), JSON.stringify(receipt));
+  runGit(repositoryRoot, ['init', '--quiet']);
+  runGit(repositoryRoot, ['config', 'user.email', 'synthetic@example.invalid']);
+  runGit(repositoryRoot, ['config', 'user.name', 'Synthetic Test']);
+  runGit(repositoryRoot, ['add', 'manifest.json', 'policy.json', 'preflight.json']);
+  runGit(repositoryRoot, ['commit', '--quiet', '-m', 'reviewed evidence']);
   const exitCode = await main([
     'run',
     '--scenario', 'scenario',
@@ -823,7 +834,6 @@ test('v2 boundary mismatch stops before credential access or arm execution', asy
       throw new Error('unexpected input');
     },
     verifyTrackedScenario() {},
-    verifyTrackedEvidence() {},
     hashScenarioArtifacts: async () => scenario.artifactHashes,
     createOciProxyFacade: () => Object.freeze({ kind: 'opaque-facade' }),
     createOciSupervisor: () => ({
@@ -1341,6 +1351,48 @@ test('v2 evidence verifier requires manifest, policy, and receipt to match HEAD'
   runGit(repositoryRoot, ['add', 'artifacts/preflight.json']);
   assert.throws(
     () => verifyTrackedEvidenceFiles(files, { repositoryRoot }),
+    (error) => error.code === 'EVIDENCE_NOT_COMMITTED',
+  );
+});
+
+test('tracked committed JSON binds loaded bytes to HEAD content', (t) => {
+  const repositoryRoot = tempDirectory(t);
+  const evidenceRoot = path.join(repositoryRoot, 'artifacts');
+  fs.mkdirSync(evidenceRoot);
+  const file = path.join(evidenceRoot, 'preflight.json');
+  const imageReference =
+    `registry.example/governance/codex@sha256:${'b'.repeat(64)}`;
+  fs.writeFileSync(file, `${JSON.stringify({ imageReference })}\n`);
+  runGit(repositoryRoot, ['init', '--quiet']);
+  runGit(repositoryRoot, ['config', 'user.email', 'synthetic@example.invalid']);
+  runGit(repositoryRoot, ['config', 'user.name', 'Synthetic Test']);
+  runGit(repositoryRoot, ['add', 'artifacts/preflight.json']);
+  runGit(repositoryRoot, ['commit', '--quiet', '-m', 'reviewed evidence']);
+
+  assert.deepEqual(
+    readTrackedCommittedJson(file, { repositoryRoot }),
+    { imageReference },
+  );
+
+  const gitRunner = (command, args, options) => {
+    if (
+      command === 'git'
+      && args[0] === 'cat-file'
+      && args[1] === 'blob'
+      && args[2] === 'HEAD:artifacts/preflight.json'
+    ) {
+      return {
+        status: 0,
+        stdout: Buffer.from('{"tampered":true}\n'),
+      };
+    }
+    return spawnSync(command, args, options);
+  };
+  assert.throws(
+    () => readTrackedCommittedJson(file, {
+      repositoryRoot,
+      gitRunner,
+    }),
     (error) => error.code === 'EVIDENCE_NOT_COMMITTED',
   );
 });

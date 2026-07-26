@@ -69,15 +69,18 @@ Unix-domain socket is not bind-mounted into the container. After the container
 init host PID is known, the supervisor starts:
 
 ```text
-sudo -n nsenter --net=/proc/<init-pid>/ns/net -- \
+sudo -n nsenter --net=/proc/<init-pid>/ns/net \
+  --setgid=<host-gid> --setuid=<host-uid> -- \
   <node> scripts/governance-impact-uds-relay.mjs
 ```
 
-The relay is a host process that listens on `127.0.0.1:43127` inside the
-container network namespace while retaining the host mount namespace. It can
-therefore reach the ephemeral host-only UDS without exposing that filesystem
-object to the container. Relay readiness is required before PID 1 releases
-Codex. Relay configuration and secrets are not passed in argv or inherited
+The relay enters only the container network namespace, then drops back to the
+invoking host UID/GID before executing Node. It listens on
+`127.0.0.1:43127` while retaining the host mount namespace and can therefore
+reach the caller-owned ephemeral host-only UDS without exposing that filesystem
+object to the container or leaving an HTTP parser running as host root. Relay
+readiness is required before PID 1 releases Codex. Relay configuration and
+secrets are not passed in argv or inherited
 through a preserved `sudo` environment. The parent writes one bounded closed
 configuration line to the relay's private stdin; after that line, the same pipe
 is a lifeline and EOF initiates relay shutdown. No `sudoers env_keep` is needed
@@ -97,13 +100,16 @@ The provider surface is restricted to at most 32 sequential
 request is capped at 1 MiB, every response at 4 MiB, and all calls share the
 attempt deadline. Requests require `store: false`, `stream: true`, and
 `background` absent or `false`. `previous_response_id`, `conversation`, and
-`prompt` are forbidden. Client identifier fields are stripped. Only
+`prompt` are forbidden. Nested item/file/container references and remote input
+URLs are also forbidden. Client identifier fields are stripped. Only
 client-executed `function`, `custom`, `local_shell`, `apply_patch`, and
-`tool_search` tools may pass; hosted server-side tools are rejected.
+`tool_search` tools may pass; `tool_search` must explicitly declare client
+execution and hosted server-side tools are rejected.
 
 This permits a bounded client replay loop: Codex can execute an allowed tool
 and submit the next self-contained request, but it cannot continue through
-provider-held response, conversation, or prompt state. Live Codex/provider
+provider-held response, conversation, prompt, item, file, or container state.
+Live Codex/provider
 compatibility with that loop remains unproven until an authorized real run
 demonstrates it.
 

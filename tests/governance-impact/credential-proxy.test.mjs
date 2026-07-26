@@ -146,6 +146,9 @@ test('durable policy pins non-storage, client-only tools, and identifier strippi
       background: false,
       continuationMode: 'client-replay',
       serverStateFields: [],
+      serverStateReferenceFields: [],
+      remoteInputUrls: false,
+      toolSearchExecution: 'client',
       allowedToolTypes: [
         'apply_patch',
         'custom',
@@ -274,7 +277,7 @@ test('upstream request removes client identifiers and permits only client-execut
         { type: 'custom', name: 'synthetic_custom' },
         { type: 'local_shell' },
         { type: 'apply_patch' },
-        { type: 'tool_search' },
+        { type: 'tool_search', execution: 'client' },
       ],
     },
   });
@@ -292,7 +295,7 @@ test('upstream request removes client identifiers and permits only client-execut
       { type: 'custom', name: 'synthetic_custom' },
       { type: 'local_shell' },
       { type: 'apply_patch' },
-      { type: 'tool_search' },
+      { type: 'tool_search', execution: 'client' },
     ],
   });
 });
@@ -445,6 +448,83 @@ test('closed request policy rejects wrong bearer, attempt, method, path, media t
           store: false,
           stream: true,
           tools: [{ type: 'web_search' }],
+        },
+      },
+      code: 'PROXY_BODY_MISMATCH',
+    },
+    {
+      name: 'server-executed tool search',
+      request: {
+        body: {
+          model: MODEL,
+          input: 'synthetic request',
+          store: false,
+          stream: true,
+          tools: [{ type: 'tool_search', execution: 'server' }],
+        },
+      },
+      code: 'PROXY_BODY_MISMATCH',
+    },
+    {
+      name: 'provider item reference',
+      request: {
+        body: {
+          model: MODEL,
+          input: [{ type: 'item_reference', id: 'item_synthetic' }],
+          store: false,
+          stream: true,
+        },
+      },
+      code: 'PROXY_BODY_MISMATCH',
+    },
+    {
+      name: 'provider file reference',
+      request: {
+        body: {
+          model: MODEL,
+          input: [{
+            role: 'user',
+            content: [{
+              type: 'input_file',
+              file_id: 'file_synthetic',
+            }],
+          }],
+          store: false,
+          stream: true,
+        },
+      },
+      code: 'PROXY_BODY_MISMATCH',
+    },
+    {
+      name: 'remote input URL',
+      request: {
+        body: {
+          model: MODEL,
+          input: [{
+            role: 'user',
+            content: [{
+              type: 'input_image',
+              image_url: 'https://example.invalid/synthetic.png',
+            }],
+          }],
+          store: false,
+          stream: true,
+        },
+      },
+      code: 'PROXY_BODY_MISMATCH',
+    },
+    {
+      name: 'server-executed replayed tool search',
+      request: {
+        body: {
+          model: MODEL,
+          input: [{
+            type: 'tool_search_call',
+            execution: 'server',
+            arguments: { query: 'synthetic' },
+          }],
+          store: false,
+          stream: true,
         },
       },
       code: 'PROXY_BODY_MISMATCH',

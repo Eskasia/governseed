@@ -24,13 +24,15 @@ forced-mock CI, privacy boundary, or oracle/persistence ordering.
   per-arm cleanup proof, score, then atomic persistence.
 - Docker `NetworkMode=none` keeps only container loopback. A host process enters
   the container network namespace with narrowly reviewed `sudo -n nsenter`,
-  listens on loopback, and connects to the host-only UDS without bind-mounting
-  that socket into the container. One bounded stdin line carries closed relay
+  drops to the invoking host UID/GID before executing the relay, listens on
+  loopback, and connects to the host-only UDS without bind-mounting that socket
+  into the container. One bounded stdin line carries closed relay
   configuration; subsequent EOF is the relay lifeline. Relay secrets never
   depend on `sudo` environment preservation or `sudoers env_keep`.
 - Provider requests require exact model and deadline, `store: false`,
-  progressive `stream: true`, no background or server state, stripped client
-  identifiers, and client-executed tools only. The client replay loop is
+  progressive `stream: true`, no background, provider-held state references,
+  or remote input URLs, stripped client identifiers, and client-executed tools
+  only; `tool_search` requires explicit client execution. The client replay loop is
   limited to 32 sequential requests, 1 MiB per request, 4 MiB per response,
   and one active request.
 - Host Codex, Claude, Antigravity, macOS, Windows, and every unproved fallback
@@ -97,9 +99,10 @@ policy hashing, Docker create/inspect/start/wait ordering, hardened config,
 FIFO lifeline ownership, cgroup-path capture, `populated 0`, stopped cgroup
 removal, reconciliation, timeout/non-zero semantics, cleanup uncertainty, and
 sanitized evidence. Add a host-netns relay that runs through exact
-`sudo -n nsenter --net=/proc/<init-pid>/ns/net`, binds only container
-loopback, reaches the host UDS from the host mount namespace, and must report
-ready before Codex starts. Send one bounded closed configuration line over
+`sudo -n nsenter --net=/proc/<init-pid>/ns/net --setgid=<host-gid>
+--setuid=<host-uid>`, drops to the invoking host identity, binds only
+container loopback, reaches the host UDS from the host mount namespace, and
+must report ready before Codex starts. Send one bounded closed configuration line over
 parent-owned stdin, then use EOF as the relay lifeline; do not pass relay
 secrets in argv, inherited environment, or a `sudoers env_keep` rule. Implement
 the supervisor behind injected Docker/procfs/proxy clients; do not open the
