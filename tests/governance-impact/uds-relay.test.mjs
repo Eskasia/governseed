@@ -13,6 +13,10 @@ const BEARER = 'relay-attempt-bearer-synthetic';
 
 function temporarySocket(t) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'uds-relay-test-'));
+  if (process.platform === 'win32') {
+    t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+    return String.raw`\\.\pipe\${path.basename(root)}-core`;
+  }
   t.after(() => fs.rmSync(root, { recursive: true, force: true }));
   return path.join(root, 'core.sock');
 }
