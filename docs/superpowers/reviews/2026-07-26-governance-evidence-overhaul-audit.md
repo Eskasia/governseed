@@ -4,14 +4,14 @@ Date: 2026-07-26
 
 Status: BLOCKED
 
-This report records the independent review and local QA evidence for the governance evidence overhaul. The implementation is captured in local commit `7f32cf9`, and the first committed verification report is captured in follow-up commit `281f3c1`; clean detached worktrees at both revisions passed their complete local verification sets. This remains local commit evidence, not pushed branch or cloud CI evidence.
+This report records the independent review and local QA evidence for the governance evidence overhaul. The implementation is captured in local commit `7f32cf9`, and the first committed verification report is captured in follow-up commit `281f3c1`; clean detached worktrees at both revisions passed their complete local verification sets. This remains local commit evidence, not pushed branch or cloud CI evidence. The later Linux/Codex OCI Scheme A work described below is an uncommitted working-tree addition and is not evidence about either historical commit.
 
 ## Review Streams
 
 | Stream | Scope | Result |
 |---|---|---|
 | Task 5 contract reviewer | Evaluator CLI, runner, schemas, scenarios, and completion contract | PASS; committed scenarios validate from clean commit `7f32cf9` |
-| Task 5 security reviewer | Process launch, persistence, privacy, and fail-closed behavior | No unresolved evaluator finding; real Codex evaluation refuses before launch with `SESSION_SAFETY_UNAVAILABLE` |
+| Task 5 security reviewer | Process launch, persistence, privacy, and fail-closed behavior | No unresolved finding for the reviewed historical commit; its legacy host Codex adapter refuses before launch with `SESSION_SAFETY_UNAVAILABLE` |
 | Task 6 runtime-proof reviewers | Runtime proof cleanup, publication, concurrency, and negative cases | PASS after regression coverage and independent re-review of prior-artifact preservation |
 | Task 7 public-delivery reviewer | README, validation docs, package scripts, public CI, and claim boundaries | PASS after mechanically locking claim separation and mock-only public CI |
 | Task 8 QA agent | Focused tests, strict doctors, smoke fixtures, full CI, and worktree mutation check | PASS on clean macOS worktrees at local commits `7f32cf9` and `281f3c1` |
@@ -29,11 +29,43 @@ This report records the independent review and local QA evidence for the governa
 | 1. SRC/REQ/AC/TASK/EVD and append-only changes | PASS | `templates/fixed/PROJECT_BRIEF.md`, `SPEC.md`, `TASK_CONTRACT.md`, `OPEN_LOOPS.md`, `TECH_STACK.md`; `tests/governance/traceability.test.mjs` |
 | 2. Stable doctor findings | PASS | `scripts/lib/governance-checks.mjs`; governance doctor and traceability tests |
 | 3. Canonical rule ownership and thin adapters | PASS | `templates/runtime/AGENTS.md`, `templates/runtime/START_HERE.md`, `templates/runtime/README.md`; rule-lifecycle tests; mock runtime proof |
-| 4. Real evaluator adapters | BLOCKED | Validate, replay, run, aggregate, and gate paths exist, but every shipped real adapter intentionally refuses until containment and session-safety guarantees are proven |
+| 4. Real evaluator adapters | BLOCKED | The working tree implements Linux/Codex OCI Scheme A and keeps legacy/unsupported routes fail-closed, but no live Linux/`sudoers`/`nsenter`/digest-image/provider paired-run evidence exists on a final reviewed commit |
 | 5. Controls on all CI operating systems | PARTIAL | Complete local CI passes on macOS at commits `7f32cf9` and `281f3c1`; the committed GitHub Ubuntu/macOS/Windows matrix has not run because no push or PR was authorized |
 | 6. Public surfaces agree | PASS | The committed tree aligns public docs, package scripts, CI, schemas, scenarios, privacy tests, runtime adapters, and claim boundaries |
 | 7. Final-worktree commands | PASS | Clean detached worktrees at `7f32cf9` and `281f3c1` passed the applicable full CI, scenario CLI, strict doctor, diff, and package checks |
 | 8. Independent review and QA | PASS | Three independent staged-tree reviewers plus prior security and QA reviewers returned PASS; user-owned hunks remained outside the commit |
+
+## OCI Scheme A Working-Tree Addendum
+
+The current uncommitted working tree adds a credential-free
+`workflow_dispatch` preflight and a separate approval-gated real workflow.
+Preflight produces a closed `READY + NOT_EVALUATED` receipt with exact image
+provenance, model, timeout, canonical policy hashes, hardening observations, and
+`executionBoundaryId`; it does not reference a GitHub Environment or runtime
+credential.
+
+A human must review and commit the receipt, schema-v2 manifest, policy, and
+synthetic scenario before the real workflow is dispatched. The real evaluator
+requires those inputs to be tracked and clean, repeats preflight, and matches
+the receipt, exact provenance, manifest model/boundary, timeout, and fresh
+observed boundary before it reads the Environment credential. The receipt is
+not attestation, credential approval, or real-run evidence.
+
+The container remains on Docker `NetworkMode=none`. The host UDS is not mounted
+into it. After the init host PID is known, a host process uses narrowly scoped
+`sudo -n nsenter --net=/proc/<init-pid>/ns/net` to listen on container
+loopback while retaining access to the host-only UDS. One bounded closed stdin
+line configures the relay and subsequent EOF is its lifeline; relay secrets do
+not depend on a preserved `sudo` environment or `sudoers env_keep`. The
+upstream key remains host-only; the container receives an attempt bearer.
+
+The host proxy closes the Responses request contract to exact model and
+attempt, `store: false`, foreground progressive SSE, no provider-held response,
+conversation, or prompt state, stripped client identifiers, and
+client-executed tools only. A bounded client replay loop permits at most 32
+sequential calls, one active call, 1 MiB per request, 4 MiB per response, and
+one attempt deadline. This is implementation and test coverage, not evidence
+that live Codex/provider tool-loop compatibility works.
 
 ## Local QA Evidence
 
@@ -68,19 +100,43 @@ Local implementation commit `7f32cf9` was then checked from a clean detached wor
 The evidence-only follow-up commit `281f3c1` was also checked from a clean detached worktree. `npm run ci`, three direct scenario validations, three strict doctors, `npm run runtime:proof`, and `git diff --check` passed. `npm pack --dry-run --json` exited 0 with 173 entries and 897,282 unpacked bytes.
 
 No real external runtime CLI, deployment, push, or release was executed.
+The OCI additions have not read an Environment secret or contacted the
+provider in this audit.
 
 ## Blocking Decisions And Evidence
 
-1. Completion criterion 4 is not literal evidence of a real run. The safe current boundary is “real adapters are wired but fail closed pending containment proof.” Proving a live runtime requires a separately approved safety-supervisor workstream.
+1. Completion criterion 4 is not satisfied by the new code, workflows, receipt schema, or fixture integration. The safe current boundary is “Linux/Codex OCI Scheme A is implemented but remains `BLOCKED` pending live containment, privilege-boundary, provenance, provider, and paired-run evidence.”
 2. Ubuntu, macOS, and Windows hosted CI evidence requires a separately authorized push or PR. Local macOS commit evidence must not be presented as the hosted matrix.
 
 ## Criterion 4 Unlock Contract
 
-The current host-process implementation is a no-go for a real Codex run: POSIX process groups cannot prove that a `setsid` or re-parented descendant was contained, and Windows has no proven direct equivalent in this harness.
+The legacy host-process implementation remains a no-go for a real Codex run:
+POSIX process groups cannot prove that a `setsid` or re-parented descendant was
+contained, and Windows has no proven direct equivalent in this harness.
 
-The recommended route is a manually approved disposable Linux supervisor backed by cgroup v2 or an equivalently isolated container boundary. Completion requires tests that prove whole-boundary kill and emptiness after normal exit, timeout, client crash, detached descendants, and cleanup failure; no artifact may be persisted before that proof. The execution image, containment policy, network policy, and credential-delivery mechanism must be pinned and identical across both arms.
+Scheme A implements the recommended disposable Linux OCI supervisor with PID
+and cgroup namespaces, cgroup-v2 empty-boundary proof, fixed hardening, a
+host-only credential proxy, and a host-netns loopback relay to the host UDS.
+The UDS is not bind-mounted into the container. Exact image/runtime provenance,
+model, timeout, containment/network/proxy policy identity, and
+`executionBoundaryId` are pinned through a credential-free receipt and
+schema-v2 manifest, then re-observed before lazy credential access.
 
-This route requires explicit approval because it introduces a containment dependency, a new evidence-schema identity, external network use, and access to a runtime credential. Public CI, macOS, and Windows must remain fail-closed. The project must not substitute a host process-group test or a fake runtime for this criterion.
+Unlock requires a human-reviewed final commit and live evidence from the actual
+disposable Linux/cgroup-v2 host: `sudo -n`/`nsenter` availability, the exact
+narrowly scoped command, bounded stdin configuration/lifeline without
+secret-bearing environment preservation, real netns-to-host-UDS behavior, a
+pullable digest-pinned image with matching Codex version/binary hash,
+credential-free preflight and cleanup, Environment approval, lazy credential
+read after the boundary match, provider request and progressive SSE through
+the bounded no-server-state client tool loop, normal exit, timeout,
+client/supervisor/relay failure, detached/re-parented descendants,
+empty-boundary proof, cleanup, and a real paired run.
+
+Public CI, macOS, Windows, Claude, Antigravity, and legacy host Codex remain
+offline or fail-closed. The project must not substitute a host process-group
+test, fake runtime, mock provider, fixture image, unit/injected integration
+PASS, `READY` receipt, or GitHub Environment approval for Criterion 4.
 
 ## Change Ownership Boundary
 
@@ -94,6 +150,6 @@ The reviewed overhaul was committed with a hunk-level ownership boundary:
 
 ## Release Boundary
 
-Offline controls, synthetic fixtures, mock runtime proof, and local QA do not establish real-world governance effectiveness. Until Criterion 4 and the hosted matrix are resolved, this overhaul must not be described as release-ready or as proven to improve arbitrary agents or projects.
+Offline controls, synthetic fixtures, mock runtime proof, and local QA do not establish real-world governance effectiveness. Scheme A's `store: false`, no-background, no-server-state request contract also does not establish provider Zero Data Retention, absence of abuse-monitoring retention, or live Codex compatibility. Until Criterion 4 and the hosted matrix are resolved, this overhaul must not be described as release-ready or as proven to improve arbitrary agents or projects.
 
 The current package tarball and clean local consumer install pass, including both CLI binaries and an initialized base project. The package still relies on npm's `.gitignore` fallback rather than an explicit `files` allowlist; that is a publish-surface drift risk, not a current delivery blocker.

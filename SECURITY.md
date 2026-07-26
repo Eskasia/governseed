@@ -21,7 +21,19 @@ This repository is a starter kit for project governance documents, scripts, and 
 - Only validator-approved, privacy-scanned, normalized closed-schema evidence may persist, and only after child reaping and temporary-state cleanup are proven.
 - Privacy-scanner unavailability, output-schema failure, session-persistence uncertainty, or cleanup uncertainty fails closed with a stable code and no artifact. The harness never falls back to a mock or weaker mode.
 - Runtime proof is an entrypoint first-response contract smoke test. Governance-impact evaluation is a separate delivery-artifact evidence surface and requires its own claim gate.
-- Governance-impact real execution currently refuses Codex with `SESSION_SAFETY_UNAVAILABLE` because detached or re-parented descendant containment is not proven. Claude remains refused while workspace containment is unproven; Antigravity is unavailable when its executable is missing and otherwise remains refused until non-persistence and containment are proven.
+- The legacy host Codex adapter still refuses with `SESSION_SAFETY_UNAVAILABLE` because process groups do not prove detached or re-parented descendant containment. Claude remains refused while workspace containment is unproven; Antigravity is unavailable when its executable is missing and otherwise remains refused until non-persistence and containment are proven.
+- Linux/Codex OCI Scheme A is implemented behind a credential-free committed preflight receipt and approval-gated manual real workflow, but Criterion 4 remains `BLOCKED` until live Linux/cgroup-v2, `sudoers`/`nsenter`, digest-image provenance, provider, teardown, cleanup, and paired-run evidence exists on the final reviewed commit.
+
+## OCI Credential And Network Boundary
+
+- The preflight workflow has no Environment and no secret reference. Its closed `READY + NOT_EVALUATED` receipt is an observation from one credential-free preflight, not image attestation, secret authorization, paired-run evidence, or a governance claim.
+- A human must review and commit the receipt, schema-v2 manifest, policy, and synthetic scenario before the real workflow. The evaluator requires them to be tracked and clean, repeats preflight, and matches exact provenance, model, timeout, manifest boundary, receipt boundary, and fresh observed boundary before it reads `OPENAI_API_KEY`.
+- The upstream key remains in an ephemeral host proxy. The container receives only a random attempt-scoped bearer and `http://127.0.0.1:43127/v1`; the key is never placed in container argv or persisted evidence.
+- Docker `NetworkMode=none` leaves only container loopback. A host process enters only the container network namespace through narrowly reviewed `sudo -n nsenter`, listens on loopback, and connects to the host-only Unix-domain socket from the host mount namespace. The UDS is not bind-mounted into the container.
+- Relay secrets/configuration are neither argv nor preserved `sudo` environment. The parent sends one bounded closed configuration line through private stdin; the remaining pipe is a lifeline and EOF shuts the relay down. Do not add a secret-bearing `sudoers env_keep` rule.
+- The proxy accepts only attempt-bound `POST /v1/responses` requests for the exact model. It requires `store: false`, progressive `stream: true`, no background, no `previous_response_id`, `conversation`, or `prompt`, strips client identifiers, and allows client-executed tools only.
+- The no-server-state client tool loop is bounded to 32 sequential requests, one active request, 1 MiB per request, 4 MiB per response, and one attempt deadline. SSE forwards progressively with backpressure; byte, quota, deadline, relay, proxy, provider, or cleanup uncertainty makes the attempt ineligible.
+- `store: false` and no background reduce Responses application-state use but do not prove Zero Data Retention, prevent provider abuse-monitoring retention, or establish live Codex/provider compatibility.
 
 ## Reporting
 
@@ -34,6 +46,7 @@ If you find a security issue in the starter scripts, templates, examples, or gen
 - Templates should teach projects to record secret names and ownership, not secret values.
 - Examples must use placeholder data only.
 - Runtime-proof and governance-impact paths must scan before persistence, remove raw temporary data in `finally`, and leave no artifact when cleanup cannot be proven.
+- OCI review must verify the exact digest/version/binary hash, receipt and manifest identity, `sudo -n`/`nsenter` command boundary, bounded stdin configuration/lifeline, absence of secret-bearing environment preservation and a container UDS mount, lazy credential ordering, closed request fields/tool types, progressive SSE limits, real netns-to-host-UDS behavior, whole-boundary teardown, and post-attempt cleanup.
 
 ## Not Covered
 

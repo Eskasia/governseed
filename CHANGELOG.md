@@ -1,5 +1,26 @@
 # Changelog
 
+## 2026-07-26 — Linux Codex OCI Scheme A
+
+### Credential-Free Review Gate
+
+- Added a separate manual Linux preflight command, closed receipt schema, and `workflow_dispatch` workflow with no GitHub Environment or credential. The receipt records exact image/runtime provenance, model, timeout, policy hashes, hardening observations, cleanup proof, and `executionBoundaryId` as `READY + NOT_EVALUATED`.
+- Schema-v2 real runs require a human-reviewed, committed, tracked-clean receipt, manifest, policy, and synthetic scenario. The evaluator repeats preflight and matches receipt, provenance, manifest model/boundary, timeout, and the fresh observed boundary before lazily reading the provider credential.
+- The receipt is not attestation, credential authorization, paired-run evidence, or a claim. Human review and commit remain manual and are not chained into the approval-gated real workflow.
+
+### Containment, Relay, And Provider Boundary
+
+- Added the Linux/Codex-only OCI supervisor with non-root/read-only/capability-dropped containment, private PID/cgroup namespaces, resource limits, PID-1 lifeline, cgroup-v2 empty-boundary proof, identical boundary identity across both arms, and cleanup-before-persistence ordering.
+- Kept Docker networking at `none`. A narrowly scoped host `sudo -n nsenter` relay listens on container loopback while connecting to the host-only credential-proxy UDS from the host mount namespace; the UDS is not bind-mounted into the container. One bounded stdin line carries closed relay configuration and subsequent EOF is the lifeline, so relay secrets do not depend on argv, preserved `sudo` environment, or `sudoers env_keep`.
+- Kept the upstream key host-only and passed only an attempt-scoped bearer to the container. Proxy policy locks exact attempt/model/deadline, `store: false`, foreground progressive SSE, no provider-held response/conversation/prompt state, stripped client identifiers, and client-executed tools.
+- Bounded the no-server-state client tool loop to 32 sequential requests, one active request, 1 MiB per request, 4 MiB per response, and one attempt deadline. Progressive SSE preserves backpressure and fails closed on quota, relay, transport, provider, or cleanup uncertainty.
+- Public push/pull-request CI remains offline and credential-free. The separate real workflow is manual, Linux-only, Environment-approval-gated, success-only for artifact upload, and cleanup-finalized.
+
+### Evidence Status
+
+- Criterion 4 remains `BLOCKED`: code, schemas, unit/privacy tests, injected integration tests, workflows, ADRs, plans, and a `READY` receipt do not substitute for live evidence on the final reviewed commit from the actual Linux/cgroup-v2 host, `sudo -n`/`nsenter` command and stdin-lifeline boundary, real netns-to-host-UDS path, digest-pinned Codex image, provider request/SSE path, teardown cases, cleanup, and real paired run.
+- No live provider compatibility, Zero Data Retention, release readiness, or governance-effectiveness claim is made.
+
 ## 2026-07-26 — Governance Evidence Overhaul
 
 ### Intent And Rule Evidence
