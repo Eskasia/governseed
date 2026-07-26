@@ -16,6 +16,7 @@ import {
   validateScenario,
 } from './lib/governance-impact-core.mjs';
 import {
+  buildCodexRuntimeCommand,
   buildMinimalEnv,
   buildRuntimeCommand,
   GovernanceImpactError,
@@ -24,6 +25,13 @@ import {
   runtimeCapabilities,
   terminateProcessTree,
 } from './lib/governance-impact-adapters.mjs';
+import {
+  createLinuxCodexOciSupervisor,
+  OCI_RUNTIME_PATH,
+} from './lib/governance-impact-oci-supervisor.mjs';
+import {
+  createOciCredentialProxyFacade,
+} from './lib/governance-impact-oci-proxy-facade.mjs';
 
 const CONTROL_NAMES = Object.freeze([
   'baseline-wins',
@@ -41,7 +49,11 @@ const CONTROL_WINNERS = Object.freeze({
 });
 export const MAX_JSON_INPUT_BYTES = 1_048_576;
 export const MAX_SCENARIO_FILE_BYTES = 16_777_216;
+export const DEFAULT_RUN_TIMEOUT_MS = 300_000;
+export const MAX_RUN_TIMEOUT_MS = 600_000;
 const HEX_64 = /^[a-f0-9]{64}$/;
+const OCI_DIGEST_REFERENCE = /^[^\s@\u0000]+@sha256:[a-f0-9]{64}$/;
+const CLOSED_MODEL_ID = /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/u;
 const REPOSITORY_ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const TRUSTED_RUNTIME_RESPONSE_SCHEMA = JSON.stringify({
   $schema: 'https://json-schema.org/draft/2020-12/schema',
@@ -51,8 +63,20 @@ const TRUSTED_RUNTIME_RESPONSE_SCHEMA = JSON.stringify({
   additionalProperties: false,
   maxProperties: 0,
 }) + '\n';
+const OCI_RESPONSE_SCHEMA_PATH = '/run/governance/response.schema.json';
 
 const COMMANDS = Object.freeze({
+  preflight: {
+    required: [
+      'model',
+      'runtime-image',
+      'codex-version',
+      'codex-binary-sha256',
+      'timeout-ms',
+      'output',
+    ],
+    optional: [],
+  },
   validate: {
     required: ['scenario'],
     optional: ['manifest', 'policy'],
@@ -63,7 +87,13 @@ const COMMANDS = Object.freeze({
   },
   run: {
     required: ['scenario', 'manifest', 'policy', 'attempt-id', 'output'],
-    optional: ['timeout-ms'],
+    optional: [
+      'timeout-ms',
+      'runtime-image',
+      'codex-version',
+      'codex-binary-sha256',
+      'preflight-receipt',
+    ],
   },
   aggregate: {
     required: ['manifest', 'policy', 'run', 'output'],
@@ -79,7 +109,7 @@ const COMMANDS = Object.freeze({
 
 const ERROR_CONTRACT = Object.freeze({
   USAGE_INVALID: [2, 'The command syntax is invalid.', 'Use the frozen long-form command grammar.'],
-  UNKNOWN_COMMAND: [2, 'The command is not recognized.', 'Use validate, replay, run, aggregate, or gate.'],
+  UNKNOWN_COMMAND: [2, 'The command is not recognized.', 'Use preflight, validate, replay, run, aggregate, or gate.'],
   UNKNOWN_OPTION: [2, 'An option is not recognized.', 'Use only options declared for this command.'],
   MISSING_OPTION: [2, 'A required option is missing.', 'Provide every required long-form option.'],
   INVALID_OPTION_VALUE: [2, 'An option value is invalid.', 'Use a valid repository-relative value.'],
@@ -87,11 +117,50 @@ const ERROR_CONTRACT = Object.freeze({
   REAL_MODE_REQUIRED: [2, 'Real evaluation is not explicitly enabled.', 'Set GOVERNANCE_IMPACT_REAL=1 exactly.'],
   DATA_CLASSIFICATION_BLOCKED: [2, 'The input data classification is not allowed.', 'Use committed synthetic evaluation data.'],
   SCENARIO_NOT_COMMITTED: [2, 'The scenario is not clean committed evidence.', 'Commit and clean every scenario artifact.'],
+  EVIDENCE_NOT_COMMITTED: [2, 'A reviewed run input is not clean committed evidence.', 'Commit and clean the manifest, policy, and preflight receipt together.'],
   ARTIFACT_HASH_MISMATCH: [2, 'A scenario artifact hash does not match.', 'Recreate preregistered hashes from safe inputs.'],
   PATH_POLICY_BLOCKED: [2, 'An input path violates the path policy.', 'Use a regular repository-relative POSIX path.'],
   SYMLINK_INPUT_BLOCKED: [2, 'A linked input is not allowed.', 'Replace it with a regular committed file.'],
   PRIVACY_SOURCE_BLOCKED: [2, 'An input failed the privacy policy.', 'Use synthetic data without private markers.'],
   SESSION_SAFETY_UNAVAILABLE: [2, 'The runtime cannot prove the required isolation.', 'Use a supported safe runtime and platform.'],
+  RUNTIME_CREDENTIAL_UNAVAILABLE: [4, 'The host runtime credential is unavailable.', 'Configure the approval-gated host credential and retry.'],
+  EXECUTION_BOUNDARY_MISMATCH: [2, 'The reviewed execution boundary does not match the observed boundary.', 'Regenerate the manifest from the reviewed OCI provenance and policies.'],
+  OCI_CGROUP_V2_UNAVAILABLE: [4, 'The Linux cgroup v2 proof surface is unavailable.', 'Use a disposable Linux host with readable cgroup v2 evidence.'],
+  OCI_RECONCILIATION_UNCERTAIN: [4, 'Prior managed OCI resources could not be reconciled safely.', 'Reconcile the disposable host before starting a new attempt.'],
+  OCI_BOUNDARY_PROOF_UNAVAILABLE: [3, 'The OCI process boundary could not be proven empty.', 'Discard the attempt and inspect the PID namespace and cgroup evidence.'],
+  OCI_PROXY_ATTEMPT_UNSAFE: [3, 'The credential proxy observed an unsafe attempt.', 'Discard the attempt and inspect sanitized proxy control events.'],
+  OCI_CLEANUP_UNCERTAIN: [3, 'OCI resource cleanup could not be proven.', 'Discard the attempt and reconcile all managed OCI resources.'],
+  OCI_PLATFORM_UNSUPPORTED: [2, 'The OCI evaluator requires a native Linux host.', 'Use the approval-gated disposable Linux workflow.'],
+  OCI_PROVENANCE_INVALID: [2, 'The reviewed OCI provenance is invalid.', 'Provide the exact digest, version, and binary hash contract.'],
+  OCI_IMAGE_IDENTITY_MISMATCH: [2, 'The resolved OCI image does not match the reviewed digest.', 'Review and pin the resolved image before retrying.'],
+  OCI_RUNTIME_BINARY_INVALID: [2, 'The OCI Codex executable does not satisfy the fixed ABI.', 'Use a reviewed image with the required executable regular file.'],
+  OCI_RUNTIME_BINARY_MISMATCH: [2, 'The OCI Codex executable hash does not match provenance.', 'Review the image and provide its exact binary hash.'],
+  OCI_RUNTIME_VERSION_INVALID: [2, 'The OCI Codex version output is not a valid single line.', 'Use an image with the fixed version-output contract.'],
+  OCI_RUNTIME_VERSION_MISMATCH: [2, 'The OCI Codex version does not match provenance.', 'Review the image and provide its exact version line.'],
+  OCI_HARDENING_MISMATCH: [2, 'Observed OCI hardening does not match policy.', 'Restore the exact container hardening contract.'],
+  OCI_IMAGE_FILE_INVALID: [2, 'The reviewed OCI image file could not be verified.', 'Use a valid reviewed image with the fixed runtime ABI.'],
+  OCI_IMAGE_INSPECTION_UNCERTAIN: [4, 'OCI image inspection could not be completed safely.', 'Restore Docker image inspection on the disposable host.'],
+  OCI_PROXY_UNAVAILABLE: [4, 'The host credential proxy is unavailable.', 'Restore the host-only proxy before starting an attempt.'],
+  OCI_PREFLIGHT_CLEANUP_UNCERTAIN: [4, 'OCI preflight cleanup could not be proven.', 'Reconcile the disposable host before retrying.'],
+  OCI_PREFLIGHT_UNCERTAIN: [4, 'OCI preflight could not establish a safe boundary.', 'Repair the disposable Linux environment and retry.'],
+  OCI_PREFLIGHT_RECEIPT_INVALID: [4, 'OCI preflight returned an invalid closed proof.', 'Repair the OCI proof surface before retrying.'],
+  OCI_PREFLIGHT_RECEIPT_MISMATCH: [2, 'The reviewed OCI preflight receipt does not match this run.', 'Use the committed receipt that pins the exact model, provenance, timeout, and boundary.'],
+  OCI_PREFLIGHT_REQUIRED: [2, 'OCI arm creation requires a completed preflight.', 'Run the reviewed preflight before opening an arm.'],
+  OCI_ARM_INPUT_INVALID: [2, 'OCI arm input violates the closed contract.', 'Use only validated runner-owned arm inputs.'],
+  OCI_RESPONSE_SCHEMA_UNSTABLE: [2, 'The runner-owned response schema could not be staged safely.', 'Provide one stable regular response-schema file.'],
+  OCI_ARM_OPEN_UNCERTAIN: [3, 'The OCI arm boundary could not be opened safely.', 'Discard the attempt and reconcile owned OCI resources.'],
+  OCI_PROXY_POLICY_MISMATCH: [3, 'The attempt proxy policy differs from preflight.', 'Discard the attempt and restore the exact proxy policy.'],
+  OCI_PROXY_RELAY_UNAVAILABLE: [3, 'The loopback relay could not be attached safely.', 'Discard the attempt and restore the host netns relay.'],
+  OCI_INIT_PID_UNAVAILABLE: [3, 'The container init process could not be identified.', 'Discard the attempt and inspect the Docker runtime.'],
+  OCI_CGROUP_PATH_UNAVAILABLE: [3, 'The container cgroup path could not be established.', 'Discard the attempt and restore readable cgroup v2 evidence.'],
+  OCI_EXECUTION_UNCERTAIN: [3, 'OCI execution did not reach a provable stopped state.', 'Discard the attempt and reconcile the execution boundary.'],
+  OCI_RESPONSE_SCHEMA_DRIFT: [3, 'The staged response schema changed during execution.', 'Discard the attempt and inspect the trusted runtime surface.'],
+  OCI_SESSION_STATE_INVALID: [3, 'The OCI session lifecycle was used out of order.', 'Discard the attempt and start a new session.'],
+  OCI_CONTAINER_ENV_INVALID: [3, 'The OCI container environment violates policy.', 'Discard the attempt and restore the exact environment allowlist.'],
+  OCI_FIFO_CREATE_FAILED: [3, 'The OCI lifeline could not be created safely.', 'Discard the attempt and restore the runtime surface.'],
+  OCI_RUNTIME_SURFACE_FAILED: [3, 'The OCI runtime surface could not be prepared safely.', 'Discard the attempt and restore the temporary host surface.'],
+  PROXY_ATTEMPT_UNSAFE: [3, 'The credential proxy rejected the attempted exchange.', 'Discard the attempt and inspect sanitized proxy control evidence.'],
+  PROXY_CLEANUP_UNPROVEN: [3, 'Credential proxy cleanup could not be proven.', 'Discard the attempt and reconcile the host proxy surface.'],
   MANIFEST_MISMATCH: [2, 'The run is not registered by the manifest.', 'Use the exact preregistered attempt.'],
   MANIFEST_HASH_MISMATCH: [2, 'The manifest hash does not match policy.', 'Use the policy-pinned normalized manifest.'],
   BOOTSTRAP_SEED_MISMATCH: [2, 'The bootstrap seed does not match policy.', 'Use the policy-pinned bootstrap seed.'],
@@ -108,6 +177,70 @@ const ERROR_CONTRACT = Object.freeze({
   CLEANUP_FAILED: [3, 'Temporary evidence cleanup could not be proven.', 'Remove isolated temporary state before retrying.'],
   PERSIST_FAILED: [3, 'The evidence artifact could not be persisted safely.', 'Choose a new non-existing output path.'],
 });
+
+const ERROR_PHASES = Object.freeze({
+  ORACLE_INTEGRITY_FAILED: 'oracle',
+  WORKSPACE_CONTAINMENT_FAILED: 'containment',
+  PROCESS_TREE_UNAVAILABLE: 'containment',
+  OCI_RECONCILIATION_UNCERTAIN: 'reconcile',
+  OCI_BOUNDARY_PROOF_UNAVAILABLE: 'boundary-proof',
+  OCI_PROXY_ATTEMPT_UNSAFE: 'proxy',
+  OCI_CLEANUP_UNCERTAIN: 'cleanup',
+  OCI_PREFLIGHT_REQUIRED: 'arm-open',
+  OCI_ARM_INPUT_INVALID: 'arm-open',
+  OCI_RESPONSE_SCHEMA_UNSTABLE: 'arm-open',
+  OCI_ARM_OPEN_UNCERTAIN: 'arm-open',
+  OCI_PROXY_POLICY_MISMATCH: 'proxy',
+  OCI_PROXY_RELAY_UNAVAILABLE: 'proxy',
+  OCI_INIT_PID_UNAVAILABLE: 'boundary-proof',
+  OCI_CGROUP_PATH_UNAVAILABLE: 'boundary-proof',
+  OCI_EXECUTION_UNCERTAIN: 'boundary-proof',
+  OCI_RESPONSE_SCHEMA_DRIFT: 'boundary-proof',
+  OCI_SESSION_STATE_INVALID: 'execution',
+  OCI_CONTAINER_ENV_INVALID: 'arm-open',
+  OCI_FIFO_CREATE_FAILED: 'arm-open',
+  OCI_RUNTIME_SURFACE_FAILED: 'arm-open',
+  PROXY_ATTEMPT_UNSAFE: 'proxy',
+  PROXY_CLEANUP_UNPROVEN: 'cleanup',
+  CLEANUP_FAILED: 'cleanup',
+  PERSIST_FAILED: 'persistence',
+});
+
+const ENVIRONMENT_REMEDIATION_CODES = new Set([
+  'SESSION_SAFETY_UNAVAILABLE',
+  'RUNTIME_MISSING',
+  'RUNTIME_CREDENTIAL_UNAVAILABLE',
+  'OCI_PLATFORM_UNSUPPORTED',
+  'OCI_CGROUP_V2_UNAVAILABLE',
+  'OCI_RECONCILIATION_UNCERTAIN',
+  'OCI_IMAGE_INSPECTION_UNCERTAIN',
+  'OCI_PROXY_UNAVAILABLE',
+  'OCI_PREFLIGHT_CLEANUP_UNCERTAIN',
+  'OCI_PREFLIGHT_UNCERTAIN',
+  'OCI_PREFLIGHT_RECEIPT_INVALID',
+  'MINIMAL_ENV_VIOLATION',
+]);
+
+const TRANSIENT_INFRASTRUCTURE_CODES = new Set([
+  'CHILD_SPAWN_FAILED',
+  'PRIVACY_SCANNER_UNAVAILABLE',
+  'OCI_PROXY_RELAY_UNAVAILABLE',
+  'OCI_FIFO_CREATE_FAILED',
+  'OCI_RUNTIME_SURFACE_FAILED',
+]);
+
+function terminalErrorMetadata(code, exitCode) {
+  const blocked = exitCode === 2 || exitCode === 4;
+  let retryClass = blocked ? 'operator-input' : 'non-retryable-integrity';
+  if (ENVIRONMENT_REMEDIATION_CODES.has(code)) retryClass = 'environment-remediation';
+  else if (TRANSIENT_INFRASTRUCTURE_CODES.has(code)) retryClass = 'transient-infrastructure';
+  return {
+    executionStatus: blocked ? 'BLOCKED' : 'FAIL-CLOSED',
+    claimDisposition: 'NOT_EVALUATED',
+    phase: ERROR_PHASES[code] ?? (blocked ? 'preflight' : 'execution'),
+    retryClass,
+  };
+}
 
 function impactError(code, forcedExit) {
   const contract = ERROR_CONTRACT[code] ?? ERROR_CONTRACT.INPUT_SCHEMA_INVALID;
@@ -280,11 +413,29 @@ export function parseCommand(argv) {
   for (const key of Object.keys(options)) {
     const values = Array.isArray(options[key]) ? options[key] : [options[key]];
     if (key === 'timeout-ms') {
-      if (!/^[1-9][0-9]*$/.test(options[key]) || !Number.isSafeInteger(Number(options[key]))) {
+      if (
+        !/^[1-9][0-9]*$/.test(options[key])
+        || !Number.isSafeInteger(Number(options[key]))
+        || Number(options[key]) > MAX_RUN_TIMEOUT_MS
+      ) {
         fail('INVALID_OPTION_VALUE');
       }
     } else if (key === 'attempt-id') {
       if (!HEX_64.test(options[key])) fail('INVALID_OPTION_VALUE');
+    } else if (key === 'runtime-image') {
+      if (!OCI_DIGEST_REFERENCE.test(options[key])) fail('INVALID_OPTION_VALUE');
+    } else if (key === 'codex-version') {
+      if (
+        options[key].trim() !== options[key] ||
+        options[key].length > 128 ||
+        /[\\/\r\n\u0000]/u.test(options[key])
+      ) {
+        fail('INVALID_OPTION_VALUE');
+      }
+    } else if (key === 'codex-binary-sha256') {
+      if (!HEX_64.test(options[key])) fail('INVALID_OPTION_VALUE');
+    } else if (key === 'model') {
+      if (!CLOSED_MODEL_ID.test(options[key])) fail('INVALID_OPTION_VALUE');
     } else {
       values.forEach(requireRelativePath);
     }
@@ -814,6 +965,25 @@ function materializePinnedEntries(entries, destinationRoot, fsApi) {
   }
 }
 
+function grantOciWorkspaceAccess(workspace, fsApi) {
+  const walk = (directory) => {
+    const directoryStat = fsApi.lstatSync(directory);
+    if (directoryStat.isSymbolicLink() || !directoryStat.isDirectory()) {
+      fail('WORKSPACE_CONTAINMENT_FAILED');
+    }
+    fsApi.chmodSync(directory, 0o777);
+    for (const name of fsApi.readdirSync(directory)) {
+      const child = path.join(directory, name);
+      const stat = fsApi.lstatSync(child);
+      if (stat.isSymbolicLink()) fail('WORKSPACE_CONTAINMENT_FAILED');
+      if (stat.isDirectory()) walk(child);
+      else if (stat.isFile() && stat.nlink === 1) fsApi.chmodSync(child, 0o666);
+      else fail('WORKSPACE_CONTAINMENT_FAILED');
+    }
+  };
+  walk(workspace);
+}
+
 function removeTreeAndProve(root, fsApi) {
   try {
     fsApi.rmSync(root, { recursive: true, force: true });
@@ -867,6 +1037,9 @@ export async function prepareArmWorkspace(options) {
         fsApi,
       );
       materializePinnedEntries(overlayEntries, workspace, fsApi);
+    }
+    if (options.manifest?.schemaVersion === 2) {
+      grantOciWorkspaceAccess(workspace, fsApi);
     }
     return { root, workspace, home, tmp };
   } catch (error) {
@@ -1402,63 +1575,132 @@ export async function runPairedScenario(options) {
         deps.prepareArmWorkspace ? null : snapshotWorkspace
       );
       const beforeSnapshot = snapshot ? await snapshot(armPaths.workspace) : null;
-      const command = (deps.buildRuntimeCommand ?? buildRuntimeCommand)(
-        cohort.runtime,
-        armPaths.workspace,
-        options.scenario.paths?.taskFile ?? 'task.md',
-        {
-          executable: options.executable,
-          model: cohort.model,
-          responseSchema: oraclePin?.responseSchema ?? options.responseSchema,
-          platform: options.platform,
-        },
-      );
-      const environment = (deps.buildMinimalEnv ?? buildMinimalEnv)(
-        cohort.runtime,
-        { ...armPaths, codexHome: options.codexHome },
-        { sourceEnv: options.sourceEnv, platform: options.platform },
-      );
-      const execution = await (deps.runChildSafely ?? runChildSafely)(
-        command.executable,
-        command.args,
-        {
-          cwd: armPaths.workspace,
+      let session = null;
+      let execution;
+      let environment = null;
+      let oracle;
+      let executionBoundaryId = null;
+      let boundaryEvidence = null;
+      let armPendingError = null;
+      try {
+        if (deps.openArmSession) {
+          environment = (deps.buildMinimalEnv ?? buildMinimalEnv)(
+            'synthetic',
+            armPaths,
+            { sourceEnv: options.sourceEnv, platform: options.platform },
+          );
+          session = await deps.openArmSession({
+            arm,
+            armPaths,
+            cohort,
+            taskFile: options.scenario.paths?.taskFile ?? 'task.md',
+            responseSchema: oraclePin?.responseSchema ?? options.responseSchema,
+            timeoutMs: options.timeoutMs,
+          });
+          if (
+            !session ||
+            typeof session.runAndProveStopped !== 'function' ||
+            typeof session.cleanupAndProve !== 'function'
+          ) {
+            fail('SESSION_SAFETY_UNAVAILABLE');
+          }
+          const stopped = await session.runAndProveStopped();
+          execution = stopped?.execution;
+          executionBoundaryId = stopped?.executionBoundaryId;
+          boundaryEvidence = stopped?.closedBoundaryEvidence;
+          if (
+            !execution ||
+            !HEX_64.test(executionBoundaryId ?? '') ||
+            executionBoundaryId !== cohort.executionBoundaryId ||
+            !isPlainObject(boundaryEvidence) ||
+            boundaryEvidence.cleanupComplete !== false
+          ) {
+            fail('WORKSPACE_CONTAINMENT_FAILED');
+          }
+        } else {
+          const command = (deps.buildRuntimeCommand ?? buildRuntimeCommand)(
+            cohort.runtime,
+            armPaths.workspace,
+            options.scenario.paths?.taskFile ?? 'task.md',
+            {
+              executable: options.executable,
+              model: cohort.model,
+              responseSchema: oraclePin?.responseSchema ?? options.responseSchema,
+              platform: options.platform,
+            },
+          );
+          environment = (deps.buildMinimalEnv ?? buildMinimalEnv)(
+            cohort.runtime,
+            { ...armPaths, codexHome: options.codexHome },
+            { sourceEnv: options.sourceEnv, platform: options.platform },
+          );
+          execution = await (deps.runChildSafely ?? runChildSafely)(
+            command.executable,
+            command.args,
+            {
+              cwd: armPaths.workspace,
+              env: environment,
+              stdin: command.stdin,
+              timeoutMs: options.timeoutMs,
+              privacyScanner(buffer, context) {
+                try {
+                  (options.privacyScanner ?? scanPrivacyBuffer)(buffer, context);
+                } catch {
+                  fail('PRIVACY_OUTPUT_BLOCKED');
+                }
+              },
+              realExecution: true,
+            },
+          );
+        }
+        oracle = await (deps.runOracle ?? runOracle)({
+          ...options,
+          arm,
+          workspace: armPaths.workspace,
+          execution,
           env: environment,
-          stdin: command.stdin,
-          timeoutMs: options.timeoutMs,
-          privacyScanner(buffer, context) {
-            try {
-              (options.privacyScanner ?? scanPrivacyBuffer)(buffer, context);
-            } catch {
-              fail('PRIVACY_OUTPUT_BLOCKED');
-            }
-          },
-          realExecution: true,
-        },
-      );
-      const oracle = await (deps.runOracle ?? runOracle)({
-        ...options,
-        arm,
-        workspace: armPaths.workspace,
-        execution,
-        env: environment,
-        pinnedOracle: oraclePin,
-      });
-      if (!deps.prepareArmWorkspace) verifyOracleArtifact(options.scenarioRoot, options.scenario);
-      if (deps.verifyContainment) {
-        const contained = await deps.verifyContainment({ arm, armPaths, options });
-        if (contained !== true) fail('WORKSPACE_CONTAINMENT_FAILED');
+          pinnedOracle: oraclePin,
+        });
+        if (!deps.prepareArmWorkspace) {
+          verifyOracleArtifact(options.scenarioRoot, options.scenario);
+        }
+        if (deps.verifyContainment) {
+          const contained = await deps.verifyContainment({ arm, armPaths, options });
+          if (contained !== true) fail('WORKSPACE_CONTAINMENT_FAILED');
+        }
+        if (snapshot) {
+          const afterSnapshot = await snapshot(armPaths.workspace);
+          const changedPaths = changedPathsBetween(beforeSnapshot, afterSnapshot);
+          if (
+            !Array.isArray(oracle.scope?.changedPaths) ||
+            JSON.stringify([...oracle.scope.changedPaths].sort()) !== JSON.stringify(changedPaths)
+          ) {
+            fail('ORACLE_INTEGRITY_FAILED');
+          }
+        }
+      } catch (error) {
+        armPendingError = error;
       }
-      if (snapshot) {
-        const afterSnapshot = await snapshot(armPaths.workspace);
-        const changedPaths = changedPathsBetween(beforeSnapshot, afterSnapshot);
-        if (
-          !Array.isArray(oracle.scope?.changedPaths) ||
-          JSON.stringify([...oracle.scope.changedPaths].sort()) !== JSON.stringify(changedPaths)
-        ) {
-          fail('ORACLE_INTEGRITY_FAILED');
+      if (session) {
+        try {
+          const cleanupProof = await session.cleanupAndProve();
+          if (cleanupProof?.cleanupComplete !== true) fail('CLEANUP_FAILED');
+          boundaryEvidence = {
+            ...boundaryEvidence,
+            cleanupComplete: true,
+          };
+        } catch (error) {
+          if (
+            error &&
+            typeof error.code === 'string' &&
+            Object.hasOwn(ERROR_CONTRACT, error.code)
+          ) {
+            throw normalizeError(error);
+          }
+          throw impactError('CLEANUP_FAILED');
         }
       }
+      if (armPendingError) throw armPendingError;
       const {
         repairRounds = 0,
         time = {
@@ -1471,6 +1713,12 @@ export async function runPairedScenario(options) {
       arms[arm] = {
         scenarioHash: attempt.scenarioHash,
         ...cohort,
+        ...(executionBoundaryId
+          ? {
+              executionBoundaryId,
+              boundaryEvidence,
+            }
+          : {}),
         execution: {
           status: execution.status,
           repairRounds,
@@ -1493,7 +1741,7 @@ export async function runPairedScenario(options) {
   if (pendingError) throw normalizeError(pendingError);
 
   const rawRun = {
-    schemaVersion: 1,
+    schemaVersion: options.manifest.schemaVersion,
     runId: (deps.runIdFactory ?? randomUUID)(),
     attemptId: attempt.attemptId,
     repetitionId: attempt.repetitionId,
@@ -1669,6 +1917,81 @@ function verifyTrackedScenario(scenarioRoot, scenario, options = {}) {
   }
 }
 
+export function verifyTrackedEvidenceFiles(filePaths, options = {}) {
+  const repositoryRoot = options.repositoryRoot ?? REPOSITORY_ROOT;
+  const gitRunner = options.gitRunner ?? spawnSync;
+  const fsApi = options.fs ?? fs;
+  const runGit = (args, output = false) => gitRunner('git', args, {
+    cwd: repositoryRoot,
+    ...(output ? { encoding: 'utf8' } : { stdio: 'ignore' }),
+    shell: false,
+  });
+  for (const absolute of filePaths) {
+    let state;
+    try {
+      state = fsApi.lstatSync(absolute);
+    } catch {
+      fail('EVIDENCE_NOT_COMMITTED');
+    }
+    const relative = path.relative(repositoryRoot, absolute);
+    if (
+      state.isSymbolicLink()
+      || !state.isFile()
+      || state.nlink !== 1
+      || relative.startsWith('..' + path.sep)
+      || path.isAbsolute(relative)
+    ) {
+      fail('EVIDENCE_NOT_COMMITTED');
+    }
+    const gitPath = relative.split(path.sep).join('/');
+    const literal = [gitPath];
+    const tracked = runGit([
+      '--literal-pathspecs',
+      'ls-files',
+      '--error-unmatch',
+      '--',
+      ...literal,
+    ]);
+    const committed = runGit(['cat-file', '-e', `HEAD:${gitPath}`]);
+    const clean = runGit([
+      '--literal-pathspecs',
+      'diff',
+      '--quiet',
+      '--',
+      ...literal,
+    ]);
+    const staged = runGit([
+      '--literal-pathspecs',
+      'diff',
+      '--cached',
+      '--quiet',
+      '--',
+      ...literal,
+    ]);
+    const stage = runGit([
+      '--literal-pathspecs',
+      'ls-files',
+      '--stage',
+      '-z',
+      '--',
+      ...literal,
+    ], true);
+    const stageText = String(stage.stdout ?? '');
+    if (
+      tracked.status !== 0
+      || committed.status !== 0
+      || clean.status !== 0
+      || staged.status !== 0
+      || stage.status !== 0
+      || !stageText.startsWith('100644 ')
+      || stageText.split('\0').length !== 2
+      || stageText.at(-1) !== '\0'
+    ) {
+      fail('EVIDENCE_NOT_COMMITTED');
+    }
+  }
+}
+
 async function loadScenario(options, deps) {
   const repositoryRoot = deps.repositoryRoot ?? REPOSITORY_ROOT;
   const scenarioRoot = resolveRepositoryPath(options.scenario, repositoryRoot);
@@ -1774,6 +2097,187 @@ async function handleReplay(options, deps) {
   };
 }
 
+const PREFLIGHT_EVIDENCE_KEYS = Object.freeze([
+  'observedImageDigest',
+  'codexVersion',
+  'codexBinarySha256',
+  'containmentPolicyHash',
+  'networkPolicyHash',
+  'proxyPolicyHash',
+  'hardening',
+  'pidNamespaceStopped',
+  'cgroupEmpty',
+  'cleanupComplete',
+]);
+const PREFLIGHT_HARDENING_KEYS = Object.freeze([
+  'nonRootUser',
+  'readOnlyRootFilesystem',
+  'capDropAll',
+  'noNewPrivileges',
+  'privatePidNamespace',
+  'privateCgroupNamespace',
+  'pidLimit',
+  'cpuLimit',
+  'memoryLimit',
+  'dockerSocketAbsent',
+  'devicesAbsent',
+  'cgroupMountAbsent',
+]);
+
+function exactKeys(value, expected) {
+  return isPlainObject(value)
+    && Object.keys(value).length === expected.length
+    && expected.every((key) => Object.hasOwn(value, key));
+}
+
+function createPreflightReceipt(options, result) {
+  try {
+    if (!exactKeys(result, ['executionBoundaryId', 'boundaryEvidence'])) {
+      fail('OCI_PREFLIGHT_RECEIPT_INVALID');
+    }
+    const evidence = result.boundaryEvidence;
+    const hardening = evidence?.hardening;
+    const expectedDigest = options['runtime-image'].slice(
+      options['runtime-image'].lastIndexOf(':') + 1,
+    );
+    if (
+      !HEX_64.test(result.executionBoundaryId)
+      || !exactKeys(evidence, PREFLIGHT_EVIDENCE_KEYS)
+      || evidence.observedImageDigest !== expectedDigest
+      || evidence.codexVersion !== options['codex-version']
+      || evidence.codexBinarySha256 !== options['codex-binary-sha256']
+      || !HEX_64.test(evidence.containmentPolicyHash)
+      || !HEX_64.test(evidence.networkPolicyHash)
+      || !HEX_64.test(evidence.proxyPolicyHash)
+      || !exactKeys(hardening, PREFLIGHT_HARDENING_KEYS)
+      || PREFLIGHT_HARDENING_KEYS.some((key) => hardening[key] !== true)
+      || evidence.pidNamespaceStopped !== true
+      || evidence.cgroupEmpty !== true
+      || evidence.cleanupComplete !== true
+    ) {
+      fail('OCI_PREFLIGHT_RECEIPT_INVALID');
+    }
+    return {
+      schemaVersion: 1,
+      kind: 'governance-impact-oci-preflight',
+      preflightStatus: 'READY',
+      claimDisposition: 'NOT_EVALUATED',
+      runtime: 'codex',
+      model: options.model,
+      timeoutMs: options['timeout-ms'],
+      provenance: {
+        imageReference: options['runtime-image'],
+        expectedCodexVersion: options['codex-version'],
+        expectedCodexBinarySha256: options['codex-binary-sha256'],
+      },
+      executionBoundaryId: result.executionBoundaryId,
+      boundaryEvidence: {
+        observedImageDigest: evidence.observedImageDigest,
+        codexVersion: evidence.codexVersion,
+        codexBinarySha256: evidence.codexBinarySha256,
+        containmentPolicyHash: evidence.containmentPolicyHash,
+        networkPolicyHash: evidence.networkPolicyHash,
+        proxyPolicyHash: evidence.proxyPolicyHash,
+        hardening: Object.fromEntries(
+          PREFLIGHT_HARDENING_KEYS.map((key) => [key, true]),
+        ),
+        pidNamespaceStopped: true,
+        cgroupEmpty: true,
+        cleanupComplete: true,
+      },
+    };
+  } catch (error) {
+    if (error?.code === 'OCI_PREFLIGHT_RECEIPT_INVALID') throw error;
+    fail('OCI_PREFLIGHT_RECEIPT_INVALID');
+  }
+}
+
+function validateReviewedPreflightReceipt(receipt, expected) {
+  let normalized;
+  try {
+    normalized = createPreflightReceipt({
+      model: receipt?.model,
+      'timeout-ms': receipt?.timeoutMs,
+      'runtime-image': receipt?.provenance?.imageReference,
+      'codex-version': receipt?.provenance?.expectedCodexVersion,
+      'codex-binary-sha256':
+        receipt?.provenance?.expectedCodexBinarySha256,
+    }, {
+      executionBoundaryId: receipt?.executionBoundaryId,
+      boundaryEvidence: receipt?.boundaryEvidence,
+    });
+  } catch {
+    fail('OCI_PREFLIGHT_RECEIPT_INVALID');
+  }
+  if (sha256Canonical(normalized) !== sha256Canonical(receipt)) {
+    fail('OCI_PREFLIGHT_RECEIPT_INVALID');
+  }
+  if (
+    receipt.model !== expected.model
+    || receipt.timeoutMs !== expected.timeoutMs
+    || receipt.provenance.imageReference !== expected.imageReference
+    || receipt.provenance.expectedCodexVersion !== expected.codexVersion
+    || receipt.provenance.expectedCodexBinarySha256
+      !== expected.codexBinarySha256
+    || receipt.executionBoundaryId !== expected.executionBoundaryId
+  ) {
+    fail('OCI_PREFLIGHT_RECEIPT_MISMATCH');
+  }
+  return normalized;
+}
+
+async function handlePreflight(options, deps) {
+  const repositoryRoot = deps.repositoryRoot ?? REPOSITORY_ROOT;
+  const outputPath = resolveRepositoryPath(options.output, repositoryRoot);
+  ensureSafeDirectoryChain(
+    repositoryRoot,
+    path.dirname(outputPath),
+    deps.fs ?? fs,
+    'PATH_POLICY_BLOCKED',
+  );
+  const platform = deps.platform ?? process.platform;
+  if (platform !== 'linux') fail('OCI_PLATFORM_UNSUPPORTED');
+  const createProxy =
+    deps.createOciProxyFacade ?? createOciCredentialProxyFacade;
+  if (typeof createProxy !== 'function') fail('OCI_PROXY_UNAVAILABLE');
+  const proxy = createProxy({
+    model: options.model,
+    deadlineMs: options['timeout-ms'],
+  });
+  const createSupervisor =
+    deps.createOciSupervisor ?? createLinuxCodexOciSupervisor;
+  const supervisor = createSupervisor({ platform, proxy });
+  if (
+    !supervisor
+    || typeof supervisor.preflightAndReconcile !== 'function'
+  ) {
+    fail('SESSION_SAFETY_UNAVAILABLE');
+  }
+  const provenance = {
+    imageReference: options['runtime-image'],
+    expectedCodexVersion: options['codex-version'],
+    expectedCodexBinarySha256: options['codex-binary-sha256'],
+  };
+  const result = await supervisor.preflightAndReconcile(provenance);
+  const receipt = createPreflightReceipt(options, result);
+  const persisted = await (deps.persistJsonAtomically ?? persistJsonAtomically)(
+    outputPath,
+    receipt,
+    { repositoryRoot, fs: deps.fs },
+  );
+  return {
+    artifact: {
+      path: options.output,
+      sha256: persisted.sha256,
+    },
+    summary: {
+      preflightStatus: receipt.preflightStatus,
+      claimDisposition: receipt.claimDisposition,
+      executionBoundaryId: receipt.executionBoundaryId,
+    },
+  };
+}
+
 async function handleRun(options, deps) {
   const loaded = await loadScenario(options, deps);
   if (loaded.scenario.dataClassification !== 'synthetic') fail('DATA_CLASSIFICATION_BLOCKED');
@@ -1791,10 +2295,18 @@ async function handleRun(options, deps) {
   await verifyScenarioHashes(loaded.scenarioRoot, loaded.scenario, deps);
   trackedVerifier(loaded.scenarioRoot, loaded.scenario, trackingOptions);
   const reader = deps.readExactJson ?? readExactJson;
-  const manifest = reader(resolveRepositoryPath(options.manifest, loaded.repositoryRoot), {
+  const manifestPath = resolveRepositoryPath(
+    options.manifest,
+    loaded.repositoryRoot,
+  );
+  const policyPath = resolveRepositoryPath(
+    options.policy,
+    loaded.repositoryRoot,
+  );
+  const manifest = reader(manifestPath, {
     root: loaded.repositoryRoot,
   });
-  const policy = reader(resolveRepositoryPath(options.policy, loaded.repositoryRoot), {
+  const policy = reader(policyPath, {
     root: loaded.repositoryRoot,
   });
   const normalized = normalizeAndVerifyManifest(manifest, policy, {
@@ -1804,41 +2316,6 @@ async function handleRun(options, deps) {
     (entry) => entry.attemptId === options['attempt-id'],
   );
   if (!attempt || attempt.scenarioHash !== loaded.scenarioHash) fail('MANIFEST_MISMATCH');
-  const runtime = normalized.manifest.cohort.runtime;
-  const executable = (deps.resolveRuntimeExecutable ?? resolveRuntimeExecutable)(
-    runtime,
-    deps.env ?? process.env,
-    deps.platform ?? process.platform,
-    deps.fs ?? fs,
-  );
-  if (!executable) fail('RUNTIME_MISSING');
-  const capabilities = (deps.runtimeCapabilities ?? runtimeCapabilities)(
-    runtime,
-    deps.platform ?? process.platform,
-  );
-  if (
-    !capabilities.noSessionPersistence ||
-    !capabilities.workspaceOnly ||
-    !capabilities.processTree
-  ) {
-    fail('SESSION_SAFETY_UNAVAILABLE');
-  }
-  const codexHome = runtime === 'codex' ? (deps.env ?? process.env).CODEX_HOME : undefined;
-  if (runtime === 'codex') {
-    const sourceHome = (deps.env ?? process.env).HOME;
-    if (
-      !path.isAbsolute(codexHome ?? '') ||
-      (sourceHome && path.resolve(codexHome) === path.resolve(sourceHome, '.codex'))
-    ) {
-      fail('SESSION_SAFETY_UNAVAILABLE');
-    }
-    try {
-      const state = (deps.fs ?? fs).lstatSync(codexHome);
-      if (!state.isDirectory() || state.isSymbolicLink()) fail('SESSION_SAFETY_UNAVAILABLE');
-    } catch {
-      fail('SESSION_SAFETY_UNAVAILABLE');
-    }
-  }
   const outputPath = resolveRepositoryPath(options.output, loaded.repositoryRoot);
   ensureSafeDirectoryChain(
     loaded.repositoryRoot,
@@ -1846,7 +2323,163 @@ async function handleRun(options, deps) {
     deps.fs ?? fs,
     'PATH_POLICY_BLOCKED',
   );
-  const response = await runPairedScenario({
+  const runtime = normalized.manifest.cohort.runtime;
+  const platform = deps.platform ?? process.platform;
+  const sourceEnv = deps.env ?? process.env;
+  const timeoutMs = options['timeout-ms'] ?? DEFAULT_RUN_TIMEOUT_MS;
+  let executable;
+  let codexHome;
+  let runnerDeps = deps.runnerDeps ?? {};
+  if (normalized.manifest.schemaVersion === 2) {
+    if (runtime !== 'codex' || platform !== 'linux') fail('SESSION_SAFETY_UNAVAILABLE');
+    if (
+      !options['runtime-image'] ||
+      !options['codex-version'] ||
+      !options['codex-binary-sha256'] ||
+      !options['preflight-receipt']
+    ) {
+      fail('MISSING_OPTION');
+    }
+    const receiptPath = resolveRepositoryPath(
+      options['preflight-receipt'],
+      loaded.repositoryRoot,
+    );
+    const evidenceVerifier =
+      deps.verifyTrackedEvidence ?? verifyTrackedEvidenceFiles;
+    evidenceVerifier(
+      [manifestPath, policyPath, receiptPath],
+      trackingOptions,
+    );
+    const reviewedReceipt = validateReviewedPreflightReceipt(
+      reader(receiptPath, { root: loaded.repositoryRoot }),
+      {
+        model: normalized.manifest.cohort.model,
+        timeoutMs,
+        imageReference: options['runtime-image'],
+        codexVersion: options['codex-version'],
+        codexBinarySha256: options['codex-binary-sha256'],
+        executionBoundaryId:
+          normalized.manifest.cohort.executionBoundaryId,
+      },
+    );
+    let credentialRead = false;
+    let upstreamKey;
+    const getUpstreamKey = () => {
+      if (!credentialRead) {
+        credentialRead = true;
+        upstreamKey = sourceEnv.OPENAI_API_KEY;
+      }
+      return upstreamKey;
+    };
+    const proxy = (
+      deps.createOciProxyFacade ?? createOciCredentialProxyFacade
+    )({
+      attemptId: attempt.attemptId,
+      model: normalized.manifest.cohort.model,
+      deadlineMs: timeoutMs,
+      getUpstreamKey,
+    });
+    const supervisor = (
+      deps.createOciSupervisor ?? createLinuxCodexOciSupervisor
+    )({
+      platform,
+      proxy,
+    });
+    if (
+      !supervisor ||
+      typeof supervisor.preflightAndReconcile !== 'function' ||
+      typeof supervisor.openArm !== 'function'
+    ) {
+      fail('SESSION_SAFETY_UNAVAILABLE');
+    }
+    const provenance = {
+      imageReference: options['runtime-image'],
+      expectedCodexVersion: options['codex-version'],
+      expectedCodexBinarySha256: options['codex-binary-sha256'],
+    };
+    const preflight = await supervisor.preflightAndReconcile(provenance);
+    if (
+      preflight?.executionBoundaryId !==
+      normalized.manifest.cohort.executionBoundaryId
+      || !isPlainObject(preflight?.boundaryEvidence)
+      || sha256Canonical(preflight?.boundaryEvidence)
+        !== sha256Canonical(reviewedReceipt.boundaryEvidence)
+    ) {
+      fail('EXECUTION_BOUNDARY_MISMATCH');
+    }
+    const reviewedCredential = getUpstreamKey();
+    if (
+      typeof reviewedCredential !== 'string'
+      || reviewedCredential.length === 0
+      || reviewedCredential.includes('\0')
+      || /[\r\n]/u.test(reviewedCredential)
+    ) {
+      fail('RUNTIME_CREDENTIAL_UNAVAILABLE');
+    }
+    runnerDeps = {
+      ...runnerDeps,
+      async openArmSession(context) {
+        const command = buildCodexRuntimeCommand(
+          '/workspace',
+          context.taskFile,
+          {
+            executable: OCI_RUNTIME_PATH,
+            model: context.cohort.model,
+            responseSchema: OCI_RESPONSE_SCHEMA_PATH,
+          },
+        );
+        return supervisor.openArm({
+          arm: context.arm,
+          attemptId: attempt.attemptId,
+          command: {
+            args: command.args,
+            stdin: command.stdin,
+          },
+          responseSchema: context.responseSchema,
+          timeoutMs: context.timeoutMs,
+          workspace: context.armPaths.workspace,
+        });
+      },
+    };
+  } else {
+    executable = (deps.resolveRuntimeExecutable ?? resolveRuntimeExecutable)(
+      runtime,
+      sourceEnv,
+      platform,
+      deps.fs ?? fs,
+    );
+    if (!executable) fail('RUNTIME_MISSING');
+    const capabilities = (deps.runtimeCapabilities ?? runtimeCapabilities)(
+      runtime,
+      platform,
+    );
+    if (
+      !capabilities.noSessionPersistence ||
+      !capabilities.workspaceOnly ||
+      !capabilities.processTree
+    ) {
+      fail('SESSION_SAFETY_UNAVAILABLE');
+    }
+    codexHome = runtime === 'codex' ? sourceEnv.CODEX_HOME : undefined;
+    if (runtime === 'codex') {
+      const sourceHome = sourceEnv.HOME;
+      if (
+        !path.isAbsolute(codexHome ?? '') ||
+        (sourceHome && path.resolve(codexHome) === path.resolve(sourceHome, '.codex'))
+      ) {
+        fail('SESSION_SAFETY_UNAVAILABLE');
+      }
+      try {
+        const state = (deps.fs ?? fs).lstatSync(codexHome);
+        if (!state.isDirectory() || state.isSymbolicLink()) {
+          fail('SESSION_SAFETY_UNAVAILABLE');
+        }
+      } catch {
+        fail('SESSION_SAFETY_UNAVAILABLE');
+      }
+    }
+  }
+  const response = await (deps.runPairedScenario ?? runPairedScenario)({
     scenario: loaded.scenario,
     scenarioRoot: loaded.scenarioRoot,
     manifest: normalized.manifest,
@@ -1855,11 +2488,11 @@ async function handleRun(options, deps) {
     outputPath,
     executable,
     codexHome,
-    timeoutMs: options['timeout-ms'],
-    sourceEnv: deps.env ?? process.env,
-    platform: deps.platform ?? process.platform,
+    timeoutMs,
+    sourceEnv,
+    platform,
     repositoryRoot: loaded.repositoryRoot,
-    deps: deps.runnerDeps,
+    deps: runnerDeps,
   });
   const serialized = JSON.stringify(response.rawRun) + '\n';
   return {
@@ -1934,6 +2567,7 @@ async function handleGate(options, deps) {
 
 async function executeCommand(command, options, deps) {
   if (deps.commandHandlers?.[command]) return deps.commandHandlers[command](options, deps);
+  if (command === 'preflight') return handlePreflight(options, deps);
   if (command === 'validate') return handleValidate(options, deps);
   if (command === 'replay') return handleReplay(options, deps);
   if (command === 'run') return handleRun(options, deps);
@@ -1971,7 +2605,7 @@ export async function main(argv = process.argv.slice(2), io = {}, deps = {}) {
   try {
     parsed = parseCommand(argv);
     if (
-      parsed.command === 'run' &&
+      (parsed.command === 'run' || parsed.command === 'preflight') &&
       (deps.env ?? process.env).GOVERNANCE_IMPACT_REAL !== '1'
     ) {
       fail('REAL_MODE_REQUIRED');
@@ -2016,13 +2650,19 @@ export async function main(argv = process.argv.slice(2), io = {}, deps = {}) {
     const [defaultExit, message, suggestion] =
       ERROR_CONTRACT[error.code] ?? ERROR_CONTRACT.INPUT_SCHEMA_INVALID;
     const exitCode = Number.isInteger(error.exitCode) ? error.exitCode : defaultExit;
+    const terminal = terminalErrorMetadata(error.code, exitCode);
     writeJson(stderr, {
-      schemaVersion: 1,
+      schemaVersion: 2,
       error: true,
+      executionStatus: terminal.executionStatus,
+      claimDisposition: terminal.claimDisposition,
+      phase: terminal.phase,
       code: error.code,
       exitCode,
       message,
       suggestion,
+      retryClass: terminal.retryClass,
+      remediation: suggestion,
     });
     return exitCode;
   }

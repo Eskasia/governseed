@@ -22,6 +22,108 @@ const REQUIRED_GATE_HEADER = [
   'Fallback',
 ];
 
+const GOVERNANCE_IMPACT_REAL_WORKFLOW =
+  '.github/workflows/governance-impact-real.yml';
+const GOVERNANCE_IMPACT_PREFLIGHT_WORKFLOW =
+  '.github/workflows/governance-impact-preflight.yml';
+
+function workflowTriggerKeys(content) {
+  const lines = String(content).split(/\r?\n/u);
+  const start = lines.findIndex((line) => /^on:\s*$/u.test(line));
+  if (start < 0) return [];
+  const keys = [];
+  let directIndent = null;
+  for (let index = start + 1; index < lines.length; index += 1) {
+    const line = lines[index];
+    if (!line.trim()) continue;
+    const indent = line.match(/^ */u)?.[0].length ?? 0;
+    if (indent === 0) break;
+    if (directIndent === null) directIndent = indent;
+    if (indent !== directIndent) continue;
+    const match = line.trim().match(/^([A-Za-z_][A-Za-z0-9_-]*):(?:\s.*)?$/u);
+    if (match) keys.push(match[1]);
+  }
+  return keys;
+}
+
+export function validateGovernanceImpactWorkflows(workflows = []) {
+  const errors = [];
+  for (const workflow of workflows) {
+    const workflowPath = String(workflow?.path ?? '');
+    const content = String(workflow?.content ?? '');
+    const touchesRealBoundary =
+      content.includes('GOVERNANCE_IMPACT_REAL') ||
+      content.includes('OPENAI_API_KEY');
+    if (workflowPath === GOVERNANCE_IMPACT_PREFLIGHT_WORKFLOW) {
+      const triggerKeys = workflowTriggerKeys(content);
+      if (
+        triggerKeys.length !== 1
+        || triggerKeys[0] !== 'workflow_dispatch'
+      ) {
+        errors.push(`${workflowPath} must be workflow_dispatch-only`);
+      }
+      if (!/^\s*runs-on\s*:\s*ubuntu-latest\s*$/mu.test(content)) {
+        errors.push(`${workflowPath} must use the disposable Linux ubuntu-latest runner`);
+      }
+      if (
+        !/^\s*permissions\s*:\s*$/mu.test(content)
+        || !/^\s*contents\s*:\s*read\s*$/mu.test(content)
+      ) {
+        errors.push(`${workflowPath} must keep job permissions at contents: read`);
+      }
+      if (
+        !content.includes('GOVERNANCE_IMPACT_REAL')
+        || !content.includes('governance-impact-eval.mjs preflight')
+      ) {
+        errors.push(`${workflowPath} must run only the explicit OCI preflight command`);
+      }
+      if (
+        content.includes('OPENAI_API_KEY')
+        || content.includes('secrets.')
+        || /^\s*environment\s*:/mu.test(content)
+      ) {
+        errors.push(`${workflowPath} must remain credential-free`);
+      }
+      continue;
+    }
+    if (workflowPath !== GOVERNANCE_IMPACT_REAL_WORKFLOW) {
+      if (touchesRealBoundary) {
+        errors.push(`${workflowPath} must not access governance-impact real mode or credentials`);
+      }
+      continue;
+    }
+    const triggerKeys = workflowTriggerKeys(content);
+    if (
+      triggerKeys.length !== 1
+      || triggerKeys[0] !== 'workflow_dispatch'
+    ) {
+      errors.push(`${workflowPath} must be workflow_dispatch-only`);
+    }
+    if (!/^\s*environment\s*:\s*governance-impact-real\s*$/mu.test(content)) {
+      errors.push(`${workflowPath} must use the approval-gated environment governance-impact-real`);
+    }
+    if (!/^\s*runs-on\s*:\s*ubuntu-latest\s*$/mu.test(content)) {
+      errors.push(`${workflowPath} must use the disposable Linux ubuntu-latest runner`);
+    }
+    if (
+      !/^\s*permissions\s*:\s*$/mu.test(content) ||
+      !/^\s*contents\s*:\s*read\s*$/mu.test(content)
+    ) {
+      errors.push(`${workflowPath} must keep job permissions at contents: read`);
+    }
+    if (
+      !content.includes('GOVERNANCE_IMPACT_REAL') ||
+      !content.includes('OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}')
+    ) {
+      errors.push(`${workflowPath} must scope the environment credential to the real evaluator step`);
+    }
+    if (/--(?:api-key|credential)\b/u.test(content)) {
+      errors.push(`${workflowPath} must not place a credential in argv`);
+    }
+  }
+  return errors;
+}
+
 function hasRequiredGateHeader(content) {
   return String(content || '').split(/\r?\n/).some((line) => {
     const trimmed = line.trim();
@@ -463,6 +565,8 @@ const requiredRepositoryFiles = [
   'docs/tool-registry.md',
   'docs/runtime-proof.md',
   'docs/governance-impact-eval.md',
+  'docs/adr/001-linux-codex-oci-containment.md',
+  'docs/superpowers/plans/2026-07-26-linux-codex-oci-containment.md',
   'docs/superpowers/reviews/2026-07-26-governance-evidence-overhaul-audit.md',
   '.github/ISSUE_TEMPLATE/bug_report.yml',
   '.github/ISSUE_TEMPLATE/feature_request.yml',
@@ -471,6 +575,8 @@ const requiredRepositoryFiles = [
   '.github/release.yml',
   '.github/workflows/validate-starter.yml',
   '.github/workflows/runtime-proof.yml',
+  '.github/workflows/governance-impact-preflight.yml',
+  '.github/workflows/governance-impact-real.yml',
   'tests/runtime/codex/expected-headings.txt',
   'tests/runtime/claude/first-response.schema.json',
   'tests/runtime/antigravity/skill-template/SKILL.md',
@@ -484,15 +590,21 @@ const requiredRepositoryFiles = [
   'scripts/runtime-smoke-antigravity.mjs',
   'scripts/runtime-proof-mock.mjs',
   'scripts/governance-impact-eval.mjs',
+  'scripts/governance-impact-oci-integration.mjs',
+  'scripts/governance-impact-uds-relay.mjs',
   'scripts/lib/governance-checks.mjs',
   'scripts/lib/governance-impact-core.mjs',
   'scripts/lib/governance-impact-adapters.mjs',
+  'scripts/lib/governance-impact-credential-proxy.mjs',
+  'scripts/lib/governance-impact-oci-proxy-facade.mjs',
+  'scripts/lib/governance-impact-oci-supervisor.mjs',
   'profiles/base.json',
   'profiles/fullstack-ai.json',
   'profiles/macos.json',
   'schemas/project-doc.schema.json',
   'schemas/doctor-output.schema.json',
   'schemas/governance-impact-scenario.schema.json',
+  'schemas/governance-impact-preflight.schema.json',
   'schemas/governance-impact-run.schema.json',
   'schemas/governance-impact-result.schema.json',
   'tests/governance/doctor-governance.test.mjs',
@@ -501,10 +613,19 @@ const requiredRepositoryFiles = [
   'tests/governance-impact/scorer.test.mjs',
   'tests/governance-impact/scenario-schema.test.mjs',
   'tests/governance-impact/cli.test.mjs',
+  'tests/governance-impact/credential-proxy.test.mjs',
+  'tests/governance-impact/oci-integration.test.mjs',
+  'tests/governance-impact/oci-proxy-facade.test.mjs',
+  'tests/governance-impact/oci-supervisor.test.mjs',
+  'tests/governance-impact/real-workflow.test.mjs',
   'tests/governance-impact/runner.test.mjs',
+  'tests/governance-impact/uds-relay.test.mjs',
   'tests/governance-impact/fixtures/fake-runtime.mjs',
+  'tests/governance-impact/fixtures/oci/Dockerfile',
+  'tests/governance-impact/fixtures/oci/codex',
   'tests/privacy/doctor-negative.test.mjs',
   'tests/privacy/eval-negative.test.mjs',
+  'tests/privacy/governance-impact-proxy-negative.test.mjs',
   'tests/privacy/runtime-proof-negative.test.mjs',
   'tests/governance-impact/scenarios/ambiguity-no-invention/scenario.json',
   'tests/governance-impact/scenarios/ambiguity-no-invention/task.md',
@@ -964,6 +1085,17 @@ for (const workflow of [
   }
 }
 
+const governanceImpactWorkflows = collectFiles(
+  '.github/workflows',
+  (relativePath) => relativePath.endsWith('.yml') || relativePath.endsWith('.yaml'),
+).map((workflow) => ({
+  path: workflow,
+  content: readFile(workflow),
+}));
+for (const error of validateGovernanceImpactWorkflows(governanceImpactWorkflows)) {
+  fail(errors, error);
+}
+
 if (exists('.github/workflows/runtime-proof.yml')
   && readFile('.github/workflows/runtime-proof.yml').includes('RUNTIME_PROOF_REAL')) {
   fail(errors, '.github/workflows/runtime-proof.yml must keep public runtime proof in mock mode');
@@ -993,11 +1125,19 @@ for (const file of [
   'scripts/runtime-smoke-antigravity.mjs',
   'scripts/runtime-proof-mock.mjs',
   'scripts/governance-impact-eval.mjs',
+  'scripts/governance-impact-oci-integration.mjs',
+  'scripts/governance-impact-uds-relay.mjs',
   'scripts/lib/governance-checks.mjs',
   'scripts/lib/governance-impact-core.mjs',
   'scripts/lib/governance-impact-adapters.mjs',
+  'scripts/lib/governance-impact-credential-proxy.mjs',
+  'scripts/lib/governance-impact-oci-proxy-facade.mjs',
+  'scripts/lib/governance-impact-oci-supervisor.mjs',
+  'docs/adr/001-linux-codex-oci-containment.md',
   'docs/governance-impact-eval.md',
+  'docs/superpowers/plans/2026-07-26-linux-codex-oci-containment.md',
   'schemas/governance-impact-scenario.schema.json',
+  'schemas/governance-impact-preflight.schema.json',
   'schemas/governance-impact-run.schema.json',
   'schemas/governance-impact-result.schema.json',
   'tests/governance/doctor-governance.test.mjs',
@@ -1006,11 +1146,22 @@ for (const file of [
   'tests/governance-impact/scorer.test.mjs',
   'tests/governance-impact/scenario-schema.test.mjs',
   'tests/governance-impact/cli.test.mjs',
+  'tests/governance-impact/credential-proxy.test.mjs',
+  'tests/governance-impact/oci-integration.test.mjs',
+  'tests/governance-impact/oci-proxy-facade.test.mjs',
+  'tests/governance-impact/oci-supervisor.test.mjs',
+  'tests/governance-impact/real-workflow.test.mjs',
   'tests/governance-impact/runner.test.mjs',
+  'tests/governance-impact/uds-relay.test.mjs',
   'tests/governance-impact/fixtures/fake-runtime.mjs',
+  'tests/governance-impact/fixtures/oci/Dockerfile',
+  'tests/governance-impact/fixtures/oci/codex',
   'tests/privacy/doctor-negative.test.mjs',
   'tests/privacy/eval-negative.test.mjs',
+  'tests/privacy/governance-impact-proxy-negative.test.mjs',
   'tests/privacy/runtime-proof-negative.test.mjs',
+  '.github/workflows/governance-impact-preflight.yml',
+  '.github/workflows/governance-impact-real.yml',
   '.github/workflows/validate-starter.yml',
   '.github/workflows/runtime-proof.yml',
 ]) {

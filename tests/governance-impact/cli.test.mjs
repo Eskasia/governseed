@@ -12,6 +12,7 @@ import {
 import {
   main,
   parseCommand,
+  verifyTrackedEvidenceFiles,
 } from '../../scripts/governance-impact-eval.mjs';
 
 function captureIo() {
@@ -102,6 +103,62 @@ function manifestForScenario(scenario) {
   };
 }
 
+function validBoundaryEvidence(overrides = {}) {
+  return {
+    observedImageDigest: 'a'.repeat(64),
+    codexVersion: 'codex-cli 1.2.3',
+    codexBinarySha256: 'c'.repeat(64),
+    containmentPolicyHash: 'd'.repeat(64),
+    networkPolicyHash: 'e'.repeat(64),
+    proxyPolicyHash: 'f'.repeat(64),
+    hardening: {
+      nonRootUser: true,
+      readOnlyRootFilesystem: true,
+      capDropAll: true,
+      noNewPrivileges: true,
+      privatePidNamespace: true,
+      privateCgroupNamespace: true,
+      pidLimit: true,
+      cpuLimit: true,
+      memoryLimit: true,
+      dockerSocketAbsent: true,
+      devicesAbsent: true,
+      cgroupMountAbsent: true,
+    },
+    pidNamespaceStopped: true,
+    cgroupEmpty: true,
+    cleanupComplete: true,
+    ...overrides,
+  };
+}
+
+function validPreflightReceipt({
+  executionBoundaryId,
+  imageReference,
+  model = 'gpt-5.6-codex',
+  timeoutMs = 300_000,
+  boundaryEvidence = validBoundaryEvidence({
+    observedImageDigest: imageReference.slice(imageReference.lastIndexOf(':') + 1),
+  }),
+} = {}) {
+  return {
+    schemaVersion: 1,
+    kind: 'governance-impact-oci-preflight',
+    preflightStatus: 'READY',
+    claimDisposition: 'NOT_EVALUATED',
+    runtime: 'codex',
+    model,
+    timeoutMs,
+    provenance: {
+      imageReference,
+      expectedCodexVersion: 'codex-cli 1.2.3',
+      expectedCodexBinarySha256: 'c'.repeat(64),
+    },
+    executionBoundaryId,
+    boundaryEvidence,
+  };
+}
+
 test('CLI grammar accepts only the frozen commands and options', () => {
   assert.deepEqual(parseCommand([]), { command: 'controls', options: {} });
   assert.deepEqual(parseCommand(['validate', '--scenario', 'fixtures/safe']), {
@@ -129,6 +186,73 @@ test('CLI grammar accepts only the frozen commands and options', () => {
   );
 });
 
+test('CLI grammar accepts the credential-free OCI preflight contract', () => {
+  const imageReference =
+    `registry.example/governance/codex@sha256:${'a'.repeat(64)}`;
+  assert.deepEqual(parseCommand([
+    'preflight',
+    '--model', 'gpt-5.6-codex',
+    '--runtime-image', imageReference,
+    '--codex-version', 'codex-cli 1.2.3',
+    '--codex-binary-sha256', 'c'.repeat(64),
+    '--timeout-ms', '300000',
+    '--output', 'artifacts/governance-impact/preflight.json',
+  ]), {
+    command: 'preflight',
+    options: {
+      model: 'gpt-5.6-codex',
+      'runtime-image': imageReference,
+      'codex-version': 'codex-cli 1.2.3',
+      'codex-binary-sha256': 'c'.repeat(64),
+      'timeout-ms': 300_000,
+      output: 'artifacts/governance-impact/preflight.json',
+    },
+  });
+  assert.throws(
+    () => parseCommand([
+      'preflight',
+      '--model', 'gpt-5.6-codex',
+      '--runtime-image', imageReference,
+      '--codex-version', 'codex-cli 1.2.3',
+      '--codex-binary-sha256', 'c'.repeat(64),
+      '--output', 'preflight.json',
+    ]),
+    (error) => error.code === 'MISSING_OPTION',
+  );
+});
+
+test('CLI grammar accepts the reviewed OCI provenance tuple for real Codex runs', () => {
+  const imageDigest = `registry.example/governance/codex@sha256:${'a'.repeat(64)}`;
+  assert.deepEqual(
+    parseCommand([
+      'run',
+      '--scenario', 'scenario',
+      '--manifest', 'manifest.json',
+      '--policy', 'policy.json',
+      '--preflight-receipt', 'preflight.json',
+      '--attempt-id', 'b'.repeat(64),
+      '--output', 'raw-run.json',
+      '--runtime-image', imageDigest,
+      '--codex-version', 'codex-cli 1.2.3',
+      '--codex-binary-sha256', 'c'.repeat(64),
+    ]),
+    {
+      command: 'run',
+      options: {
+        scenario: 'scenario',
+        manifest: 'manifest.json',
+        policy: 'policy.json',
+        'preflight-receipt': 'preflight.json',
+        'attempt-id': 'b'.repeat(64),
+        output: 'raw-run.json',
+        'runtime-image': imageDigest,
+        'codex-version': 'codex-cli 1.2.3',
+        'codex-binary-sha256': 'c'.repeat(64),
+      },
+    },
+  );
+});
+
 for (const argv of [
   ['unknown'],
   ['run', '--scenario', 'scenario'],
@@ -137,6 +261,11 @@ for (const argv of [
   ['run', '--scenario', '/absolute', '--manifest', 'm', '--policy', 'p', '--attempt-id', 'a'.repeat(64), '--output', 'o'],
   ['run', '--scenario', 's', '--manifest', 'm', '--policy', 'p', '--attempt-id', 'ABC', '--output', 'o'],
   ['run', '--scenario', 's', '--manifest', 'm', '--policy', 'p', '--attempt-id', 'a'.repeat(64), '--output', 'o', '--timeout-ms', '0'],
+  ['run', '--scenario', 's', '--manifest', 'm', '--policy', 'p', '--attempt-id', 'a'.repeat(64), '--output', 'o', '--timeout-ms', '600001'],
+  ['run', '--scenario', 's', '--manifest', 'm', '--policy', 'p', '--attempt-id', 'a'.repeat(64), '--output', 'o', '--runtime-image', 'registry/repo:latest'],
+  ['run', '--scenario', 's', '--manifest', 'm', '--policy', 'p', '--attempt-id', 'a'.repeat(64), '--output', 'o', '--runtime-image', `registry/repo@sha256:${'b'.repeat(64)}`, '--codex-version', 'codex\nsecret'],
+  ['run', '--scenario', 's', '--manifest', 'm', '--policy', 'p', '--attempt-id', 'a'.repeat(64), '--output', 'o', '--runtime-image', `registry/repo@sha256:${'b'.repeat(64)}`, '--codex-version', 'codex/secret'],
+  ['run', '--scenario', 's', '--manifest', 'm', '--policy', 'p', '--attempt-id', 'a'.repeat(64), '--output', 'o', '--codex-binary-sha256', 'ABC'],
 ]) {
   test(`CLI grammar rejects ${JSON.stringify(argv)}`, () => {
     assert.throws(
@@ -338,6 +467,384 @@ test('installed Codex on POSIX is refused by the default capability gate before 
   assert.equal(JSON.parse(streams.stderr).code, 'SESSION_SAFETY_UNAVAILABLE');
 });
 
+test('OCI preflight publishes one closed receipt without reading the runtime credential', async (t) => {
+  const repositoryRoot = tempDirectory(t);
+  const capture = captureIo();
+  const imageReference =
+    `registry.example/governance/codex@sha256:${'a'.repeat(64)}`;
+  const executionBoundaryId = 'b'.repeat(64);
+  const evidence = validBoundaryEvidence();
+  const proxy = Object.freeze({ kind: 'synthetic-proxy' });
+  let persisted = null;
+  let preflightCalls = 0;
+  const guardedEnvironment = new Proxy({
+    GOVERNANCE_IMPACT_REAL: '1',
+  }, {
+    get(target, key) {
+      if (key === 'OPENAI_API_KEY') {
+        assert.fail('preflight must not read the runtime credential');
+      }
+      return Reflect.get(target, key);
+    },
+  });
+
+  const exitCode = await main([
+    'preflight',
+    '--model', 'gpt-5.6-codex',
+    '--runtime-image', imageReference,
+    '--codex-version', 'codex-cli 1.2.3',
+    '--codex-binary-sha256', 'c'.repeat(64),
+    '--timeout-ms', '300000',
+    '--output', 'artifacts/governance-impact/preflight.json',
+  ], capture.io, {
+    repositoryRoot,
+    platform: 'linux',
+    env: guardedEnvironment,
+    createOciProxyFacade(options) {
+      assert.deepEqual(options, {
+        model: 'gpt-5.6-codex',
+        deadlineMs: 300_000,
+      });
+      return proxy;
+    },
+    createOciSupervisor(options) {
+      assert.equal(options.platform, 'linux');
+      assert.equal(options.proxy, proxy);
+      return {
+        async preflightAndReconcile(provenance) {
+          preflightCalls += 1;
+          assert.deepEqual(provenance, {
+            imageReference,
+            expectedCodexVersion: 'codex-cli 1.2.3',
+            expectedCodexBinarySha256: 'c'.repeat(64),
+          });
+          return {
+            executionBoundaryId,
+            boundaryEvidence: evidence,
+          };
+        },
+      };
+    },
+    async persistJsonAtomically(file, value) {
+      persisted = { file, value };
+      return { sha256: '1'.repeat(64) };
+    },
+  });
+
+  const streams = capture.read();
+  assert.equal(exitCode, 0, streams.stderr);
+  assert.equal(preflightCalls, 1);
+  assert.equal(streams.stderr, '');
+  assert.deepEqual(persisted.value, {
+    schemaVersion: 1,
+    kind: 'governance-impact-oci-preflight',
+    preflightStatus: 'READY',
+    claimDisposition: 'NOT_EVALUATED',
+    runtime: 'codex',
+    model: 'gpt-5.6-codex',
+    timeoutMs: 300_000,
+    provenance: {
+      imageReference,
+      expectedCodexVersion: 'codex-cli 1.2.3',
+      expectedCodexBinarySha256: 'c'.repeat(64),
+    },
+    executionBoundaryId,
+    boundaryEvidence: evidence,
+  });
+  assert.equal(
+    path.relative(repositoryRoot, persisted.file),
+    path.join('artifacts', 'governance-impact', 'preflight.json'),
+  );
+  const output = JSON.parse(streams.stdout);
+  assert.equal(output.command, 'preflight');
+  assert.equal(output.artifact.sha256, '1'.repeat(64));
+  assert.equal(output.summary.claimDisposition, 'NOT_EVALUATED');
+});
+
+test('OCI preflight rejects malformed proof without publishing a receipt', async (t) => {
+  const repositoryRoot = tempDirectory(t);
+  const capture = captureIo();
+  const imageReference =
+    `registry.example/governance/codex@sha256:${'a'.repeat(64)}`;
+  let persisted = false;
+
+  const exitCode = await main([
+    'preflight',
+    '--model', 'gpt-5.6-codex',
+    '--runtime-image', imageReference,
+    '--codex-version', 'codex-cli 1.2.3',
+    '--codex-binary-sha256', 'c'.repeat(64),
+    '--timeout-ms', '300000',
+    '--output', 'artifacts/governance-impact/preflight.json',
+  ], capture.io, {
+    repositoryRoot,
+    platform: 'linux',
+    env: { GOVERNANCE_IMPACT_REAL: '1' },
+    createOciProxyFacade: () => ({}),
+    createOciSupervisor: () => ({
+      async preflightAndReconcile() {
+        return {
+          executionBoundaryId: 'b'.repeat(64),
+          boundaryEvidence: validBoundaryEvidence({
+            cleanupComplete: false,
+          }),
+        };
+      },
+    }),
+    async persistJsonAtomically() {
+      persisted = true;
+      return { sha256: '1'.repeat(64) };
+    },
+  });
+
+  const streams = capture.read();
+  assert.equal(exitCode, 4);
+  assert.equal(persisted, false);
+  assert.equal(streams.stdout, '');
+  assert.equal(
+    JSON.parse(streams.stderr).code,
+    'OCI_PREFLIGHT_RECEIPT_INVALID',
+  );
+});
+
+test('v2 Linux Codex routes through OCI provenance without host binary or CODEX_HOME', async (t) => {
+  const repositoryRoot = tempDirectory(t);
+  const capture = captureIo();
+  const scenario = validScenario();
+  const executionBoundaryId = 'e'.repeat(64);
+  const cohort = {
+    runtime: 'codex',
+    model: 'gpt-5.6-codex',
+    config: 'oci-v2',
+    starterCommit: 'a'.repeat(40),
+    executionBoundaryId,
+  };
+  const attempt = {
+    scenarioHash: sha256Canonical(scenario),
+    repetitionId: 'rep-1',
+    seed: 17,
+  };
+  attempt.attemptId = deriveAttemptId({
+    schemaVersion: 2,
+    ...attempt,
+    cohort,
+  });
+  const manifest = {
+    schemaVersion: 2,
+    cohort,
+    attempts: [attempt],
+  };
+  const policy = { expectedManifestHash: sha256Canonical(manifest) };
+  const imageReference =
+    `registry.example/governance/codex@sha256:${'b'.repeat(64)}`;
+  const boundaryEvidence = validBoundaryEvidence({
+    observedImageDigest: 'b'.repeat(64),
+  });
+  const receipt = validPreflightReceipt({
+    executionBoundaryId,
+    imageReference,
+    boundaryEvidence,
+  });
+  const upstreamKey = 'CANARY_UPSTREAM_KEY_MUST_STAY_ON_HOST';
+  const events = [];
+  const proxy = Object.freeze({ kind: 'opaque-facade' });
+  let getUpstreamKey;
+  let credentialReads = 0;
+  const supervisor = {
+    async preflightAndReconcile(provenance) {
+      events.push('preflight');
+      assert.deepEqual(provenance, {
+        imageReference,
+        expectedCodexVersion: 'codex-cli 1.2.3',
+        expectedCodexBinarySha256: 'c'.repeat(64),
+      });
+      return { executionBoundaryId, boundaryEvidence };
+    },
+    async openArm() {
+      throw new Error('runner seam owns arm opening');
+    },
+  };
+  const exitCode = await main([
+    'run',
+    '--scenario', 'scenario',
+    '--manifest', 'manifest.json',
+    '--policy', 'policy.json',
+    '--preflight-receipt', 'preflight.json',
+    '--attempt-id', attempt.attemptId,
+    '--output', 'raw-run.json',
+    '--runtime-image', imageReference,
+    '--codex-version', 'codex-cli 1.2.3',
+    '--codex-binary-sha256', 'c'.repeat(64),
+  ], capture.io, {
+    repositoryRoot,
+    platform: 'linux',
+    env: {
+      GOVERNANCE_IMPACT_REAL: '1',
+      HOME: '/private/source-home',
+      get OPENAI_API_KEY() {
+        credentialReads += 1;
+        events.push('credential-read');
+        return upstreamKey;
+      },
+    },
+    readExactJson(file) {
+      if (path.basename(file) === 'scenario.json') return scenario;
+      if (path.basename(file) === 'manifest.json') return manifest;
+      if (path.basename(file) === 'policy.json') return policy;
+      if (path.basename(file) === 'preflight.json') return receipt;
+      throw new Error('unexpected input');
+    },
+    verifyTrackedScenario() {},
+    verifyTrackedEvidence(files) {
+      assert.deepEqual(
+        files.map((file) => path.basename(file)),
+        ['manifest.json', 'policy.json', 'preflight.json'],
+      );
+    },
+    hashScenarioArtifacts: async () => scenario.artifactHashes,
+    resolveRuntimeExecutable() {
+      assert.fail('OCI route must not resolve a host runtime');
+    },
+    createOciProxyFacade(options) {
+      events.push('create-proxy');
+      assert.equal(options.attemptId, attempt.attemptId);
+      assert.equal(options.model, cohort.model);
+      assert.equal(options.deadlineMs, 300_000);
+      assert.equal(typeof options.getUpstreamKey, 'function');
+      getUpstreamKey = options.getUpstreamKey;
+      return proxy;
+    },
+    createOciSupervisor(options) {
+      events.push('create-supervisor');
+      assert.deepEqual(options, {
+        platform: 'linux',
+        proxy,
+      });
+      return supervisor;
+    },
+    async runPairedScenario(options) {
+      events.push('run-paired');
+      assert.equal(getUpstreamKey(), upstreamKey);
+      assert.equal(options.executable, undefined);
+      assert.equal(options.codexHome, undefined);
+      assert.equal(options.timeoutMs, 300_000);
+      assert.equal(typeof options.deps.openArmSession, 'function');
+      return {
+        rawRun: { schemaVersion: 2, marker: 'safe' },
+        scored: {
+          attemptId: attempt.attemptId,
+          scenarioHash: attempt.scenarioHash,
+          arms: {
+            baseline: { deliveryPass: true },
+            governed: { deliveryPass: true },
+          },
+          comparison: { winner: 'tie' },
+        },
+        armOrder: ['baseline', 'governed'],
+      };
+    },
+  });
+  const streams = capture.read();
+  assert.equal(exitCode, 0, streams.stderr);
+  assert.deepEqual(events, [
+    'create-proxy',
+    'create-supervisor',
+    'preflight',
+    'credential-read',
+    'run-paired',
+  ]);
+  assert.equal(credentialReads, 1);
+  assert.equal(streams.stderr, '');
+  assert.equal(streams.stdout.includes(upstreamKey), false);
+});
+
+test('v2 boundary mismatch stops before credential access or arm execution', async (t) => {
+  const repositoryRoot = tempDirectory(t);
+  const capture = captureIo();
+  const scenario = validScenario();
+  const cohort = {
+    runtime: 'codex',
+    model: 'gpt-5.6-codex',
+    config: 'oci-v2',
+    starterCommit: 'a'.repeat(40),
+    executionBoundaryId: 'e'.repeat(64),
+  };
+  const attempt = {
+    scenarioHash: sha256Canonical(scenario),
+    repetitionId: 'rep-1',
+    seed: 17,
+  };
+  attempt.attemptId = deriveAttemptId({
+    schemaVersion: 2,
+    ...attempt,
+    cohort,
+  });
+  const manifest = {
+    schemaVersion: 2,
+    cohort,
+    attempts: [attempt],
+  };
+  const policy = { expectedManifestHash: sha256Canonical(manifest) };
+  const imageReference =
+    `registry.example/governance/codex@sha256:${'b'.repeat(64)}`;
+  const receipt = validPreflightReceipt({
+    executionBoundaryId: cohort.executionBoundaryId,
+    imageReference,
+    boundaryEvidence: validBoundaryEvidence({
+      observedImageDigest: 'b'.repeat(64),
+    }),
+  });
+  const exitCode = await main([
+    'run',
+    '--scenario', 'scenario',
+    '--manifest', 'manifest.json',
+    '--policy', 'policy.json',
+    '--preflight-receipt', 'preflight.json',
+    '--attempt-id', attempt.attemptId,
+    '--output', 'raw-run.json',
+    '--runtime-image',
+    imageReference,
+    '--codex-version', 'codex-cli 1.2.3',
+    '--codex-binary-sha256', 'c'.repeat(64),
+  ], capture.io, {
+    repositoryRoot,
+    platform: 'linux',
+    env: {
+      GOVERNANCE_IMPACT_REAL: '1',
+      get OPENAI_API_KEY() {
+        assert.fail('boundary mismatch must not read the runtime credential');
+      },
+    },
+    readExactJson(file) {
+      if (path.basename(file) === 'scenario.json') return scenario;
+      if (path.basename(file) === 'manifest.json') return manifest;
+      if (path.basename(file) === 'policy.json') return policy;
+      if (path.basename(file) === 'preflight.json') return receipt;
+      throw new Error('unexpected input');
+    },
+    verifyTrackedScenario() {},
+    verifyTrackedEvidence() {},
+    hashScenarioArtifacts: async () => scenario.artifactHashes,
+    createOciProxyFacade: () => Object.freeze({ kind: 'opaque-facade' }),
+    createOciSupervisor: () => ({
+      async preflightAndReconcile() {
+        return { executionBoundaryId: 'd'.repeat(64) };
+      },
+      async openArm() {
+        assert.fail('boundary mismatch must not open an arm');
+      },
+    }),
+    async runPairedScenario() {
+      assert.fail('boundary mismatch must not start paired execution');
+    },
+  });
+
+  const streams = capture.read();
+  assert.equal(exitCode, 2);
+  assert.equal(streams.stdout, '');
+  assert.equal(JSON.parse(streams.stderr).code, 'EXECUTION_BOUNDARY_MISMATCH');
+});
+
 test('fatal errors use exactly one closed stderr envelope and stable exit', async () => {
   const capture = captureIo();
   const exitCode = await main(['validate'], capture.io);
@@ -346,15 +853,204 @@ test('fatal errors use exactly one closed stderr envelope and stable exit', asyn
   assert.equal(streams.stdout, '');
   assert.equal(streams.stderr.endsWith('\n'), true);
   assert.equal(streams.stderr.trim().split('\n').length, 1);
-  assert.deepEqual(Object.keys(JSON.parse(streams.stderr)), [
+  const error = JSON.parse(streams.stderr);
+  assert.deepEqual(Object.keys(error), [
     'schemaVersion',
     'error',
+    'executionStatus',
+    'claimDisposition',
+    'phase',
     'code',
     'exitCode',
     'message',
     'suggestion',
+    'retryClass',
+    'remediation',
   ]);
+  assert.equal(error.schemaVersion, 2);
+  assert.equal(error.executionStatus, 'BLOCKED');
+  assert.equal(error.claimDisposition, 'NOT_EVALUATED');
+  assert.equal(error.phase, 'preflight');
+  assert.equal(error.retryClass, 'operator-input');
+  assert.equal(error.remediation, error.suggestion);
 });
+
+test('post-launch safety errors are explicitly fail-closed and never claim-evaluated', async () => {
+  const capture = captureIo();
+  const exitCode = await main([
+    'run',
+    '--scenario', 'scenario',
+    '--manifest', 'manifest.json',
+    '--policy', 'policy.json',
+    '--attempt-id', 'a'.repeat(64),
+    '--output', 'raw-run.json',
+  ], capture.io, {
+    env: { GOVERNANCE_IMPACT_REAL: '1' },
+    commandHandlers: {
+      run: async () => {
+        const error = new Error('/private/workspace');
+        error.code = 'CLEANUP_FAILED';
+        error.exitCode = 3;
+        throw error;
+      },
+    },
+  });
+  const error = JSON.parse(capture.read().stderr);
+  assert.equal(exitCode, 3);
+  assert.equal(error.executionStatus, 'FAIL-CLOSED');
+  assert.equal(error.claimDisposition, 'NOT_EVALUATED');
+  assert.equal(error.phase, 'cleanup');
+  assert.equal(error.retryClass, 'non-retryable-integrity');
+  assert.equal(error.remediation, error.suggestion);
+  assert.equal(capture.read().stderr.includes('/private/workspace'), false);
+});
+
+for (const expected of [
+  {
+    code: 'RUNTIME_CREDENTIAL_UNAVAILABLE',
+    exitCode: 4,
+    executionStatus: 'BLOCKED',
+    phase: 'preflight',
+    retryClass: 'environment-remediation',
+  },
+  {
+    code: 'EXECUTION_BOUNDARY_MISMATCH',
+    exitCode: 2,
+    executionStatus: 'BLOCKED',
+    phase: 'preflight',
+    retryClass: 'operator-input',
+  },
+  {
+    code: 'OCI_CGROUP_V2_UNAVAILABLE',
+    exitCode: 4,
+    executionStatus: 'BLOCKED',
+    phase: 'preflight',
+    retryClass: 'environment-remediation',
+  },
+  {
+    code: 'OCI_RECONCILIATION_UNCERTAIN',
+    exitCode: 4,
+    executionStatus: 'BLOCKED',
+    phase: 'reconcile',
+    retryClass: 'environment-remediation',
+  },
+  {
+    code: 'OCI_BOUNDARY_PROOF_UNAVAILABLE',
+    exitCode: 3,
+    executionStatus: 'FAIL-CLOSED',
+    phase: 'boundary-proof',
+    retryClass: 'non-retryable-integrity',
+  },
+  {
+    code: 'OCI_PROXY_ATTEMPT_UNSAFE',
+    exitCode: 3,
+    executionStatus: 'FAIL-CLOSED',
+    phase: 'proxy',
+    retryClass: 'non-retryable-integrity',
+  },
+  {
+    code: 'OCI_CLEANUP_UNCERTAIN',
+    exitCode: 3,
+    executionStatus: 'FAIL-CLOSED',
+    phase: 'cleanup',
+    retryClass: 'non-retryable-integrity',
+  },
+]) {
+  test(`${expected.code} retains its canonical terminal contract`, async () => {
+    const capture = captureIo();
+    const exitCode = await main([
+      'run',
+      '--scenario', 'scenario',
+      '--manifest', 'manifest.json',
+      '--policy', 'policy.json',
+      '--attempt-id', 'a'.repeat(64),
+      '--output', 'raw-run.json',
+    ], capture.io, {
+      env: { GOVERNANCE_IMPACT_REAL: '1' },
+      commandHandlers: {
+        run: async () => {
+          const error = new Error('/private/detail-must-not-escape');
+          error.code = expected.code;
+          throw error;
+        },
+      },
+    });
+    const error = JSON.parse(capture.read().stderr);
+    assert.equal(exitCode, expected.exitCode);
+    assert.equal(error.code, expected.code);
+    assert.equal(error.executionStatus, expected.executionStatus);
+    assert.equal(error.claimDisposition, 'NOT_EVALUATED');
+    assert.equal(error.phase, expected.phase);
+    assert.equal(error.retryClass, expected.retryClass);
+    assert.equal(capture.read().stderr.includes('/private/detail'), false);
+  });
+}
+
+for (const [
+  code,
+  exitCode,
+  executionStatus,
+  phase,
+  retryClass,
+] of [
+  ['OCI_PLATFORM_UNSUPPORTED', 2, 'BLOCKED', 'preflight', 'environment-remediation'],
+  ['OCI_PROVENANCE_INVALID', 2, 'BLOCKED', 'preflight', 'operator-input'],
+  ['OCI_IMAGE_IDENTITY_MISMATCH', 2, 'BLOCKED', 'preflight', 'operator-input'],
+  ['OCI_RUNTIME_BINARY_INVALID', 2, 'BLOCKED', 'preflight', 'operator-input'],
+  ['OCI_RUNTIME_BINARY_MISMATCH', 2, 'BLOCKED', 'preflight', 'operator-input'],
+  ['OCI_RUNTIME_VERSION_INVALID', 2, 'BLOCKED', 'preflight', 'operator-input'],
+  ['OCI_RUNTIME_VERSION_MISMATCH', 2, 'BLOCKED', 'preflight', 'operator-input'],
+  ['OCI_HARDENING_MISMATCH', 2, 'BLOCKED', 'preflight', 'operator-input'],
+  ['OCI_IMAGE_FILE_INVALID', 2, 'BLOCKED', 'preflight', 'operator-input'],
+  ['OCI_IMAGE_INSPECTION_UNCERTAIN', 4, 'BLOCKED', 'preflight', 'environment-remediation'],
+  ['OCI_PROXY_UNAVAILABLE', 4, 'BLOCKED', 'preflight', 'environment-remediation'],
+  ['OCI_PREFLIGHT_CLEANUP_UNCERTAIN', 4, 'BLOCKED', 'preflight', 'environment-remediation'],
+  ['OCI_PREFLIGHT_UNCERTAIN', 4, 'BLOCKED', 'preflight', 'environment-remediation'],
+  ['OCI_PREFLIGHT_RECEIPT_INVALID', 4, 'BLOCKED', 'preflight', 'environment-remediation'],
+  ['OCI_PREFLIGHT_RECEIPT_MISMATCH', 2, 'BLOCKED', 'preflight', 'operator-input'],
+  ['EVIDENCE_NOT_COMMITTED', 2, 'BLOCKED', 'preflight', 'operator-input'],
+  ['OCI_PREFLIGHT_REQUIRED', 2, 'BLOCKED', 'arm-open', 'operator-input'],
+  ['OCI_ARM_INPUT_INVALID', 2, 'BLOCKED', 'arm-open', 'operator-input'],
+  ['OCI_RESPONSE_SCHEMA_UNSTABLE', 2, 'BLOCKED', 'arm-open', 'operator-input'],
+  ['OCI_ARM_OPEN_UNCERTAIN', 3, 'FAIL-CLOSED', 'arm-open', 'non-retryable-integrity'],
+  ['OCI_PROXY_POLICY_MISMATCH', 3, 'FAIL-CLOSED', 'proxy', 'non-retryable-integrity'],
+  ['OCI_PROXY_RELAY_UNAVAILABLE', 3, 'FAIL-CLOSED', 'proxy', 'transient-infrastructure'],
+  ['OCI_INIT_PID_UNAVAILABLE', 3, 'FAIL-CLOSED', 'boundary-proof', 'non-retryable-integrity'],
+  ['OCI_CGROUP_PATH_UNAVAILABLE', 3, 'FAIL-CLOSED', 'boundary-proof', 'non-retryable-integrity'],
+  ['OCI_EXECUTION_UNCERTAIN', 3, 'FAIL-CLOSED', 'boundary-proof', 'non-retryable-integrity'],
+  ['OCI_RESPONSE_SCHEMA_DRIFT', 3, 'FAIL-CLOSED', 'boundary-proof', 'non-retryable-integrity'],
+  ['OCI_SESSION_STATE_INVALID', 3, 'FAIL-CLOSED', 'execution', 'non-retryable-integrity'],
+  ['OCI_CONTAINER_ENV_INVALID', 3, 'FAIL-CLOSED', 'arm-open', 'non-retryable-integrity'],
+  ['OCI_FIFO_CREATE_FAILED', 3, 'FAIL-CLOSED', 'arm-open', 'transient-infrastructure'],
+  ['OCI_RUNTIME_SURFACE_FAILED', 3, 'FAIL-CLOSED', 'arm-open', 'transient-infrastructure'],
+  ['PROXY_ATTEMPT_UNSAFE', 3, 'FAIL-CLOSED', 'proxy', 'non-retryable-integrity'],
+  ['PROXY_CLEANUP_UNPROVEN', 3, 'FAIL-CLOSED', 'cleanup', 'non-retryable-integrity'],
+]) {
+  test(`${code} is not collapsed into a generic terminal error`, async () => {
+    const capture = captureIo();
+    const result = await main([
+      'run',
+      '--scenario', 'scenario',
+      '--manifest', 'manifest.json',
+      '--policy', 'policy.json',
+      '--attempt-id', 'a'.repeat(64),
+      '--output', 'raw-run.json',
+    ], capture.io, {
+      env: { GOVERNANCE_IMPACT_REAL: '1' },
+      commandHandlers: {
+        run: async () => {
+          throw Object.assign(new Error('private'), { code });
+        },
+      },
+    });
+    const terminal = JSON.parse(capture.read().stderr);
+    assert.equal(result, exitCode);
+    assert.equal(terminal.code, code);
+    assert.equal(terminal.executionStatus, executionStatus);
+    assert.equal(terminal.phase, phase);
+    assert.equal(terminal.retryClass, retryClass);
+  });
+}
 
 test('aggregate handler receives policy bootstrap seed and normalized manifest inputs', async () => {
   const capture = captureIo();
@@ -617,6 +1313,36 @@ test('validate proves the scenario is tracked and clean before reporting success
   assert.equal(events[0][2], scenario);
   assert.deepEqual(events[1], ['hash']);
   assert.equal(events[2][0], 'tracked');
+});
+
+test('v2 evidence verifier requires manifest, policy, and receipt to match HEAD', (t) => {
+  const repositoryRoot = tempDirectory(t);
+  const evidenceRoot = path.join(repositoryRoot, 'artifacts');
+  fs.mkdirSync(evidenceRoot);
+  const files = ['manifest.json', 'policy.json', 'preflight.json']
+    .map((name) => path.join(evidenceRoot, name));
+  for (const file of files) fs.writeFileSync(file, '{}\n');
+  runGit(repositoryRoot, ['init', '--quiet']);
+  runGit(repositoryRoot, ['config', 'user.email', 'synthetic@example.invalid']);
+  runGit(repositoryRoot, ['config', 'user.name', 'Synthetic Test']);
+  runGit(repositoryRoot, ['add', 'artifacts']);
+  runGit(repositoryRoot, ['commit', '--quiet', '-m', 'reviewed evidence']);
+
+  assert.doesNotThrow(() => verifyTrackedEvidenceFiles(files, {
+    repositoryRoot,
+  }));
+
+  fs.writeFileSync(files[2], '{"dirty":true}\n');
+  assert.throws(
+    () => verifyTrackedEvidenceFiles(files, { repositoryRoot }),
+    (error) => error.code === 'EVIDENCE_NOT_COMMITTED',
+  );
+
+  runGit(repositoryRoot, ['add', 'artifacts/preflight.json']);
+  assert.throws(
+    () => verifyTrackedEvidenceFiles(files, { repositoryRoot }),
+    (error) => error.code === 'EVIDENCE_NOT_COMMITTED',
+  );
 });
 
 test('validate requires every scenario descendant to be tracked and clean', async (t) => {

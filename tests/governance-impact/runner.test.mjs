@@ -106,6 +106,8 @@ test('Codex pure command builder keeps the frozen safe argv contract unit-testab
     '--color',
     'never',
     '--config',
+    'web_search="disabled"',
+    '--config',
     'shell_environment_policy.inherit=none',
     '-',
   ]);
@@ -641,6 +643,45 @@ test('workspace copy consumes stable-open bytes and never path-raced copyFileSyn
   }
 });
 
+test('v2 OCI workspace is writable by the fixed non-root container only inside its private root', async (t) => {
+  if (process.platform === 'win32') return t.skip('POSIX mode contract');
+  const root = tempDirectory(t);
+  const scenarioRoot = path.join(root, 'scenario');
+  fs.mkdirSync(path.join(scenarioRoot, 'seed', 'nested'), { recursive: true });
+  fs.mkdirSync(path.join(scenarioRoot, 'overlay'));
+  fs.writeFileSync(path.join(scenarioRoot, 'seed', 'value.txt'), 'safe\n', {
+    mode: 0o600,
+  });
+  fs.writeFileSync(path.join(scenarioRoot, 'seed', 'nested', 'tool.sh'), '#!/bin/sh\n', {
+    mode: 0o700,
+  });
+  fs.writeFileSync(path.join(scenarioRoot, 'task.md'), 'task\n', { mode: 0o600 });
+
+  const prepared = await prepareArmWorkspace({
+    repositoryRoot: root,
+    tempRoot: path.join(root, 'tmp'),
+    scenarioRoot,
+    scenario: {
+      paths: {
+        seedDir: 'seed',
+        taskFile: 'task.md',
+        governedOverlayDir: 'overlay',
+      },
+    },
+    manifest: { schemaVersion: 2 },
+    arm: 'baseline',
+  });
+  t.after(() => fs.rmSync(prepared.root, { recursive: true, force: true }));
+
+  const mode = (value) => fs.lstatSync(value).mode & 0o777;
+  assert.equal(mode(prepared.root), 0o700);
+  assert.equal(mode(prepared.workspace), 0o777);
+  assert.equal(mode(path.join(prepared.workspace, 'nested')), 0o777);
+  assert.equal(mode(path.join(prepared.workspace, 'value.txt')), 0o666);
+  assert.equal(mode(path.join(prepared.workspace, 'nested', 'tool.sh')), 0o666);
+  assert.equal(mode(path.join(prepared.workspace, 'task.md')), 0o666);
+});
+
 test('workspace preparation removes its unique root when materialization fails', async (t) => {
   const root = tempDirectory(t);
   const scenarioRoot = path.join(root, 'scenario');
@@ -1064,6 +1105,297 @@ test('paired runner executes oracle after nonzero and timeout before cleanup/sco
   );
   assert.equal(result.scored.arms[result.armOrder[0]].deliveryPass, false);
   assert.equal(result.scored.arms[result.armOrder[1]].deliveryPass, false);
+});
+
+test('OCI arm sessions prove the boundary empty before oracle and clean per arm before scoring', async () => {
+  const events = [];
+  const boundaryId = 'e'.repeat(64);
+  const cohort = {
+    runtime: 'codex',
+    model: 'm',
+    config: 'oci-v2',
+    starterCommit: 'a'.repeat(40),
+    executionBoundaryId: boundaryId,
+  };
+  const attempt = {
+    attemptId: 'b'.repeat(64),
+    scenarioHash: 'c'.repeat(64),
+    repetitionId: 'rep-1',
+    seed: 1,
+  };
+  const boundaryEvidence = {
+    observedImageDigest: 'd'.repeat(64),
+    codexVersion: 'codex-cli 1.2.3',
+    codexBinarySha256: 'f'.repeat(64),
+    containmentPolicyHash: '1'.repeat(64),
+    networkPolicyHash: '2'.repeat(64),
+    proxyPolicyHash: '3'.repeat(64),
+    hardening: {
+      nonRootUser: true,
+      readOnlyRootFilesystem: true,
+      capDropAll: true,
+      noNewPrivileges: true,
+      privatePidNamespace: true,
+      privateCgroupNamespace: true,
+      pidLimit: true,
+      cpuLimit: true,
+      memoryLimit: true,
+      dockerSocketAbsent: true,
+      devicesAbsent: true,
+      cgroupMountAbsent: true,
+    },
+    pidNamespaceStopped: true,
+    cgroupEmpty: true,
+    cleanupComplete: false,
+  };
+  const result = await runPairedScenario({
+    scenario: {
+      schemaVersion: 1,
+      paths: { taskFile: 'task.md' },
+    },
+    manifest: { schemaVersion: 2, cohort, attempts: [attempt] },
+    attemptId: attempt.attemptId,
+    deps: {
+      order: () => ['baseline', 'governed'],
+      prepareArmWorkspace: async ({ arm }) => ({
+        workspace: `/tmp/${arm}`,
+        home: `/tmp/${arm}-home`,
+        tmp: `/tmp/${arm}-tmp`,
+      }),
+      buildMinimalEnv: (runtime) => {
+        assert.equal(runtime, 'synthetic');
+        return { PATH: '/bin', NO_COLOR: '1' };
+      },
+      openArmSession: async ({ arm }) => {
+        events.push(`open:${arm}`);
+        return {
+          async runAndProveStopped() {
+            events.push(`empty:${arm}`);
+            return {
+              execution: {
+                status: 'completed',
+                errorCode: null,
+                wallTimeMs: 1,
+              },
+              executionBoundaryId: boundaryId,
+              closedBoundaryEvidence: structuredClone(boundaryEvidence),
+            };
+          },
+          async cleanupAndProve() {
+            events.push(`session-cleanup:${arm}`);
+            return { cleanupComplete: true };
+          },
+        };
+      },
+      runOracle: async ({ arm, env }) => {
+        assert.deepEqual(env, { PATH: '/bin', NO_COLOR: '1' });
+        events.push(`oracle:${arm}`);
+        return {
+          repairRounds: 0,
+          time: { availability: 'unavailable', wallTimeMs: null },
+          tokens: { availability: 'unavailable', total: null },
+        };
+      },
+      cleanup: async () => events.push('workspace-cleanup'),
+      scoreRun: (candidate) => {
+        events.push('score');
+        return candidate;
+      },
+      persist: async () => events.push('persist'),
+      runIdFactory: () => 'run-oci-1',
+    },
+  });
+
+  assert.deepEqual(events, [
+    'open:baseline',
+    'empty:baseline',
+    'oracle:baseline',
+    'session-cleanup:baseline',
+    'open:governed',
+    'empty:governed',
+    'oracle:governed',
+    'session-cleanup:governed',
+    'workspace-cleanup',
+    'score',
+    'persist',
+  ]);
+  for (const arm of ['baseline', 'governed']) {
+    assert.equal(result.rawRun.arms[arm].executionBoundaryId, boundaryId);
+    assert.equal(result.rawRun.arms[arm].boundaryEvidence.cleanupComplete, true);
+  }
+});
+
+test('OCI boundary uncertainty cleans the session and workspace without oracle, score, or artifact', async () => {
+  const events = [];
+  const error = new Error('private cgroup path');
+  error.code = 'WORKSPACE_CONTAINMENT_FAILED';
+  error.exitCode = 3;
+  let scored = false;
+  let persisted = false;
+  await assert.rejects(
+    runPairedScenario({
+      scenario: { schemaVersion: 1, paths: { taskFile: 'task.md' } },
+      manifest: {
+        schemaVersion: 2,
+        cohort: {
+          runtime: 'codex',
+          model: 'm',
+          config: 'oci-v2',
+          starterCommit: 'a'.repeat(40),
+          executionBoundaryId: 'e'.repeat(64),
+        },
+        attempts: [{
+          attemptId: 'b'.repeat(64),
+          scenarioHash: 'c'.repeat(64),
+          repetitionId: 'rep-1',
+          seed: 1,
+        }],
+      },
+      attemptId: 'b'.repeat(64),
+      deps: {
+        prepareArmWorkspace: async () => ({
+          workspace: '/tmp/baseline',
+          home: '/tmp/baseline-home',
+          tmp: '/tmp/baseline-tmp',
+        }),
+        openArmSession: async () => ({
+          async runAndProveStopped() {
+            events.push('boundary-uncertain');
+            throw error;
+          },
+          async cleanupAndProve() {
+            events.push('session-cleanup');
+            return { cleanupComplete: true };
+          },
+        }),
+        runOracle: async () => {
+          events.push('oracle');
+          return {};
+        },
+        cleanup: async () => events.push('workspace-cleanup'),
+        scoreRun: () => {
+          scored = true;
+        },
+        persist: async () => {
+          persisted = true;
+        },
+      },
+    }),
+    (caught) =>
+      caught.code === 'WORKSPACE_CONTAINMENT_FAILED' &&
+      !caught.message.includes('/tmp/') &&
+      !caught.message.includes('cgroup'),
+  );
+  assert.deepEqual(events, [
+    'boundary-uncertain',
+    'session-cleanup',
+    'workspace-cleanup',
+  ]);
+  assert.equal(scored, false);
+  assert.equal(persisted, false);
+});
+
+test('OCI proxy safety failure is preserved after cleanup and cannot publish evidence', async () => {
+  const events = [];
+  let scored = false;
+  let persisted = false;
+  const boundaryId = 'e'.repeat(64);
+  const proxyError = Object.assign(new Error('private proxy detail'), {
+    code: 'PROXY_ATTEMPT_UNSAFE',
+  });
+  await assert.rejects(
+    runPairedScenario({
+      scenario: { schemaVersion: 1, paths: { taskFile: 'task.md' } },
+      manifest: {
+        schemaVersion: 2,
+        cohort: {
+          runtime: 'codex',
+          model: 'm',
+          config: 'oci-v2',
+          starterCommit: 'a'.repeat(40),
+          executionBoundaryId: boundaryId,
+        },
+        attempts: [{
+          attemptId: 'b'.repeat(64),
+          scenarioHash: 'c'.repeat(64),
+          repetitionId: 'rep-1',
+          seed: 1,
+        }],
+      },
+      attemptId: 'b'.repeat(64),
+      deps: {
+        order: () => ['baseline', 'governed'],
+        prepareArmWorkspace: async () => ({
+          workspace: '/tmp/baseline',
+          home: '/tmp/baseline-home',
+          tmp: '/tmp/baseline-tmp',
+        }),
+        openArmSession: async () => ({
+          async runAndProveStopped() {
+            events.push('boundary-safe');
+            return {
+              execution: {
+                status: 'completed',
+                errorCode: null,
+                wallTimeMs: 1,
+              },
+              executionBoundaryId: boundaryId,
+              closedBoundaryEvidence: {
+                observedImageDigest: 'd'.repeat(64),
+                codexVersion: 'codex-cli 1.2.3',
+                codexBinarySha256: 'f'.repeat(64),
+                containmentPolicyHash: '1'.repeat(64),
+                networkPolicyHash: '2'.repeat(64),
+                proxyPolicyHash: '3'.repeat(64),
+                hardening: {
+                  nonRootUser: true,
+                  readOnlyRootFilesystem: true,
+                  capDropAll: true,
+                  noNewPrivileges: true,
+                  privatePidNamespace: true,
+                  privateCgroupNamespace: true,
+                  pidLimit: true,
+                  cpuLimit: true,
+                  memoryLimit: true,
+                  dockerSocketAbsent: true,
+                  devicesAbsent: true,
+                  cgroupMountAbsent: true,
+                },
+                pidNamespaceStopped: true,
+                cgroupEmpty: true,
+                cleanupComplete: false,
+              },
+            };
+          },
+          async cleanupAndProve() {
+            events.push('session-cleanup');
+            throw proxyError;
+          },
+        }),
+        runOracle: async () => {
+          events.push('oracle');
+          return {};
+        },
+        cleanup: async () => events.push('workspace-cleanup'),
+        scoreRun: () => {
+          scored = true;
+        },
+        persist: async () => {
+          persisted = true;
+        },
+      },
+    }),
+    (error) => error.code === 'PROXY_ATTEMPT_UNSAFE'
+      && !error.message.includes('private proxy'),
+  );
+  assert.deepEqual(events, [
+    'boundary-safe',
+    'oracle',
+    'session-cleanup',
+    'workspace-cleanup',
+  ]);
+  assert.equal(scored, false);
+  assert.equal(persisted, false);
 });
 
 test('cleanup failure discards candidate before score and persistence', async () => {

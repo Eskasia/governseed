@@ -1,0 +1,163 @@
+name: Governance impact OCI preflight
+
+on:
+  workflow_dispatch:
+    inputs:
+      model:
+        description: Exact reviewed Codex model identifier
+        required: true
+        type: string
+      output:
+        description: Repository-relative preflight receipt JSON
+        required: true
+        type: string
+      runtime_image:
+        description: Reviewed OCI image reference pinned with @sha256 digest
+        required: true
+        type: string
+      codex_version:
+        description: Exact reviewed single-line Codex version
+        required: true
+        type: string
+      codex_binary_sha256:
+        description: Reviewed lowercase SHA-256 of the Codex executable
+        required: true
+        type: string
+      timeout_ms:
+        description: Exact per-arm deadline in milliseconds, maximum 600000
+        required: true
+        type: string
+
+concurrency:
+  group: governance-impact-preflight
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out committed source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Validate reviewed preflight inputs
+        shell: bash
+        env:
+          MODEL: ${{ inputs.model }}
+          OUTPUT_PATH: ${{ inputs.output }}
+          RUNTIME_IMAGE: ${{ inputs.runtime_image }}
+          CODEX_BINARY_SHA256: ${{ inputs.codex_binary_sha256 }}
+          TIMEOUT_MS: ${{ inputs.timeout_ms }}
+        run: |
+          if [[ ! "$MODEL" =~ ^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$ ]]; then
+            echo "model must match the closed model identifier contract." >&2
+            exit 2
+          fi
+          if [[ ! "$RUNTIME_IMAGE" =~ ^[^[:space:]@]+@sha256:[0-9a-f]{64}$ ]]; then
+            echo "runtime_image must be a digest-pinned OCI reference." >&2
+            exit 2
+          fi
+          if [[ ! "$CODEX_BINARY_SHA256" =~ ^[0-9a-f]{64}$ ]]; then
+            echo "codex_binary_sha256 must be a lowercase SHA-256." >&2
+            exit 2
+          fi
+          if [[ ! "$OUTPUT_PATH" =~ ^artifacts/governance-impact/preflight-[A-Za-z0-9][A-Za-z0-9._-]*\.json$ ]]; then
+            echo "output must be one preflight receipt in artifacts/governance-impact/." >&2
+            exit 2
+          fi
+          if [[ ! "$TIMEOUT_MS" =~ ^[1-9][0-9]*$ ]] || (( ${#TIMEOUT_MS} > 6 )) || (( 10#$TIMEOUT_MS > 600000 )); then
+            echo "timeout_ms must be an integer from 1 through 600000." >&2
+            exit 2
+          fi
+
+      - name: Pull reviewed digest image
+        env:
+          RUNTIME_IMAGE: ${{ inputs.runtime_image }}
+        run: docker pull "$RUNTIME_IMAGE"
+
+      - name: Produce credential-free preflight receipt
+        env:
+          GOVERNANCE_IMPACT_REAL: '1'
+          MODEL: ${{ inputs.model }}
+          OUTPUT_PATH: ${{ inputs.output }}
+          RUNTIME_IMAGE: ${{ inputs.runtime_image }}
+          CODEX_VERSION: ${{ inputs.codex_version }}
+          CODEX_BINARY_SHA256: ${{ inputs.codex_binary_sha256 }}
+          TIMEOUT_MS: ${{ inputs.timeout_ms }}
+          TMPDIR: ${{ runner.temp }}
+        run: |
+          node scripts/governance-impact-eval.mjs preflight \
+            --model "$MODEL" \
+            --output "$OUTPUT_PATH" \
+            --runtime-image "$RUNTIME_IMAGE" \
+            --codex-version "$CODEX_VERSION" \
+            --codex-binary-sha256 "$CODEX_BINARY_SHA256" \
+            --timeout-ms "$TIMEOUT_MS"
+
+      - name: Upload exact preflight receipt
+        if: ${{ success() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: governance-impact-preflight-receipt
+          path: ${{ inputs.output }}
+          if-no-files-found: error
+
+      - name: Remove preflight evidence and owned resources
+        if: ${{ always() }}
+        env:
+          OUTPUT_PATH: ${{ inputs.output }}
+        run: |
+          node --input-type=module <<'NODE'
+          import { spawnSync } from 'node:child_process';
+          import fs from 'node:fs';
+          import path from 'node:path';
+
+          const workspace = fs.realpathSync(process.env.GITHUB_WORKSPACE);
+          const output = path.resolve(workspace, process.env.OUTPUT_PATH);
+          if (
+            output !== workspace
+            && output.startsWith(`${workspace}${path.sep}`)
+          ) {
+            fs.rmSync(output, { force: true });
+          }
+
+          const runnerTemp = fs.realpathSync(process.env.RUNNER_TEMP);
+          for (const entry of fs.readdirSync(runnerTemp)) {
+            if (entry.startsWith('governance-impact-')) {
+              fs.rmSync(path.join(runnerTemp, entry), {
+                recursive: true,
+                force: true,
+              });
+            }
+          }
+
+          const listed = spawnSync('docker', [
+            'ps',
+            '--all',
+            '--quiet',
+            '--filter',
+            'label=org.openai.governance-impact.managed',
+          ], {
+            encoding: 'utf8',
+            shell: false,
+            stdio: ['ignore', 'pipe', 'ignore'],
+          });
+          if (listed.status === 0) {
+            for (const id of listed.stdout.split(/\r?\n/u)) {
+              if (/^[a-f0-9]{12,64}$/u.test(id)) {
+                spawnSync('docker', ['rm', '--force', '--volumes', id], {
+                  shell: false,
+                  stdio: 'ignore',
+                });
+              }
+            }
+          }
+          NODE

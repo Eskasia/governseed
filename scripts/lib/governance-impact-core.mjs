@@ -2,8 +2,34 @@ import { createHash } from 'node:crypto';
 import path from 'node:path';
 
 const MAX_SAFE_INTEGER = Number.MAX_SAFE_INTEGER;
-const PAIR_FIELDS = ['scenarioHash', 'runtime', 'model', 'config', 'starterCommit'];
 const COHORT_FIELDS = ['runtime', 'model', 'config', 'starterCommit'];
+const V2_COHORT_FIELDS = [...COHORT_FIELDS, 'executionBoundaryId'];
+const BOUNDARY_EVIDENCE_FIELDS = [
+  'observedImageDigest',
+  'codexVersion',
+  'codexBinarySha256',
+  'containmentPolicyHash',
+  'networkPolicyHash',
+  'proxyPolicyHash',
+  'hardening',
+  'pidNamespaceStopped',
+  'cgroupEmpty',
+  'cleanupComplete',
+];
+const HARDENING_FIELDS = [
+  'nonRootUser',
+  'readOnlyRootFilesystem',
+  'capDropAll',
+  'noNewPrivileges',
+  'privatePidNamespace',
+  'privateCgroupNamespace',
+  'pidLimit',
+  'cpuLimit',
+  'memoryLimit',
+  'dockerSocketAbsent',
+  'devicesAbsent',
+  'cgroupMountAbsent',
+];
 const RUNTIMES = new Set(['synthetic', 'codex', 'claude', 'antigravity']);
 const DATA_CLASSIFICATIONS = new Set(['synthetic', 'public']);
 const FACT_KINDS = new Set(['requirement', 'prohibition', 'context']);
@@ -458,35 +484,56 @@ function requireHex64(value, errorPath) {
   return value;
 }
 
-function requireCohort(value, errorPath) {
-  const cohort = requireObject(value, errorPath, COHORT_FIELDS);
-  if (!RUNTIMES.has(cohort.runtime)) fail(errorPath + '.runtime');
+function requireSchemaVersion(value, errorPath) {
+  if (value !== 1 && value !== 2) fail(errorPath);
+  return value;
+}
+
+function requireCohort(value, errorPath, schemaVersion = 1) {
+  const fields = schemaVersion === 2 ? V2_COHORT_FIELDS : COHORT_FIELDS;
+  const cohort = requireObject(value, errorPath, fields);
+  if (
+    (schemaVersion === 2 && cohort.runtime !== 'codex') ||
+    (schemaVersion === 1 && !RUNTIMES.has(cohort.runtime))
+  ) {
+    fail(errorPath + '.runtime');
+  }
   requireIdentifier(cohort.model, errorPath + '.model');
   requireIdentifier(cohort.config, errorPath + '.config');
   if (!COMMIT_HASH.test(cohort.starterCommit)) fail(errorPath + '.starterCommit');
-  return {
+  const normalized = {
     runtime: cohort.runtime,
     model: cohort.model,
     config: cohort.config,
     starterCommit: cohort.starterCommit,
   };
+  if (schemaVersion === 2) {
+    normalized.executionBoundaryId = requireHex64(
+      cohort.executionBoundaryId,
+      errorPath + '.executionBoundaryId',
+    );
+  }
+  return normalized;
 }
 
-function cohortFromArm(arm) {
-  return {
+function cohortFromArm(arm, schemaVersion = 1) {
+  const cohort = {
     runtime: arm.runtime,
     model: arm.model,
     config: arm.config,
     starterCommit: arm.starterCommit,
   };
+  if (schemaVersion === 2) cohort.executionBoundaryId = arm.executionBoundaryId;
+  return cohort;
 }
 
-function sameCohort(left, right) {
-  return COHORT_FIELDS.every((field) => left[field] === right[field]);
+function sameCohort(left, right, schemaVersion = 1) {
+  const fields = schemaVersion === 2 ? V2_COHORT_FIELDS : COHORT_FIELDS;
+  return fields.every((field) => left[field] === right[field]);
 }
 
-function attemptPayload(scenarioHash, repetitionId, seed, cohort) {
-  return {
+function attemptPayload(scenarioHash, repetitionId, seed, cohort, schemaVersion = 1) {
+  const payload = {
     scenarioHash,
     repetitionId,
     seed,
@@ -495,28 +542,103 @@ function attemptPayload(scenarioHash, repetitionId, seed, cohort) {
     config: cohort.config,
     starterCommit: cohort.starterCommit,
   };
+  if (schemaVersion === 2) payload.executionBoundaryId = cohort.executionBoundaryId;
+  return payload;
 }
 
-function expectedAttemptId(scenarioHash, repetitionId, seed, cohort) {
-  return sha256Canonical(attemptPayload(scenarioHash, repetitionId, seed, cohort));
+function expectedAttemptId(scenarioHash, repetitionId, seed, cohort, schemaVersion = 1) {
+  return sha256Canonical(
+    attemptPayload(scenarioHash, repetitionId, seed, cohort, schemaVersion),
+  );
 }
 
 export function deriveAttemptId(value) {
+  const schemaVersion = isPlainObject(value) && value.schemaVersion === 2 ? 2 : 1;
   const identity = requireObject(
     value,
     'attemptIdentity',
-    ['scenarioHash', 'repetitionId', 'seed', 'cohort'],
+    schemaVersion === 2
+      ? ['schemaVersion', 'scenarioHash', 'repetitionId', 'seed', 'cohort']
+      : ['scenarioHash', 'repetitionId', 'seed', 'cohort'],
   );
   requireHex64(identity.scenarioHash, 'attemptIdentity.scenarioHash');
   requireIdentifier(identity.repetitionId, 'attemptIdentity.repetitionId');
   requireSafeInteger(identity.seed, 'attemptIdentity.seed');
-  const cohort = requireCohort(identity.cohort, 'attemptIdentity.cohort');
+  const cohort = requireCohort(
+    identity.cohort,
+    'attemptIdentity.cohort',
+    schemaVersion,
+  );
   return expectedAttemptId(
     identity.scenarioHash,
     identity.repetitionId,
     identity.seed,
     cohort,
+    schemaVersion,
   );
+}
+
+function requireTrue(value, errorPath) {
+  if (value !== true) fail(errorPath);
+  return true;
+}
+
+function requireCodexVersion(value, errorPath) {
+  requireIdentifier(value, errorPath);
+  if (/[\r\n\\/]/.test(value)) fail(errorPath);
+  return value;
+}
+
+function requireBoundaryEvidence(value, errorPath) {
+  const evidence = requireObject(value, errorPath, BOUNDARY_EVIDENCE_FIELDS);
+  const hardening = requireObject(
+    evidence.hardening,
+    errorPath + '.hardening',
+    HARDENING_FIELDS,
+  );
+  const normalizedHardening = {};
+  for (const field of HARDENING_FIELDS) {
+    normalizedHardening[field] = requireTrue(
+      hardening[field],
+      errorPath + '.hardening.' + field,
+    );
+  }
+  return {
+    observedImageDigest: requireHex64(
+      evidence.observedImageDigest,
+      errorPath + '.observedImageDigest',
+    ),
+    codexVersion: requireCodexVersion(
+      evidence.codexVersion,
+      errorPath + '.codexVersion',
+    ),
+    codexBinarySha256: requireHex64(
+      evidence.codexBinarySha256,
+      errorPath + '.codexBinarySha256',
+    ),
+    containmentPolicyHash: requireHex64(
+      evidence.containmentPolicyHash,
+      errorPath + '.containmentPolicyHash',
+    ),
+    networkPolicyHash: requireHex64(
+      evidence.networkPolicyHash,
+      errorPath + '.networkPolicyHash',
+    ),
+    proxyPolicyHash: requireHex64(
+      evidence.proxyPolicyHash,
+      errorPath + '.proxyPolicyHash',
+    ),
+    hardening: normalizedHardening,
+    pidNamespaceStopped: requireTrue(
+      evidence.pidNamespaceStopped,
+      errorPath + '.pidNamespaceStopped',
+    ),
+    cgroupEmpty: requireTrue(evidence.cgroupEmpty, errorPath + '.cgroupEmpty'),
+    cleanupComplete: requireTrue(
+      evidence.cleanupComplete,
+      errorPath + '.cleanupComplete',
+    ),
+  };
 }
 
 function requirePathArray(value, errorPath) {
@@ -680,7 +802,7 @@ function fractionToNumber(value) {
   return Number(value.numerator) / Number(value.denominator);
 }
 
-function scoreArm(value, contract, scenarioHash, armName) {
+function scoreArm(value, contract, scenarioHash, armName, schemaVersion) {
   const errorPath = 'arms.' + armName;
   const armKeys = [
     'scenarioHash',
@@ -688,6 +810,7 @@ function scoreArm(value, contract, scenarioHash, armName) {
     'model',
     'config',
     'starterCommit',
+    ...(schemaVersion === 2 ? ['executionBoundaryId', 'boundaryEvidence'] : []),
     'execution',
     'acceptanceChecks',
     'requirements',
@@ -700,7 +823,15 @@ function scoreArm(value, contract, scenarioHash, armName) {
   ];
   const arm = requireObject(value, errorPath, armKeys);
   if (arm.scenarioHash !== scenarioHash) fail(errorPath + '.scenarioHash');
-  const cohort = requireCohort(cohortFromArm(arm), errorPath);
+  const cohort = requireCohort(
+    cohortFromArm(arm, schemaVersion),
+    errorPath,
+    schemaVersion,
+  );
+  const boundaryEvidence =
+    schemaVersion === 2
+      ? requireBoundaryEvidence(arm.boundaryEvidence, errorPath + '.boundaryEvidence')
+      : null;
 
   const execution = requireObject(
     arm.execution,
@@ -884,6 +1015,7 @@ function scoreArm(value, contract, scenarioHash, armName) {
   const result = {
     scenarioHash,
     ...cohort,
+    ...(schemaVersion === 2 ? { boundaryEvidence } : {}),
     execution: {
       status: execution.status,
       errorCode: execution.errorCode ?? null,
@@ -984,7 +1116,7 @@ export function scoreRun(value) {
     'arms',
   ];
   const run = requireObject(value, 'run', runKeys);
-  if (run.schemaVersion !== 1) fail('run.schemaVersion');
+  const schemaVersion = requireSchemaVersion(run.schemaVersion, 'run.schemaVersion');
   requireIdentifier(run.runId, 'run.runId');
   requireHex64(run.attemptId, 'run.attemptId');
   requireIdentifier(run.repetitionId, 'run.repetitionId');
@@ -999,22 +1131,45 @@ export function scoreRun(value) {
   const contract = scenarioContract(run.scenario);
 
   const arms = requireObject(run.arms, 'run.arms', ['baseline', 'governed']);
-  const baseline = scoreArm(arms.baseline, contract, scenarioHash, 'baseline');
-  const governed = scoreArm(arms.governed, contract, scenarioHash, 'governed');
-  if (!PAIR_FIELDS.every((field) => baseline[field] === governed[field])) {
+  const baseline = scoreArm(
+    arms.baseline,
+    contract,
+    scenarioHash,
+    'baseline',
+    schemaVersion,
+  );
+  const governed = scoreArm(
+    arms.governed,
+    contract,
+    scenarioHash,
+    'governed',
+    schemaVersion,
+  );
+  if (
+    baseline.scenarioHash !== governed.scenarioHash ||
+    !sameCohort(
+      cohortFromArm(baseline, schemaVersion),
+      cohortFromArm(governed, schemaVersion),
+      schemaVersion,
+    ) ||
+    (schemaVersion === 2 &&
+      sha256Canonical(baseline.boundaryEvidence) !==
+        sha256Canonical(governed.boundaryEvidence))
+  ) {
     fail('run.arms.pairContract');
   }
-  const cohort = cohortFromArm(baseline);
+  const cohort = cohortFromArm(baseline, schemaVersion);
   const calculatedAttemptId = expectedAttemptId(
     scenarioHash,
     run.repetitionId,
     run.seed,
     cohort,
+    schemaVersion,
   );
   if (run.attemptId !== calculatedAttemptId) fail('run.attemptId');
 
   return {
-    schemaVersion: 1,
+    schemaVersion,
     runId: run.runId,
     attemptId: run.attemptId,
     repetitionId: run.repetitionId,
@@ -1031,8 +1186,15 @@ function validateManifest(value) {
     'manifest',
     ['schemaVersion', 'cohort', 'attempts'],
   );
-  if (manifest.schemaVersion !== 1) fail('manifest.schemaVersion');
-  const cohort = requireCohort(manifest.cohort, 'manifest.cohort');
+  const schemaVersion = requireSchemaVersion(
+    manifest.schemaVersion,
+    'manifest.schemaVersion',
+  );
+  const cohort = requireCohort(
+    manifest.cohort,
+    'manifest.cohort',
+    schemaVersion,
+  );
   const attempts = requireArray(manifest.attempts, 'manifest.attempts', 1);
   const seenAttemptIds = new Set();
   const seenRepetitions = new Set();
@@ -1052,6 +1214,7 @@ function validateManifest(value) {
       attempt.repetitionId,
       attempt.seed,
       cohort,
+      schemaVersion,
     );
     if (attempt.attemptId !== calculated) fail(errorPath + '.attemptId');
     const repetitionKey = attempt.scenarioHash + '\0' + attempt.repetitionId;
@@ -1082,7 +1245,7 @@ function validateManifest(value) {
       ].join('\0'),
     ),
   );
-  const normalized = { schemaVersion: 1, cohort, attempts: normalizedAttempts };
+  const normalized = { schemaVersion, cohort, attempts: normalizedAttempts };
   return { normalized, manifestHash: sha256Canonical(normalized) };
 }
 
@@ -1179,6 +1342,7 @@ export function aggregateResults(rawRuns, seed, manifestValue) {
       continue;
     }
     if (
+      result.schemaVersion !== manifest.schemaVersion ||
       result.scenarioHash !== attempt.scenarioHash ||
       result.repetitionId !== attempt.repetitionId ||
       result.seed !== attempt.seed
@@ -1186,7 +1350,13 @@ export function aggregateResults(rawRuns, seed, manifestValue) {
       rejected.push({ attemptId: result.attemptId, code: 'MANIFEST_MISMATCH' });
       continue;
     }
-    if (!sameCohort(cohortFromArm(result.arms.baseline), manifest.cohort)) {
+    if (
+      !sameCohort(
+        cohortFromArm(result.arms.baseline, manifest.schemaVersion),
+        manifest.cohort,
+        manifest.schemaVersion,
+      )
+    ) {
       rejected.push({ attemptId: result.attemptId, code: 'COHORT_MISMATCH' });
       continue;
     }
@@ -1384,8 +1554,14 @@ function validateAggregateReport(value) {
   const { normalized: manifest, manifestHash } = validateManifest(report.manifest);
   requireHex64(report.manifestHash, 'report.manifestHash');
   if (report.manifestHash !== manifestHash) fail('report.manifestHash consistency');
-  const reportCohort = requireCohort(report.cohort, 'report.cohort');
-  if (!sameCohort(reportCohort, manifest.cohort)) fail('report.cohort consistency');
+  const reportCohort = requireCohort(
+    report.cohort,
+    'report.cohort',
+    manifest.schemaVersion,
+  );
+  if (!sameCohort(reportCohort, manifest.cohort, manifest.schemaVersion)) {
+    fail('report.cohort consistency');
+  }
 
   const pairing = requireObject(
     report.pairing,

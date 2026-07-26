@@ -11,6 +11,7 @@ import {
   validateAdapterGateReferences,
   validateAuditStatus,
   validateGateLifecycle,
+  validateGovernanceImpactWorkflows,
   validateMandatoryWorkflowTracking,
   validateRequiredArtifactCommit,
   validateWorkflowIndexing,
@@ -68,6 +69,84 @@ test('delivery audit status is explicit and limited to PASS or BLOCKED', () => {
   assert.deepEqual(validateAuditStatus('# Audit\n'), [
     'Delivery audit is missing an explicit status',
   ]);
+});
+
+test('governance-impact execution is confined to credential-free preflight and approved real workflows', () => {
+  const approved = `name: Governance impact real
+on:
+  workflow_dispatch:
+jobs:
+  real:
+    permissions:
+      contents: read
+    environment: governance-impact-real
+    runs-on: ubuntu-latest
+    steps:
+      - run: node scripts/governance-impact-eval.mjs
+        env:
+          GOVERNANCE_IMPACT_REAL: "1"
+          OPENAI_API_KEY: \${{ secrets.OPENAI_API_KEY }}
+`;
+  const preflight = `name: Governance impact preflight
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    steps:
+      - run: node scripts/governance-impact-eval.mjs preflight
+        env:
+          GOVERNANCE_IMPACT_REAL: "1"
+`;
+  assert.deepEqual(validateGovernanceImpactWorkflows([
+    {
+      path: '.github/workflows/validate-starter.yml',
+      content: 'on: [push, pull_request]\nsteps:\n  - run: npm run ci\n',
+    },
+    {
+      path: '.github/workflows/governance-impact-real.yml',
+      content: approved,
+    },
+    {
+      path: '.github/workflows/governance-impact-preflight.yml',
+      content: preflight,
+    },
+  ]), []);
+
+  assert.match(validateGovernanceImpactWorkflows([{
+    path: '.github/workflows/unsafe.yml',
+    content: 'on: [push]\nenv:\n  GOVERNANCE_IMPACT_REAL: "1"\n',
+  }]).join('\n'), /unsafe\.yml.*must not access governance-impact real mode/i);
+
+  assert.match(validateGovernanceImpactWorkflows([{
+    path: '.github/workflows/governance-impact-real.yml',
+    content: approved.replace('workflow_dispatch:', 'push:'),
+  }]).join('\n'), /must be workflow_dispatch-only/i);
+
+  assert.match(validateGovernanceImpactWorkflows([{
+    path: '.github/workflows/governance-impact-real.yml',
+    content: approved.replace(
+      '  workflow_dispatch:\n',
+      '  workflow_dispatch:\n  repository_dispatch:\n',
+    ),
+  }]).join('\n'), /must be workflow_dispatch-only/i);
+
+  assert.match(validateGovernanceImpactWorkflows([{
+    path: '.github/workflows/governance-impact-real.yml',
+    content: approved.replace('    environment: governance-impact-real\n', ''),
+  }]).join('\n'), /approval-gated environment/i);
+
+  assert.match(validateGovernanceImpactWorkflows([{
+    path: '.github/workflows/governance-impact-preflight.yml',
+    content: preflight.replace('workflow_dispatch:', 'push:'),
+  }]).join('\n'), /must be workflow_dispatch-only/i);
+
+  assert.match(validateGovernanceImpactWorkflows([{
+    path: '.github/workflows/governance-impact-preflight.yml',
+    content: `${preflight}OPENAI_API_KEY: \${{ secrets.OPENAI_API_KEY }}\n`,
+  }]).join('\n'), /must remain credential-free/i);
 });
 
 function copyStarter(t) {

@@ -7,6 +7,7 @@ const schemaUrls = [
   new URL('../../schemas/governance-impact-scenario.schema.json', import.meta.url),
   new URL('../../schemas/governance-impact-run.schema.json', import.meta.url),
   new URL('../../schemas/governance-impact-result.schema.json', import.meta.url),
+  new URL('../../schemas/governance-impact-preflight.schema.json', import.meta.url),
 ];
 
 const schemas = schemaUrls.map((file) => JSON.parse(fs.readFileSync(file, 'utf8')));
@@ -188,6 +189,118 @@ test('schemas require immutable artifacts, raw scenario identity, repetition ide
   assert.equal(runSchema.$defs.attemptManifest.properties.attempts.uniqueItems, true);
   assert.equal(resultSchema.required.includes('attemptId'), true);
   assert.equal(resultSchema.required.includes('repetitionId'), true);
+});
+
+test('v2 schemas require a Codex execution boundary without widening v1 controls', () => {
+  const runSchema = schemas[1];
+  const resultSchema = schemas[2];
+
+  assert.deepEqual(runSchema.properties.schemaVersion.enum, [1, 2]);
+  assert.equal(runSchema.$defs.cohort.required.includes('executionBoundaryId'), false);
+  assert.equal(runSchema.$defs.arm.required.includes('boundaryEvidence'), false);
+  assert.notEqual(runSchema.$defs.cohortV2, undefined);
+  assert.notEqual(runSchema.$defs.armV2, undefined);
+  assert.notEqual(resultSchema.$defs.scoredArmV2, undefined);
+  assert.deepEqual(runSchema.$defs.cohortV2.properties.runtime, {
+    type: 'string',
+    const: 'codex',
+  });
+  assert.equal(
+    runSchema.$defs.cohortV2.required.includes('executionBoundaryId'),
+    true,
+  );
+  assert.equal(runSchema.$defs.armV2.required.includes('executionBoundaryId'), true);
+  assert.equal(runSchema.$defs.armV2.required.includes('boundaryEvidence'), true);
+  assert.equal(
+    resultSchema.$defs.scoredArmV2.required.includes('executionBoundaryId'),
+    true,
+  );
+  assert.equal(
+    resultSchema.$defs.scoredArmV2.required.includes('boundaryEvidence'),
+    true,
+  );
+});
+
+test('raw and scored boundary evidence schemas are identical closed proof contracts', () => {
+  const rawEvidence = schemas[1].$defs.boundaryEvidence;
+  const scoredEvidence = schemas[2].$defs.boundaryEvidence;
+  const preflightEvidence = schemas[3].$defs.boundaryEvidence;
+  const expectedFields = [
+    'observedImageDigest',
+    'codexVersion',
+    'codexBinarySha256',
+    'containmentPolicyHash',
+    'networkPolicyHash',
+    'proxyPolicyHash',
+    'hardening',
+    'pidNamespaceStopped',
+    'cgroupEmpty',
+    'cleanupComplete',
+  ];
+  const expectedHardening = [
+    'nonRootUser',
+    'readOnlyRootFilesystem',
+    'capDropAll',
+    'noNewPrivileges',
+    'privatePidNamespace',
+    'privateCgroupNamespace',
+    'pidLimit',
+    'cpuLimit',
+    'memoryLimit',
+    'dockerSocketAbsent',
+    'devicesAbsent',
+    'cgroupMountAbsent',
+  ];
+
+  assert.notEqual(rawEvidence, undefined);
+  assert.notEqual(scoredEvidence, undefined);
+  assert.notEqual(preflightEvidence, undefined);
+  assert.deepEqual(rawEvidence, scoredEvidence);
+  assert.deepEqual(rawEvidence, preflightEvidence);
+  assert.deepEqual(rawEvidence.required, expectedFields);
+  assert.deepEqual(Object.keys(rawEvidence.properties), expectedFields);
+  assert.equal(rawEvidence.additionalProperties, false);
+  assert.equal(rawEvidence.properties.observedImageDigest.$ref, '#/$defs/sha256');
+  assert.equal(schemas[1].$defs.sha256.pattern, '^[a-f0-9]{64}$');
+  assert.deepEqual(rawEvidence.properties.hardening.required, expectedHardening);
+  assert.deepEqual(
+    Object.values(rawEvidence.properties.hardening.properties).map(
+      (property) => property.const,
+    ),
+    expectedHardening.map(() => true),
+  );
+  for (const field of ['pidNamespaceStopped', 'cgroupEmpty', 'cleanupComplete']) {
+    assert.equal(rawEvidence.properties[field].const, true);
+  }
+  for (const forbidden of ['containerId', 'bearer', 'socketPath', 'privatePath']) {
+    assert.equal(Object.hasOwn(rawEvidence.properties, forbidden), false);
+  }
+});
+
+test('preflight receipt is a closed non-claim artifact with bounded timeout and provenance', () => {
+  const preflightSchema = schemas[3];
+  assert.deepEqual(preflightSchema.required, [
+    'schemaVersion',
+    'kind',
+    'preflightStatus',
+    'claimDisposition',
+    'runtime',
+    'model',
+    'timeoutMs',
+    'provenance',
+    'executionBoundaryId',
+    'boundaryEvidence',
+  ]);
+  assert.equal(preflightSchema.properties.preflightStatus.const, 'READY');
+  assert.equal(
+    preflightSchema.properties.claimDisposition.const,
+    'NOT_EVALUATED',
+  );
+  assert.equal(preflightSchema.properties.timeoutMs.maximum, 600_000);
+  assert.equal(
+    preflightSchema.properties.provenance.additionalProperties,
+    false,
+  );
 });
 
 test('all raw controls and recomputed results match the schemas exact object surfaces', () => {

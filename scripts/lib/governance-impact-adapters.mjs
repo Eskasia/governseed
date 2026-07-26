@@ -193,6 +193,8 @@ export function buildCodexRuntimeCommand(workspace, taskFile, options = {}) {
       '--color',
       'never',
       '--config',
+      'web_search="disabled"',
+      '--config',
       'shell_environment_policy.inherit=none',
       '-',
     ],

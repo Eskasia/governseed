@@ -177,6 +177,83 @@ function manifestFor(runs) {
   };
 }
 
+function boundaryEvidence(overrides = {}) {
+  return {
+    observedImageDigest: '1'.repeat(64),
+    codexVersion: 'codex-cli 1.2.3',
+    codexBinarySha256: '2'.repeat(64),
+    containmentPolicyHash: '3'.repeat(64),
+    networkPolicyHash: '4'.repeat(64),
+    proxyPolicyHash: '5'.repeat(64),
+    hardening: {
+      nonRootUser: true,
+      readOnlyRootFilesystem: true,
+      capDropAll: true,
+      noNewPrivileges: true,
+      privatePidNamespace: true,
+      privateCgroupNamespace: true,
+      pidLimit: true,
+      cpuLimit: true,
+      memoryLimit: true,
+      dockerSocketAbsent: true,
+      devicesAbsent: true,
+      cgroupMountAbsent: true,
+    },
+    pidNamespaceStopped: true,
+    cgroupEmpty: true,
+    cleanupComplete: true,
+    ...overrides,
+  };
+}
+
+function v2AttemptIdentity(run) {
+  const arm = run.arms.baseline;
+  return sha256Canonical({
+    scenarioHash: arm.scenarioHash,
+    repetitionId: run.repetitionId,
+    seed: run.seed,
+    runtime: arm.runtime,
+    model: arm.model,
+    config: arm.config,
+    starterCommit: arm.starterCommit,
+    executionBoundaryId: arm.executionBoundaryId,
+  });
+}
+
+function v2Run(executionBoundaryId = 'e'.repeat(64)) {
+  const run = preregisteredRun('tie', 'oci-v2');
+  run.schemaVersion = 2;
+  for (const arm of Object.values(run.arms)) {
+    arm.runtime = 'codex';
+    arm.model = 'gpt-5';
+    arm.config = 'oci-v2';
+    arm.executionBoundaryId = executionBoundaryId;
+    arm.boundaryEvidence = boundaryEvidence();
+  }
+  run.attemptId = v2AttemptIdentity(run);
+  return run;
+}
+
+function v2ManifestFor(runs) {
+  const arm = runs[0].arms.baseline;
+  return {
+    schemaVersion: 2,
+    cohort: {
+      runtime: arm.runtime,
+      model: arm.model,
+      config: arm.config,
+      starterCommit: arm.starterCommit,
+      executionBoundaryId: arm.executionBoundaryId,
+    },
+    attempts: runs.map((run) => ({
+      attemptId: run.attemptId,
+      scenarioHash: run.arms.baseline.scenarioHash,
+      repetitionId: run.repetitionId,
+      seed: run.seed,
+    })),
+  };
+}
+
 test('baseline control selects baseline', () => {
   assert.equal(scoreRun(loadControl('baseline-wins')).comparison.winner, 'baseline');
 });
@@ -304,6 +381,125 @@ test('Task 5 identity helpers expose the exact attempt and manifest contract', (
     manifest,
     manifestHash: sha256Canonical(manifest),
   });
+});
+
+test('v1 synthetic attempt, manifest, raw, and scored hashes remain byte-compatible', () => {
+  const run = loadControl('tie');
+  const manifest = manifestFor([run]);
+  assert.equal(
+    run.attemptId,
+    'fa250770ab41a77f3576fa9e6269d9a9fb76565cf007671d23660ae4eb460d88',
+  );
+  assert.equal(
+    normalizeAttemptManifest(manifest).manifestHash,
+    '3ffaeeafc74b924451bdad453b23a5884be703d4380cb21d1386aaaca1282fbb',
+  );
+  assert.equal(
+    sha256Canonical(run),
+    '489f2f1609977b25d208f56d64b1eb9f70365a401e745e95277166c0b0e7ff50',
+  );
+  assert.equal(
+    sha256Canonical(scoreRun(run)),
+    '4900f4f3e70f33f088d17b6e317159f403c8c19b99b8959de626294b9343f7f4',
+  );
+});
+
+test('v2 attempt and canonical manifest identities include executionBoundaryId', () => {
+  const run = v2Run();
+  const cohort = {
+    runtime: run.arms.baseline.runtime,
+    model: run.arms.baseline.model,
+    config: run.arms.baseline.config,
+    starterCommit: run.arms.baseline.starterCommit,
+    executionBoundaryId: run.arms.baseline.executionBoundaryId,
+  };
+  assert.equal(
+    deriveAttemptId({
+      schemaVersion: 2,
+      scenarioHash: run.arms.baseline.scenarioHash,
+      repetitionId: run.repetitionId,
+      seed: run.seed,
+      cohort,
+    }),
+    run.attemptId,
+  );
+
+  const changedBoundaryId = deriveAttemptId({
+    schemaVersion: 2,
+    scenarioHash: run.arms.baseline.scenarioHash,
+    repetitionId: run.repetitionId,
+    seed: run.seed,
+    cohort: { ...cohort, executionBoundaryId: 'f'.repeat(64) },
+  });
+  assert.notEqual(changedBoundaryId, run.attemptId);
+
+  const manifest = v2ManifestFor([run]);
+  assert.deepEqual(normalizeAttemptManifest(manifest), {
+    manifest,
+    manifestHash: sha256Canonical(manifest),
+  });
+});
+
+test('v2 scoring preserves closed boundary evidence in both scored arms', () => {
+  const run = v2Run();
+  const result = scoreRun(run);
+  assert.equal(result.schemaVersion, 2);
+  for (const armName of ['baseline', 'governed']) {
+    assert.equal(
+      result.arms[armName].executionBoundaryId,
+      run.arms[armName].executionBoundaryId,
+    );
+    assert.deepEqual(
+      result.arms[armName].boundaryEvidence,
+      run.arms[armName].boundaryEvidence,
+    );
+  }
+});
+
+test('v2 scoring rejects different execution boundaries and boundary observations across arms', () => {
+  const differentId = v2Run();
+  differentId.arms.governed.executionBoundaryId = 'f'.repeat(64);
+  assert.throws(() => scoreRun(differentId), /pairContract|executionBoundaryId/i);
+
+  const differentEvidence = v2Run();
+  differentEvidence.arms.governed.boundaryEvidence.observedImageDigest = '9'.repeat(64);
+  assert.throws(() => scoreRun(differentEvidence), /pairContract|boundaryEvidence/i);
+});
+
+test('v2 boundary evidence is complete, closed, safe, and affirmative', () => {
+  for (const key of Object.keys(boundaryEvidence())) {
+    const run = v2Run();
+    delete run.arms.baseline.boundaryEvidence[key];
+    assert.throws(() => scoreRun(run), new RegExp(key, 'i'), key);
+  }
+
+  for (const forbidden of ['containerId', 'bearer', 'socketPath', 'privatePath']) {
+    const run = v2Run();
+    run.arms.baseline.boundaryEvidence[forbidden] = 'must-not-persist';
+    assert.throws(() => scoreRun(run), /boundaryEvidence|unknown/i, forbidden);
+  }
+
+  const incompleteCleanup = v2Run();
+  incompleteCleanup.arms.baseline.boundaryEvidence.cleanupComplete = false;
+  assert.throws(() => scoreRun(incompleteCleanup), /cleanupComplete/i);
+
+  const multilineVersion = v2Run();
+  multilineVersion.arms.baseline.boundaryEvidence.codexVersion = 'codex 1.2.3\nprivate';
+  assert.throws(() => scoreRun(multilineVersion), /codexVersion/i);
+});
+
+test('v2 aggregate accepts only the preregistered execution boundary', () => {
+  const registered = v2Run('e'.repeat(64));
+  const manifest = v2ManifestFor([registered]);
+  const outsideBoundary = v2Run('f'.repeat(64));
+
+  const report = aggregateResults([registered, outsideBoundary], 20, manifest);
+  assert.equal(report.pairing.comparablePairs, 1);
+  assert.equal(report.pairing.rejectedPairs, 1);
+  assert.deepEqual(report.cohort, manifest.cohort);
+  assert.deepEqual(report.rejectedAttempts, [
+    { attemptId: outsideBoundary.attemptId, code: 'UNREGISTERED_ATTEMPT' },
+  ]);
 });
 
 test('scoring rejects runtime labels outside the preregistered adapter set', () => {
