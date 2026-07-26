@@ -4,6 +4,7 @@ import fs from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
+import { PassThrough } from 'node:stream';
 import test from 'node:test';
 
 import {
@@ -614,6 +615,8 @@ test('expired attempt bearer is rejected using the injected clock', async (t) =>
 });
 
 test('deadline also terminates an authenticated request with an unfinished body', async (t) => {
+  let socketExists = false;
+  let suppliedListener;
   let deadlineCallback;
   const clock = {
     now: () => 1_000,
@@ -623,29 +626,93 @@ test('deadline also terminates an authenticated request with an unfinished body'
     },
     clearTimeout() {},
   };
-  const { socketPath, upstreamCalls } = await runningProxy(t, {
+  const fakeFs = {
+    async lstat() {
+      if (!socketExists) {
+        const error = new Error('absent');
+        error.code = 'ENOENT';
+        throw error;
+      }
+      return { isSocket: () => true };
+    },
+    async unlink() {
+      socketExists = false;
+    },
+  };
+  const createServer = (listener) => {
+    suppliedListener = listener;
+    const server = new EventEmitter();
+    server.listen = () => {
+      socketExists = true;
+      queueMicrotask(() => server.emit('listening'));
+    };
+    server.close = (callback) => {
+      callback();
+    };
+    return server;
+  };
+  const { proxy, upstreamCalls } = await runningProxy(t, {
     policy: { deadlineMs: 50 },
-    dependencies: { clock },
+    socketPath: '/synthetic/proxy.sock',
+    dependencies: {
+      clock,
+      createServer,
+      fs: fakeFs,
+    },
   });
-  let request;
-  const responsePromise = new Promise((resolve, reject) => {
-    request = http.request({
-      socketPath,
-      method: 'POST',
-      path: CREDENTIAL_PROXY_PATH,
-      headers: {
-        authorization: `Bearer ${ATTEMPT_BEARER}`,
-        [CREDENTIAL_PROXY_ATTEMPT_HEADER]: ATTEMPT_ID,
-        'content-type': 'application/json',
-        'content-length': 256,
-      },
-    }, (response) => {
-      const chunks = [];
-      response.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-      response.on('end', () => resolve(Buffer.concat(chunks)));
-    });
-    request.on('error', reject);
+  const request = new PassThrough();
+  request.method = 'POST';
+  request.url = CREDENTIAL_PROXY_PATH;
+  request.headers = {
+    authorization: `Bearer ${ATTEMPT_BEARER}`,
+    [CREDENTIAL_PROXY_ATTEMPT_HEADER]: ATTEMPT_ID,
+    'content-type': 'application/json',
+    'content-length': '256',
+  };
+  request.rawHeaders = [
+    'authorization',
+    `Bearer ${ATTEMPT_BEARER}`,
+    CREDENTIAL_PROXY_ATTEMPT_HEADER,
+    ATTEMPT_ID,
+    'content-type',
+    'application/json',
+    'content-length',
+    '256',
+  ];
+  let responseStatusCode = null;
+  let responseHeaders = null;
+  let responseEnded = false;
+  let responseDestroyed = false;
+  let responseBody = Buffer.alloc(0);
+  let resolveResponse;
+  const responsePromise = new Promise((resolve) => {
+    resolveResponse = resolve;
   });
+  const response = {
+    get writableEnded() {
+      return responseEnded;
+    },
+    get destroyed() {
+      return responseDestroyed;
+    },
+    headersSent: false,
+    writeHead(statusCode, headers) {
+      responseStatusCode = statusCode;
+      responseHeaders = headers;
+      this.headersSent = true;
+    },
+    end(bytes = Buffer.alloc(0)) {
+      responseEnded = true;
+      responseBody = Buffer.from(bytes);
+      resolveResponse();
+    },
+    destroy() {
+      responseDestroyed = true;
+      resolveResponse();
+    },
+  };
+  assert.equal(typeof suppliedListener, 'function');
+  suppliedListener(request, response);
   request.write(`{"model":${JSON.stringify(MODEL)},"input":"`);
 
   try {
@@ -654,15 +721,17 @@ test('deadline also terminates an authenticated request with an unfinished body'
     }
     assert.equal(typeof deadlineCallback, 'function');
     deadlineCallback();
-    const response = await responsePromise;
+    await responsePromise;
+    assert.equal(responseStatusCode, 408);
+    assert.equal(responseHeaders['content-type'], 'application/json');
     assert.equal(
-      JSON.parse(response.toString('utf8')).error.code,
+      JSON.parse(responseBody.toString('utf8')).error.code,
       'PROXY_DEADLINE_EXCEEDED',
     );
     assert.equal(upstreamCalls.length, 0);
   } finally {
     request.destroy();
-    await responsePromise.catch(() => {});
+    await proxy.close();
   }
 });
 
