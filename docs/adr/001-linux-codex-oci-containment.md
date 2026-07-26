@@ -74,11 +74,13 @@ sudo -n nsenter --net=/proc/<init-pid>/ns/net \
   <node> scripts/governance-impact-uds-relay.mjs
 ```
 
-The relay enters only the container network namespace, then drops back to the
+The approved host must invoke the evaluator as a non-root user whose primary
+group is also non-root; relay attachment fails closed for UID 0 or GID 0. The
+relay enters only the container network namespace, then drops back to that
 invoking host UID/GID before executing Node. It listens on
 `127.0.0.1:43127` while retaining the host mount namespace and can therefore
 reach the caller-owned ephemeral host-only UDS without exposing that filesystem
-object to the container or leaving an HTTP parser running as host root. Relay
+object to the container or retaining the `sudo`-elevated identity. Relay
 readiness is required before PID 1 releases Codex. Relay configuration and
 secrets are not passed in argv or inherited
 through a preserved `sudo` environment. The parent writes one bounded closed

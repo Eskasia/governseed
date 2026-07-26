@@ -181,6 +181,7 @@ export function createOciCredentialProxyFacade(options = {}) {
     ?? (typeof process.getuid === 'function' ? process.getuid() : 0);
   const ownerGid = options.ownerGid
     ?? (typeof process.getgid === 'function' ? process.getgid() : 0);
+  const platform = options.platform ?? process.platform;
   const upstreamKeyOption = options.upstreamKey;
   const getUpstreamKey = options.getUpstreamKey;
   const nodeExecutable = options.nodeExecutable ?? process.execPath;
@@ -707,6 +708,10 @@ export function createOciCredentialProxyFacade(options = {}) {
   async function attachAttempt(handle, input) {
     const state = requireHandle(handle);
     if (state.phase !== 'open' || state.relay) {
+      fail('PROXY_RELAY_UNAVAILABLE');
+    }
+    if (platform !== 'linux' || ownerUid === 0 || ownerGid === 0) {
+      state.unsafe = true;
       fail('PROXY_RELAY_UNAVAILABLE');
     }
     if (

@@ -94,7 +94,9 @@ function facadeOptions(t, overrides = {}) {
     deadlineMs: DEADLINE_MS,
     tempRoot: temporaryRoot(t),
     ownerPid: 41001,
-    ownerGid: typeof process.getgid === 'function' ? process.getgid() : 0,
+    ownerUid: 1_000,
+    ownerGid: 1_000,
+    platform: 'linux',
     isProcessAlive: () => false,
     randomBytes: () => Buffer.alloc(32, 7),
     ...overrides,
@@ -302,8 +304,8 @@ test('opaque handle, exact container env, relay argv, and cleanup keep secrets c
     '-n',
     'nsenter',
     '--net=/proc/12345/ns/net',
-    `--setgid=${typeof process.getgid === 'function' ? process.getgid() : 0}`,
-    `--setuid=${typeof process.getuid === 'function' ? process.getuid() : 0}`,
+    '--setgid=1000',
+    '--setuid=1000',
     '--',
     '/reviewed/node',
     'scripts/governance-impact-uds-relay.mjs',
@@ -346,6 +348,36 @@ test('opaque handle, exact container env, relay argv, and cleanup keep secrets c
   await assert.rejects(fs.promises.lstat(path.dirname(coreInput.socketPath)), {
     code: 'ENOENT',
   });
+});
+
+test('relay rejects a root invoking identity before sudo execution', async (t) => {
+  let spawnCalls = 0;
+  const facade = createOciCredentialProxyFacade(facadeOptions(t, {
+    ownerUid: 0,
+    ownerGid: 0,
+    upstreamKey: UPSTREAM_KEY,
+    createCredentialProxy: createFakeCoreFactory([]),
+    spawn() {
+      spawnCalls += 1;
+      return createFakeRelayChild();
+    },
+  }));
+  const handle = await facade.openAttempt({
+    arm: 'baseline',
+    attemptId: ATTEMPT_ID,
+    deadlineMs: DEADLINE_MS,
+  });
+
+  await assert.rejects(
+    facade.attachAttempt(handle, { initPid: 12345 }),
+    errorCode('PROXY_RELAY_UNAVAILABLE'),
+  );
+  assert.equal(spawnCalls, 0);
+  await assert.rejects(
+    facade.closeAttempt(handle),
+    errorCode('PROXY_ATTEMPT_UNSAFE'),
+  );
+  assert.equal(await facade.proveClosed(handle), true);
 });
 
 test('invalid namespace pid is rejected before spawn', async (t) => {
