@@ -111,6 +111,13 @@
       "trigger": "Has presentation / slide deck / one-pager deliverable"
     },
     {
+      "file": "RESEARCH_SYNTHESIS.md",
+      "template": "conditional/RESEARCH_SYNTHESIS.md",
+      "category": "conditional",
+      "required": false,
+      "trigger": "Has material evidence conflict / high-impact decision / multiple credible routes, and user confirms synthesis"
+    },
+    {
       "file": "TESTER_HANDOFF.md",
       "template": "conditional/TESTER_HANDOFF.md",
       "category": "conditional",

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2026-07-29 — Conditional Research Synthesis
+
+- Added an advisory, user-confirmed `RESEARCH_SYNTHESIS.md` workflow for material evidence conflict, high-impact decisions, multiple credible routes, and explicit multi-perspective research requests.
+- Added five evidence-bound analytical lenses, a contradiction map, layered output, claim-level confidence calibration, external gap-fill limits, and a transparent academic-rigor self-review.
+- Added a fail-closed strict doctor warning when a pre-copied research template lacks one explicit confirmed or declined user decision; file presence alone does not activate research.
+- Kept the capability outside runtime execution, multi-agent orchestration, hard gates, release evidence, and governance-effectiveness claims.
+
 ## 2026-07-26 — Linux Codex OCI Scheme A
 
 ### Credential-Free Review Gate

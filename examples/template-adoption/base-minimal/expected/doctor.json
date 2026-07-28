@@ -84,6 +84,11 @@
       "trigger": "Has presentation / slide deck / one-pager deliverable"
     },
     {
+      "file": "RESEARCH_SYNTHESIS.md",
+      "present": false,
+      "trigger": "Has material evidence conflict / high-impact decision / multiple credible routes, and user confirms synthesis"
+    },
+    {
       "file": "TESTER_HANDOFF.md",
       "present": false,
       "trigger": "Has beta / tester handoff requirement"

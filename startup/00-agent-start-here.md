@@ -11,6 +11,7 @@
 - 不准把所有新規則都塞進 `AGENTS.md`；先依 `workflows/agent-file-structure.md` 判斷該寫入 LLMwiki、AGENTS、Skills、Hooks、Subagents 或 Plugins。
 - 做 production-facing LLM agent、自動化、多步工具調用或 human approval 前，必須先建立 `AGENT_RUNTIME.md`；單次 AI draft / 摘要 / 分類不需要。
 - 做 RAG、AI agent、MCP、eval pipeline、多租戶 AI SaaS、文件智能或 AI 系統設計前，先讀 `workflows/ai-system-design.md`，只採用符合當前專案的 gate。
+- 出現決策相關的證據衝突、高影響或難回頭選擇、多條可信路線，或使用者明確要求多視角研究時，先讀 `workflows/research-synthesis.md`；只提出建議，使用者確認後才建立 `RESEARCH_SYNTHESIS.md`。
 - 使用者描述「目前做到某階段、要交付某對象、要產出某種包」時，先讀 `workflows/stage-routing.md` 做階段分流。
 
 ## 開工前回報格式

@@ -23,6 +23,7 @@
 | `workflows/macos-build-release.md` | repo doc | macOS build、簽名、TCC、notarization | 專案內 build script |
 | `workflows/presentation.md` | repo doc | slide deck、一頁紙、簡報 artifact | Markdown / HTML slides |
 | `workflows/production-agent.md` | repo doc | production-facing LLM agent、tool use | `AGENT_RUNTIME.md` |
+| `workflows/research-synthesis.md` | repo doc | 使用者確認後的多視角證據與決策綜合 | `RESEARCH_SYNTHESIS.md` |
 | `workflows/ui-ux.md` | repo doc | UI spec、review、polish routing | `UI_SPEC.md` |
 | `docs/experiments/context-mode.md` | experimental | context 壓力緩解實驗 | handoff note |
 | CodeGraph | builtin/runtime | 已有 `.codegraph/` 時查 symbol、call graph、impact | `rg`、讀檔、測試 |

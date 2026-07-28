@@ -5,13 +5,14 @@
 新專案固定走：
 
 1. 規格：Q1-Q9、追問、PROJECT_BRIEF、SPEC、CONTEXT
-2. 路線：產品形態 / 技術路線 gate、TECH_STACK、必要 ADR
-3. 設計：TASK_CONTRACT、AGENTS、必要條件文件
-4. 條件文件：UI、全端、環境、API、資料模型、Agent runtime
-5. 計畫：5-10 步，每步有驗證
-6. 實作：一次只做一個步驟
-7. 驗證：測試、Browser/Chrome、Playwright、DB、部署檢查
-8. 收尾：handoff、neat-freak、repomix、gstack-style checklist
+2. 條件研究：偵測到重大研究訊號時提出 `RESEARCH_SYNTHESIS.md` 建議，使用者確認後才執行
+3. 路線：產品形態 / 技術路線 gate、TECH_STACK、必要 ADR
+4. 設計：TASK_CONTRACT、AGENTS、必要條件文件
+5. 條件文件：UI、全端、環境、API、資料模型、Agent runtime
+6. 計畫：5-10 步，每步有驗證
+7. 實作：一次只做一個步驟
+8. 驗證：測試、Browser/Chrome、Playwright、DB、部署檢查
+9. 收尾：handoff、neat-freak、repomix、gstack-style checklist
 
 ## Q1-Q9
 
@@ -26,6 +27,16 @@ Q6. 誰來驗收、怎麼驗？自己點、跑測試、給別人用。
 Q7. 要部署在哪裡？本機、preview、正式上線。  
 Q8. 有沒有已經決定要用的技術或工具？  
 Q9. 對效能或規模有沒有硬性要求？
+
+### 條件研究候選偵測
+
+這不是 Q10。Q1-Q9 已足以表述決策問題後，若出現會實質影響範圍、驗收、風險、成本或路線的證據衝突、高影響或難回頭決策、多條可信路線，或使用者明確要求多視角研究，先讀 `workflows/research-synthesis.md`。
+
+- Agent 只回報 trigger reason code、受影響決策與不執行的風險。
+- 一次只問一題：是否建立 `RESEARCH_SYNTHESIS.md`。
+- 使用者確認後才執行；拒絕時不建立空文件。
+- 偵測、建議或文件存在本身都不是新的 hard gate。
+- `--all` 預放的空模板不算確認；`Activation Record` 必須明確記錄 `User decision: confirmed` 或 `User decision: declined`，只有前者會啟動研究。
 
 ## 產品形態 / 技術路線 Gate
 
@@ -48,5 +59,6 @@ Generated `AGENTS.md` 唯一定義 `GATE-INTENT-001` 與 `GATE-ROUTE-001` 的 ow
 - TASK_CONTRACT 每個任務都有驗證方式。
 - OPEN_LOOPS 明確列出尚未決定的事。
 - 若包含 production-facing LLM agent / automation / tool use，`AGENT_RUNTIME.md` 已完成。
+- 若使用者已確認條件研究，`RESEARCH_SYNTHESIS.md` 已完成且受影響的 canonical project decision 仍需使用者確認；若未確認或已拒絕，不要求此文件。
 - 只有提出 durable rule 時，才記錄 selected destination、canonical owner 與 evidence；沒有提案時不執行文件結構分流。
 - 使用者明確說「確認」。

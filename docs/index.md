@@ -27,6 +27,7 @@
 | Area | File |
 |---|---|
 | Product shape and technology route | `../workflows/product-shape-tech-route.md` |
+| Conditional multi-perspective research synthesis | `../workflows/research-synthesis.md` |
 | Fullstack product | `../workflows/fullstack.md` |
 | UI / UX | `../workflows/ui-ux.md` |
 | Validation and release | `../workflows/validation-release.md` |

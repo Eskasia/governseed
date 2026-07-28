@@ -29,6 +29,7 @@ Generated `AGENTS.md` 是 `GATE-INTENT-001` 與 `GATE-ROUTE-001` 的唯一 lifec
 | `DATA_MODEL.md` | 有 DB、Auth、tenant、權限、核心資料物件 |
 | `API_CONTRACT.md` | 前後端資料交換、API route、server action、webhook、adapter |
 | `ENV_CHECKLIST.md` | 要部署、串 OpenAI/Supabase/Stripe/Email/Storage/第三方 API |
+| `RESEARCH_SYNTHESIS.md` | 有決策相關的證據衝突、高影響或難回頭選擇、多條可信路線，且使用者確認進行研究綜合 |
 | `MACOS_RELEASE_CHECKLIST.md` | build / package macOS app，或涉及 TCC 權限、簽名、notarization |
 | `AGENT_RUNTIME.md` | production-facing LLM agent、自動化、多步工具調用、human approval |
 | `RAG_DESIGN.md` | 有 retrieval、知識庫、文件問答、citation、permission-aware search |

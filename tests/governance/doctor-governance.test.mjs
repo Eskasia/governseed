@@ -208,6 +208,86 @@ test('doctor preserves schema version 1 and strict warning semantics', (t) => {
   );
 });
 
+test('doctor distinguishes research template presence from confirmed activation', (t) => {
+  const projectDir = temporaryProject(t);
+  const absentResult = runDoctor(projectDir, '--json');
+
+  assert.equal(absentResult.status, 0);
+  const output = JSON.parse(absentResult.stdout);
+  assert.deepEqual(
+    output.conditional.find((item) => item.file === 'RESEARCH_SYNTHESIS.md'),
+    {
+      file: 'RESEARCH_SYNTHESIS.md',
+      present: false,
+      trigger: 'Has material evidence conflict / high-impact decision / multiple credible routes, and user confirms synthesis',
+    },
+  );
+
+  fs.copyFileSync(
+    path.join(ROOT, 'templates/conditional/RESEARCH_SYNTHESIS.md'),
+    path.join(projectDir, 'RESEARCH_SYNTHESIS.md'),
+  );
+  const unconfirmedResult = runDoctor(projectDir, '--strict', '--json');
+
+  assert.equal(unconfirmedResult.status, 1);
+  const unconfirmedOutput = JSON.parse(unconfirmedResult.stdout);
+  assert.deepEqual(
+    unconfirmedOutput.conditional.find(
+      (item) => item.file === 'RESEARCH_SYNTHESIS.md',
+    ),
+    {
+      file: 'RESEARCH_SYNTHESIS.md',
+      present: true,
+      trigger: 'Has material evidence conflict / high-impact decision / multiple credible routes, and user confirms synthesis',
+    },
+  );
+  assert.ok(unconfirmedOutput.warnings.includes(
+    '[RESEARCH_CONFIRMATION_MISSING] RESEARCH_SYNTHESIS.md: document is present but its activation record does not contain one explicit confirmed or declined user decision',
+  ));
+
+  const synthesisPath = path.join(projectDir, 'RESEARCH_SYNTHESIS.md');
+  fs.writeFileSync(
+    synthesisPath,
+    fs.readFileSync(synthesisPath, 'utf8').replace(
+      '- User decision: pending / confirmed / declined',
+      '- User decision: declined',
+    ),
+  );
+  const declinedResult = runDoctor(projectDir, '--strict', '--json');
+
+  assert.equal(declinedResult.status, 0);
+  assert.equal(
+    JSON.parse(declinedResult.stdout).warnings.some(
+      (warning) => warning.startsWith('[RESEARCH_CONFIRMATION_MISSING]'),
+    ),
+    false,
+  );
+
+  fs.writeFileSync(
+    synthesisPath,
+    fs.readFileSync(synthesisPath, 'utf8').replace(
+      '- User decision: declined',
+      '- User decision: confirmed',
+    ),
+  );
+  const confirmedResult = runDoctor(projectDir, '--strict', '--json');
+
+  assert.equal(confirmedResult.status, 0);
+  const confirmedOutput = JSON.parse(confirmedResult.stdout);
+  assert.deepEqual(
+    confirmedOutput.conditional.find((item) => item.file === 'RESEARCH_SYNTHESIS.md'),
+    {
+      file: 'RESEARCH_SYNTHESIS.md',
+      present: true,
+      trigger: 'Has material evidence conflict / high-impact decision / multiple credible routes, and user confirms synthesis',
+    },
+  );
+  assert.equal(
+    confirmedOutput.warnings.some((warning) => warning.startsWith('[RESEARCH_CONFIRMATION_MISSING]')),
+    false,
+  );
+});
+
 test('doctor fails closed on a symlinked governance file without leaking its target', (t) => {
   const projectDir = temporaryProject(t);
   const projectBriefPath = path.join(projectDir, 'PROJECT_BRIEF.md');

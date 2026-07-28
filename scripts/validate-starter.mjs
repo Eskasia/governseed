@@ -570,6 +570,8 @@ const requiredRepositoryFiles = [
   'docs/tool-registry.md',
   'docs/runtime-proof.md',
   'docs/governance-impact-eval.md',
+  'workflows/research-synthesis.md',
+  'templates/conditional/RESEARCH_SYNTHESIS.md',
   'docs/adr/001-linux-codex-oci-containment.md',
   'docs/superpowers/plans/2026-07-26-linux-codex-oci-containment.md',
   'docs/superpowers/reviews/2026-07-26-governance-evidence-overhaul-audit.md',
@@ -660,7 +662,13 @@ for (const dir of ['startup', 'workflows', 'templates', 'scripts', 'docs', 'prom
   if (!exists(dir)) fail(errors, `Missing directory: ${dir}`);
 }
 
-for (const file of ['startup/00-agent-start-here.md', 'startup/01-bootstrap-gates.md', 'startup/02-required-project-docs.md', 'workflows/product-shape-tech-route.md']) {
+for (const file of [
+  'startup/00-agent-start-here.md',
+  'startup/01-bootstrap-gates.md',
+  'startup/02-required-project-docs.md',
+  'workflows/product-shape-tech-route.md',
+  'workflows/research-synthesis.md',
+]) {
   requireFile(errors, file);
 }
 
@@ -704,8 +712,14 @@ errors.push(...validateAdapterGateReferences(runtimeAdapterDocuments, gateCanoni
 const workflowIndexes = ['docs/index.md', 'workflows/tool-routing.md']
   .filter((file) => exists(file))
   .map((file) => ({ path: file, content: readFile(file) }));
-errors.push(...validateWorkflowIndexing('workflows/product-shape-tech-route.md', workflowIndexes));
-errors.push(...validateMandatoryWorkflowTracking(root, ['workflows/product-shape-tech-route.md']));
+const mandatoryWorkflowPaths = [
+  'workflows/product-shape-tech-route.md',
+  'workflows/research-synthesis.md',
+];
+for (const workflowPath of mandatoryWorkflowPaths) {
+  errors.push(...validateWorkflowIndexing(workflowPath, workflowIndexes));
+}
+errors.push(...validateMandatoryWorkflowTracking(root, mandatoryWorkflowPaths));
 errors.push(...validateRequiredArtifactCommit(root, requiredRepositoryFiles));
 
 requireIncludes(errors, '.gitattributes', [
@@ -743,6 +757,8 @@ requireIncludes(errors, 'README.md', [
   'README.md',
   'node agent-governance-starter/scripts/doctor.mjs ./my-new-project',
   '## Governance Impact',
+  '## Conditional research synthesis',
+  'workflows/research-synthesis.md',
   'docs/governance-impact-eval.md',
   'offline controls',
   'every release artifact to exist in and match `HEAD`',
@@ -753,6 +769,9 @@ requireIncludes(errors, 'startup/01-bootstrap-gates.md', [
   'user-declared route',
   'ai-recommended route',
   'workflows/product-shape-tech-route.md',
+  '條件研究候選偵測',
+  'workflows/research-synthesis.md',
+  'RESEARCH_SYNTHESIS.md',
 ]);
 
 requireIncludes(errors, 'workflows/product-shape-tech-route.md', [
@@ -762,6 +781,45 @@ requireIncludes(errors, 'workflows/product-shape-tech-route.md', [
   'PROJECT_BRIEF.md',
   'TECH_STACK.md',
   '新技術引入 Gate',
+]);
+
+requireIncludes(errors, 'workflows/research-synthesis.md', [
+  '## Trigger',
+  '## Confirmation',
+  '使用者確認後才',
+  'RESEARCH_CONFIRMATION_MISSING',
+  'material-first hybrid',
+  '## Five-lens Scan',
+  '## Evidence And Contradiction Rules',
+  '## Layered Output',
+  '## Self-review',
+  'RESEARCH_SYNTHESIS.md',
+  '不授權額外工具、模型呼叫或子代理',
+  'advisory',
+  'GATE-INTENT-001',
+  'GATE-ROUTE-001',
+]);
+
+requireIncludes(errors, 'templates/conditional/RESEARCH_SYNTHESIS.md', [
+  '## Activation Record',
+  '## Executive Layer',
+  '## Claim And Evidence Ledger',
+  '## Five-lens Scan',
+  'Practitioner',
+  'Scholar',
+  'Skeptic',
+  'Economist',
+  'Historian',
+  '## Contradiction Map',
+  '## Cross-lens Connections',
+  '## Self-review',
+  'Academic-rigor Rubric',
+  'Advisory boundary',
+]);
+
+requireIncludes(errors, 'templates/README.md', [
+  'conditional/RESEARCH_SYNTHESIS.md',
+  'workflows/research-synthesis.md',
 ]);
 
 requireIncludes(errors, 'AGENTS.md', [
@@ -1070,7 +1128,13 @@ requireIncludes(errors, 'scripts/init.mjs', [
   '.agents/AGENTS.md',
   '.agents/skills/bootstrap-intake/SKILL.md',
 ]);
-requireIncludes(errors, 'scripts/doctor.mjs', ['--strict', '--json', 'warnings as failures']);
+requireIncludes(errors, 'scripts/doctor.mjs', [
+  '--strict',
+  '--json',
+  'warnings as failures',
+  'RESEARCH_CONFIRMATION_MISSING',
+  'User decision',
+]);
 requireIncludes(errors, '.github/workflows/validate-starter.yml', [
   'npm run ci',
   'ubuntu-latest',

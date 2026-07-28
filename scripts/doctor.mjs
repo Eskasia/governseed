@@ -205,6 +205,14 @@ function hasTechnologyRouteDecision() {
     && content.includes('| Deployment |');
 }
 
+function hasResolvedResearchSynthesisDecision() {
+  if (!exists('RESEARCH_SYNTHESIS.md')) return false;
+  const decisions = [...readFile('RESEARCH_SYNTHESIS.md').matchAll(
+    /^-\s*User decision:\s*(.+)$/gim,
+  )].map((match) => match[1].trim().toLowerCase());
+  return decisions.length === 1 && ['confirmed', 'declined'].includes(decisions[0]);
+}
+
 function statusForRequired(doc) {
   const state = projectFileState(doc.file);
   if (state === 'missing') return 'missing';
@@ -297,6 +305,14 @@ function buildResult(profile) {
         message: 'tasks should each have a verification method',
       }));
     }
+  }
+
+  if (exists('RESEARCH_SYNTHESIS.md') && !hasResolvedResearchSynthesisDecision()) {
+    warnings.push(formatGovernanceFinding({
+      code: 'RESEARCH_CONFIRMATION_MISSING',
+      subject: 'RESEARCH_SYNTHESIS.md',
+      message: 'document is present but its activation record does not contain one explicit confirmed or declined user decision',
+    }));
   }
 
   if (exists('PROJECT_BRIEF.md') && !hasProductShapeDecision()) {

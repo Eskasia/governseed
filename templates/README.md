@@ -26,6 +26,7 @@
 | `conditional/API_CONTRACT.md` | Conditional | API routes, server actions, webhooks, adapters | `workflows/fullstack.md` |
 | `conditional/ENV_CHECKLIST.md` | Conditional | Deployment, third-party APIs, env vars, secrets | `workflows/fullstack.md` |
 | `conditional/PRESENTATION_BRIEF.md` | Conditional | Slides, one-pager, white paper, resume, portfolio | `workflows/presentation.md` |
+| `conditional/RESEARCH_SYNTHESIS.md` | Conditional | Material evidence conflict, high-impact decision, multiple credible routes, user-confirmed synthesis | `workflows/research-synthesis.md` |
 | `conditional/TESTER_HANDOFF.md` | Conditional | Beta, tester handoff, preview sharing | `workflows/stage-routing.md` |
 | `conditional/MACOS_RELEASE_CHECKLIST.md` | Conditional | macOS build, signing, TCC, DMG, notarization | `workflows/macos-build-release.md` |
 | `conditional/AGENT_RUNTIME.md` | Conditional | Production-facing LLM agent, automation, tool use | `workflows/production-agent.md` |

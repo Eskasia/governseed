@@ -20,6 +20,7 @@
 | 長任務、大輸出、context 快爆、compaction 後接不上 | `docs/experiments/context-mode.md` | 小範圍讀檔與中途 handoff |
 | 可跨專案重用的經驗 | LLMwiki | 專案內 docs 或 ad hoc note |
 | 不確定規則、經驗、流程該寫到哪裡 | `workflows/agent-file-structure.md` | 保留在 `OPEN_LOOPS.md` |
+| 決策相關的證據衝突、高影響選擇、多條可信路線或明確多視角研究需求 | `workflows/research-synthesis.md` | 回報 trigger reason code，使用者確認後建立 `RESEARCH_SYNTHESIS.md` |
 | 論文、文獻、citation | `academic-research` | 手動文獻表與 citation check |
 | 本機或 preview web UI 自動化測試 | Playwright | Browser / Chrome manual QA |
 | React/shadcn animated icons、hover/tap micro-interaction | Its Hover，依 `workflows/ui-ux.md` 使用 | CSS transition / local component |
