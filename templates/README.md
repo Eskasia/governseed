@@ -11,12 +11,12 @@
 | Template | Required | Trigger | Related workflow |
 |---|---|---|---|
 | `runtime/README.md` | Yes | Every project | `startup/00-agent-start-here.md` |
-| `fixed/PROJECT_BRIEF.md` | Yes | Every project | `startup/01-bootstrap-gates.md` |
+| `fixed/PROJECT_BRIEF.md` | Yes | Every project | `workflows/product-shape-tech-route.md` |
 | `fixed/SPEC.md` | Yes | Every project | `startup/01-bootstrap-gates.md` |
 | `fixed/CONTEXT.md` | Yes | Every project | `startup/01-bootstrap-gates.md` |
 | `fixed/TASK_CONTRACT.md` | Yes | Every project | `startup/01-bootstrap-gates.md` |
 | `fixed/OPEN_LOOPS.md` | Yes | Every project | `startup/01-bootstrap-gates.md` |
-| `fixed/TECH_STACK.md` | Yes | Every project | `startup/02-required-project-docs.md` |
+| `fixed/TECH_STACK.md` | Yes | Every project | `workflows/product-shape-tech-route.md` |
 | `runtime/START_HERE.md` | Runtime | Generated first-read project entrypoint | `startup/00-agent-start-here.md` |
 | `runtime/AGENTS.md` | Runtime | Generated canonical project entrypoint | `workflows/agent-file-structure.md` |
 | `conditional/UI_SPEC.md` | Conditional | UI, website, app, dashboard, landing page | `workflows/ui-ux.md` |
