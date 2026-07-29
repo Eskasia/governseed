@@ -219,8 +219,8 @@ test('scans complete raw ledger rows before semantic rejection without reflectin
       canary: 'CANARY_DUPLICATE_SOURCE',
       overrides: {
         projectBrief: fixture('PROJECT_BRIEF.md').replace(
-          '| SRC-002 | public | public-pointer | https://github.com/Eskasia/agent-governance-starter | no | confirmed | maintainer-role | 2026-07-13 |',
-          '| SRC-002 | public | public-pointer | https://github.com/Eskasia/agent-governance-starter | no | confirmed | maintainer-role | 2026-07-13 |\n| SRC-002 | approved-private-external | opaque-pointer | token=CANARY_DUPLICATE_SOURCE | no | confirmed | maintainer-role | 2026-07-13 |',
+          '| SRC-002 | public | public-pointer | https://github.com/Eskasia/governseed | no | confirmed | maintainer-role | 2026-07-13 |',
+          '| SRC-002 | public | public-pointer | https://github.com/Eskasia/governseed | no | confirmed | maintainer-role | 2026-07-13 |\n| SRC-002 | approved-private-external | opaque-pointer | token=CANARY_DUPLICATE_SOURCE | no | confirmed | maintainer-role | 2026-07-13 |',
         ),
       },
     },
@@ -326,7 +326,7 @@ test('does not parse four-backtick code samples closed by three backticks on eve
         projectBrief: fenceLedger(
           fixture('PROJECT_BRIEF.md'),
           '| Source ID | Source class | Trace mode | Source ref | Content retained | Attestation | Confirmed by | Confirmed at |',
-          '| SRC-002 | public | public-pointer | https://github.com/Eskasia/agent-governance-starter | no | confirmed | maintainer-role | 2026-07-13 |',
+          '| SRC-002 | public | public-pointer | https://github.com/Eskasia/governseed | no | confirmed | maintainer-role | 2026-07-13 |',
         ),
       },
     },
@@ -798,8 +798,8 @@ test('fails closed on wrong-width rows in every lineage ledger', () => {
       code: 'TRACE_SOURCE_MISSING',
       overrides: {
         projectBrief: fixture('PROJECT_BRIEF.md').replace(
-          '| SRC-002 | public | public-pointer | https://github.com/Eskasia/agent-governance-starter | no | confirmed | maintainer-role | 2026-07-13 |',
-          '| SRC-002 | public | public-pointer | https://github.com/Eskasia/agent-governance-starter | no | confirmed | maintainer-role | 2026-07-13 |\n| SRC-999 | malformed |',
+          '| SRC-002 | public | public-pointer | https://github.com/Eskasia/governseed | no | confirmed | maintainer-role | 2026-07-13 |',
+          '| SRC-002 | public | public-pointer | https://github.com/Eskasia/governseed | no | confirmed | maintainer-role | 2026-07-13 |\n| SRC-999 | malformed |',
         ),
       },
     },
@@ -866,7 +866,7 @@ test('ignores commented and fenced ledger samples and rejects duplicate active l
   const separator = '|---|---|---|---|---|---|---|---|';
   const sourceRows = [
     '| SRC-001 | synthetic | attestation-only | n/a | no | confirmed | maintainer-role | 2026-07-13 |',
-    '| SRC-002 | public | public-pointer | https://github.com/Eskasia/agent-governance-starter | no | confirmed | maintainer-role | 2026-07-13 |',
+    '| SRC-002 | public | public-pointer | https://github.com/Eskasia/governseed | no | confirmed | maintainer-role | 2026-07-13 |',
   ].join('\n');
   const activeTable = `${sourceHeader}\n${separator}\n${sourceRows}`;
 
@@ -969,7 +969,7 @@ test('applies one non-reflective privacy boundary to every lineage free-text sur
       canary: 'CANARY_SOURCE_USERINFO',
       overrides: {
         projectBrief: fixture('PROJECT_BRIEF.md').replace(
-          'https://github.com/Eskasia/agent-governance-starter',
+          'https://github.com/Eskasia/governseed',
           'https://alice:CANARY_SOURCE_USERINFO@example.org/source',
         ),
       },
@@ -980,7 +980,7 @@ test('applies one non-reflective privacy boundary to every lineage free-text sur
       canary: 'CANARY_SOURCE_QUERY',
       overrides: {
         projectBrief: fixture('PROJECT_BRIEF.md').replace(
-          'https://github.com/Eskasia/agent-governance-starter',
+          'https://github.com/Eskasia/governseed',
           'https://example.org/source?token=CANARY_SOURCE_QUERY',
         ),
       },
@@ -1176,8 +1176,8 @@ test('requires matching route evidence in PROJECT_BRIEF and TECH_STACK', () => {
 test('rejects route evidence with missing, pending, malformed, or inactive IDs', () => {
   const pendingSourceRow = '| SRC-003 | synthetic | attestation-only | n/a | no | pending | reviewer-role | 2026-07-13 |';
   const projectWithPending = fixture('PROJECT_BRIEF.md').replace(
-    '| SRC-002 | public | public-pointer | https://github.com/Eskasia/agent-governance-starter | no | confirmed | maintainer-role | 2026-07-13 |',
-    `| SRC-002 | public | public-pointer | https://github.com/Eskasia/agent-governance-starter | no | confirmed | maintainer-role | 2026-07-13 |\n${pendingSourceRow}`,
+    '| SRC-002 | public | public-pointer | https://github.com/Eskasia/governseed | no | confirmed | maintainer-role | 2026-07-13 |',
+    `| SRC-002 | public | public-pointer | https://github.com/Eskasia/governseed | no | confirmed | maintainer-role | 2026-07-13 |\n${pendingSourceRow}`,
   );
   const cases = [
     {

@@ -258,7 +258,6 @@ test('every retained legacy brand token has an explicit compatibility class', ()
     'scripts/init.mjs': 1,
     'scripts/validate-starter.mjs': 2,
     'templates/runtime/README.md': 1,
-    'tests/governance/traceability.test.mjs': 10,
   };
   const actualCounts = {};
   for (const absolutePath of walkTextFiles()) {

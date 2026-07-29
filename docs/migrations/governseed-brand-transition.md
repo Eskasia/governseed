@@ -46,7 +46,6 @@ brand test until it is reviewed and classified.
 | `scripts/init.mjs` | 1 | legacy machine identifier | Generated metadata keeps the compatibility identifier. |
 | `scripts/validate-starter.mjs` | 2 | compatibility text; legacy machine identifier | Validator protects the transition statement and generated-project compatibility identifier. |
 | `templates/runtime/README.md` | 1 | compatibility text; legacy machine identifier | Generated projects explain the retained generator identifier. |
-| `tests/governance/traceability.test.mjs` | 10 | historical record | Synthetic test strings preserve their reviewed historical source values; they are not public navigation links. |
 
 There are no retained occurrences classified as `missed public-brand
 occurrence`.
