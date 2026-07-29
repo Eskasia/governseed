@@ -689,7 +689,7 @@ function reviewResponsibility(responsibility) {
   }[responsibility];
 }
 
-function selectResponsibilities(task) {
+export function selectResponsibilities(task) {
   const responsibilities = ['implementation-owner'];
   const reasons = [];
   const surfaces = new Set(task.surfaces ?? []);
