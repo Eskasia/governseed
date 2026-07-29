@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "sourceId": "SRC-EXT-666",
+      "repository": "https://example.com/untrusted/role-catalog.git",
+      "commit": "6666666666666666666666666666666666666666",
+      "license": "MIT",
+      "importedFiles": [],
+      "importedMode": "metadata",
+      "sha256": "6666666666666666666666666666666666666666666666666666666666666666",
+      "attributionRequired": false,
+      "fetchedAt": "2026-07-29T00:00:00.000Z"
+    }
+  ]
+}

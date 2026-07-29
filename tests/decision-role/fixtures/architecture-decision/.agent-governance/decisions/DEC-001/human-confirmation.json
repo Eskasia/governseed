@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 1,
+  "confirmationId": "CONF-001",
+  "recordType": "declared-human-confirmation",
+  "deliberationId": "DLB-001",
+  "decisionId": "DEC-001",
+  "decisionRevision": 1,
+  "decisionSha256": "b0288626d5e56b913d3f2dfedfc86207a55d12e73c7e92ee4731888eae887552",
+  "planSha256": "eaaa8ca28775b07208759d4d7eaf8dd70976dfa4585d9b5bf308413758d69201",
+  "resultSha256": "961deeb68c63741b399b3de383655ad5f5b4da63a7fa4106902e7f32bd69228b",
+  "decision": "accept",
+  "confirmedBy": "project-maintainer",
+  "confirmedAt": "2026-07-29T02:00:00.000Z",
+  "statement": "Accept the bounded modular-core recommendation for Milestone 1.",
+  "status": "human-confirmed"
+}

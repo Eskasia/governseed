@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "profileId": "RISK-001",
+  "status": "assessed",
+  "sourceRefs": [
+    "SRC-001",
+    "REQ-001@1",
+    "TASK-001"
+  ],
+  "permissionCeiling": {
+    "filesystem.project-read": "allow",
+    "filesystem.project-write": "constrained-allow",
+    "filesystem.root-write": "deny",
+    "network": "require-human-approval",
+    "credentials": "require-human-approval",
+    "publish": "require-human-approval",
+    "delete": "deny"
+  },
+  "tasks": [
+    {
+      "taskId": "TASK-001",
+      "status": "active",
+      "declaredAt": "2026-07-29T00:00:00.000Z",
+      "dataClasses": [
+        "restricted"
+      ],
+      "surfaces": [
+        "credential",
+        "network",
+        "release"
+      ],
+      "sideEffects": [
+        "network",
+        "publish"
+      ],
+      "triggerFlags": {
+        "userRequestedFourAi": false,
+        "consequential": true,
+        "irreversible": false,
+        "multipleReasonableOptions": false,
+        "evidenceConflict": false,
+        "restrictedAuthoritySurface": true,
+        "threeOrMoreDomains": false,
+        "canonicalRuleConflict": false,
+        "highRepairCost": true
+      },
+      "requestedCapabilities": [
+        "credentials",
+        "network",
+        "filesystem.project-read",
+        "filesystem.project-write",
+        "publish"
+      ],
+      "requiredEvidence": [
+        "EVD-001",
+        "EVD-002"
+      ],
+      "riskLevel": "high",
+      "needsDeliberation": true,
+      "reasonCodes": [
+        "CREDENTIAL_ACCESS",
+        "PUBLISH_SIDE_EFFECT",
+        "RESTRICTED_DATA"
+      ]
+    }
+  ],
+  "openQuestions": []
+}

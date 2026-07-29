@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "catalogId": "CAT-001",
+  "catalogType": "specialist",
+  "source": {
+    "sourceId": "SRC-EXT-001",
+    "repository": "https://github.com/example/governance-metadata",
+    "revision": "1111111111111111111111111111111111111111",
+    "license": "MIT",
+    "importedMode": "metadata",
+    "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "roles": [
+    {
+      "roleId": "documentation-reviewer",
+      "roleType": "specialist",
+      "division": "documentation",
+      "title": "Documentation Reviewer",
+      "description": "Reviews documentation changes against confirmed requirements.",
+      "supportedResponsibilities": [
+        "domain-reviewer"
+      ],
+      "supportedSurfaces": [
+        "documentation"
+      ],
+      "requestedCapabilities": [
+        "project-read"
+      ]
+    }
+  ]
+}

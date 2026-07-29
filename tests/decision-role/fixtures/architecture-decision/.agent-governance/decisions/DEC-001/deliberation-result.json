@@ -1,0 +1,168 @@
+{
+  "schemaVersion": 1,
+  "deliberationId": "DLB-001",
+  "decisionId": "DEC-001",
+  "decisionRevision": 1,
+  "decisionSha256": "b0288626d5e56b913d3f2dfedfc86207a55d12e73c7e92ee4731888eae887552",
+  "planRevision": 1,
+  "planSha256": "eaaa8ca28775b07208759d4d7eaf8dd70976dfa4585d9b5bf308413758d69201",
+  "resultSha256": "961deeb68c63741b399b3de383655ad5f5b4da63a7fa4106902e7f32bd69228b",
+  "graphId": "four-ai-decision-deliberation",
+  "graphVersion": "1.0.0",
+  "adapter": "manual-file",
+  "adapterVersion": "1.0.0",
+  "sourceRevision": "DEC-001@1",
+  "executedAt": "2026-07-29T01:00:00.000Z",
+  "redactionTier": "metadata-only",
+  "seatResults": [
+    {
+      "seatId": "DLB-001-SEAT-01",
+      "status": "ready",
+      "claimRefs": [
+        "CLAIM-001"
+      ],
+      "evidenceRefs": [
+        "EVD-001"
+      ]
+    },
+    {
+      "seatId": "DLB-001-SEAT-02",
+      "status": "ready",
+      "claimRefs": [
+        "CLAIM-002"
+      ],
+      "evidenceRefs": [
+        "EVD-001"
+      ]
+    },
+    {
+      "seatId": "DLB-001-SEAT-03",
+      "status": "ready",
+      "claimRefs": [
+        "CLAIM-003"
+      ],
+      "evidenceRefs": [
+        "EVD-001"
+      ]
+    },
+    {
+      "seatId": "DLB-001-SEAT-04",
+      "status": "ready",
+      "claimRefs": [
+        "CLAIM-004"
+      ],
+      "evidenceRefs": [
+        "EVD-001"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "claimId": "CLAIM-001",
+      "statement": "A modular monolith keeps the Milestone 1 core local and deterministic.",
+      "evidenceRefs": [
+        "EVD-001"
+      ]
+    },
+    {
+      "claimId": "CLAIM-002",
+      "statement": "External adapters can remain thin when the core owns neutral contracts.",
+      "evidenceRefs": [
+        "EVD-001"
+      ]
+    },
+    {
+      "claimId": "CLAIM-003",
+      "statement": "A runtime framework would cross the declared product boundary.",
+      "evidenceRefs": [
+        "EVD-001"
+      ]
+    },
+    {
+      "claimId": "CLAIM-004",
+      "statement": "The modular monolith option has the strongest bounded recommendation.",
+      "evidenceRefs": [
+        "EVD-001"
+      ]
+    }
+  ],
+  "evidenceRefs": [
+    "EVD-001"
+  ],
+  "disagreements": [
+    {
+      "disagreementId": "DIS-001",
+      "summary": "A monorepo could isolate adapter releases earlier but adds premature packaging cost."
+    }
+  ],
+  "assumptions": [
+    {
+      "assumptionId": "ASM-001",
+      "statement": "No adapter requires independent publication during Milestone 1."
+    }
+  ],
+  "unknowns": [
+    {
+      "unknownId": "UNK-001",
+      "statement": "Future adapter dependency pressure has not yet been observed."
+    }
+  ],
+  "rankedOptions": [
+    {
+      "optionId": "OPTION-MODULAR-MONOLITH",
+      "rank": 1,
+      "scores": {
+        "requirementFit": 5,
+        "feasibility": 5,
+        "safety": 5,
+        "reversibility": 4,
+        "maintenanceCost": 5,
+        "evidenceStrength": 4
+      }
+    },
+    {
+      "optionId": "OPTION-MONOREPO",
+      "rank": 2,
+      "scores": {
+        "requirementFit": 3,
+        "feasibility": 3,
+        "safety": 4,
+        "reversibility": 3,
+        "maintenanceCost": 2,
+        "evidenceStrength": 2
+      }
+    },
+    {
+      "optionId": "OPTION-RUNTIME-FRAMEWORK",
+      "rank": 3,
+      "scores": {
+        "requirementFit": 1,
+        "feasibility": 2,
+        "safety": 1,
+        "reversibility": 2,
+        "maintenanceCost": 1,
+        "evidenceStrength": 1
+      }
+    }
+  ],
+  "recommendation": {
+    "optionId": "OPTION-MODULAR-MONOLITH",
+    "summary": "Keep a modular monolith core and place runtime-specific translation in external adapters."
+  },
+  "confidence": "medium",
+  "humanDecisionRequired": true,
+  "beforeReceipt": {
+    "decisionSha256": "b0288626d5e56b913d3f2dfedfc86207a55d12e73c7e92ee4731888eae887552",
+    "planSha256": "eaaa8ca28775b07208759d4d7eaf8dd70976dfa4585d9b5bf308413758d69201",
+    "graphId": "four-ai-decision-deliberation",
+    "graphVersion": "1.0.0",
+    "sourceRevision": "DEC-001@1"
+  },
+  "afterReceipt": {
+    "normalizedResultSha256": "0f6a05ded71cab8e94f04538432da7730cd82bddee0112ba6ceeb7aa8f6c61c8",
+    "graphId": "four-ai-decision-deliberation",
+    "graphVersion": "1.0.0",
+    "sourceRevision": "DEC-001@1"
+  },
+  "importStatus": "human-confirmed"
+}

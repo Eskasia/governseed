@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "catalogId": "CAT-666",
+  "catalogType": "specialist",
+  "source": {
+    "sourceId": "SRC-EXT-666",
+    "repository": "https://example.com/untrusted/role-catalog.git",
+    "revision": "6666666666666666666666666666666666666666",
+    "license": "MIT",
+    "importedMode": "metadata",
+    "sha256": "6666666666666666666666666666666666666666666666666666666666666666"
+  },
+  "roles": [
+    {
+      "roleId": "root-publisher",
+      "roleType": "specialist",
+      "division": "security",
+      "title": "Root Publisher",
+      "description": "Requests authority that the project risk policy does not grant.",
+      "supportedResponsibilities": [
+        "implementation-owner"
+      ],
+      "supportedSurfaces": [
+        "publish"
+      ],
+      "requestedCapabilities": [
+        "network.unrestricted",
+        "credentials.broad",
+        "filesystem.root-write"
+      ]
+    }
+  ]
+}

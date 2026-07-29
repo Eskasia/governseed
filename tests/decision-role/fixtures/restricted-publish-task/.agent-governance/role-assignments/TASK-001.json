@@ -1,0 +1,170 @@
+{
+  "schemaVersion": 1,
+  "assignmentId": "ROLE-001",
+  "taskId": "TASK-001",
+  "revision": 1,
+  "status": "assigned",
+  "sourceRefs": [
+    "REQ-001@1",
+    "TASK-001"
+  ],
+  "riskRefs": [
+    "RISK-001"
+  ],
+  "selectedRoles": [
+    {
+      "responsibility": "implementation-owner",
+      "specialistRoleId": "builtin/implementation-owner",
+      "source": "builtin",
+      "sourceCatalog": "builtin-governance-responsibilities",
+      "sourceRevision": "builtin@1",
+      "sourceLicense": "MIT",
+      "sourceHash": "eaf69549e7163f4cde40fb267c8afea30eda9941950562b5136e05a9eb95fe1a",
+      "assignedTaskScope": [
+        "TASK-001"
+      ],
+      "requiredInputs": [
+        "REQ-001@1",
+        "RISK-001"
+      ],
+      "expectedDeliverables": [
+        "Project-local implementation",
+        "Publish handoff without credentials"
+      ],
+      "requestedCapabilities": [
+        "filesystem.project-read",
+        "filesystem.project-write"
+      ],
+      "grantedCapabilityCeiling": {
+        "filesystem.project-read": "allow",
+        "filesystem.project-write": "constrained-allow",
+        "filesystem.root-write": "deny",
+        "network": "require-human-approval",
+        "credentials": "require-human-approval",
+        "publish": "require-human-approval",
+        "delete": "deny"
+      },
+      "reviewResponsibility": [],
+      "cannotApprove": true,
+      "reasonCodes": [
+        "DEFAULT_IMPLEMENTATION_OWNER",
+        "HIGH_RISK_SEPARATION_REQUIRED"
+      ]
+    },
+    {
+      "responsibility": "risk-reviewer",
+      "specialistRoleId": "builtin/risk-reviewer",
+      "source": "builtin",
+      "sourceCatalog": "builtin-governance-responsibilities",
+      "sourceRevision": "builtin@1",
+      "sourceLicense": "MIT",
+      "sourceHash": "eaf69549e7163f4cde40fb267c8afea30eda9941950562b5136e05a9eb95fe1a",
+      "assignedTaskScope": [
+        "TASK-001"
+      ],
+      "requiredInputs": [
+        "RISK-001"
+      ],
+      "expectedDeliverables": [
+        "Credential, restricted-data, network, and publish risk review"
+      ],
+      "requestedCapabilities": [
+        "filesystem.project-read"
+      ],
+      "grantedCapabilityCeiling": {
+        "filesystem.project-read": "allow",
+        "filesystem.project-write": "deny",
+        "filesystem.root-write": "deny",
+        "network": "deny",
+        "credentials": "deny",
+        "publish": "deny",
+        "delete": "deny"
+      },
+      "reviewResponsibility": [
+        "security",
+        "publish"
+      ],
+      "cannotApprove": true,
+      "reasonCodes": [
+        "CREDENTIAL_ACCESS",
+        "PUBLISH_SIDE_EFFECT",
+        "RESTRICTED_DATA"
+      ]
+    },
+    {
+      "responsibility": "evidence-verifier",
+      "specialistRoleId": "builtin/evidence-verifier",
+      "source": "builtin",
+      "sourceCatalog": "builtin-governance-responsibilities",
+      "sourceRevision": "builtin@1",
+      "sourceLicense": "MIT",
+      "sourceHash": "eaf69549e7163f4cde40fb267c8afea30eda9941950562b5136e05a9eb95fe1a",
+      "assignedTaskScope": [
+        "TASK-001"
+      ],
+      "requiredInputs": [
+        "AC-001",
+        "EVD-001",
+        "EVD-002"
+      ],
+      "expectedDeliverables": [
+        "Independent acceptance and publish evidence verification"
+      ],
+      "requestedCapabilities": [
+        "filesystem.project-read"
+      ],
+      "grantedCapabilityCeiling": {
+        "filesystem.project-read": "allow",
+        "filesystem.project-write": "deny",
+        "filesystem.root-write": "deny",
+        "network": "deny",
+        "credentials": "deny",
+        "publish": "deny",
+        "delete": "deny"
+      },
+      "reviewResponsibility": [
+        "final-evidence"
+      ],
+      "cannotApprove": true,
+      "reasonCodes": [
+        "HIGH_RISK_EVIDENCE_REQUIRED",
+        "PUBLISH_SIDE_EFFECT"
+      ]
+    }
+  ],
+  "rejectedRoles": [],
+  "reasonCodes": [
+    "CREDENTIAL_ACCESS",
+    "HIGH_RISK_SEPARATION_REQUIRED",
+    "PUBLISH_SIDE_EFFECT",
+    "RESTRICTED_DATA"
+  ],
+  "permissionCeiling": {
+    "filesystem.project-read": "allow",
+    "filesystem.project-write": "constrained-allow",
+    "filesystem.root-write": "deny",
+    "network": "require-human-approval",
+    "credentials": "require-human-approval",
+    "publish": "require-human-approval",
+    "delete": "deny"
+  },
+  "separationOfDuties": {
+    "required": true,
+    "implementationOwner": "builtin/implementation-owner",
+    "finalVerifier": "builtin/evidence-verifier",
+    "rules": [
+      {
+        "responsibility": "implementation-owner",
+        "cannotApprove": [
+          "final-evidence",
+          "publish",
+          "security"
+        ]
+      }
+    ]
+  },
+  "humanOverride": null,
+  "createdAt": "2026-07-29T00:00:00.000Z",
+  "supersedes": null,
+  "history": []
+}

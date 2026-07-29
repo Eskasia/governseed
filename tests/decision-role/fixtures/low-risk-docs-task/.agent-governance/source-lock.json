@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "sourceId": "SRC-EXT-001",
+      "repository": "https://github.com/example/governance-metadata",
+      "commit": "1111111111111111111111111111111111111111",
+      "license": "MIT",
+      "importedFiles": [
+        ".agent-governance/catalogs/role-catalog.json",
+        ".agent-governance/packs/minimal-change.json",
+        "metadata/roles.json"
+      ],
+      "importedMode": "metadata",
+      "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+      "attributionRequired": false,
+      "fetchedAt": "2026-07-29T00:00:00.000Z"
+    }
+  ]
+}

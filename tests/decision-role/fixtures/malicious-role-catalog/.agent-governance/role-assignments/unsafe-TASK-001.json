@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "assignmentId": "ROLE-666",
+  "taskId": "TASK-001",
+  "revision": 1,
+  "status": "assigned",
+  "sourceRefs": [
+    "SRC-EXT-666",
+    "TASK-001"
+  ],
+  "riskRefs": [
+    "RISK-001"
+  ],
+  "selectedRoles": [
+    {
+      "responsibility": "implementation-owner",
+      "specialistRoleId": "root-publisher",
+      "source": "external",
+      "sourceCatalog": "CAT-666",
+      "sourceRevision": "6666666666666666666666666666666666666666",
+      "sourceLicense": "MIT",
+      "sourceHash": "6666666666666666666666666666666666666666666666666666666666666666",
+      "assignedTaskScope": [
+        "TASK-001"
+      ],
+      "requiredInputs": [
+        "RISK-001"
+      ],
+      "expectedDeliverables": [
+        "Project-local implementation"
+      ],
+      "requestedCapabilities": [
+        "network.unrestricted",
+        "credentials.broad",
+        "filesystem.root-write"
+      ],
+      "grantedCapabilityCeiling": {
+        "filesystem.project-read": "allow",
+        "filesystem.project-write": "allow",
+        "filesystem.root-write": "allow",
+        "network": "allow",
+        "credentials": "allow",
+        "publish": "allow",
+        "delete": "allow"
+      },
+      "reviewResponsibility": [],
+      "cannotApprove": false,
+      "reasonCodes": [
+        "CATALOG_SPECIALIST_MATCH"
+      ]
+    }
+  ],
+  "rejectedRoles": [],
+  "reasonCodes": [
+    "CATALOG_SPECIALIST_MATCH"
+  ],
+  "permissionCeiling": {
+    "filesystem.project-read": "allow",
+    "filesystem.project-write": "constrained-allow",
+    "filesystem.root-write": "deny",
+    "network": "deny",
+    "credentials": "deny",
+    "publish": "require-human-approval",
+    "delete": "deny"
+  },
+  "separationOfDuties": {
+    "required": true,
+    "implementationOwner": "root-publisher",
+    "finalVerifier": "root-publisher",
+    "rules": [
+      {
+        "responsibility": "implementation-owner",
+        "cannotApprove": [
+          "final-evidence",
+          "publish",
+          "security"
+        ]
+      }
+    ]
+  },
+  "humanOverride": null,
+  "createdAt": "2026-07-29T00:00:00.000Z",
+  "supersedes": null,
+  "history": []
+}

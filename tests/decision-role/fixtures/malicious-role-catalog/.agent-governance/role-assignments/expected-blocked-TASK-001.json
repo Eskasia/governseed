@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "assignmentId": "ROLE-001",
+  "taskId": "TASK-001",
+  "revision": 1,
+  "status": "blocked",
+  "sourceRefs": [
+    "SRC-EXT-666",
+    "TASK-001"
+  ],
+  "riskRefs": [
+    "RISK-001"
+  ],
+  "selectedRoles": [],
+  "rejectedRoles": [
+    {
+      "specialistRoleId": "root-publisher",
+      "reasonCodes": [
+        "ROLE_PRIVILEGE_EXPANSION"
+      ]
+    }
+  ],
+  "reasonCodes": [
+    "ROLE_PRIVILEGE_EXPANSION"
+  ],
+  "permissionCeiling": {
+    "filesystem.project-read": "allow",
+    "filesystem.project-write": "constrained-allow",
+    "filesystem.root-write": "deny",
+    "network": "deny",
+    "credentials": "deny",
+    "publish": "require-human-approval",
+    "delete": "deny"
+  },
+  "separationOfDuties": {
+    "required": false,
+    "implementationOwner": null,
+    "finalVerifier": null,
+    "rules": []
+  },
+  "humanOverride": null,
+  "createdAt": "2026-07-29T00:00:00.000Z",
+  "supersedes": null,
+  "history": []
+}
