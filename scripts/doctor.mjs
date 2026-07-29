@@ -9,6 +9,9 @@ import {
   safeReadGovernanceFile,
 } from './lib/governance-checks.mjs';
 import { evaluateDecisionRoleGovernance } from './lib/decision-role-doctor.mjs';
+import {
+  evaluatePolicyCompilerGovernance,
+} from './lib/policy-compiler-doctor.mjs';
 
 const STARTER_ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const PROFILES_DIR = path.join(STARTER_ROOT, 'profiles');
@@ -21,7 +24,7 @@ function usage() {
   console.log();
   console.log('Usage: node scripts/doctor.mjs [--strict] [--json] [--profile base|fullstack-ai|macos] <project-directory>');
   console.log();
-  console.log('--strict treats warnings as failures.');
+  console.log('--strict treats blocking warnings as failures.');
   console.log('--json emits machine-readable doctor output.');
   process.exit(0);
 }
@@ -363,6 +366,10 @@ function buildResult(profile) {
   for (const item of decisionRole.findings) addFinding(item);
   if (decisionRole.fatal) fatalPrivacy = true;
 
+  const policyCompiler = evaluatePolicyCompilerGovernance(projectDir);
+  for (const item of policyCompiler.findings) addFinding(item);
+  if (policyCompiler.fatal) fatalPrivacy = true;
+
   const missing = required.filter((check) => check.status === 'missing').map((check) => check.file);
   const unfilled = required.filter((check) => check.status === 'unfilled').map((check) => check.file);
   const status = missing.length > 0 ? 'missing' : warnings.length > 0 ? 'warning' : 'ready';
@@ -385,6 +392,17 @@ function buildResult(profile) {
 
 function hasFatalPrivacyFinding(result) {
   return result[FATAL_PRIVACY_STATE] === true;
+}
+
+function strictBlockingWarnings(result) {
+  const advisoryCodes = new Set([
+    'CODEX_CONTROL_NOT_ENFORCEABLE',
+    'POLICY_UNSUPPORTED_CONTROL',
+  ]);
+  return result.warnings.filter((warning) => {
+    const match = warning.match(/^\[([A-Z0-9_]+)\]/u);
+    return !advisoryCodes.has(match?.[1] ?? '');
+  });
 }
 
 function printHuman(result) {
@@ -454,8 +472,9 @@ function printHuman(result) {
     return;
   }
 
-  if (options.strict && result.warnings.length > 0) {
-    console.log(`Result: Strict mode failed with ${result.warnings.length} warning(s).`);
+  const blockingWarnings = strictBlockingWarnings(result);
+  if (options.strict && blockingWarnings.length > 0) {
+    console.log(`Result: Strict mode failed with ${blockingWarnings.length} blocking warning(s).`);
     return;
   }
 
@@ -490,6 +509,6 @@ if (hasFatalPrivacyFinding(result)) {
   process.exit(1);
 }
 
-if (options.strict && result.warnings.length > 0) {
+if (options.strict && strictBlockingWarnings(result).length > 0) {
   process.exit(1);
 }

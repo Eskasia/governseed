@@ -20,6 +20,10 @@ import {
   validateDeliberationImport,
   validateHumanConfirmation,
 } from './lib/decision-role-core.mjs';
+import {
+  commitPolicyCompile,
+  preparePolicyCompile,
+} from './lib/policy-compiler-project.mjs';
 
 const EXIT = Object.freeze({
   OK: 0,
@@ -45,7 +49,14 @@ const SECURITY_CODES = new Set([
   'DELIBERATION_VERSION_MISMATCH',
   'GOVERNANCE_PACK_INVALID',
   'INVALID_STATUS_TRANSITION',
+  'CODEX_ADAPTER_OWNER_CONFLICT',
+  'COMPILE_PARTIAL_OUTPUT',
+  'COMPILE_PATH_BLOCKED',
   'PATH_ESCAPE_BLOCKED',
+  'POLICY_CONFLICT',
+  'POLICY_OUTPUT_DRIFT',
+  'POLICY_PRIVILEGE_EXPANSION',
+  'POLICY_SOURCE_HASH_MISMATCH',
   'PRIVATE_CONTENT_BLOCKED',
   'ROLE_ASSIGNMENT_IMMUTABLE',
   'ROLE_CATALOG_INVALID',
@@ -61,6 +72,7 @@ const SECURITY_CODES = new Set([
 ]);
 
 const COMMAND_OPTIONS = Object.freeze({
+  compile: new Set(['--target', '--dry-run']),
   assess: new Set(['--task']),
   'deliberate.plan': new Set(['--decision']),
   'deliberate.import': new Set(['--file']),
@@ -69,6 +81,7 @@ const COMMAND_OPTIONS = Object.freeze({
   'pack.list': new Set(),
 });
 const REQUIRED_OPTIONS = Object.freeze({
+  compile: ['--target'],
   assess: [],
   'deliberate.plan': ['--decision'],
   'deliberate.import': ['--file'],
@@ -84,6 +97,7 @@ function usage() {
   console.log('Usage: agent-governance <command> <project> [options]');
   console.log();
   console.log('Commands:');
+  console.log('  compile <project> --target codex [--dry-run] [--json]');
   console.log('  assess');
   console.log('  deliberate plan|import|confirm');
   console.log('  roles assign');
@@ -178,6 +192,9 @@ function parseCommand(argv) {
   const allowedOptions = COMMAND_OPTIONS[name];
   const commandWords = name.includes('.') ? 2 : 1;
   const values = new Map();
+  const booleanOptions = name === 'compile'
+    ? new Set(['--dry-run'])
+    : new Set();
   let project = null;
   const usage = () => {
     throw Object.assign(
@@ -193,6 +210,10 @@ function parseCommand(argv) {
     if (argument === '--json') continue;
     if (argument.startsWith('--')) {
       if (!allowedOptions.has(argument) || values.has(argument)) usage();
+      if (booleanOptions.has(argument)) {
+        values.set(argument, true);
+        continue;
+      }
       const value = argv[index + 1];
       if (!value || value.startsWith('--')) usage();
       values.set(argument, value);
@@ -217,6 +238,8 @@ function parseCommand(argv) {
     file: values.get('--file') ?? null,
     catalog: values.get('--catalog') ?? null,
     override: values.get('--override') ?? null,
+    target: values.get('--target') ?? null,
+    dryRun: values.get('--dry-run') === true,
   };
 }
 
@@ -984,8 +1007,87 @@ function packList(command) {
   };
 }
 
+function compilePolicy(command) {
+  if (command.target !== 'codex') {
+    throw new CliFailure(
+      EXIT.USAGE,
+      'CLI_TARGET_UNSUPPORTED',
+      'usage',
+      command.target ?? 'target',
+    );
+  }
+  let prepared;
+  try {
+    prepared = preparePolicyCompile(command.project, {
+      target: command.target,
+      dryRun: command.dryRun,
+    });
+  } catch (error) {
+    if (!error?.code) throw error;
+    const compilerCode = error.code === 'PATH_ESCAPE_BLOCKED'
+      ? 'COMPILE_PATH_BLOCKED'
+      : error.code;
+    if (compilerCode === 'POLICY_INPUT_MISSING') {
+      throw new CliFailure(
+        EXIT.NEEDS_INPUT,
+        compilerCode,
+        'needs-input',
+        error.subject,
+      );
+    }
+    const invalidCodes = new Set([
+      'CODEX_ADAPTER_INVALID',
+      'COMPILE_RECEIPT_INVALID',
+      'DUPLICATE_JSON_KEY',
+      'FILE_TOO_LARGE',
+      'INVALID_JSON',
+      'INVALID_UTF8',
+      'POLICY_MANIFEST_INVALID',
+      'RISK_PROFILE_INVALID',
+      'SCHEMA_VALIDATION_FAILED',
+      'SCHEMA_VERSION_UNSUPPORTED',
+    ]);
+    throw new CliFailure(
+      invalidCodes.has(compilerCode) ? EXIT.INVALID : EXIT.BLOCKED,
+      compilerCode,
+      invalidCodes.has(compilerCode) ? 'invalid' : 'blocked',
+      error.subject,
+    );
+  }
+  let report = prepared.report;
+  if (!command.dryRun) {
+    try {
+      report = commitPolicyCompile(command.project, prepared);
+    } catch (error) {
+      if (!error?.code) throw error;
+      throw new CliFailure(
+        SECURITY_CODES.has(error.code) ? EXIT.BLOCKED : EXIT.IO,
+        error.code,
+        SECURITY_CODES.has(error.code) ? 'blocked' : 'io-error',
+        error.subject,
+      );
+    }
+  }
+  return {
+    exitCode: EXIT.OK,
+    output: envelope({
+      ok: true,
+      command: command.name,
+      code: 'OK',
+      status: command.dryRun ? 'dry-run' : 'compiled',
+      artifact: prepared.paths.receipt,
+      result: report,
+      findings: report.warnings.map((code) => (
+        finding(code, prepared.manifest.policyId)
+      )),
+    }),
+  };
+}
+
 function execute(command) {
   switch (command.name) {
+    case 'compile':
+      return compilePolicy(command);
     case 'assess':
       return assess(command);
     case 'deliberate.plan':
