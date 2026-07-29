@@ -1,0 +1,159 @@
+{
+  "schemaVersion": 1,
+  "deliberationId": "DLB-001",
+  "decisionId": "DEC-001",
+  "decisionRevision": 1,
+  "decisionSha256": "b0288626d5e56b913d3f2dfedfc86207a55d12e73c7e92ee4731888eae887552",
+  "planRevision": 1,
+  "planSha256": "eaaa8ca28775b07208759d4d7eaf8dd70976dfa4585d9b5bf308413758d69201",
+  "topic": "Choose the Milestone 1 module boundary",
+  "normalizedBrief": "Compare three module boundaries while preserving the product boundary, deterministic local operation, and future adapter isolation.",
+  "sourceRefs": [
+    "SRC-001",
+    "REQ-001@1"
+  ],
+  "riskRefs": [
+    "RISK-001"
+  ],
+  "sourceRevision": "DEC-001@1",
+  "triggerReasonCodes": [
+    "CONSEQUENTIAL_DECISION",
+    "MULTIPLE_REASONABLE_OPTIONS"
+  ],
+  "needsDeliberation": true,
+  "profile": "architecture-decision",
+  "graphId": "four-ai-decision-deliberation",
+  "graphVersion": "1.0.0",
+  "seats": [
+    {
+      "seatId": "DLB-001-SEAT-01",
+      "function": "explorer",
+      "purpose": "Generate independent feasible options."
+    },
+    {
+      "seatId": "DLB-001-SEAT-02",
+      "function": "constraint-analyst",
+      "purpose": "Test options against product and governance constraints."
+    },
+    {
+      "seatId": "DLB-001-SEAT-03",
+      "function": "adversarial-reviewer",
+      "purpose": "Find falsifiable failure modes and unsupported claims."
+    },
+    {
+      "seatId": "DLB-001-SEAT-04",
+      "function": "synthesizer",
+      "purpose": "Bound the final recommendation, disagreements, and human decisions."
+    }
+  ],
+  "rounds": [
+    {
+      "round": 1,
+      "kind": "independent-proposal",
+      "participants": [
+        "DLB-001-SEAT-01",
+        "DLB-001-SEAT-02",
+        "DLB-001-SEAT-03",
+        "DLB-001-SEAT-04"
+      ],
+      "requiredFields": [
+        "assumptions",
+        "evidence",
+        "risks",
+        "unknowns"
+      ]
+    },
+    {
+      "round": 2,
+      "kind": "cross-critique",
+      "participants": [
+        "DLB-001-SEAT-01",
+        "DLB-001-SEAT-02",
+        "DLB-001-SEAT-03",
+        "DLB-001-SEAT-04"
+      ],
+      "requiredFields": [
+        "targetSeatId",
+        "verifiableIssues"
+      ]
+    },
+    {
+      "round": 3,
+      "kind": "option-ranking",
+      "participants": [
+        "DLB-001-SEAT-01",
+        "DLB-001-SEAT-02",
+        "DLB-001-SEAT-03",
+        "DLB-001-SEAT-04"
+      ],
+      "requiredFields": [
+        "rankedOptions",
+        "rubricScores"
+      ]
+    },
+    {
+      "round": 4,
+      "kind": "synthesis",
+      "participants": [
+        "DLB-001-SEAT-04"
+      ],
+      "requiredFields": [
+        "consensus",
+        "disagreements",
+        "rejectedOptions",
+        "missingEvidence",
+        "recommendation",
+        "uncertainty",
+        "humanDecisions"
+      ]
+    }
+  ],
+  "maxTurns": 16,
+  "terminationConditions": [
+    "four-rounds-complete",
+    "max-turns-reached",
+    "adapter-failed"
+  ],
+  "evaluationRubric": [
+    "requirement-fit",
+    "feasibility",
+    "safety",
+    "reversibility",
+    "maintenance-cost",
+    "evidence-strength"
+  ],
+  "redactionTier": "metadata-only",
+  "requiredOutput": [
+    "seat-results",
+    "claims",
+    "evidence-refs",
+    "disagreements",
+    "assumptions",
+    "unknowns",
+    "ranked-options",
+    "recommendation"
+  ],
+  "preflight": {
+    "decisionRecordValid": true,
+    "sourceRefsResolved": true,
+    "riskRefsResolved": true,
+    "redactionTierAllowed": true
+  },
+  "expectedReceipts": {
+    "before": [
+      "decisionSha256",
+      "planSha256",
+      "graphId",
+      "graphVersion",
+      "sourceRevision"
+    ],
+    "after": [
+      "normalizedResultSha256",
+      "graphId",
+      "graphVersion",
+      "sourceRevision"
+    ]
+  },
+  "humanApprovalRequired": true,
+  "status": "planned"
+}

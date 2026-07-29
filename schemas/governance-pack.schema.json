@@ -1,0 +1,226 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Eskasia/agent-governance-starter/schemas/governance-pack.schema.json",
+  "title": "Agent Governance Pack",
+  "description": "An optional, provenance-locked set of restrictions and checks that cannot grant authority.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "packId",
+    "version",
+    "source",
+    "status",
+    "controls",
+    "mechanicalChecks",
+    "humanReviewChecks",
+    "carryingCost",
+    "retirementCondition"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "packId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^(?:PACK-[A-Z0-9-]+|[a-z][a-z0-9-]*)$"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "source": {
+      "$ref": "#/$defs/source"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "suspended",
+        "retired"
+      ]
+    },
+    "controls": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/control"
+      }
+    },
+    "mechanicalChecks": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/mechanicalCheck"
+      }
+    },
+    "humanReviewChecks": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/humanReviewCheck"
+      }
+    },
+    "carryingCost": {
+      "$ref": "#/$defs/carryingCost"
+    },
+    "retirementCondition": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 4096
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": [
+        "sourceId",
+        "repository",
+        "revision",
+        "license",
+        "importedMode",
+        "sha256"
+      ],
+      "properties": {
+        "sourceId": {
+          "type": "string",
+          "pattern": "^SRC-[A-Z0-9-]+$"
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 9,
+          "maxLength": 2048,
+          "pattern": "^https://"
+        },
+        "revision": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{40}$"
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "importedMode": {
+          "type": "string",
+          "enum": [
+            "metadata",
+            "adapted",
+            "copied"
+          ]
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "control": {
+      "type": "object",
+      "required": [
+        "controlId",
+        "effect",
+        "capability",
+        "scope"
+      ],
+      "properties": {
+        "controlId": {
+          "type": "string",
+          "pattern": "^POL-[A-Z0-9-]+$"
+        },
+        "effect": {
+          "type": "string",
+          "enum": [
+            "deny",
+            "require-human-approval",
+            "constrained-allow",
+            "advisory"
+          ]
+        },
+        "capability": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "scope": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      },
+      "additionalProperties": false
+    },
+    "mechanicalCheck": {
+      "type": "object",
+      "required": [
+        "checkId",
+        "findingCode",
+        "description"
+      ],
+      "properties": {
+        "checkId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "findingCode": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "additionalProperties": false
+    },
+    "humanReviewCheck": {
+      "type": "object",
+      "required": [
+        "checkId",
+        "description"
+      ],
+      "properties": {
+        "checkId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "additionalProperties": false
+    },
+    "carryingCost": {
+      "type": "object",
+      "required": [
+        "level",
+        "description"
+      ],
+      "properties": {
+        "level": {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "description": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

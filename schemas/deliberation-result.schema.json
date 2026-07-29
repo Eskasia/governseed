@@ -1,0 +1,640 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Eskasia/agent-governance-starter/schemas/deliberation-result.schema.json",
+  "title": "Agent Governance Deliberation Result",
+  "description": "A normalized, bounded recommendation imported from an external or manual deliberation adapter.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "deliberationId",
+    "decisionId",
+    "decisionRevision",
+    "decisionSha256",
+    "planRevision",
+    "planSha256",
+    "graphId",
+    "graphVersion",
+    "adapter",
+    "adapterVersion",
+    "sourceRevision",
+    "executedAt",
+    "redactionTier",
+    "seatResults",
+    "claims",
+    "evidenceRefs",
+    "disagreements",
+    "assumptions",
+    "unknowns",
+    "rankedOptions",
+    "recommendation",
+    "confidence",
+    "humanDecisionRequired",
+    "beforeReceipt",
+    "afterReceipt",
+    "importStatus"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "deliberationId": {
+      "$ref": "#/$defs/deliberationId"
+    },
+    "decisionId": {
+      "$ref": "#/$defs/decisionId"
+    },
+    "decisionRevision": {
+      "$ref": "#/$defs/positiveRevision"
+    },
+    "decisionSha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "planRevision": {
+      "$ref": "#/$defs/positiveRevision"
+    },
+    "planSha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "resultSha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "graphId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "graphVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "adapter": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "adapterVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "sourceRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "executedAt": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "format": "date-time"
+    },
+    "redactionTier": {
+      "type": "string",
+      "enum": [
+        "metadata-only",
+        "normalized-synthesis"
+      ]
+    },
+    "seatResults": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "$ref": "#/$defs/seatResult"
+      }
+    },
+    "claims": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/claim"
+      }
+    },
+    "evidenceRefs": {
+      "$ref": "#/$defs/referenceArray"
+    },
+    "disagreements": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/disagreement"
+      }
+    },
+    "assumptions": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/assumption"
+      }
+    },
+    "unknowns": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/unknown"
+      }
+    },
+    "rankedOptions": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "$ref": "#/$defs/rankedOption"
+      }
+    },
+    "recommendation": {
+      "$ref": "#/$defs/recommendation"
+    },
+    "confidence": {
+      "$ref": "#/$defs/confidence"
+    },
+    "humanDecisionRequired": {
+      "const": true
+    },
+    "beforeReceipt": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/beforeIdentityReceipt"
+        },
+        {
+          "$ref": "#/$defs/beforeStageReceipt"
+        }
+      ]
+    },
+    "afterReceipt": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/afterIdentityReceipt"
+        },
+        {
+          "$ref": "#/$defs/afterStageReceipt"
+        }
+      ]
+    },
+    "importStatus": {
+      "type": "string",
+      "enum": [
+        "imported",
+        "human-confirmed",
+        "rejected",
+        "superseded"
+      ]
+    }
+  },
+  "$defs": {
+    "deliberationId": {
+      "type": "string",
+      "pattern": "^DLB-[0-9]{3,}$"
+    },
+    "decisionId": {
+      "type": "string",
+      "pattern": "^DEC-[0-9]{3,}$"
+    },
+    "seatId": {
+      "type": "string",
+      "pattern": "^DLB-[0-9]{3,}-SEAT-[0-9]{2}$"
+    },
+    "positiveRevision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "referenceArray": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 512
+      }
+    },
+    "seatResult": {
+      "type": "object",
+      "required": [
+        "seatId",
+        "status"
+      ],
+      "properties": {
+        "seatId": {
+          "$ref": "#/$defs/seatId"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "accepted",
+            "building",
+            "ready",
+            "failed"
+          ]
+        },
+        "summary": {
+          "type": "string",
+          "maxLength": 8192
+        },
+        "claimRefs": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "evidenceRefs": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "assumptions": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "risks": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "unknowns": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "critiques": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "rankedOptions": {
+          "type": "array",
+          "maxItems": 64,
+          "items": {
+            "$ref": "#/$defs/rankedOption"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "claim": {
+      "type": "object",
+      "required": [
+        "claimId",
+        "statement",
+        "evidenceRefs"
+      ],
+      "properties": {
+        "claimId": {
+          "type": "string",
+          "pattern": "^(?:CLAIM|CLM)-[A-Z0-9-]+$"
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        },
+        "evidenceRefs": {
+          "$ref": "#/$defs/referenceArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "disagreementRecord": {
+      "type": "object",
+      "required": [
+        "disagreementId",
+        "summary"
+      ],
+      "properties": {
+        "disagreementId": {
+          "type": "string",
+          "pattern": "^DIS-[A-Z0-9-]+$"
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        }
+      },
+      "additionalProperties": false
+    },
+    "disagreement": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        },
+        {
+          "$ref": "#/$defs/disagreementRecord"
+        }
+      ]
+    },
+    "assumptionRecord": {
+      "type": "object",
+      "required": [
+        "assumptionId",
+        "statement"
+      ],
+      "properties": {
+        "assumptionId": {
+          "type": "string",
+          "pattern": "^ASM-[A-Z0-9-]+$"
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        }
+      },
+      "additionalProperties": false
+    },
+    "assumption": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        },
+        {
+          "$ref": "#/$defs/assumptionRecord"
+        }
+      ]
+    },
+    "unknownRecord": {
+      "type": "object",
+      "required": [
+        "unknownId",
+        "statement"
+      ],
+      "properties": {
+        "unknownId": {
+          "type": "string",
+          "pattern": "^UNK-[A-Z0-9-]+$"
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        }
+      },
+      "additionalProperties": false
+    },
+    "unknown": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 8192
+        },
+        {
+          "$ref": "#/$defs/unknownRecord"
+        }
+      ]
+    },
+    "scores": {
+      "type": "object",
+      "required": [
+        "requirementFit",
+        "feasibility",
+        "safety",
+        "reversibility",
+        "maintenanceCost",
+        "evidenceStrength"
+      ],
+      "properties": {
+        "requirementFit": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "feasibility": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "safety": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "reversibility": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "maintenanceCost": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        },
+        "evidenceStrength": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 5
+        }
+      },
+      "additionalProperties": false
+    },
+    "rankedOption": {
+      "type": "object",
+      "required": [
+        "optionId",
+        "rank"
+      ],
+      "properties": {
+        "optionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "rank": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 64
+        },
+        "scores": {
+          "$ref": "#/$defs/scores"
+        }
+      },
+      "additionalProperties": false
+    },
+    "recommendation": {
+      "type": "object",
+      "required": [
+        "optionId",
+        "summary"
+      ],
+      "properties": {
+        "optionId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "summary": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 16384
+        },
+        "evidenceRefs": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "uncertainty": {
+          "type": "string",
+          "maxLength": 8192
+        }
+      },
+      "additionalProperties": false
+    },
+    "confidenceRecord": {
+      "type": "object",
+      "required": [
+        "value",
+        "explanation"
+      ],
+      "properties": {
+        "value": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1
+        },
+        "explanation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "additionalProperties": false
+    },
+    "confidence": {
+      "oneOf": [
+        {
+          "type": "string",
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        {
+          "$ref": "#/$defs/confidenceRecord"
+        }
+      ]
+    },
+    "beforeIdentityReceipt": {
+      "type": "object",
+      "required": [
+        "decisionSha256",
+        "planSha256",
+        "graphId",
+        "graphVersion",
+        "sourceRevision"
+      ],
+      "properties": {
+        "decisionSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "planSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "graphId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "graphVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "sourceRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "additionalProperties": false
+    },
+    "afterIdentityReceipt": {
+      "type": "object",
+      "required": [
+        "normalizedResultSha256",
+        "graphId",
+        "graphVersion",
+        "sourceRevision"
+      ],
+      "properties": {
+        "normalizedResultSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "graphId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "graphVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "sourceRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "additionalProperties": false
+    },
+    "beforeStageReceipt": {
+      "type": "object",
+      "required": [
+        "receiptId",
+        "stage",
+        "status",
+        "snapshotSha256"
+      ],
+      "properties": {
+        "receiptId": {
+          "type": "string",
+          "pattern": "^RCP-[A-Z0-9-]+$"
+        },
+        "stage": {
+          "const": "before"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "accepted",
+            "building",
+            "ready",
+            "failed"
+          ]
+        },
+        "snapshotSha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "afterStageReceipt": {
+      "type": "object",
+      "required": [
+        "receiptId",
+        "stage",
+        "status",
+        "snapshotSha256"
+      ],
+      "properties": {
+        "receiptId": {
+          "type": "string",
+          "pattern": "^RCP-[A-Z0-9-]+$"
+        },
+        "stage": {
+          "const": "after"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "accepted",
+            "building",
+            "ready",
+            "failed"
+          ]
+        },
+        "snapshotSha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

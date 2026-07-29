@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "deliberationId": "DLB-001",
+  "decisionId": "DEC-001",
+  "decisionRevision": 1,
+  "decisionSha256": "b0288626d5e56b913d3f2dfedfc86207a55d12e73c7e92ee4731888eae887552",
+  "planRevision": 1,
+  "planSha256": "eaaa8ca28775b07208759d4d7eaf8dd70976dfa4585d9b5bf308413758d69201",
+  "graphId": "four-ai-decision-deliberation",
+  "graphVersion": "2.0.0",
+  "adapter": "manual-file",
+  "adapterVersion": "1.0.0",
+  "sourceRevision": "DEC-001@1",
+  "executedAt": "2026-07-29T01:00:00.000Z",
+  "redactionTier": "metadata-only",
+  "seatResults": [
+    {
+      "seatId": "DLB-001-SEAT-01",
+      "status": "ready",
+      "claimRefs": [
+        "CLAIM-001"
+      ],
+      "evidenceRefs": [
+        "EVD-001"
+      ]
+    },
+    {
+      "seatId": "DLB-001-SEAT-02",
+      "status": "ready",
+      "claimRefs": [],
+      "evidenceRefs": [
+        "EVD-001"
+      ]
+    },
+    {
+      "seatId": "DLB-001-SEAT-03",
+      "status": "ready",
+      "claimRefs": [],
+      "evidenceRefs": [
+        "EVD-001"
+      ]
+    },
+    {
+      "seatId": "DLB-001-SEAT-04",
+      "status": "ready",
+      "claimRefs": [],
+      "evidenceRefs": [
+        "EVD-001"
+      ]
+    }
+  ],
+  "claims": [
+    {
+      "claimId": "CLAIM-001",
+      "statement": "This result was produced with an incompatible graph version.",
+      "evidenceRefs": [
+        "EVD-001"
+      ]
+    }
+  ],
+  "evidenceRefs": [
+    "EVD-001"
+  ],
+  "disagreements": [],
+  "assumptions": [
+    {
+      "assumptionId": "ASM-001",
+      "statement": "Replay compatibility was not established."
+    }
+  ],
+  "unknowns": [],
+  "rankedOptions": [
+    {
+      "optionId": "OPTION-MODULAR-MONOLITH",
+      "rank": 1,
+      "scores": {
+        "requirementFit": 5,
+        "feasibility": 5,
+        "safety": 5,
+        "reversibility": 4,
+        "maintenanceCost": 5,
+        "evidenceStrength": 4
+      }
+    }
+  ],
+  "recommendation": {
+    "optionId": "OPTION-MODULAR-MONOLITH",
+    "summary": "Do not import until graph versions match."
+  },
+  "confidence": "low",
+  "humanDecisionRequired": true,
+  "beforeReceipt": {
+    "decisionSha256": "b0288626d5e56b913d3f2dfedfc86207a55d12e73c7e92ee4731888eae887552",
+    "planSha256": "eaaa8ca28775b07208759d4d7eaf8dd70976dfa4585d9b5bf308413758d69201",
+    "graphId": "four-ai-decision-deliberation",
+    "graphVersion": "2.0.0",
+    "sourceRevision": "DEC-001@1"
+  },
+  "afterReceipt": {
+    "normalizedResultSha256": "7777777777777777777777777777777777777777777777777777777777777777",
+    "graphId": "four-ai-decision-deliberation",
+    "graphVersion": "2.0.0",
+    "sourceRevision": "DEC-001@1"
+  },
+  "importStatus": "imported"
+}

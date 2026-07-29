@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "decisionId": "DEC-001",
+  "revision": 1,
+  "status": "proposed",
+  "topic": "Choose the Milestone 1 module boundary",
+  "normalizedBrief": "Choose one of three reasonable module boundaries while preserving a local deterministic core and external adapters.",
+  "sourceRefs": [
+    "SRC-001"
+  ],
+  "requirementRefs": [
+    "REQ-001@1"
+  ],
+  "riskRefs": [
+    "RISK-001"
+  ],
+  "triggerReasonCodes": [
+    "CONSEQUENTIAL_DECISION",
+    "MULTIPLE_REASONABLE_OPTIONS"
+  ],
+  "options": [
+    {
+      "optionId": "OPTION-MODULAR-MONOLITH",
+      "summary": "Keep one local package with internal module boundaries."
+    },
+    {
+      "optionId": "OPTION-MONOREPO",
+      "summary": "Split core and adapters into packages immediately."
+    },
+    {
+      "optionId": "OPTION-RUNTIME-FRAMEWORK",
+      "summary": "Expand the product into an agent runtime framework."
+    }
+  ],
+  "needsDeliberation": true,
+  "humanApprovalRequired": true,
+  "createdAt": "2026-07-29T00:00:00.000Z",
+  "supersedes": null
+}

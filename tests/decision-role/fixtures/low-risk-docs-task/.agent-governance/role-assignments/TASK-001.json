@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "assignmentId": "ROLE-001",
+  "taskId": "TASK-001",
+  "revision": 1,
+  "status": "assigned",
+  "sourceRefs": [
+    "REQ-001@1",
+    "TASK-001"
+  ],
+  "riskRefs": [
+    "RISK-001"
+  ],
+  "selectedRoles": [
+    {
+      "responsibility": "implementation-owner",
+      "specialistRoleId": "builtin/implementation-owner",
+      "source": "builtin",
+      "sourceCatalog": "builtin-governance-responsibilities",
+      "sourceRevision": "builtin@1",
+      "sourceLicense": "MIT",
+      "sourceHash": "eaf69549e7163f4cde40fb267c8afea30eda9941950562b5136e05a9eb95fe1a",
+      "assignedTaskScope": [
+        "TASK-001"
+      ],
+      "requiredInputs": [
+        "REQ-001@1"
+      ],
+      "expectedDeliverables": [
+        "Updated governance documentation"
+      ],
+      "requestedCapabilities": [
+        "filesystem.project-read",
+        "filesystem.project-write"
+      ],
+      "grantedCapabilityCeiling": {
+        "filesystem.project-read": "allow",
+        "filesystem.project-write": "constrained-allow",
+        "filesystem.root-write": "deny",
+        "network": "deny",
+        "credentials": "deny",
+        "publish": "require-human-approval",
+        "delete": "deny"
+      },
+      "reviewResponsibility": [],
+      "cannotApprove": false,
+      "reasonCodes": [
+        "DEFAULT_IMPLEMENTATION_OWNER",
+        "LOW_RISK_SINGLE_OWNER"
+      ]
+    }
+  ],
+  "rejectedRoles": [],
+  "reasonCodes": [
+    "LOW_RISK_SINGLE_OWNER"
+  ],
+  "permissionCeiling": {
+    "filesystem.project-read": "allow",
+    "filesystem.project-write": "constrained-allow",
+    "filesystem.root-write": "deny",
+    "network": "deny",
+    "credentials": "deny",
+    "publish": "require-human-approval",
+    "delete": "deny"
+  },
+  "separationOfDuties": {
+    "required": false,
+    "implementationOwner": "builtin/implementation-owner",
+    "finalVerifier": null,
+    "rules": []
+  },
+  "humanOverride": null,
+  "createdAt": "2026-07-29T00:00:00.000Z",
+  "supersedes": null,
+  "history": []
+}

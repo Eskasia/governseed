@@ -1,0 +1,427 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Eskasia/agent-governance-starter/schemas/cli-output.schema.json",
+  "title": "Agent Governance CLI JSON Output",
+  "description": "The single closed JSON object emitted on stdout by an umbrella CLI command.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "ok",
+    "command",
+    "code",
+    "status",
+    "artifact",
+    "result",
+    "findings"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "ok": {
+      "type": "boolean"
+    },
+    "command": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._-]*$"
+    },
+    "code": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+    },
+    "status": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z][a-z0-9-]*$"
+    },
+    "artifact": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/portableRelativePath"
+        }
+      ]
+    },
+    "result": {
+      "oneOf": [
+        {
+          "$ref": "#/$defs/emptyResult"
+        },
+        {
+          "$ref": "risk-profile.schema.json"
+        },
+        {
+          "$ref": "role-assignment.schema.json"
+        },
+        {
+          "$ref": "deliberation-plan.schema.json"
+        },
+        {
+          "$ref": "deliberation-result.schema.json"
+        },
+        {
+          "$ref": "#/$defs/riskAssessment"
+        },
+        {
+          "$ref": "#/$defs/deliberationNotRequired"
+        },
+        {
+          "$ref": "#/$defs/humanConfirmation"
+        },
+        {
+          "$ref": "#/$defs/packLock"
+        }
+      ]
+    },
+    "findings": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    }
+  },
+  "$defs": {
+    "portableRelativePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024,
+      "pattern": "^(?!/)(?![A-Za-z]:[\\\\/])(?!\\\\\\\\)(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$)).+$"
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "referenceArray": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 512
+      }
+    },
+    "emptyResult": {
+      "type": "object",
+      "properties": {},
+      "additionalProperties": false
+    },
+    "openQuestion": {
+      "type": "object",
+      "required": [
+        "questionId",
+        "taskId",
+        "field",
+        "question"
+      ],
+      "properties": {
+        "questionId": {
+          "type": "string",
+          "pattern": "^OPEN_LOOP-[0-9]{3,}$"
+        },
+        "taskId": {
+          "type": "string",
+          "pattern": "^(?:TASK-[0-9]{3,}|TASK-UNKNOWN)$"
+        },
+        "field": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "question": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "additionalProperties": false
+    },
+    "riskAssessment": {
+      "type": "object",
+      "required": [
+        "taskId",
+        "riskLevel",
+        "needsDeliberation",
+        "reasonCodes",
+        "openQuestions"
+      ],
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "pattern": "^TASK-[0-9]{3,}$"
+        },
+        "riskLevel": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "needsDeliberation": {
+          "type": "boolean"
+        },
+        "reasonCodes": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "openQuestions": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/openQuestion"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "deliberationNotRequired": {
+      "type": "object",
+      "required": [
+        "decisionId",
+        "needsDeliberation",
+        "reasonCodes"
+      ],
+      "properties": {
+        "decisionId": {
+          "type": "string",
+          "pattern": "^DEC-[0-9]{3,}$"
+        },
+        "needsDeliberation": {
+          "const": false
+        },
+        "reasonCodes": {
+          "$ref": "#/$defs/referenceArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "humanConfirmation": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "confirmationId",
+        "recordType",
+        "deliberationId",
+        "decisionId",
+        "decisionRevision",
+        "decisionSha256",
+        "planSha256",
+        "resultSha256",
+        "decision",
+        "confirmedBy",
+        "confirmedAt",
+        "statement",
+        "status"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "confirmationId": {
+          "type": "string",
+          "pattern": "^CONF-[0-9]{3,}$"
+        },
+        "recordType": {
+          "const": "declared-human-confirmation"
+        },
+        "deliberationId": {
+          "type": "string",
+          "pattern": "^DLB-[0-9]{3,}$"
+        },
+        "decisionId": {
+          "type": "string",
+          "pattern": "^DEC-[0-9]{3,}$"
+        },
+        "decisionRevision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "decisionSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "planSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "resultSha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "decision": {
+          "type": "string",
+          "enum": [
+            "accept",
+            "reject"
+          ]
+        },
+        "confirmedBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "confirmedAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "format": "date-time"
+        },
+        "statement": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        },
+        "status": {
+          "const": "human-confirmed"
+        }
+      },
+      "additionalProperties": false
+    },
+    "packSource": {
+      "type": "object",
+      "required": [
+        "sourceId",
+        "repository",
+        "revision",
+        "license",
+        "importedMode",
+        "sha256"
+      ],
+      "properties": {
+        "sourceId": {
+          "type": "string",
+          "pattern": "^SRC-[A-Z0-9-]+$"
+        },
+        "repository": {
+          "type": "string",
+          "minLength": 9,
+          "maxLength": 2048,
+          "pattern": "^https://"
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "license": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "importedMode": {
+          "type": "string",
+          "enum": [
+            "metadata",
+            "adapted",
+            "copied"
+          ]
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "packSummary": {
+      "type": "object",
+      "required": [
+        "packId",
+        "version",
+        "status",
+        "artifact",
+        "source"
+      ],
+      "properties": {
+        "packId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "version": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "suspended",
+            "retired"
+          ]
+        },
+        "artifact": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512,
+          "pattern": "^(?![A-Za-z]:[\\\\/])(?![/~])(?!.*(?:^|[\\\\/])\\.\\.(?:[\\\\/]|$)).+\\.json$"
+        },
+        "source": {
+          "$ref": "#/$defs/packSource"
+        }
+      },
+      "additionalProperties": false
+    },
+    "packLock": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "packs"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "packs": {
+          "type": "array",
+          "maxItems": 256,
+          "items": {
+            "$ref": "#/$defs/packSummary"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "code",
+        "subject",
+        "severity",
+        "message"
+      ],
+      "properties": {
+        "code": {
+          "type": "string",
+          "pattern": "^[A-Z][A-Z0-9_]*$"
+        },
+        "subject": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "severity": {
+          "type": "string",
+          "enum": [
+            "info",
+            "warning",
+            "error"
+          ]
+        },
+        "message": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 4096
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "profileId": "RISK-001",
+  "status": "assessed",
+  "sourceRefs": [
+    "SRC-001",
+    "REQ-001@1",
+    "TASK-001"
+  ],
+  "permissionCeiling": {
+    "filesystem.project-read": "allow",
+    "filesystem.project-write": "constrained-allow",
+    "filesystem.root-write": "deny",
+    "network": "deny",
+    "credentials": "deny",
+    "publish": "require-human-approval",
+    "delete": "deny"
+  },
+  "tasks": [
+    {
+      "taskId": "TASK-001",
+      "status": "active",
+      "declaredAt": "2026-07-29T00:00:00.000Z",
+      "dataClasses": [
+        "public"
+      ],
+      "surfaces": [
+        "documentation"
+      ],
+      "sideEffects": [
+        "project-local-write"
+      ],
+      "triggerFlags": {
+        "userRequestedFourAi": false,
+        "consequential": false,
+        "irreversible": false,
+        "multipleReasonableOptions": false,
+        "evidenceConflict": false,
+        "restrictedAuthoritySurface": false,
+        "threeOrMoreDomains": false,
+        "canonicalRuleConflict": false,
+        "highRepairCost": false
+      },
+      "requestedCapabilities": [
+        "filesystem.project-read",
+        "filesystem.project-write"
+      ],
+      "requiredEvidence": [
+        "EVD-001"
+      ],
+      "riskLevel": "low",
+      "needsDeliberation": false,
+      "reasonCodes": [
+        "LOW_RISK_DOCS_ONLY",
+        "DELIBERATION_NOT_REQUIRED"
+      ]
+    }
+  ],
+  "openQuestions": []
+}

@@ -22,3 +22,10 @@ dist/
 build/
 .next/
 .vercel/
+
+# Private project-local governance surface.
+.agent-governance/local/
+
+# Versioned governance research provenance.
+!docs/research/
+!docs/research/**

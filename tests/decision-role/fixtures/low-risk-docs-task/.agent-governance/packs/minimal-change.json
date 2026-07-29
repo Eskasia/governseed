@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "packId": "PACK-001",
+  "version": "1.0.0",
+  "source": {
+    "sourceId": "SRC-EXT-001",
+    "repository": "https://github.com/example/governance-metadata",
+    "revision": "1111111111111111111111111111111111111111",
+    "license": "MIT",
+    "importedMode": "metadata",
+    "sha256": "1111111111111111111111111111111111111111111111111111111111111111"
+  },
+  "status": "active",
+  "controls": [
+    {
+      "controlId": "POL-001",
+      "effect": "deny",
+      "capability": "network",
+      "scope": "all"
+    }
+  ],
+  "mechanicalChecks": [
+    {
+      "checkId": "CHECK-001",
+      "findingCode": "NETWORK_DENIED",
+      "description": "Normal operation must remain offline."
+    }
+  ],
+  "humanReviewChecks": [
+    {
+      "checkId": "CHECK-002",
+      "description": "Confirm the change remains documentation-only."
+    }
+  ],
+  "carryingCost": {
+    "level": "low",
+    "description": "One local metadata file and one deterministic check."
+  },
+  "retirementCondition": "Retire when the canonical project rules provide an equivalent stricter control."
+}
