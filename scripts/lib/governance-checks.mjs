@@ -31,7 +31,7 @@ const GOVERNANCE_FILE_ALLOWLIST = new Set([
   'EVAL_PLAN.md',
   'AI_SECURITY_REVIEW.md',
 ]);
-const SAFE_SUBJECT = /^(?:SRC-\d{3,}|REQ-\d{3,}@\d+|AC-\d{3,}|TASK-\d{3,}|EVD-\d{3,}|LOOP-\d{3,}|GATE-[A-Z0-9-]+)$/;
+const SAFE_SUBJECT = /^(?:SRC-\d{3,}|REQ-\d{3,}@\d+|DEC-\d{3,}|DLB-\d{3,}(?:-SEAT-\d{2})?|AC-\d{3,}|TASK-\d{3,}|ROLE-\d{3,}|POL-\d{3,}|EVD-\d{3,}|ATT-\d{3,}|CONF-\d{3,}|LOOP-\d{3,}|GATE-[A-Z0-9-]+|risk-profile|source-lock|governance-file)$/;
 
 function safeSubject(subject, fallback = 'governance-file') {
   if (typeof subject === 'string'

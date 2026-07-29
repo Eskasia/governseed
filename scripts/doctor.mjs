@@ -8,6 +8,7 @@ import {
   formatGovernanceFinding,
   safeReadGovernanceFile,
 } from './lib/governance-checks.mjs';
+import { evaluateDecisionRoleGovernance } from './lib/decision-role-doctor.mjs';
 
 const STARTER_ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const PROFILES_DIR = path.join(STARTER_ROOT, 'profiles');
@@ -352,6 +353,12 @@ function buildResult(profile) {
       techStackRead.ok ? techStackRead.content : '',
     )) addFinding(item);
   }
+
+  const decisionRole = evaluateDecisionRoleGovernance(projectDir, {
+    taskContract: taskContractRead.ok ? taskContractRead.content : '',
+  });
+  for (const item of decisionRole.findings) addFinding(item);
+  if (decisionRole.fatal) fatalPrivacy = true;
 
   const missing = required.filter((check) => check.status === 'missing').map((check) => check.file);
   const unfilled = required.filter((check) => check.status === 'unfilled').map((check) => check.file);
