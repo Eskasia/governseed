@@ -2,11 +2,13 @@
 
 **Date:** 2026-07-29
 
-**Status:** Implementation complete; local and hosted verification pending
+**Status:** Implemented and merged as PR #11 on 2026-07-29; local and Ubuntu/macOS/Windows hosted verification passed
 
-**Branch:** `feature/risk-to-policy-compiler`
+**Implementation branch:** `feature/risk-to-policy-compiler`
 
 **Base:** `main@95a278bd974c84832a4b3a8c9af9566f569256d4`
+
+**Merge:** `main@8e7cf7ef772e12e8a65fdf46a9497240c06fa0f8` ([PR #11](https://github.com/Eskasia/governseed/pull/11))
 
 ## Goal Contract
 
