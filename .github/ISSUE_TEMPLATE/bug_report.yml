@@ -1,0 +1,79 @@
+name: Bug report
+description: Report a reproducible problem with the governance starter.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: dropdown
+    id: problem_type
+    attributes:
+      label: Problem type
+      options:
+        - init output
+        - doctor validation
+        - template content
+        - runtime adapter
+        - fixture or CI
+        - documentation
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps
+      description: List exact commands and file paths needed to reproduce.
+      placeholder: |
+        1. node scripts/init.mjs .tmp/repro --agent codex --profile base
+        2. node scripts/doctor.mjs .tmp/repro
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include relevant error output.
+    validations:
+      required: true
+  - type: dropdown
+    id: profile
+    attributes:
+      label: Profile
+      options:
+        - base
+        - fullstack-ai
+        - macos
+        - other / not sure
+    validations:
+      required: true
+  - type: dropdown
+    id: agent_runtime
+    attributes:
+      label: Agent runtime
+      options:
+        - Codex
+        - Claude Code
+        - Antigravity
+        - all
+        - not runtime-specific
+    validations:
+      required: true
+  - type: textarea
+    id: doctor_output
+    attributes:
+      label: Doctor output
+      description: Paste `node scripts/doctor.mjs ...` output or explain why it cannot run.
+      render: text
+  - type: textarea
+    id: validation_commands
+    attributes:
+      label: Validation commands run
+      description: Include commands such as `npm run ci`, `npm run runtime:proof`, or the smallest failing command.
+      render: shell
+    validations:
+      required: true

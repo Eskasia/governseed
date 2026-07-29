@@ -1,5 +1,63 @@
 # Changelog
 
+## 2026-07-29 — Conditional Research Synthesis
+
+- Added an advisory, user-confirmed `RESEARCH_SYNTHESIS.md` workflow for material evidence conflict, high-impact decisions, multiple credible routes, and explicit multi-perspective research requests.
+- Added five evidence-bound analytical lenses, a contradiction map, layered output, claim-level confidence calibration, external gap-fill limits, and a transparent academic-rigor self-review.
+- Added a fail-closed strict doctor warning when a pre-copied research template lacks one explicit confirmed or declined user decision; file presence alone does not activate research.
+- Kept the capability outside runtime execution, multi-agent orchestration, hard gates, release evidence, and governance-effectiveness claims.
+
+## 2026-07-26 — Linux Codex OCI Scheme A
+
+### Credential-Free Review Gate
+
+- Added a separate manual Linux preflight command, closed receipt schema, and `workflow_dispatch` workflow with no GitHub Environment or credential. The receipt records exact image/runtime provenance, model, timeout, policy hashes, hardening observations, cleanup proof, and `executionBoundaryId` as `READY + NOT_EVALUATED`.
+- Schema-v2 real runs require a human-reviewed, committed, tracked-clean receipt, manifest, policy, and synthetic scenario. The evaluator repeats preflight and matches receipt, provenance, manifest model/boundary, timeout, and the fresh observed boundary before lazily reading the provider credential.
+- The receipt is not attestation, credential authorization, paired-run evidence, or a claim. Human review and commit remain manual and are not chained into the approval-gated real workflow.
+
+### Containment, Relay, And Provider Boundary
+
+- Added the Linux/Codex-only OCI supervisor with non-root/read-only/capability-dropped containment, private PID/cgroup namespaces, resource limits, PID-1 lifeline, cgroup-v2 empty-boundary proof, identical boundary identity across both arms, and cleanup-before-persistence ordering.
+- Kept Docker networking at `none`. A narrowly scoped host `sudo -n nsenter` relay enters only the container network namespace, rejects an invoking UID 0 or GID 0, then drops back to the approved non-root host UID/GID before listening on container loopback and connecting to the host-only credential-proxy UDS; the UDS is not bind-mounted into the container. One bounded stdin line carries closed relay configuration and subsequent EOF is the lifeline, so relay secrets do not depend on argv, preserved `sudo` environment, or `sudoers env_keep`.
+- Kept the upstream key host-only and passed only an attempt-scoped bearer to the container. Proxy policy locks exact attempt/model/deadline, `store: false`, foreground progressive SSE, no provider-held response/conversation/prompt or nested item/file/container references, no remote input URLs, stripped client identifiers, and client-executed tools; `tool_search` must explicitly use client execution.
+- Bounded the no-server-state client tool loop to 32 sequential requests, one active request, 1 MiB per request, 4 MiB per response, and one attempt deadline. Progressive SSE preserves backpressure and fails closed on quota, relay, transport, provider, or cleanup uncertainty.
+- Public push/pull-request CI remains offline and credential-free. The separate real workflow is manual, Linux-only, Environment-approval-gated, success-only for artifact upload, and cleanup-finalized.
+- Pinned repository text checkouts to LF so byte-bound scenario digests, workflow parsing, and runtime-proof frontmatter remain deterministic across Windows, macOS, and Linux.
+- Windows CI still runs the portable policy, process, named-pipe relay, privacy, and fail-closed contracts. It explicitly skips native Unix-socket cleanup, POSIX owner/mode, and Linux OCI execution tests; Ubuntu and macOS retain those offline test surfaces, while real Scheme A eligibility remains Linux-only.
+
+### Evidence Status
+
+- Criterion 4 remains `BLOCKED`: code, schemas, unit/privacy tests, injected integration tests, workflows, ADRs, plans, and a `READY` receipt do not substitute for live evidence on the final reviewed commit from the actual Linux/cgroup-v2 host, `sudo -n`/`nsenter` command and stdin-lifeline boundary, real netns-to-host-UDS path, digest-pinned Codex image, provider request/SSE path, teardown cases, cleanup, and real paired run.
+- No live provider compatibility, Zero Data Retention, release readiness, or governance-effectiveness claim is made.
+
+## 2026-07-26 — Governance Evidence Overhaul
+
+### Intent And Rule Evidence
+
+- Added privacy-safe `SRC -> REQ -> AC -> TASK -> EVD` lineage validation, append-only requirement replacement/withdrawal, route-evidence checks, stable doctor codes, and unsafe-input negative tests.
+- Kept `GATE-INTENT-001` and `GATE-ROUTE-001` under the existing canonical lifecycle owner; runtime adapters continue to reference rather than redefine them.
+
+### Paired Evaluator And Runtime Proof
+
+- Added closed governance-impact schemas, deterministic scoring/aggregation/gating, three synthetic paired scenarios, a fail-closed CLI, adapter contracts, and privacy/process/persistence regression tests.
+- Public CI runs deterministic offline controls and mock runtime proof only. It never enables governance-impact real mode or runtime-proof real mode.
+- Codex, Claude, and Antigravity governance-impact real execution remains fail-closed until each runtime's containment and non-persistence contract is proven.
+- Runtime-proof publication preserves prior canonical evidence across failed and identical reruns, uses no-replace publication, and removes only artifacts owned by the current attempt.
+- Release validation now requires every evaluator, scenario, privacy-test, workflow, and audit artifact to exist in and match `HEAD`; index-only, staged, or unstaged drift fails closed. Windows direct resolution accepts only native `.exe` or `.com` executables under `shell: false`.
+- The standalone runtime-proof validator now requires the exact forced-mock public workflow entrypoint and its wrapper script instead of accepting an environment-sensitive substring match.
+- Clarified that runtime proof checks only generated entrypoint responses and that no bundled offline evidence supports a governance-effectiveness claim.
+
+## 2026-07-13 — Canonical Gate Lifecycle
+
+### Rule Lifecycle Records
+
+| Gate ID | Change | Canonical owner | Status | Evidence | Event-only review trigger | Fallback | Superseded by |
+|---|---|---|---|---|---|---|---|
+| GATE-INTENT-001 | add | `templates/runtime/AGENTS.md` | active | Approved intent-lineage design and lifecycle negative tests | Intent evidence, acceptance, or trace validation changes | Block implementation and open a governed loop | n/a |
+| GATE-ROUTE-001 | add | `templates/runtime/AGENTS.md` | active | Approved route-decision design and lifecycle negative tests | Immutable constraints, deployment, acceptance, scale, or route validation changes | Mark route recheck-required and block implementation | n/a |
+
+Future gate additions, changes, suspensions, and retirements must append the same fields. Retirement removes the canonical definition and keeps a `retired` or `superseded-by` tombstone here.
+
 ## 2026-06-01 — Major Restructure
 
 ### Directory Reorganization

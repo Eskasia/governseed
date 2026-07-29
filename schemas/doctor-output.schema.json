@@ -80,7 +80,7 @@
         },
         "status": {
           "type": "string",
-          "enum": ["ok", "missing", "unfilled", "present", "absent"]
+          "enum": ["ok", "missing", "unfilled", "present", "absent", "blocked"]
         },
         "trigger": {
           "type": "string"
@@ -96,6 +96,9 @@
           "type": "string"
         },
         "present": {
+          "type": "boolean"
+        },
+        "blocked": {
           "type": "boolean"
         },
         "trigger": {

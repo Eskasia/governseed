@@ -1,0 +1,204 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/schemas/governance-impact-preflight.schema.json",
+  "title": "Governance impact OCI preflight receipt",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "kind",
+    "preflightStatus",
+    "claimDisposition",
+    "runtime",
+    "model",
+    "timeoutMs",
+    "provenance",
+    "executionBoundaryId",
+    "boundaryEvidence"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "type": "integer",
+      "const": 1
+    },
+    "kind": {
+      "type": "string",
+      "const": "governance-impact-oci-preflight"
+    },
+    "preflightStatus": {
+      "type": "string",
+      "const": "READY"
+    },
+    "claimDisposition": {
+      "type": "string",
+      "const": "NOT_EVALUATED"
+    },
+    "runtime": {
+      "type": "string",
+      "const": "codex"
+    },
+    "model": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$"
+    },
+    "timeoutMs": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 600000
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "imageReference",
+        "expectedCodexVersion",
+        "expectedCodexBinarySha256"
+      ],
+      "properties": {
+        "imageReference": {
+          "type": "string",
+          "pattern": "^[^\\s@\\u0000]+@sha256:[a-f0-9]{64}$"
+        },
+        "expectedCodexVersion": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?!\\s)(?!.*\\s$)[^\\r\\n\\u0000]+$"
+        },
+        "expectedCodexBinarySha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "executionBoundaryId": {
+      "$ref": "#/$defs/sha256"
+    },
+    "boundaryEvidence": {
+      "$ref": "#/$defs/boundaryEvidence"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "sha256": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$"
+    },
+    "boundaryEvidence": {
+      "type": "object",
+      "required": [
+        "observedImageDigest",
+        "codexVersion",
+        "codexBinarySha256",
+        "containmentPolicyHash",
+        "networkPolicyHash",
+        "proxyPolicyHash",
+        "hardening",
+        "pidNamespaceStopped",
+        "cgroupEmpty",
+        "cleanupComplete"
+      ],
+      "properties": {
+        "observedImageDigest": {
+          "$ref": "#/$defs/sha256"
+        },
+        "codexVersion": {
+          "type": "string",
+          "minLength": 1,
+          "pattern": "^(?!\\s)(?!.*\\s$)[^\\r\\n\\\\/\\u0000]+$"
+        },
+        "codexBinarySha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "containmentPolicyHash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "networkPolicyHash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "proxyPolicyHash": {
+          "$ref": "#/$defs/sha256"
+        },
+        "hardening": {
+          "type": "object",
+          "required": [
+            "nonRootUser",
+            "readOnlyRootFilesystem",
+            "capDropAll",
+            "noNewPrivileges",
+            "privatePidNamespace",
+            "privateCgroupNamespace",
+            "pidLimit",
+            "cpuLimit",
+            "memoryLimit",
+            "dockerSocketAbsent",
+            "devicesAbsent",
+            "cgroupMountAbsent"
+          ],
+          "properties": {
+            "nonRootUser": {
+              "type": "boolean",
+              "const": true
+            },
+            "readOnlyRootFilesystem": {
+              "type": "boolean",
+              "const": true
+            },
+            "capDropAll": {
+              "type": "boolean",
+              "const": true
+            },
+            "noNewPrivileges": {
+              "type": "boolean",
+              "const": true
+            },
+            "privatePidNamespace": {
+              "type": "boolean",
+              "const": true
+            },
+            "privateCgroupNamespace": {
+              "type": "boolean",
+              "const": true
+            },
+            "pidLimit": {
+              "type": "boolean",
+              "const": true
+            },
+            "cpuLimit": {
+              "type": "boolean",
+              "const": true
+            },
+            "memoryLimit": {
+              "type": "boolean",
+              "const": true
+            },
+            "dockerSocketAbsent": {
+              "type": "boolean",
+              "const": true
+            },
+            "devicesAbsent": {
+              "type": "boolean",
+              "const": true
+            },
+            "cgroupMountAbsent": {
+              "type": "boolean",
+              "const": true
+            }
+          },
+          "additionalProperties": false
+        },
+        "pidNamespaceStopped": {
+          "type": "boolean",
+          "const": true
+        },
+        "cgroupEmpty": {
+          "type": "boolean",
+          "const": true
+        },
+        "cleanupComplete": {
+          "type": "boolean",
+          "const": true
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

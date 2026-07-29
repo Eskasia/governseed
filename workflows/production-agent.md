@@ -21,7 +21,7 @@
 - State：業務狀態、執行狀態、儲存位置、可否從事件重建。
 - Event：哪些事件會推進 agent。
 - Context window：每次給模型的格式、來源、壓縮方式、不得放入的內容。
-- Prompts：prompt 儲存位置、版本管理、誰可改。
+- Prompts：prompt template 儲存位置、核准版本、誰可改；trace 只記 version 與 privacy-safe metadata，不保存 private runtime prompt。
 - Structured outputs：模型只能輸出的 JSON / schema / action 類型。
 - Tools：每個 tool 的權限、副作用、idempotency、rollback。
 - Control flow：哪些流程由程式掌控，哪些交給模型判斷。
@@ -31,7 +31,7 @@
 - Verifier：測試、eval、benchmark、replay、E2E、人工抽查。
 - Agent boundary：任務是否小而聚焦，預期步數是否控制在 3-10 步。
 - Stateless reducer：能否用 `state + event -> next action` 描述。
-- Audit / observability：tool trace、decision trace、cost、latency、failure mode 如何查。
+- Audit / observability：stable tool / decision / check ID、aggregate cost / latency、failure code 如何查；不保存 raw tool trace、model stdout/stderr、environment variables 或 raw diff。
 - Kill switch：如何立即停用背景任務、外部 action 或高風險 tool。
 
 ## 12 Factor Gate
@@ -41,7 +41,7 @@
 | Factor | 檢查問題 |
 |---|---|
 | Natural language to tool calls | 模型是否只把自然語言轉成結構化 action？ |
-| Own prompts | prompt 是否在 repo / docs 內可 review？ |
+| Own prompts | 核准的 prompt template 與 version 是否在 repo / docs 內可 review，且 private runtime prompt 不落盤？ |
 | Own context window | context 格式是否由我們設計、可測、可壓縮？ |
 | Tools are structured outputs | tool call 是否只是 JSON，副作用由程式控制？ |
 | Unify state | 執行狀態是否盡量和業務狀態合一？ |
@@ -52,6 +52,15 @@
 | Small focused agents | agent 是否小而聚焦，避免巨大通用任務？ |
 | Trigger anywhere | 是否定義使用者實際入口，而不是只支援 chat？ |
 | Stateless reducer | 是否能用 state + event 推導下一步？ |
+
+## Governance Evidence Boundary
+
+- Real mode 是 synthetic-only：governance-impact 只跑乾淨、已 commit 的 synthetic scenario；runtime proof 只跑生成的 synthetic fixture。
+- Raw buffer 只能在 bounded memory 中被掃描與解析；private prompt、masked excerpt、raw stdout/stderr、raw tool trace、environment variable、credential、absolute home path 與 raw diff hunk 都不得持久化。
+- 只在 closed-schema validation、fail-closed privacy scan 與 cleanup proof 全部通過後，原子保存 normalized evidence。
+- Scanner、session persistence、output schema 或 cleanup 無法證明安全時，回傳 stable code 且不產生 artifact，不得降級成較弱模式。
+- Runtime proof 只證明 entrypoint first-response contract；governance-impact evaluator 才評估 intake 後的 delivery artifact，且需通過獨立 evidence gate 才能支撐 effectiveness claim。
+- Codex evaluator real run 因 detached / re-parented descendant containment 未證明而拒絕；Claude 因 workspace containment 未證明而拒絕；Antigravity 缺 binary 時 unavailable，存在 binary 時仍拒絕到 non-persistence 與 containment 都被證明。
 
 ## 實作順序
 
@@ -80,3 +89,5 @@
 - 至少有一個 replay / eval / E2E / smoke 可以證明 agent 沒跑偏。
 - 可以暫停、恢復、重試或取消。
 - 可以解釋目前 state、下一個 event、下一個 action。
+- Trace 只記核准的 prompt-template version 與 privacy-safe metadata，持久化內容符合 normalized closed-schema。
+- Real-mode synthetic-only、scanner fail-closed、cleanup-before-persist 與 claim boundary 都有可執行 verifier。

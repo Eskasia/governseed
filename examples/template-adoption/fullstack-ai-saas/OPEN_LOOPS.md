@@ -1,10 +1,12 @@
 # OPEN_LOOPS.md
 
-| Status | Blocker label | Question / risk | Owner | Next step | Due |
-|---|---|---|---|---|---|
-| open | auth-blocked | Preview login 是否用 magic link | owner | 選擇 auth 方案 | before implementation |
-| open | eval-blocked | Golden set 是否包含中英雙語文件 | maintainer | 補 10 筆 synthetic fixture | before RAG smoke |
-| closed | security-reviewed | PII 不進 examples，全部使用 synthetic workspace data | maintainer | 已記錄於 AI_SECURITY_REVIEW | before public demo |
+## 未決事項
+
+| Status | Loop ID | Basis | Question / Risk | Impact | Owner | Next Step | Due | Resolution source |
+|---|---|---|---|---|---|---|---|---|
+| open | LOOP-101 | not-stated | Preview login 是否用 magic link? | high | product-owner-role | 選擇 auth 方案。 | before implementation | n/a |
+| open | LOOP-102 | not-stated | Golden set 是否包含中英雙語文件? | medium | eval-owner-role | 補 synthetic fixture。 | before RAG smoke | n/a |
+| closed | LOOP-103 | not-stated | Can example evidence contain customer data? | high | security-reviewer-role | Keep all workspace evidence synthetic. | resolved | SRC-102 |
 
 ## Rules
 

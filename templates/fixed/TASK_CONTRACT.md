@@ -2,9 +2,9 @@
 
 ## 任務總覽
 
-| # | 任務名稱 | 狀態 | 依賴 | 驗證結果 |
+| Task ID | Status | Requirement | AC | Verification |
 |---|---|---|---|---|
-|  |  | 未開始 / 進行中 / 完成 / 阻塞 |  |  |
+|  |  |  |  |  |
 
 ## 任務詳情
 
@@ -34,6 +34,14 @@
 任務 1 → 任務 2 → 任務 3
          ↘ 任務 4
 ```
+
+## Acceptance evidence ledger
+
+| Evidence ID | AC | Requirement | Safe evidence locator | Result | Verified at |
+|---|---|---|---|---|---|
+|  |  |  |  |  |  |
+
+Evidence IDs are append-only. Use `command:<relative argv>`, `check:<id>`, `ci:<id>`, or `public-artifact:<canonical HTTPS URL>`; never store private output, credentials, query tokens, shell metacharacters, or absolute home paths. Every evidence `(REQ@revision, AC)` pair must match a task pair, and every pair on a completed task requires `passing` evidence.
 
 ## 驗收總結
 

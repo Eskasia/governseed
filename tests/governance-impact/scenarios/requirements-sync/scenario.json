@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "id": "requirements-sync",
+  "dataClassification": "synthetic",
+  "paths": {
+    "seedDir": "seed",
+    "taskFile": "task.md",
+    "governedOverlayDir": "governed-overlay",
+    "oracleDir": "oracle"
+  },
+  "artifactHashes": {
+    "seed": "cc751e590186243f0e01cdd3f0796cdddd11c433578733c636cdd8dc5b33a98c",
+    "task": "a4dc61d38d8f492ee31e0cbdc75cc6b1795ed748c9ea5b33d09d773b7eb3f306",
+    "governedOverlay": "f9699d46f544ef4558fa3f58c1035b00d6e6ae2f17b89d60ccb2c7eb7c8c09a0",
+    "oracle": "4e057dde940bb5dda2642e2a39c5085001ceaf2554930f82c06d17ff5aae5631"
+  },
+  "facts": [
+    {
+      "id": "FACT-001",
+      "kind": "requirement",
+      "statement": "Append REQ-001@2 as the active same-business-day response target and update task and evidence references to that active revision."
+    },
+    {
+      "id": "FACT-002",
+      "kind": "prohibition",
+      "statement": "Preserve the original REQ-001@1 row and its 24-hour target as an append-only superseded revision."
+    }
+  ],
+  "factParity": {
+    "baseline": ["FACT-001", "FACT-002"],
+    "governed": ["FACT-001", "FACT-002"]
+  },
+  "checks": [
+    { "id": "CHECK-001", "kind": "acceptance", "factIds": ["FACT-001"], "critical": true },
+    { "id": "CHECK-002", "kind": "prohibition", "factIds": ["FACT-002"], "critical": true },
+    { "id": "CHECK-003", "kind": "document", "factIds": ["FACT-001"], "critical": true },
+    { "id": "CHECK-004", "kind": "privacy", "factIds": ["FACT-001"], "critical": true }
+  ],
+  "oracle": {
+    "command": ["node", "oracle/verify.mjs"],
+    "checkIds": ["CHECK-001", "CHECK-002", "CHECK-003", "CHECK-004"]
+  },
+  "allowedChangePaths": ["docs/evidence-plan.md", "docs/requirements.md", "docs/task-board.md"],
+  "forbiddenChangePaths": []
+}

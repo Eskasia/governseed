@@ -16,11 +16,19 @@
 2. Tester 移到指定路徑。
 3. Tester 授權並完成核心操作。
 
-## Acceptance criteria
+## Requirement revision ledger
 
-- [ ] App 從固定路徑啟動。
-- [ ] Accessibility prompt 可被測試者找到並授權。
-- [ ] ScreenCapture 權限狀態可被記錄。
+| Revision | Operation | Class | Normalized requirement | Source | Confirmed by | Supersedes |
+|---|---|---|---|---|---|---|
+| REQ-201@1 | add | must | The beta app launches from the documented fixed path and exposes both permission states. | SRC-201 | release-owner-role | n/a |
+| REQ-202@1 | add | redline | Bundle identity and signing identity must not change without a handoff update. | SRC-202 | tester-role | n/a |
+
+## Acceptance criteria ledger
+
+| AC ID | Requirement revision | Yes/no criterion | Failure signal |
+|---|---|---|---|
+| AC-201 | REQ-201@1 | Yes if fixed-path launch succeeds and both permission states are visible; no otherwise. | Launch fails or a permission state cannot be observed. |
+| AC-202 | REQ-202@1 | Yes if recorded identities match the handoff; no otherwise. | Bundle or signing identity changes without a handoff update. |
 
 ## Edge cases
 
@@ -34,3 +42,8 @@
 ## Open questions
 
 - 是否需要乾淨使用者帳號驗證。
+
+## Lineage rules
+
+- Requirement revisions are append-only; replace or withdraw without deleting prior rows.
+- Keep unresolved tester-environment choices as not-stated rows in `OPEN_LOOPS.md`.

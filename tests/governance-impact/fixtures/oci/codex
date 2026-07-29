@@ -1,0 +1,59 @@
+#!/bin/sh
+set -eu
+
+VERSION='governance-impact-oci-fixture 1.0.0'
+
+if [ "$#" -eq 1 ] && [ "$1" = '--version' ]; then
+  printf '%s\n' "$VERSION"
+  exit 0
+fi
+
+MODE_FILE='/workspace/.governance-impact-mode'
+mode=''
+if ! IFS= read -r mode < "$MODE_FILE"; then
+  exit 65
+fi
+
+case "$mode" in
+  normal)
+    printf '%s\n' '{"fixture":true,"mode":"normal"}' > /workspace/candidate.json
+    ;;
+  no-candidate)
+    ;;
+  nonzero)
+    exit 17
+    ;;
+  timeout)
+    trap '' HUP TERM
+    while :; do
+      /bin/sleep 1
+    done
+    ;;
+  setsid)
+    if command -v setsid >/dev/null 2>&1; then
+      setsid /bin/sh -c 'trap "" HUP TERM; while :; do /bin/sleep 1; done' \
+        >/dev/null 2>&1 &
+    elif [ -x /bin/busybox ]; then
+      /bin/busybox setsid /bin/sh -c \
+        'trap "" HUP TERM; while :; do /bin/sleep 1; done' \
+        >/dev/null 2>&1 &
+    else
+      exit 69
+    fi
+    printf '%s\n' "$!" > /workspace/setsid.pid
+    printf '%s\n' 'started' > /workspace/setsid.started
+    ;;
+  reparent)
+    /bin/sh -c '
+      trap "" HUP TERM
+      while :; do
+        /bin/sleep 1
+      done
+    ' >/dev/null 2>&1 &
+    printf '%s\n' "$!" > /workspace/reparent.pid
+    printf '%s\n' 'started' > /workspace/reparent.started
+    ;;
+  *)
+    exit 64
+    ;;
+esac

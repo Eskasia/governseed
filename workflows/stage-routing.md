@@ -21,6 +21,7 @@
 | 我有 App 截圖，要整理設計規範、生成設計圖、產出 icon 或背景素材 | `workflows/ui-ux.md`、`workflows/design-system-from-screenshots.md` | `DESIGN_SYSTEM.md`、screen map、design tokens、`assets/ASSET_MANIFEST.md` | 規範可追溯截圖、設計圖覆蓋 tabs/彈窗/狀態、素材命名清楚 |
 | 我要做資料庫/API/Auth/權限確認 | `workflows/fullstack.md`、`startup/02-required-project-docs.md` | `DATA_MODEL.md`、`API_CONTRACT.md`、RLS/權限風險 | 資料邊界和驗證方式清楚 |
 | 我要做 agent、自動化、human approval、背景任務 | `workflows/production-agent.md`、`workflows/validation-release.md` | `AGENT_RUNTIME.md`、tool 權限、副作用、approval gate | state、event、tool、verifier 已定義 |
+| 我要比較多種觀點、處理衝突證據、研究重大選擇或找出跨視角盲點 | `workflows/research-synthesis.md`、`templates/conditional/RESEARCH_SYNTHESIS.md` | trigger 建議與使用者確認；確認後產出 `RESEARCH_SYNTHESIS.md` | 證據、矛盾、信心、隱藏關聯與決策建議均可追溯 |
 | 我要打包 macOS app、處理權限、DMG、notarization | `workflows/macos-build-release.md`、`workflows/validation-release.md` | `MACOS_RELEASE_CHECKLIST.md`、簽名/TCC/包裝驗證 | 固定 bundle id、路徑、簽名與驗證結果清楚 |
 | 我要做簡報、PPT、提案、發表頁、一頁紙、白皮書、履歷、作品集、landing page | `workflows/presentation.md` | `PRESENTATION_BRIEF.md`、deck / PDF / HTML 路徑或預覽 URL | 重點、來源、格式、字體與版面符合使用場景 |
 | 我要收尾、交接、下次接續 | `workflows/agent-file-structure.md`、`workflows/validation-release.md` | handoff、open loops、文件結構分流 | 下一個 agent 能接手且知道不能做什麼 |

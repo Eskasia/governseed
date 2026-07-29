@@ -11,12 +11,12 @@
 | Template | Required | Trigger | Related workflow |
 |---|---|---|---|
 | `runtime/README.md` | Yes | Every project | `startup/00-agent-start-here.md` |
-| `fixed/PROJECT_BRIEF.md` | Yes | Every project | `startup/01-bootstrap-gates.md` |
+| `fixed/PROJECT_BRIEF.md` | Yes | Every project | `workflows/product-shape-tech-route.md` |
 | `fixed/SPEC.md` | Yes | Every project | `startup/01-bootstrap-gates.md` |
 | `fixed/CONTEXT.md` | Yes | Every project | `startup/01-bootstrap-gates.md` |
 | `fixed/TASK_CONTRACT.md` | Yes | Every project | `startup/01-bootstrap-gates.md` |
 | `fixed/OPEN_LOOPS.md` | Yes | Every project | `startup/01-bootstrap-gates.md` |
-| `fixed/TECH_STACK.md` | Yes | Every project | `startup/02-required-project-docs.md` |
+| `fixed/TECH_STACK.md` | Yes | Every project | `workflows/product-shape-tech-route.md` |
 | `runtime/START_HERE.md` | Runtime | Generated first-read project entrypoint | `startup/00-agent-start-here.md` |
 | `runtime/AGENTS.md` | Runtime | Generated canonical project entrypoint | `workflows/agent-file-structure.md` |
 | `conditional/UI_SPEC.md` | Conditional | UI, website, app, dashboard, landing page | `workflows/ui-ux.md` |
@@ -26,6 +26,7 @@
 | `conditional/API_CONTRACT.md` | Conditional | API routes, server actions, webhooks, adapters | `workflows/fullstack.md` |
 | `conditional/ENV_CHECKLIST.md` | Conditional | Deployment, third-party APIs, env vars, secrets | `workflows/fullstack.md` |
 | `conditional/PRESENTATION_BRIEF.md` | Conditional | Slides, one-pager, white paper, resume, portfolio | `workflows/presentation.md` |
+| `conditional/RESEARCH_SYNTHESIS.md` | Conditional | Material evidence conflict, high-impact decision, multiple credible routes, user-confirmed synthesis | `workflows/research-synthesis.md` |
 | `conditional/TESTER_HANDOFF.md` | Conditional | Beta, tester handoff, preview sharing | `workflows/stage-routing.md` |
 | `conditional/MACOS_RELEASE_CHECKLIST.md` | Conditional | macOS build, signing, TCC, DMG, notarization | `workflows/macos-build-release.md` |
 | `conditional/AGENT_RUNTIME.md` | Conditional | Production-facing LLM agent, automation, tool use | `workflows/production-agent.md` |

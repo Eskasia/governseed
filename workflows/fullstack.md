@@ -1,6 +1,6 @@
 # Fullstack SaaS Workflow
 
-適用：Next.js、TypeScript、Tailwind、shadcn/ui、Supabase、OpenAI API、Playwright、Vercel preview 這類全端專案。
+適用：已在 `PROJECT_BRIEF.md` / `TECH_STACK.md` 選定全端 SaaS 或 web app 路線後，才使用 Next.js、TypeScript、Tailwind、shadcn/ui、Supabase、OpenAI API、Playwright、Vercel preview 這類全端專案檢查清單。
 
 ## 必補文件
 

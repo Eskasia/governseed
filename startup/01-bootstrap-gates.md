@@ -5,14 +5,18 @@
 新專案固定走：
 
 1. 規格：Q1-Q9、追問、PROJECT_BRIEF、SPEC、CONTEXT
-2. 設計：TASK_CONTRACT、AGENTS、TECH_STACK、必要 ADR
-3. 條件文件：UI、全端、環境、API、資料模型、Agent runtime
-4. 計畫：5-10 步，每步有驗證
-5. 實作：一次只做一個步驟
-6. 驗證：測試、Browser/Chrome、Playwright、DB、部署檢查
-7. 收尾：handoff、neat-freak、repomix、LLMwiki、文件結構分流、gstack-style checklist
+2. 條件研究：偵測到重大研究訊號時提出 `RESEARCH_SYNTHESIS.md` 建議，使用者確認後才執行
+3. 路線：產品形態 / 技術路線 gate、TECH_STACK、必要 ADR
+4. 設計：TASK_CONTRACT、AGENTS、必要條件文件
+5. 條件文件：UI、全端、環境、API、資料模型、Agent runtime
+6. 計畫：5-10 步，每步有驗證
+7. 實作：一次只做一個步驟
+8. 驗證：測試、Browser/Chrome、Playwright、DB、部署檢查
+9. 收尾：handoff、neat-freak、repomix、gstack-style checklist
 
 ## Q1-Q9
+
+Q1-Q9 的意義是確認需求、限制、驗收、部署與技術偏好，支撐後續產品形態與技術路線決策；不是要求使用者一開始就懂技術。
 
 Q1. 這個東西要解決誰的什麼問題？一句話，不能有「和」。  
 Q2. 第一版成功的樣子是什麼？用可以觀察到的行為描述。  
@@ -24,12 +28,37 @@ Q7. 要部署在哪裡？本機、preview、正式上線。
 Q8. 有沒有已經決定要用的技術或工具？  
 Q9. 對效能或規模有沒有硬性要求？
 
+### 條件研究候選偵測
+
+這不是 Q10。Q1-Q9 已足以表述決策問題後，若出現會實質影響範圍、驗收、風險、成本或路線的證據衝突、高影響或難回頭決策、多條可信路線，或使用者明確要求多視角研究，先讀 `workflows/research-synthesis.md`。
+
+- Agent 只回報 trigger reason code、受影響決策與不執行的風險。
+- 一次只問一題：是否建立 `RESEARCH_SYNTHESIS.md`。
+- 使用者確認後才執行；拒絕時不建立空文件。
+- 偵測、建議或文件存在本身都不是新的 hard gate。
+- `--all` 預放的空模板不算確認；`Activation Record` 必須明確記錄 `User decision: confirmed` 或 `User decision: declined`，只有前者會啟動研究。
+
+## 產品形態 / 技術路線 Gate
+
+Generated `AGENTS.md` 唯一定義 `GATE-INTENT-001` 與 `GATE-ROUTE-001` 的 owner、status、evidence、event-only review trigger 與 fallback；本文件只說明 bootstrap 方法。Q1-Q9 後先讀 `workflows/product-shape-tech-route.md`，並在文件中選定一條路線：
+
+- `user-declared route`：使用者已指定產品形態或技術棧；agent 檢查它是否和 Q1-Q9 衝突，補齊缺漏層與風險。
+- `ai-recommended route`：使用者不知道技術路線；agent 根據 Q1-Q9 推薦唯一第一版產品形態與唯一主技術路線。
+
+完成標準：
+
+- `PROJECT_BRIEF.md` 已寫清楚產品形態決策、決策模式、Q1-Q9 依據、排除的其他形態。
+- `TECH_STACK.md` 已寫清楚唯一主路線、前端、後端、資料庫、主要框架 / SDK、部署方式；沒有某層時填 `n/a` 並說明。
+- `TECH_STACK.md` 已寫清楚不用哪些技術路線、後期風險、重評估條件、新技術引入 gate。
+- 高成本或難回頭的路線選擇已寫入 `docs/adr/*.md`；無法定案的路線問題已寫入 `OPEN_LOOPS.md`，並回到 `AGENTS.md` 套用 `GATE-ROUTE-001`。
+
 ## 進下一關條件
 
-- Q1-Q9 都已回答。
+- `GATE-INTENT-001` 與 `GATE-ROUTE-001` 已依 generated `AGENTS.md` 評估。
 - SPEC 的驗收標準都是 yes/no。
 - TASK_CONTRACT 每個任務都有驗證方式。
 - OPEN_LOOPS 明確列出尚未決定的事。
 - 若包含 production-facing LLM agent / automation / tool use，`AGENT_RUNTIME.md` 已完成。
-- 收尾時已判斷新經驗該進 LLMwiki、AGENTS、Skills、Hooks、Subagents、Plugins 或不回寫。
+- 若使用者已確認條件研究，`RESEARCH_SYNTHESIS.md` 已完成且受影響的 canonical project decision 仍需使用者確認；若未確認或已拒絕，不要求此文件。
+- 只有提出 durable rule 時，才記錄 selected destination、canonical owner 與 evidence；沒有提案時不執行文件結構分流。
 - 使用者明確說「確認」。

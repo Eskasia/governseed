@@ -17,11 +17,19 @@
 2. Member 上傳文件。
 3. Member 提問並查看引用來源。
 
-## Acceptance criteria
+## Requirement revision ledger
 
-- [ ] 使用者只能看到自己 workspace 的文件。
-- [ ] 問答結果必須至少顯示一個 citation。
-- [ ] 無法回答時必須回傳 fallback message。
+| Revision | Operation | Class | Normalized requirement | Source | Confirmed by | Supersedes |
+|---|---|---|---|---|---|---|
+| REQ-101@1 | add | must | Each answer displays at least one citation or an explicit fallback. | SRC-101 | product-owner-role | n/a |
+| REQ-102@1 | add | redline | A query must never return a document from another workspace. | SRC-102 | security-reviewer-role | n/a |
+
+## Acceptance criteria ledger
+
+| AC ID | Requirement revision | Yes/no criterion | Failure signal |
+|---|---|---|---|
+| AC-101 | REQ-101@1 | Yes if every answer shows a citation or explicit fallback; no otherwise. | An answer has neither a citation nor fallback. |
+| AC-102 | REQ-102@1 | Yes if cross-workspace retrieval returns no document; no otherwise. | A document from another workspace is returned. |
 
 ## Edge cases
 
@@ -37,3 +45,8 @@
 ## Open questions
 
 - 第一版是否需要 PDF OCR。
+
+## Lineage rules
+
+- Requirement rows are append-only; replacement and withdrawal preserve prior revisions.
+- Not-stated product choices remain in `OPEN_LOOPS.md` until a confirmed source resolves them.

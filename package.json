@@ -9,12 +9,24 @@
     "node": ">=20"
   },
   "scripts": {
-    "check": "node --check scripts/init.mjs && node --check scripts/doctor.mjs && node --check scripts/validate-starter.mjs",
+    "check": "node --check scripts/init.mjs && node --check scripts/doctor.mjs && node --check scripts/validate-starter.mjs && node --check scripts/smoke-base.mjs && node --check scripts/smoke-fullstack.mjs && node --check scripts/fixtures-check.mjs && node --check scripts/validate-runtime-proof.mjs && node --check scripts/assert-claude-first-response.mjs && node --check scripts/runtime-smoke-codex.mjs && node --check scripts/runtime-smoke-claude.mjs && node --check scripts/runtime-smoke-antigravity.mjs && node --check scripts/runtime-proof-mock.mjs && node --check scripts/governance-impact-eval.mjs && node --check scripts/governance-impact-oci-integration.mjs && node --check scripts/governance-impact-uds-relay.mjs && node --check scripts/lib/governance-checks.mjs && node --check scripts/lib/governance-impact-core.mjs && node --check scripts/lib/governance-impact-adapters.mjs && node --check scripts/lib/governance-impact-credential-proxy.mjs && node --check scripts/lib/governance-impact-oci-proxy-facade.mjs && node --check scripts/lib/governance-impact-oci-supervisor.mjs",
     "validate": "node scripts/validate-starter.mjs .",
-    "smoke:base": "rm -rf .tmp/base && node scripts/init.mjs .tmp/base --agent codex && grep -q 'Q9\\.' .tmp/base/START_HERE.md && node scripts/doctor.mjs .tmp/base",
-    "smoke:fullstack": "rm -rf .tmp/fullstack && node scripts/init.mjs .tmp/fullstack --agent all --profile fullstack-ai && node scripts/doctor.mjs .tmp/fullstack",
-    "fixtures": "mkdir -p .tmp && node scripts/doctor.mjs --json examples/template-adoption/base-minimal > .tmp/base-minimal-doctor.json && diff -u examples/template-adoption/base-minimal/expected/doctor.json .tmp/base-minimal-doctor.json && node scripts/doctor.mjs --json examples/template-adoption/fullstack-ai-saas > .tmp/fullstack-ai-saas-doctor.json && diff -u examples/template-adoption/fullstack-ai-saas/expected/doctor.json .tmp/fullstack-ai-saas-doctor.json && node scripts/doctor.mjs --json examples/template-adoption/macos-beta-handoff > .tmp/macos-beta-handoff-doctor.json && diff -u examples/template-adoption/macos-beta-handoff/expected/doctor.json .tmp/macos-beta-handoff-doctor.json",
-    "ci": "npm run check && npm run validate && npm run smoke:base && npm run smoke:fullstack && npm run fixtures"
+    "validate:runtime-proof": "node scripts/validate-runtime-proof.mjs .",
+    "test:governance": "node --test tests/governance/doctor-governance.test.mjs tests/governance/rule-lifecycle.test.mjs tests/governance/traceability.test.mjs",
+    "test:governance-impact": "node --test tests/governance-impact/scorer.test.mjs tests/governance-impact/scenario-schema.test.mjs tests/governance-impact/cli.test.mjs tests/governance-impact/runner.test.mjs tests/governance-impact/credential-proxy.test.mjs tests/governance-impact/oci-integration.test.mjs tests/governance-impact/oci-proxy-facade.test.mjs tests/governance-impact/oci-supervisor.test.mjs tests/governance-impact/real-workflow.test.mjs tests/governance-impact/uds-relay.test.mjs",
+    "test:governance-impact:oci:integration": "node scripts/governance-impact-oci-integration.mjs",
+    "test:privacy": "node --test tests/privacy/doctor-negative.test.mjs tests/privacy/eval-negative.test.mjs tests/privacy/runtime-proof-negative.test.mjs tests/privacy/governance-impact-proxy-negative.test.mjs",
+    "validate:governance-impact": "node --test tests/governance-impact/scenario-schema.test.mjs",
+    "eval:governance": "node scripts/governance-impact-eval.mjs",
+    "smoke:base": "node scripts/smoke-base.mjs",
+    "smoke:fullstack": "node scripts/smoke-fullstack.mjs",
+    "fixtures": "node scripts/fixtures-check.mjs",
+    "runtime:proof:codex": "node scripts/runtime-smoke-codex.mjs",
+    "runtime:proof:claude": "node scripts/runtime-smoke-claude.mjs",
+    "runtime:proof:antigravity": "node scripts/runtime-smoke-antigravity.mjs",
+    "runtime:proof": "npm run validate:runtime-proof && npm run runtime:proof:codex && npm run runtime:proof:claude && npm run runtime:proof:antigravity",
+    "runtime:proof:mock": "npm run validate:runtime-proof && node scripts/runtime-proof-mock.mjs",
+    "ci": "npm run check && npm run validate && npm run validate:runtime-proof && npm run test:governance && npm run test:governance-impact && npm run test:privacy && npm run validate:governance-impact && npm run eval:governance && npm run runtime:proof:mock && npm run smoke:base && npm run smoke:fullstack && npm run fixtures"
   },
   "bin": {
     "agent-governance-init": "./scripts/init.mjs",

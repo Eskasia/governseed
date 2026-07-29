@@ -5,7 +5,7 @@
 - 本機能啟動，沒有 crash。
 - 改動符合 TASK_CONTRACT。
 - 沒有超出本步範圍的意外修改。
-- 有測試就跑測試；失敗要記錄原始錯誤。
+- 有測試就跑測試；失敗只記錄 stable code、可重現步驟與 privacy-safe normalized error metadata，不持久化 raw model / tool output。
 - 有 UI 就用 Browser/Chrome 看 desktop/mobile、console、核心流程。
 - 有 screenshot、generated UI 或 design spec 時，用 Browser/Chrome 截圖做 side-by-side critique。
 - 有 DB 就驗證 migration、RLS、seed/mock data。
@@ -35,7 +35,7 @@
 
 只在有 `AGENT_RUNTIME.md` 時啟用：
 
-- Prompt、context window、structured outputs 都在 repo / docs 中可 review。
+- 核准的 prompt-template version、context window schema、structured outputs 都在 repo / docs 中可 review；private runtime prompt 不落盤。
 - 每個 tool 都有權限、副作用、idempotency、rollback。
 - 高風險 action 有 human approval。
 - 支援 launch、pause、resume、retry、cancel。
@@ -49,9 +49,18 @@
 
 - RAG：ingestion、chunking、retrieval、rerank、citation、permission filter、fallback 都有記錄。
 - Agent / MCP：tool 權限、sandbox、audit log、HITL、retry、kill switch 都有記錄。
-- Eval：golden set、error taxonomy、trace、quality / cost metric、regression gate 都有記錄。
+- Eval：golden set、error taxonomy、privacy-safe trace metadata、quality / cost metric、regression gate 都有記錄。
 - Security：prompt injection、data leakage、tenant isolation、output handling、API key lifecycle 都有記錄。
 - MLOps：provider fallback、rate limit、budget alert、canary、rollback 或手動停用方式都有記錄。
+
+## Governance Evidence Claim Gate
+
+- Runtime proof 只可宣稱 generated entrypoint 通過 minimal first-response contract；mock 或 real smoke 都不是 model benchmark，也不能證明 governance effectiveness。
+- Governance-impact evaluator 只評估 intake 已完成後的 delivery artifact，不宣稱測試 Q1-Q9 interview quality；公開 effectiveness claim 必須另過 real paired-run evidence gate。
+- Real mode 是 synthetic-only：evaluator 只接受乾淨、已 commit 的 synthetic scenario；runtime proof 只使用生成的 synthetic fixture，禁止 private / customer / production content。
+- Raw stdout/stderr、raw tool trace、environment variable、private prompt、masked excerpt、absolute home path 與 raw diff hunk 不得持久化；只能保存通過 validator 與 privacy scanner 的 normalized closed-schema evidence。
+- Privacy scanner、session safety、output schema 或 cleanup 無法證明時必須 fail closed，以 stable code 結束且不留 artifact；cleanup 必須先於 persistence。
+- Codex governance-impact real adapter 因 detached / re-parented descendant containment 未證明而回 `SESSION_SAFETY_UNAVAILABLE`。Claude 因 workspace containment 未證明而拒絕；Antigravity 缺 binary 時為 `RUNTIME_MISSING`，日後有 binary 仍須在 non-persistence 與 containment 證明前拒絕。
 
 ## 安全補強
 

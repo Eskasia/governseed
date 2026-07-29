@@ -1,0 +1,79 @@
+name: Feature request
+description: Propose a focused governance starter improvement.
+title: "feat: "
+labels:
+  - enhancement
+body:
+  - type: dropdown
+    id: problem_type
+    attributes:
+      label: Request type
+      options:
+        - new template
+        - profile change
+        - doctor / validator check
+        - runtime adapter proof
+        - documentation
+        - community / release surface
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem this solves
+      description: Keep the scope tied to governance bootstrap, not runtime framework behavior.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction steps or current workflow
+      description: List the commands or workflow where this improvement would apply.
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior or current limitation
+  - type: dropdown
+    id: profile
+    attributes:
+      label: Profile affected
+      options:
+        - base
+        - fullstack-ai
+        - macos
+        - all profiles
+        - not profile-specific
+    validations:
+      required: true
+  - type: dropdown
+    id: agent_runtime
+    attributes:
+      label: Agent runtime affected
+      options:
+        - Codex
+        - Claude Code
+        - Antigravity
+        - all
+        - not runtime-specific
+    validations:
+      required: true
+  - type: textarea
+    id: doctor_output
+    attributes:
+      label: Doctor output or fixture impact
+      description: Paste relevant `doctor` output or list expected fixture changes.
+      render: text
+  - type: textarea
+    id: validation_commands
+    attributes:
+      label: Validation commands expected
+      description: List commands that should prove the feature.
+      render: shell
+    validations:
+      required: true
