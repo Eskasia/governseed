@@ -555,6 +555,10 @@ const requiredRepositoryFiles = [
   'README.md',
   'CHANGELOG.md',
   'THIRD_PARTY_NOTICES.md',
+  'docs/migrations/governseed-brand-transition.md',
+  'docs/research/2026-07-29-charter-name-audit.md',
+  'docs/research/2026-07-29-governseed-name-audit.md',
+  'docs/research/evidence/2026-07-29-tmview-governseed-no-results.png',
   'package.json',
   'AGENTS.md',
   'CLAUDE.md',
@@ -591,6 +595,7 @@ const requiredRepositoryFiles = [
   '.github/workflows/governance-impact-preflight.yml',
   '.github/workflows/governance-impact-real.yml',
   'tests/runtime/codex/expected-headings.txt',
+  'tests/brand/brand-compatibility.test.mjs',
   'tests/runtime/claude/first-response.schema.json',
   'tests/runtime/antigravity/skill-template/SKILL.md',
   'scripts/smoke-base.mjs',
@@ -776,7 +781,11 @@ for (const file of [
 }
 
 requireIncludes(errors, 'README.md', [
-  'Agent-native project governance starter for Codex, Claude Code, and Antigravity',
+  '# GovernSeed',
+  'Governance foundations for agent-native projects.',
+  'GovernSeed is a local-first governance bootstrap generator',
+  'Formal brand: `Eskasia GovernSeed`',
+  'GovernSeed was previously developed as `agent-governance-starter`.',
   'actions/workflows/validate-starter.yml/badge.svg',
   'License-MIT',
   'node-%3E%3D20',
@@ -884,6 +893,7 @@ requireIncludes(errors, 'package.json', [
   '"runtime:proof:antigravity"',
   '"runtime:proof:mock"',
   '"test:governance"',
+  '"test:brand"',
   '"test:decision-role"',
   '"test:governance-impact"',
   '"test:privacy"',
@@ -905,6 +915,7 @@ for (const requiredScript of [
   'validate',
   'validate:runtime-proof',
   'test:governance',
+  'test:brand',
   'test:decision-role',
   'test:governance-impact',
   'test:privacy',
@@ -1089,6 +1100,7 @@ requireIncludes(errors, 'docs/runtime-proof.md', [
 ]);
 
 requireIncludes(errors, 'templates/runtime/START_HERE.md', [
+  'GovernSeed',
   '{{AGENT}}',
   '{{PROFILE_NAME}}',
   '{{INTAKE_QUESTIONS}}',
@@ -1097,6 +1109,9 @@ requireIncludes(errors, 'templates/runtime/START_HERE.md', [
 ]);
 
 requireIncludes(errors, 'templates/runtime/README.md', [
+  '# GovernSeed Project',
+  'GovernSeed',
+  'agent-governance-starter',
   '{{AGENT}}',
   '{{PROFILE_NAME}}',
   '{{REQUIRED_DOCUMENTS}}',
@@ -1137,9 +1152,29 @@ for (const file of [
 }
 
 requireIncludes(errors, 'scripts/init.mjs', [
+  'GovernSeed',
+  'agent-governance-init',
   'product shape / technology route mode',
   'user-declared route',
   'ai-recommended route',
+]);
+
+requireIncludes(errors, 'scripts/doctor.mjs', [
+  'GovernSeed',
+  'agent-governance-doctor',
+]);
+
+requireIncludes(errors, 'scripts/agent-governance.mjs', [
+  'GovernSeed',
+  'Command: agent-governance',
+]);
+
+requireIncludes(errors, 'docs/migrations/governseed-brand-transition.md', [
+  'legacy machine identifier',
+  'compatibility text',
+  'historical record',
+  'repository reference pending manual rename',
+  'Stage 2 Manual Gate',
 ]);
 
 for (const file of ['README.md', 'CLAUDE.md', 'ANTIGRAVITY.md']) {

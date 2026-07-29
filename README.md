@@ -1,12 +1,21 @@
-# agent-governance-starter
+# GovernSeed
 
-> Turn an empty directory into a governed AI-agent workspace before implementation begins.
+> Governance foundations for agent-native projects.
+
+GovernSeed is a local-first governance bootstrap generator for
+agent-native projects. It turns intent, decisions, roles, risk boundaries,
+and evidence requirements into versioned, machine-checkable contracts
+before implementation begins.
 
 [![CI](https://github.com/Eskasia/agent-governance-starter/actions/workflows/validate-starter.yml/badge.svg)](https://github.com/Eskasia/agent-governance-starter/actions/workflows/validate-starter.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node >=20](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](package.json)
 
-Agent-native project governance starter for Codex, Claude Code, and Antigravity — a dependency-free Node.js generator and validator for governance documents, governance data, Agent-specific configuration, decision records, task contracts, runtime entrypoints, and local checks an AI coding agent should use before writing application code.
+Formal brand: `Eskasia GovernSeed`
+
+GovernSeed was previously developed as `agent-governance-starter`.
+Existing commands, schemas, generated-project metadata, configuration
+paths, and machine identifiers remain compatible during the transition.
 
 The starter makes four things explicit:
 

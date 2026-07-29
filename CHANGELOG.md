@@ -1,4 +1,14 @@
-# Changelog
+# GovernSeed Changelog
+
+## 2026-07-29 — GovernSeed Brand Transition
+
+- Adopted GovernSeed as the public display brand and Eskasia GovernSeed as the
+  formal brand.
+- Preserved the existing `agent-governance-starter` package, commands, schemas,
+  generated-project metadata, configuration paths, and machine identifiers for
+  compatibility.
+- Kept the current GitHub repository URLs unchanged pending a separately
+  approved repository rename. No npm package or CLI alias changed.
 
 ## 2026-07-29 — Decision And Role Foundation
 

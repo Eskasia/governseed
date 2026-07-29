@@ -1,6 +1,9 @@
-# Project README
+# GovernSeed Project
 
-This project was initialized with `agent-governance-starter`.
+> Governance foundations for agent-native projects.
+
+This project was initialized with GovernSeed. The generator compatibility
+identifier remains `agent-governance-starter`.
 
 ## Start Here
 

@@ -1,7 +1,13 @@
 {
   "name": "agent-governance-starter",
   "version": "0.1.0",
-  "description": "Governance bootstrap generator for agent-native projects.",
+  "description": "GovernSeed — governance foundations for agent-native projects.",
+  "keywords": [
+    "governseed",
+    "agent-governance",
+    "agent-native",
+    "governance"
+  ],
   "type": "module",
   "private": false,
   "license": "MIT",
@@ -13,6 +19,7 @@
     "validate": "node scripts/validate-starter.mjs .",
     "validate:runtime-proof": "node scripts/validate-runtime-proof.mjs .",
     "test:governance": "node --test tests/governance/doctor-governance.test.mjs tests/governance/rule-lifecycle.test.mjs tests/governance/traceability.test.mjs",
+    "test:brand": "node --test tests/brand/brand-compatibility.test.mjs",
     "test:decision-role": "node --test tests/decision-role/artifact-safety.test.mjs tests/decision-role/schema-contracts.test.mjs tests/decision-role/cli-contracts.test.mjs tests/decision-role/doctor-contracts.test.mjs",
     "test:governance-impact": "node --test tests/governance-impact/scorer.test.mjs tests/governance-impact/scenario-schema.test.mjs tests/governance-impact/cli.test.mjs tests/governance-impact/runner.test.mjs tests/governance-impact/credential-proxy.test.mjs tests/governance-impact/oci-integration.test.mjs tests/governance-impact/oci-proxy-facade.test.mjs tests/governance-impact/oci-supervisor.test.mjs tests/governance-impact/real-workflow.test.mjs tests/governance-impact/uds-relay.test.mjs",
     "test:governance-impact:oci:integration": "node scripts/governance-impact-oci-integration.mjs",
@@ -27,7 +34,7 @@
     "runtime:proof:antigravity": "node scripts/runtime-smoke-antigravity.mjs",
     "runtime:proof": "npm run validate:runtime-proof && npm run runtime:proof:codex && npm run runtime:proof:claude && npm run runtime:proof:antigravity",
     "runtime:proof:mock": "npm run validate:runtime-proof && node scripts/runtime-proof-mock.mjs",
-    "ci": "npm run check && npm run validate && npm run validate:runtime-proof && npm run test:governance && npm run test:decision-role && npm run test:governance-impact && npm run test:privacy && npm run validate:governance-impact && npm run eval:governance && npm run runtime:proof:mock && npm run smoke:base && npm run smoke:fullstack && npm run fixtures"
+    "ci": "npm run check && npm run validate && npm run validate:runtime-proof && npm run test:governance && npm run test:brand && npm run test:decision-role && npm run test:governance-impact && npm run test:privacy && npm run validate:governance-impact && npm run eval:governance && npm run runtime:proof:mock && npm run smoke:base && npm run smoke:fullstack && npm run fixtures"
   },
   "bin": {
     "agent-governance": "./scripts/agent-governance.mjs",

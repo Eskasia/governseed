@@ -1,6 +1,6 @@
-# macOS Beta Handoff Fixture
+# GovernSeed macOS Beta Handoff Fixture
 
-This fixture demonstrates a filled macOS profile with release and tester handoff documents.
+This fixture demonstrates a filled GovernSeed macOS profile with release and tester handoff documents.
 
 ## Start Here
 
