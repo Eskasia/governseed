@@ -1,0 +1,321 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Eskasia/agent-governance-starter/schemas/deliberation-plan.schema.json",
+  "title": "Agent Governance Deliberation Plan",
+  "description": "A portable four-seat decision-deliberation contract that does not execute an AI.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "deliberationId",
+    "decisionId",
+    "decisionRevision",
+    "decisionSha256",
+    "planRevision",
+    "planSha256",
+    "topic",
+    "normalizedBrief",
+    "sourceRefs",
+    "riskRefs",
+    "sourceRevision",
+    "triggerReasonCodes",
+    "needsDeliberation",
+    "profile",
+    "graphId",
+    "graphVersion",
+    "seats",
+    "rounds",
+    "maxTurns",
+    "terminationConditions",
+    "evaluationRubric",
+    "redactionTier",
+    "requiredOutput",
+    "preflight",
+    "expectedReceipts",
+    "humanApprovalRequired",
+    "status"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "deliberationId": {
+      "$ref": "#/$defs/deliberationId"
+    },
+    "decisionId": {
+      "$ref": "#/$defs/decisionId"
+    },
+    "decisionRevision": {
+      "$ref": "#/$defs/positiveRevision"
+    },
+    "decisionSha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "planRevision": {
+      "$ref": "#/$defs/positiveRevision"
+    },
+    "planSha256": {
+      "$ref": "#/$defs/sha256"
+    },
+    "topic": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1024
+    },
+    "normalizedBrief": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 16384
+    },
+    "sourceRefs": {
+      "$ref": "#/$defs/referenceArray"
+    },
+    "riskRefs": {
+      "$ref": "#/$defs/referenceArray"
+    },
+    "sourceRevision": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "triggerReasonCodes": {
+      "$ref": "#/$defs/referenceArray"
+    },
+    "needsDeliberation": {
+      "const": true
+    },
+    "profile": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "graphId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "graphVersion": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "seats": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "$ref": "#/$defs/seat"
+      }
+    },
+    "rounds": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 4,
+      "items": {
+        "$ref": "#/$defs/round"
+      }
+    },
+    "maxTurns": {
+      "type": "integer",
+      "minimum": 4,
+      "maximum": 256
+    },
+    "terminationConditions": {
+      "$ref": "#/$defs/referenceArray"
+    },
+    "evaluationRubric": {
+      "type": "array",
+      "minItems": 6,
+      "maxItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "enum": [
+          "requirement-fit",
+          "feasibility",
+          "safety",
+          "reversibility",
+          "maintenance-cost",
+          "evidence-strength"
+        ]
+      }
+    },
+    "redactionTier": {
+      "type": "string",
+      "enum": [
+        "metadata-only",
+        "normalized-synthesis"
+      ]
+    },
+    "requiredOutput": {
+      "$ref": "#/$defs/referenceArray"
+    },
+    "preflight": {
+      "$ref": "#/$defs/preflight"
+    },
+    "expectedReceipts": {
+      "$ref": "#/$defs/expectedReceipts"
+    },
+    "humanApprovalRequired": {
+      "const": true
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "planned",
+        "exported",
+        "superseded"
+      ]
+    }
+  },
+  "$defs": {
+    "deliberationId": {
+      "type": "string",
+      "pattern": "^DLB-[0-9]{3,}$"
+    },
+    "decisionId": {
+      "type": "string",
+      "pattern": "^DEC-[0-9]{3,}$"
+    },
+    "seatId": {
+      "type": "string",
+      "pattern": "^DLB-[0-9]{3,}-SEAT-[0-9]{2}$"
+    },
+    "positiveRevision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "referenceArray": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 512
+      }
+    },
+    "seat": {
+      "type": "object",
+      "required": [
+        "seatId",
+        "function"
+      ],
+      "properties": {
+        "seatId": {
+          "$ref": "#/$defs/seatId"
+        },
+        "function": {
+          "type": "string",
+          "enum": [
+            "explorer",
+            "constraint-analyst",
+            "adversarial-reviewer",
+            "synthesizer"
+          ]
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 2048
+        },
+        "responsibilities": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "requiredInputs": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "requiredOutputs": {
+          "$ref": "#/$defs/referenceArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "round": {
+      "type": "object",
+      "required": [
+        "round",
+        "kind"
+      ],
+      "properties": {
+        "round": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 4
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "independent-proposal",
+            "cross-critique",
+            "option-ranking",
+            "synthesis"
+          ]
+        },
+        "participants": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/seatId"
+          }
+        },
+        "requiredFields": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "visibleInputs": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "requiredOutputs": {
+          "$ref": "#/$defs/referenceArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "preflight": {
+      "type": "object",
+      "required": [
+        "decisionRecordValid",
+        "sourceRefsResolved",
+        "riskRefsResolved",
+        "redactionTierAllowed"
+      ],
+      "properties": {
+        "decisionRecordValid": {
+          "type": "boolean"
+        },
+        "sourceRefsResolved": {
+          "type": "boolean"
+        },
+        "riskRefsResolved": {
+          "type": "boolean"
+        },
+        "redactionTierAllowed": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "expectedReceipts": {
+      "type": "object",
+      "required": [
+        "before",
+        "after"
+      ],
+      "properties": {
+        "before": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "after": {
+          "$ref": "#/$defs/referenceArray"
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,485 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Eskasia/agent-governance-starter/schemas/role-assignment.schema.json",
+  "title": "Agent Governance Role Assignment",
+  "description": "Deterministic delivery responsibility assignment bounded by the active permission ceiling.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "assignmentId",
+    "taskId",
+    "revision",
+    "status",
+    "sourceRefs",
+    "riskRefs",
+    "selectedRoles",
+    "rejectedRoles",
+    "reasonCodes",
+    "permissionCeiling",
+    "separationOfDuties",
+    "humanOverride",
+    "createdAt",
+    "supersedes",
+    "history"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "assignmentId": {
+      "$ref": "#/$defs/assignmentId"
+    },
+    "taskId": {
+      "$ref": "#/$defs/taskId"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "status": {
+      "$ref": "#/$defs/assignmentStatus"
+    },
+    "sourceRefs": {
+      "$ref": "#/$defs/referenceArray"
+    },
+    "riskRefs": {
+      "$ref": "#/$defs/referenceArray"
+    },
+    "selectedRoles": {
+      "type": "array",
+      "maxItems": 4,
+      "items": {
+        "$ref": "#/$defs/selectedRole"
+      }
+    },
+    "rejectedRoles": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/rejectedRole"
+      }
+    },
+    "reasonCodes": {
+      "$ref": "#/$defs/referenceArray"
+    },
+    "permissionCeiling": {
+      "$ref": "#/$defs/permissionCeiling"
+    },
+    "separationOfDuties": {
+      "$ref": "#/$defs/separationOfDuties"
+    },
+    "humanOverride": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "$ref": "#/$defs/humanOverride"
+        }
+      ]
+    },
+    "createdAt": {
+      "$ref": "#/$defs/timestamp"
+    },
+    "supersedes": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "string",
+          "pattern": "^ROLE-[0-9]{3,}@[1-9][0-9]*$"
+        }
+      ]
+    },
+    "history": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/historyEntry"
+      }
+    }
+  },
+  "$defs": {
+    "assignmentId": {
+      "type": "string",
+      "pattern": "^ROLE-[0-9]{3,}$"
+    },
+    "taskId": {
+      "type": "string",
+      "pattern": "^TASK-[0-9]{3,}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "format": "date-time"
+    },
+    "assignmentStatus": {
+      "type": "string",
+      "enum": [
+        "assigned",
+        "needs-human-selection",
+        "blocked",
+        "superseded"
+      ]
+    },
+    "responsibility": {
+      "type": "string",
+      "enum": [
+        "decision-owner",
+        "implementation-owner",
+        "domain-reviewer",
+        "risk-reviewer",
+        "evidence-verifier"
+      ]
+    },
+    "referenceArray": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 512
+      }
+    },
+    "permissionEffect": {
+      "type": "string",
+      "enum": [
+        "deny",
+        "require-human-approval",
+        "constrained-allow",
+        "allow",
+        "advisory"
+      ]
+    },
+    "permissionCeiling": {
+      "type": "object",
+      "required": [
+        "filesystem.project-read",
+        "filesystem.project-write",
+        "filesystem.root-write",
+        "network",
+        "credentials",
+        "publish",
+        "delete"
+      ],
+      "properties": {
+        "filesystem.project-read": {
+          "$ref": "#/$defs/permissionEffect"
+        },
+        "filesystem.project-write": {
+          "$ref": "#/$defs/permissionEffect"
+        },
+        "filesystem.root-write": {
+          "$ref": "#/$defs/permissionEffect"
+        },
+        "network": {
+          "$ref": "#/$defs/permissionEffect"
+        },
+        "credentials": {
+          "$ref": "#/$defs/permissionEffect"
+        },
+        "publish": {
+          "$ref": "#/$defs/permissionEffect"
+        },
+        "delete": {
+          "$ref": "#/$defs/permissionEffect"
+        }
+      },
+      "additionalProperties": false
+    },
+    "selectedRole": {
+      "type": "object",
+      "required": [
+        "responsibility",
+        "specialistRoleId",
+        "source",
+        "sourceCatalog",
+        "sourceRevision",
+        "sourceLicense",
+        "sourceHash",
+        "assignedTaskScope",
+        "requiredInputs",
+        "expectedDeliverables",
+        "requestedCapabilities",
+        "grantedCapabilityCeiling",
+        "reviewResponsibility",
+        "cannotApprove",
+        "reasonCodes"
+      ],
+      "properties": {
+        "responsibility": {
+          "$ref": "#/$defs/responsibility"
+        },
+        "specialistRoleId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "source": {
+          "type": "string",
+          "enum": [
+            "builtin",
+            "external",
+            "external-catalog"
+          ]
+        },
+        "sourceCatalog": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "sourceRevision": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "sourceLicense": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "sourceHash": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "assignedTaskScope": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 32,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/taskId"
+          }
+        },
+        "requiredInputs": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "expectedDeliverables": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "requestedCapabilities": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "grantedCapabilityCeiling": {
+          "$ref": "#/$defs/permissionCeiling"
+        },
+        "reviewResponsibility": {
+          "oneOf": [
+            {
+              "type": "string",
+              "maxLength": 256
+            },
+            {
+              "$ref": "#/$defs/referenceArray"
+            }
+          ]
+        },
+        "cannotApprove": {
+          "type": "boolean"
+        },
+        "reasonCodes": {
+          "$ref": "#/$defs/referenceArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "rejectedRole": {
+      "type": "object",
+      "required": [
+        "specialistRoleId",
+        "reasonCodes"
+      ],
+      "properties": {
+        "specialistRoleId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "reasonCodes": {
+          "$ref": "#/$defs/referenceArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "separationRule": {
+      "type": "object",
+      "required": [
+        "responsibility",
+        "cannotApprove"
+      ],
+      "properties": {
+        "responsibility": {
+          "$ref": "#/$defs/responsibility"
+        },
+        "cannotApprove": {
+          "$ref": "#/$defs/referenceArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "separationOfDuties": {
+      "type": "object",
+      "required": [
+        "implementationOwner",
+        "finalVerifier"
+      ],
+      "properties": {
+        "required": {
+          "type": "boolean"
+        },
+        "implementationOwner": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          ]
+        },
+        "finalVerifier": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            }
+          ]
+        },
+        "rules": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {
+            "$ref": "#/$defs/separationRule"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "humanOverride": {
+      "type": "object",
+      "required": [
+        "schemaVersion",
+        "overrideId",
+        "assignmentId",
+        "taskId",
+        "baseRevision",
+        "addResponsibilities",
+        "removeResponsibilities",
+        "reasonCodes",
+        "confirmedBy",
+        "confirmedAt"
+      ],
+      "properties": {
+        "schemaVersion": {
+          "const": 1
+        },
+        "overrideId": {
+          "type": "string",
+          "pattern": "^ROLE-OVERRIDE-[0-9]{3,}$"
+        },
+        "assignmentId": {
+          "$ref": "#/$defs/assignmentId"
+        },
+        "taskId": {
+          "$ref": "#/$defs/taskId"
+        },
+        "baseRevision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "addResponsibilities": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/responsibility"
+          }
+        },
+        "removeResponsibilities": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/responsibility"
+          }
+        },
+        "reasonCodes": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "confirmedBy": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        },
+        "confirmedAt": {
+          "$ref": "#/$defs/timestamp"
+        }
+      },
+      "additionalProperties": false
+    },
+    "historyEntry": {
+      "type": "object",
+      "required": [
+        "assignmentId",
+        "taskId",
+        "revision",
+        "status",
+        "selectedResponsibilities",
+        "permissionCeiling",
+        "createdAt",
+        "supersedes"
+      ],
+      "properties": {
+        "assignmentId": {
+          "$ref": "#/$defs/assignmentId"
+        },
+        "taskId": {
+          "$ref": "#/$defs/taskId"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "status": {
+          "$ref": "#/$defs/assignmentStatus"
+        },
+        "selectedResponsibilities": {
+          "type": "array",
+          "maxItems": 4,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/responsibility"
+          }
+        },
+        "permissionCeiling": {
+          "$ref": "#/$defs/permissionCeiling"
+        },
+        "createdAt": {
+          "$ref": "#/$defs/timestamp"
+        },
+        "supersedes": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "type": "string",
+              "pattern": "^ROLE-[0-9]{3,}@[1-9][0-9]*$"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

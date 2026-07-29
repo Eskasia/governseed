@@ -1,0 +1,124 @@
+{
+  "schemaVersion": 1,
+  "catalogId": "builtin-governance-responsibilities",
+  "catalogType": "governance-responsibility",
+  "source": {
+    "sourceId": "SRC-BUILTIN-001",
+    "revision": "builtin@1",
+    "license": "MIT",
+    "hashScope": "roles",
+    "sha256": "eaf69549e7163f4cde40fb267c8afea30eda9941950562b5136e05a9eb95fe1a"
+  },
+  "roles": [
+    {
+      "roleId": "decision-owner",
+      "purpose": "Own the human decision boundary and its recorded state.",
+      "inputs": [
+        "decision record",
+        "deliberation recommendation",
+        "open loops"
+      ],
+      "outputs": [
+        "declared decision confirmation or rejection"
+      ],
+      "responsibilities": [
+        "record the governed human decision without treating AI consensus as approval"
+      ],
+      "prohibitedActions": [
+        "execute an Agent",
+        "self-grant capabilities",
+        "claim verified human identity"
+      ],
+      "reviewRelationship": "May decide; cannot replace independent risk or evidence review."
+    },
+    {
+      "roleId": "implementation-owner",
+      "purpose": "Implement the bounded task within the active permission ceiling.",
+      "inputs": [
+        "task",
+        "requirements",
+        "acceptance criteria",
+        "active decisions"
+      ],
+      "outputs": [
+        "bounded implementation",
+        "implementation notes"
+      ],
+      "responsibilities": [
+        "deliver the assigned task scope and preserve governed constraints"
+      ],
+      "prohibitedActions": [
+        "approve its own security-sensitive work",
+        "expand the permission ceiling",
+        "change unassigned scope"
+      ],
+      "reviewRelationship": "Supplies work to independent domain, risk, or evidence review when required."
+    },
+    {
+      "roleId": "domain-reviewer",
+      "purpose": "Review domain-specific correctness and compatibility.",
+      "inputs": [
+        "task",
+        "affected surface",
+        "implementation output",
+        "domain acceptance criteria"
+      ],
+      "outputs": [
+        "domain review findings"
+      ],
+      "responsibilities": [
+        "evaluate the assigned domain surface against explicit project requirements"
+      ],
+      "prohibitedActions": [
+        "expand implementation scope",
+        "grant capabilities",
+        "replace risk approval"
+      ],
+      "reviewRelationship": "Independent from the implementation owner for the reviewed domain."
+    },
+    {
+      "roleId": "risk-reviewer",
+      "purpose": "Review security, privacy, authority, and consequential side effects.",
+      "inputs": [
+        "risk profile",
+        "permission ceiling",
+        "task",
+        "implementation output"
+      ],
+      "outputs": [
+        "risk review findings"
+      ],
+      "responsibilities": [
+        "verify that requested and granted capabilities do not exceed active governance"
+      ],
+      "prohibitedActions": [
+        "weaken a deny",
+        "approve work it authored",
+        "claim runtime enforcement without evidence"
+      ],
+      "reviewRelationship": "Must remain independent from the implementation owner for security-sensitive approval."
+    },
+    {
+      "roleId": "evidence-verifier",
+      "purpose": "Verify acceptance evidence against the claimed outcome.",
+      "inputs": [
+        "acceptance criteria",
+        "required evidence",
+        "implementation output"
+      ],
+      "outputs": [
+        "verification result",
+        "evidence references"
+      ],
+      "responsibilities": [
+        "run or inspect claim-matched verification and report pass, fail, or blocked"
+      ],
+      "prohibitedActions": [
+        "fabricate evidence",
+        "convert a blocked result to pass",
+        "grant capabilities"
+      ],
+      "reviewRelationship": "Independently verifies evidence when the risk profile or task requires separation."
+    }
+  ]
+}

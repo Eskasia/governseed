@@ -1,0 +1,266 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Eskasia/agent-governance-starter/schemas/risk-profile.schema.json",
+  "title": "Agent Governance Risk Profile",
+  "description": "Explicit project-local risk inputs and deterministic assessment results.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "profileId",
+    "status",
+    "sourceRefs",
+    "permissionCeiling",
+    "tasks",
+    "openQuestions"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "profileId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^(?:RISK-[A-Z0-9-]+|[a-z][a-z0-9-]*)$"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "declared",
+        "assessed",
+        "needs-input"
+      ]
+    },
+    "sourceRefs": {
+      "$ref": "#/$defs/referenceArray"
+    },
+    "permissionCeiling": {
+      "$ref": "#/$defs/permissionCeiling"
+    },
+    "tasks": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/task"
+      }
+    },
+    "openQuestions": {
+      "type": "array",
+      "maxItems": 256,
+      "items": {
+        "$ref": "#/$defs/openQuestion"
+      }
+    }
+  },
+  "$defs": {
+    "referenceArray": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 256
+      }
+    },
+    "permissionEffect": {
+      "type": "string",
+      "enum": [
+        "deny",
+        "require-human-approval",
+        "constrained-allow",
+        "allow",
+        "advisory"
+      ]
+    },
+    "permissionCeiling": {
+      "type": "object",
+      "required": [
+        "filesystem.project-read",
+        "filesystem.project-write",
+        "filesystem.root-write",
+        "network",
+        "credentials",
+        "publish",
+        "delete"
+      ],
+      "properties": {
+        "filesystem.project-read": {
+          "$ref": "#/$defs/permissionEffect"
+        },
+        "filesystem.project-write": {
+          "$ref": "#/$defs/permissionEffect"
+        },
+        "filesystem.root-write": {
+          "$ref": "#/$defs/permissionEffect"
+        },
+        "network": {
+          "$ref": "#/$defs/permissionEffect"
+        },
+        "credentials": {
+          "$ref": "#/$defs/permissionEffect"
+        },
+        "publish": {
+          "$ref": "#/$defs/permissionEffect"
+        },
+        "delete": {
+          "$ref": "#/$defs/permissionEffect"
+        }
+      },
+      "additionalProperties": false
+    },
+    "triggerFlags": {
+      "type": "object",
+      "required": [
+        "userRequestedFourAi",
+        "consequential",
+        "irreversible",
+        "multipleReasonableOptions",
+        "evidenceConflict",
+        "restrictedAuthoritySurface",
+        "threeOrMoreDomains",
+        "canonicalRuleConflict",
+        "highRepairCost"
+      ],
+      "properties": {
+        "userRequestedFourAi": {
+          "type": "boolean"
+        },
+        "consequential": {
+          "type": "boolean"
+        },
+        "irreversible": {
+          "type": "boolean"
+        },
+        "multipleReasonableOptions": {
+          "type": "boolean"
+        },
+        "evidenceConflict": {
+          "type": "boolean"
+        },
+        "restrictedAuthoritySurface": {
+          "type": "boolean"
+        },
+        "threeOrMoreDomains": {
+          "type": "boolean"
+        },
+        "canonicalRuleConflict": {
+          "type": "boolean"
+        },
+        "highRepairCost": {
+          "type": "boolean"
+        }
+      },
+      "additionalProperties": false
+    },
+    "task": {
+      "type": "object",
+      "required": [
+        "taskId",
+        "status",
+        "declaredAt",
+        "dataClasses",
+        "surfaces",
+        "sideEffects",
+        "triggerFlags",
+        "requestedCapabilities",
+        "requiredEvidence"
+      ],
+      "properties": {
+        "taskId": {
+          "type": "string",
+          "pattern": "^TASK-[0-9]{3,}$"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "active",
+            "inactive",
+            "superseded"
+          ]
+        },
+        "declaredAt": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "format": "date-time"
+        },
+        "dataClasses": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "surfaces": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "sideEffects": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "triggerFlags": {
+          "$ref": "#/$defs/triggerFlags"
+        },
+        "requestedCapabilities": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "requiredEvidence": {
+          "$ref": "#/$defs/referenceArray"
+        },
+        "riskLevel": {
+          "type": "string",
+          "enum": [
+            "unknown",
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "needsDeliberation": {
+          "type": "boolean"
+        },
+        "reasonCodes": {
+          "$ref": "#/$defs/referenceArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "openQuestion": {
+      "oneOf": [
+        {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        {
+          "type": "object",
+          "required": [
+            "questionId",
+            "taskId",
+            "field",
+            "question"
+          ],
+          "properties": {
+            "questionId": {
+              "type": "string",
+              "pattern": "^OPEN_LOOP-[0-9]{3,}$"
+            },
+            "taskId": {
+              "type": "string",
+              "pattern": "^(?:TASK-[0-9]{3,}|TASK-UNKNOWN)$"
+            },
+            "field": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 128
+            },
+            "question": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 1024
+            }
+          },
+          "additionalProperties": false
+        }
+      ]
+    }
+  },
+  "additionalProperties": false
+}

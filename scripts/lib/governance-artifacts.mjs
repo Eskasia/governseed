@@ -1,0 +1,1356 @@
+import { createHash, randomBytes } from 'node:crypto';
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { BUILTIN_CATALOG } from './decision-role-core.mjs';
+
+const MAX_BYTES = 1024 * 1024;
+const MAX_DEPTH = 64;
+const MAX_MEMBERS = 10_000;
+const MAX_IGNORE_BYTES = 64 * 1024;
+const SCHEMA_ROOT = path.resolve(
+  path.dirname(fileURLToPath(import.meta.url)),
+  '../../schemas',
+);
+const SCHEMA_NAMES = new Set([
+  'risk-profile.schema.json',
+  'source-lock.schema.json',
+  'governance-pack.schema.json',
+  'role-catalog.schema.json',
+  'role-assignment.schema.json',
+  'deliberation-plan.schema.json',
+  'deliberation-result.schema.json',
+  'cli-output.schema.json',
+]);
+const SAFE_SUBJECT = /^(?:SRC|REQ|DEC|DLB|AC|TASK|ROLE|POL|EVD|ATT|RISK|PACK|CAT|CONF)-[A-Z0-9@.-]+$/;
+const SAFE_MESSAGES = Object.freeze({
+  INVALID_UTF8: 'governance content is not valid UTF-8',
+  DUPLICATE_JSON_KEY: 'governance JSON contains a duplicate key',
+  FILE_TOO_LARGE: 'governance artifact exceeds the byte limit',
+  JSON_LIMIT_EXCEEDED: 'governance JSON exceeds its structural limit',
+  PRIVATE_CONTENT_BLOCKED: 'private governance content was blocked',
+  SECRET_VALUE_BLOCKED: 'secret-like governance content was blocked',
+  PATH_ESCAPE_BLOCKED: 'governance path escaped its allowed boundary',
+  SYMLINK_BLOCKED: 'governance path contains an unsafe link or identity change',
+  INVALID_JSON: 'governance content is not exact JSON',
+  SCHEMA_VERSION_UNSUPPORTED: 'governance schema version is unsupported',
+  SCHEMA_VALIDATION_FAILED: 'governance artifact does not match its schema',
+  DUPLICATE_ID: 'governance artifact contains a duplicate stable ID',
+  SOURCE_REVISION_UNPINNED: 'external source revision is not pinned',
+  SOURCE_LICENSE_MISSING: 'external source license is missing',
+  SOURCE_HASH_MISSING: 'external source hash is missing',
+  SOURCE_PROVENANCE_MISMATCH: 'external source provenance does not match its lock',
+  ROLE_PRIVILEGE_EXPANSION: 'role assignment exceeds the project permission ceiling',
+  ROLE_SEPARATION_VIOLATION: 'role assignment violates separation of duties',
+  INVALID_STATUS_TRANSITION: 'governance status transition is invalid',
+  DECISION_REFERENCE_MISSING: 'referenced decision is unknown',
+  TASK_REFERENCE_MISSING: 'referenced task is unknown',
+  DELIBERATION_VERSION_MISMATCH: 'deliberation graph version does not match',
+  DELIBERATION_HASH_MISMATCH: 'deliberation content hash does not match',
+  DELIBERATION_SOURCE_MISMATCH: 'deliberation source revision does not match',
+  DELIBERATION_NOT_HUMAN_CONFIRMED: 'human confirmation record is missing or invalid',
+});
+const schemaCache = new Map();
+
+class GovernanceArtifactError extends Error {
+  constructor(code, subject) {
+    super(SAFE_MESSAGES[code] ?? 'governance artifact was blocked');
+    this.name = 'GovernanceArtifactError';
+    this.code = code;
+    this.subject = safeSubject(subject);
+  }
+}
+
+function safeSubject(subject) {
+  return typeof subject === 'string' && SAFE_SUBJECT.test(subject)
+    ? subject
+    : 'governance-artifact';
+}
+
+function fail(code, subject) {
+  throw new GovernanceArtifactError(code, subject);
+}
+
+function isPlainObject(value) {
+  if (value === null || typeof value !== 'object') return false;
+  const prototype = Object.getPrototypeOf(value);
+  return prototype === Object.prototype || prototype === null;
+}
+
+function canonicalize(value, ancestors, state, depth) {
+  if (value === null) return 'null';
+  if (typeof value === 'string' || typeof value === 'boolean') {
+    return JSON.stringify(value);
+  }
+  if (typeof value === 'number') {
+    if (!Number.isFinite(value)) throw new TypeError('canonical JSON number');
+    return Object.is(value, -0) ? '0' : JSON.stringify(value);
+  }
+  if (Array.isArray(value)) {
+    if (depth >= MAX_DEPTH) throw new TypeError('canonical JSON depth');
+    if (ancestors.has(value)) throw new TypeError('canonical JSON cycle');
+    if (Object.keys(value).length !== value.length) {
+      throw new TypeError('canonical JSON sparse array');
+    }
+    state.members += value.length;
+    if (state.members > MAX_MEMBERS) {
+      throw new TypeError('canonical JSON member limit');
+    }
+    ancestors.add(value);
+    const result = `[${value
+      .map((entry) => canonicalize(entry, ancestors, state, depth + 1))
+      .join(',')}]`;
+    ancestors.delete(value);
+    return result;
+  }
+  if (!isPlainObject(value)) throw new TypeError('canonical JSON object');
+  if (depth >= MAX_DEPTH) throw new TypeError('canonical JSON depth');
+  if (ancestors.has(value)) throw new TypeError('canonical JSON cycle');
+  const keys = Object.keys(value).sort();
+  state.members += keys.length;
+  if (state.members > MAX_MEMBERS) {
+    throw new TypeError('canonical JSON member limit');
+  }
+  ancestors.add(value);
+  const entries = keys.map((key) => {
+    const entry = value[key];
+    if (
+      entry === undefined
+      || typeof entry === 'function'
+      || typeof entry === 'symbol'
+      || typeof entry === 'bigint'
+    ) {
+      throw new TypeError('canonical JSON value');
+    }
+    return `${JSON.stringify(key)}:${canonicalize(
+      entry,
+      ancestors,
+      state,
+      depth + 1,
+    )}`;
+  });
+  ancestors.delete(value);
+  return `{${entries.join(',')}}`;
+}
+
+export function canonicalJson(value) {
+  return canonicalize(value, new Set(), { members: 0 }, 0);
+}
+
+export function sha256Canonical(value) {
+  return createHash('sha256').update(canonicalJson(value), 'utf8').digest('hex');
+}
+
+function isGovernanceRelative(relativePath) {
+  return String(relativePath)
+    .replaceAll('\\', '/')
+    .split('/')
+    .includes('.agent-governance');
+}
+
+function parseExactJson(text, relativePath, subject) {
+  if (text.charCodeAt(0) === 0xfeff || text.includes('\0')) {
+    fail(
+      isGovernanceRelative(relativePath)
+        ? 'PRIVATE_CONTENT_BLOCKED'
+        : 'INVALID_JSON',
+      subject,
+    );
+  }
+  let index = 0;
+  let members = 0;
+
+  function skipWhitespace() {
+    while (
+      index < text.length
+      && (
+        text[index] === ' '
+        || text[index] === '\n'
+        || text[index] === '\r'
+        || text[index] === '\t'
+      )
+    ) {
+      index += 1;
+    }
+  }
+
+  function parseString() {
+    const start = index;
+    index += 1;
+    let escaped = false;
+    while (index < text.length) {
+      const code = text.charCodeAt(index);
+      if (code < 0x20) fail('INVALID_JSON', subject);
+      const character = text[index];
+      index += 1;
+      if (escaped) {
+        escaped = false;
+      } else if (character === '\\') {
+        escaped = true;
+      } else if (character === '"') {
+        try {
+          return JSON.parse(text.slice(start, index));
+        } catch {
+          fail('INVALID_JSON', subject);
+        }
+      }
+    }
+    fail('INVALID_JSON', subject);
+  }
+
+  function enterContainer(depth) {
+    if (depth >= MAX_DEPTH) {
+      fail('JSON_LIMIT_EXCEEDED', subject);
+    }
+  }
+
+  function countMember() {
+    members += 1;
+    if (members > MAX_MEMBERS) {
+      fail('JSON_LIMIT_EXCEEDED', subject);
+    }
+  }
+
+  function parseValue(depth) {
+    skipWhitespace();
+    const character = text[index];
+    if (character === '{') {
+      enterContainer(depth);
+      index += 1;
+      const object = {};
+      const keys = new Set();
+      skipWhitespace();
+      if (text[index] === '}') {
+        index += 1;
+        return object;
+      }
+      while (index < text.length) {
+        skipWhitespace();
+        if (text[index] !== '"') {
+          fail('INVALID_JSON', subject);
+        }
+        const key = parseString();
+        if (keys.has(key)) {
+          fail('DUPLICATE_JSON_KEY', subject);
+        }
+        keys.add(key);
+        countMember();
+        skipWhitespace();
+        if (text[index] !== ':') {
+          fail('INVALID_JSON', subject);
+        }
+        index += 1;
+        object[key] = parseValue(depth + 1);
+        skipWhitespace();
+        if (text[index] === '}') {
+          index += 1;
+          return object;
+        }
+        if (text[index] !== ',') {
+          fail('INVALID_JSON', subject);
+        }
+        index += 1;
+      }
+      fail('INVALID_JSON', subject);
+    }
+    if (character === '[') {
+      enterContainer(depth);
+      index += 1;
+      const array = [];
+      skipWhitespace();
+      if (text[index] === ']') {
+        index += 1;
+        return array;
+      }
+      while (index < text.length) {
+        countMember();
+        array.push(parseValue(depth + 1));
+        skipWhitespace();
+        if (text[index] === ']') {
+          index += 1;
+          return array;
+        }
+        if (text[index] !== ',') {
+          fail('INVALID_JSON', subject);
+        }
+        index += 1;
+      }
+      fail('INVALID_JSON', subject);
+    }
+    if (character === '"') return parseString();
+    for (const [literal, value] of [
+      ['true', true],
+      ['false', false],
+      ['null', null],
+    ]) {
+      if (text.startsWith(literal, index)) {
+        index += literal.length;
+        return value;
+      }
+    }
+    const number = text
+      .slice(index)
+      .match(/^-?(?:0|[1-9]\d*)(?:\.\d+)?(?:[eE][+-]?\d+)?/);
+    if (number) {
+      index += number[0].length;
+      const value = Number(number[0]);
+      if (Number.isFinite(value)) return value;
+    }
+    fail('INVALID_JSON', subject);
+  }
+
+  const value = parseValue(0);
+  skipWhitespace();
+  if (index !== text.length) {
+    fail('INVALID_JSON', subject);
+  }
+  return value;
+}
+
+function unsafePathString(value) {
+  if (typeof value !== 'string') return false;
+  if (/^(?:~[\\/]|\/|[A-Za-z]:[\\/]|\\\\)/u.test(value)) return true;
+  return /(?:^|[\\/])\.\.(?:[\\/]|$)/u.test(value);
+}
+
+function secretQueryString(value) {
+  if (typeof value !== 'string' || !/^https?:\/\//iu.test(value)) return false;
+  try {
+    const url = new URL(value);
+    for (const key of url.searchParams.keys()) {
+      if (
+        /^(?:access_?token|api_?key|key|token|secret|signature|password|credential|cookie|session)$/iu
+          .test(key)
+      ) {
+        return true;
+      }
+    }
+  } catch {
+    return false;
+  }
+  return false;
+}
+
+function scanArtifact(value, subject) {
+  const ancestors = new Set();
+  let members = 0;
+
+  function visit(entry, depth, key = '') {
+    if (typeof entry === 'string') {
+      if (unsafePathString(entry)) fail('PATH_ESCAPE_BLOCKED', subject);
+      if (secretQueryString(entry)) fail('SECRET_VALUE_BLOCKED', subject);
+      if (/\bsk-(?:proj-)?[A-Za-z0-9_-]{20,}\b/u.test(entry)) {
+        fail('SECRET_VALUE_BLOCKED', subject);
+      }
+      if (
+        /\bgh[pousr]_[A-Za-z0-9]{20,}\b/u.test(entry)
+        || /\bAKIA[A-Z0-9]{16}\b/u.test(entry)
+        || /-----BEGIN [A-Z ]*PRIVATE KEY-----/u.test(entry)
+        || /\bBearer\s+[A-Za-z0-9._~+/=-]{20,}\b/iu.test(entry)
+      ) {
+        fail('SECRET_VALUE_BLOCKED', subject);
+      }
+      return;
+    }
+    if (entry === null || typeof entry !== 'object') return;
+    if (depth >= MAX_DEPTH || ancestors.has(entry)) {
+      fail('PRIVATE_CONTENT_BLOCKED', subject);
+    }
+    ancestors.add(entry);
+    if (Array.isArray(entry)) {
+      members += entry.length;
+      if (members > MAX_MEMBERS) fail('PRIVATE_CONTENT_BLOCKED', subject);
+      for (const item of entry) visit(item, depth + 1);
+      ancestors.delete(entry);
+      return;
+    }
+    if (!isPlainObject(entry)) fail('PRIVATE_CONTENT_BLOCKED', subject);
+    const entries = Object.entries(entry);
+    members += entries.length;
+    if (members > MAX_MEMBERS) fail('PRIVATE_CONTENT_BLOCKED', subject);
+    for (const [property, item] of entries) {
+      const normalized = property.replaceAll(/[^A-Za-z0-9]/g, '').toLowerCase();
+      if (
+        /^(?:rawprompt|rawmodeloutput|rawstdout|rawstderr|providertrace|providersession|privateprompt)$/u
+          .test(normalized)
+      ) {
+        fail('PRIVATE_CONTENT_BLOCKED', subject);
+      }
+      if (
+        /^(?:apikey|accesstoken|providercookie|cookie|credential|privatekey|clientsecret|token|secret|password|authorization|sessioncookie|sessiontoken)$/u
+          .test(normalized)
+      ) {
+        fail('SECRET_VALUE_BLOCKED', subject);
+      }
+      visit(item, depth + 1, property);
+    }
+    ancestors.delete(entry);
+  }
+
+  visit(value, 0);
+}
+
+function portableRelativePath(relativePath, subject) {
+  if (
+    typeof relativePath !== 'string'
+    || relativePath.length === 0
+    || relativePath.includes('\0')
+    || path.posix.isAbsolute(relativePath)
+    || path.win32.isAbsolute(relativePath)
+    || /^~[\\/]/u.test(relativePath)
+  ) {
+    fail('PATH_ESCAPE_BLOCKED', subject);
+  }
+  const segments = relativePath.replaceAll('\\', '/').split('/');
+  if (segments.some((segment) => segment === '..')) {
+    fail('PATH_ESCAPE_BLOCKED', subject);
+  }
+  return segments.filter((segment) => segment !== '' && segment !== '.');
+}
+
+function sameIdentity(left, right) {
+  return (
+    left
+    && right
+    && left.dev === right.dev
+    && left.ino === right.ino
+    && left.isDirectory() === right.isDirectory()
+    && left.isFile() === right.isFile()
+  );
+}
+
+function hasMultipleLinks(stat) {
+  return typeof stat?.nlink === 'bigint'
+    ? stat.nlink > 1n
+    : Number(stat?.nlink) > 1;
+}
+
+function readDescriptor(fsApi, filename, limit, subject, relativePath) {
+  let descriptor;
+  try {
+    const noFollow = Number.isInteger(fsApi.constants?.O_NOFOLLOW)
+      ? fsApi.constants.O_NOFOLLOW
+      : 0;
+    descriptor = fsApi.openSync(
+      filename,
+      fsApi.constants.O_RDONLY | noFollow,
+    );
+    const opened = fsApi.fstatSync(descriptor, { bigint: true });
+    if (!opened.isFile()) fail('SYMLINK_BLOCKED', subject);
+    if (hasMultipleLinks(opened)) fail('SYMLINK_BLOCKED', subject);
+    if (opened.size > BigInt(limit)) {
+      fail('FILE_TOO_LARGE', subject);
+    }
+    const expectedSize = Number(opened.size);
+    const buffer = Buffer.allocUnsafe(expectedSize);
+    const count = expectedSize === 0
+      ? 0
+      : fsApi.readSync(descriptor, buffer, 0, expectedSize, 0);
+    if (count !== expectedSize) fail('SYMLINK_BLOCKED', subject);
+    return { bytes: buffer, stat: opened };
+  } catch (error) {
+    if (error instanceof GovernanceArtifactError) throw error;
+    if (error?.code === 'ELOOP') fail('SYMLINK_BLOCKED', subject);
+    fail('PATH_ESCAPE_BLOCKED', subject);
+  } finally {
+    if (descriptor !== undefined) {
+      try {
+        fsApi.closeSync(descriptor);
+      } catch {
+        // The primary fail-closed error is retained.
+      }
+    }
+  }
+}
+
+function readSmallUtf8(fsApi, filename, subject) {
+  const { bytes } = readDescriptor(
+    fsApi,
+    filename,
+    MAX_IGNORE_BYTES,
+    subject,
+    'governance-ignore',
+  );
+  try {
+    return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+  } catch {
+    fail('PRIVATE_CONTENT_BLOCKED', subject);
+  }
+}
+
+function checkLocalBoundary(root, fsApi, subject) {
+  const governance = path.join(root, '.agent-governance');
+  const local = path.join(governance, 'local');
+  let localStat;
+  try {
+    localStat = fsApi.lstatSync(local, { bigint: true });
+  } catch (error) {
+    if (error?.code === 'ENOENT') return;
+    fail('SYMLINK_BLOCKED', subject);
+  }
+  if (localStat.isSymbolicLink() || !localStat.isDirectory()) {
+    fail('SYMLINK_BLOCKED', subject);
+  }
+  const ignore = path.join(governance, '.gitignore');
+  let ignoreStat;
+  try {
+    ignoreStat = fsApi.lstatSync(ignore, { bigint: true });
+  } catch {
+    fail('PRIVATE_CONTENT_BLOCKED', subject);
+  }
+  if (ignoreStat.isSymbolicLink() || !ignoreStat.isFile()) {
+    fail('PRIVATE_CONTENT_BLOCKED', subject);
+  }
+  const content = readSmallUtf8(fsApi, ignore, subject);
+  const rules = content
+    .split(/\r?\n/u)
+    .map((line) => line.trim())
+    .filter((line) => line !== '' && !line.startsWith('#'));
+  const ignored = rules.includes('local/') || rules.includes('/local/');
+  const unignored = rules.includes('!local/') || rules.includes('!/local/');
+  if (!ignored || unignored) fail('PRIVATE_CONTENT_BLOCKED', subject);
+}
+
+function resolveRoot(projectRoot, fsApi, subject) {
+  try {
+    return fsApi.realpathSync(projectRoot);
+  } catch {
+    fail('PATH_ESCAPE_BLOCKED', subject);
+  }
+}
+
+function inspectComponents(root, segments, fsApi, subject, allowMissing) {
+  let current = root;
+  let lastStat = fsApi.lstatSync(root, { bigint: true });
+  for (const segment of segments) {
+    current = path.join(current, segment);
+    let stat;
+    try {
+      stat = fsApi.lstatSync(current, { bigint: true });
+    } catch (error) {
+      if (allowMissing && error?.code === 'ENOENT') {
+        fsApi.mkdirSync(current, { mode: 0o700 });
+        stat = fsApi.lstatSync(current, { bigint: true });
+      } else {
+        throw error;
+      }
+    }
+    if (stat.isSymbolicLink()) fail('SYMLINK_BLOCKED', subject);
+    lastStat = stat;
+  }
+  return { absolute: current, stat: lastStat };
+}
+
+function resolveReadPath(projectRoot, relativePath, fsApi, subject) {
+  const segments = portableRelativePath(relativePath, subject);
+  const root = resolveRoot(projectRoot, fsApi, subject);
+  checkLocalBoundary(root, fsApi, subject);
+  let inspected;
+  try {
+    inspected = inspectComponents(root, segments, fsApi, subject, false);
+  } catch (error) {
+    if (error instanceof GovernanceArtifactError) throw error;
+    fail('PATH_ESCAPE_BLOCKED', subject);
+  }
+  if (!inspected.stat.isFile()) fail('SYMLINK_BLOCKED', subject);
+  const real = fsApi.realpathSync(inspected.absolute);
+  if (real !== root && !real.startsWith(`${root}${path.sep}`)) {
+    fail('PATH_ESCAPE_BLOCKED', subject);
+  }
+  return { ...inspected, root };
+}
+
+export function readJsonArtifact(projectRoot, relativePath, options = {}) {
+  const fsApi = options.fs ?? fs;
+  const subject = options.subject;
+  const resolved = resolveReadPath(
+    projectRoot,
+    relativePath,
+    fsApi,
+    subject,
+  );
+  const opened = readDescriptor(
+    fsApi,
+    resolved.absolute,
+    MAX_BYTES,
+    subject,
+    relativePath,
+  );
+  let after;
+  try {
+    after = fsApi.lstatSync(resolved.absolute, { bigint: true });
+  } catch {
+    fail('SYMLINK_BLOCKED', subject);
+  }
+  if (
+    after.isSymbolicLink()
+    || !after.isFile()
+    || hasMultipleLinks(resolved.stat)
+    || hasMultipleLinks(opened.stat)
+    || hasMultipleLinks(after)
+    || !sameIdentity(resolved.stat, opened.stat)
+    || !sameIdentity(opened.stat, after)
+    || resolved.stat.size !== opened.stat.size
+    || opened.stat.size !== after.size
+  ) {
+    fail('SYMLINK_BLOCKED', subject);
+  }
+  let text;
+  if (
+    opened.bytes.length >= 3
+    && opened.bytes[0] === 0xef
+    && opened.bytes[1] === 0xbb
+    && opened.bytes[2] === 0xbf
+  ) {
+    fail(
+      isGovernanceRelative(relativePath)
+        ? 'PRIVATE_CONTENT_BLOCKED'
+        : 'INVALID_JSON',
+      subject,
+    );
+  }
+  try {
+    text = new TextDecoder('utf-8', { fatal: true }).decode(opened.bytes);
+  } catch {
+    fail('INVALID_UTF8', subject);
+  }
+  const value = parseExactJson(text, relativePath, subject);
+  scanArtifact(value, subject);
+  return value;
+}
+
+function ensureWriteParent(projectRoot, relativePath, fsApi, subject) {
+  const segments = portableRelativePath(relativePath, subject);
+  if (segments.length === 0) fail('PATH_ESCAPE_BLOCKED', subject);
+  const filename = segments.pop();
+  const root = resolveRoot(projectRoot, fsApi, subject);
+  checkLocalBoundary(root, fsApi, subject);
+  let inspected;
+  try {
+    inspected = inspectComponents(root, segments, fsApi, subject, true);
+  } catch (error) {
+    if (error instanceof GovernanceArtifactError) throw error;
+    fail('PATH_ESCAPE_BLOCKED', subject);
+  }
+  if (!inspected.stat.isDirectory()) fail('SYMLINK_BLOCKED', subject);
+  return {
+    root,
+    parent: inspected.absolute,
+    parentStat: inspected.stat,
+    target: path.join(inspected.absolute, filename),
+  };
+}
+
+export function writeJsonArtifact(
+  projectRoot,
+  relativePath,
+  value,
+  options = {},
+) {
+  const fsApi = options.fs ?? fs;
+  const subject = options.subject;
+  scanArtifact(value, subject);
+  const bytes = Buffer.from(`${canonicalJson(value)}\n`, 'utf8');
+  if (bytes.length > MAX_BYTES) fail('PRIVATE_CONTENT_BLOCKED', subject);
+  const resolved = ensureWriteParent(
+    projectRoot,
+    relativePath,
+    fsApi,
+    subject,
+  );
+  const temp = path.join(
+    resolved.parent,
+    `.agent-governance-${randomBytes(12).toString('hex')}.tmp`,
+  );
+  let tempCreated = false;
+  try {
+    const descriptor = fsApi.openSync(
+      temp,
+      fsApi.constants.O_CREAT
+        | fsApi.constants.O_EXCL
+        | fsApi.constants.O_WRONLY,
+      0o600,
+    );
+    tempCreated = true;
+    try {
+      fsApi.writeFileSync(descriptor, bytes);
+      fsApi.fsyncSync(descriptor);
+    } finally {
+      fsApi.closeSync(descriptor);
+    }
+
+    const parentAfter = fsApi.lstatSync(resolved.parent, { bigint: true });
+    if (
+      parentAfter.isSymbolicLink()
+      || !parentAfter.isDirectory()
+      || !sameIdentity(resolved.parentStat, parentAfter)
+    ) {
+      fail('SYMLINK_BLOCKED', subject);
+    }
+
+    let existing;
+    try {
+      existing = fsApi.lstatSync(resolved.target, { bigint: true });
+    } catch (error) {
+      if (error?.code !== 'ENOENT') throw error;
+    }
+    if (existing) {
+      if (existing.isSymbolicLink() || !existing.isFile()) {
+        fail('SYMLINK_BLOCKED', subject);
+      }
+      const current = readJsonArtifact(projectRoot, relativePath, {
+        ...options,
+        fs: fsApi,
+      });
+      if (sha256Canonical(current) === sha256Canonical(value)) {
+        fsApi.unlinkSync(temp);
+        tempCreated = false;
+        return value;
+      }
+      if (!options.allowReplace) fail('INVALID_STATUS_TRANSITION', subject);
+      fsApi.renameSync(temp, resolved.target);
+      tempCreated = false;
+      return value;
+    }
+
+    fsApi.linkSync(temp, resolved.target);
+    fsApi.unlinkSync(temp);
+    tempCreated = false;
+    return value;
+  } catch (error) {
+    if (error instanceof GovernanceArtifactError) throw error;
+    if (error?.code === 'EEXIST' || error?.code === 'ELOOP') {
+      fail('SYMLINK_BLOCKED', subject);
+    }
+    fail('PATH_ESCAPE_BLOCKED', subject);
+  } finally {
+    if (tempCreated) {
+      try {
+        fsApi.unlinkSync(temp);
+      } catch {
+        // A failed cleanup never turns the operation into success.
+      }
+    }
+  }
+}
+
+function schemaError(code, location = '$') {
+  return {
+    code,
+    path: location,
+    subject: 'governance-artifact',
+    message: SAFE_MESSAGES[code] ?? SAFE_MESSAGES.SCHEMA_VALIDATION_FAILED,
+  };
+}
+
+function addSchemaError(errors, code, location) {
+  if (!errors.some((error) => error.code === code && error.path === location)) {
+    errors.push(schemaError(code, location));
+  }
+}
+
+function loadSchema(schemaName) {
+  if (!SCHEMA_NAMES.has(schemaName)) return null;
+  if (schemaCache.has(schemaName)) return schemaCache.get(schemaName);
+  const schema = JSON.parse(
+    fs.readFileSync(path.join(SCHEMA_ROOT, schemaName), 'utf8'),
+  );
+  schemaCache.set(schemaName, schema);
+  return schema;
+}
+
+function resolveSchemaRef(rootSchema, reference) {
+  let targetRoot = rootSchema;
+  let fragment = reference;
+  if (!reference.startsWith('#')) {
+    const separator = reference.indexOf('#');
+    const schemaName = separator === -1
+      ? reference
+      : reference.slice(0, separator);
+    if (!SCHEMA_NAMES.has(schemaName)) return null;
+    targetRoot = loadSchema(schemaName);
+    fragment = separator === -1 ? '' : reference.slice(separator);
+  }
+  if (fragment === '') {
+    return { schema: targetRoot, rootSchema: targetRoot };
+  }
+  if (!fragment.startsWith('#/')) return null;
+  let current = targetRoot;
+  for (const segment of fragment.slice(2).split('/')) {
+    current = current?.[segment.replaceAll('~1', '/').replaceAll('~0', '~')];
+  }
+  return current
+    ? { schema: current, rootSchema: targetRoot }
+    : null;
+}
+
+function matchesType(type, value) {
+  if (Array.isArray(type)) return type.some((entry) => matchesType(entry, value));
+  if (type === 'null') return value === null;
+  if (type === 'array') return Array.isArray(value);
+  if (type === 'object') return isPlainObject(value);
+  if (type === 'integer') return Number.isInteger(value);
+  return typeof value === type;
+}
+
+function validateSchemaNode(schema, value, rootSchema, location, errors) {
+  if (!schema) {
+    addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+    return;
+  }
+  if (schema.$ref) {
+    const resolved = resolveSchemaRef(rootSchema, schema.$ref);
+    if (!resolved) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+      return;
+    }
+    validateSchemaNode(
+      resolved.schema,
+      value,
+      resolved.rootSchema,
+      location,
+      errors,
+    );
+    return;
+  }
+  if (schema.oneOf) {
+    let matches = 0;
+    for (const candidate of schema.oneOf) {
+      const candidateErrors = [];
+      validateSchemaNode(
+        candidate,
+        value,
+        rootSchema,
+        location,
+        candidateErrors,
+      );
+      if (candidateErrors.length === 0) matches += 1;
+    }
+    if (matches !== 1) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+      return;
+    }
+  }
+  if (schema.const !== undefined && value !== schema.const) {
+    addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+    return;
+  }
+  if (schema.enum && !schema.enum.some((entry) => Object.is(entry, value))) {
+    addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+    return;
+  }
+  if (schema.type && !matchesType(schema.type, value)) {
+    addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+    return;
+  }
+  if (typeof value === 'string') {
+    if (schema.minLength !== undefined && value.length < schema.minLength) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+    }
+    if (schema.maxLength !== undefined && value.length > schema.maxLength) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+    }
+    if (schema.pattern && !new RegExp(schema.pattern, 'u').test(value)) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+    }
+    if (
+      schema.format === 'date-time'
+      && (
+        !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/u
+          .test(value)
+        || Number.isNaN(Date.parse(value))
+      )
+    ) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+    }
+  }
+  if (typeof value === 'number') {
+    if (schema.minimum !== undefined && value < schema.minimum) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+    }
+    if (schema.maximum !== undefined && value > schema.maximum) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+    }
+  }
+  if (Array.isArray(value)) {
+    if (schema.minItems !== undefined && value.length < schema.minItems) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+    }
+    if (schema.maxItems !== undefined && value.length > schema.maxItems) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+    }
+    if (schema.uniqueItems) {
+      const identities = value.map((entry) => canonicalJson(entry));
+      if (new Set(identities).size !== identities.length) {
+        addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', location);
+      }
+    }
+    value.forEach((entry, index) => {
+      validateSchemaNode(
+        schema.items ?? {},
+        entry,
+        rootSchema,
+        `${location}[${index}]`,
+        errors,
+      );
+    });
+  }
+  if (isPlainObject(value)) {
+    for (const required of schema.required ?? []) {
+      if (!Object.hasOwn(value, required)) {
+        addSchemaError(
+          errors,
+          'SCHEMA_VALIDATION_FAILED',
+          `${location}.${required}`,
+        );
+      }
+    }
+    for (const [key, entry] of Object.entries(value)) {
+      if (schema.properties?.[key]) {
+        validateSchemaNode(
+          schema.properties[key],
+          entry,
+          rootSchema,
+          `${location}.${key}`,
+          errors,
+        );
+      } else if (schema.additionalProperties === false) {
+        addSchemaError(
+          errors,
+          'SCHEMA_VALIDATION_FAILED',
+          `${location}.${key}`,
+        );
+      }
+    }
+  }
+}
+
+function duplicateId(values, key) {
+  if (!Array.isArray(values)) return false;
+  const ids = values.map((entry) => entry?.[key]).filter(Boolean);
+  return new Set(ids).size !== ids.length;
+}
+
+function findLockedSource(sourceLock, sourceId) {
+  return sourceLock?.sources?.find((entry) => entry.sourceId === sourceId);
+}
+
+function validateExternalSource(
+  source,
+  sourceLock,
+  errors,
+  location,
+  artifactPath = null,
+) {
+  if (!source) return;
+  if (!source.revision) {
+    addSchemaError(errors, 'SOURCE_REVISION_UNPINNED', `${location}.revision`);
+  }
+  if (!source.license) {
+    addSchemaError(errors, 'SOURCE_LICENSE_MISSING', `${location}.license`);
+  }
+  if (!source.sha256) {
+    addSchemaError(errors, 'SOURCE_HASH_MISSING', `${location}.sha256`);
+  }
+  const locked = findLockedSource(sourceLock, source.sourceId);
+  if (
+    sourceLock
+    && (
+      !locked
+      || locked.repository !== source.repository
+      || locked.commit !== source.revision
+      || locked.license !== source.license
+      || locked.importedMode !== source.importedMode
+      || locked.sha256 !== source.sha256
+      || (
+        artifactPath
+        && !locked.importedFiles?.includes(
+          artifactPath.replaceAll('\\', '/'),
+        )
+      )
+    )
+  ) {
+    addSchemaError(errors, 'SOURCE_PROVENANCE_MISMATCH', location);
+  }
+}
+
+const PERMISSION_RANK = Object.freeze({
+  deny: 0,
+  'require-human-approval': 1,
+  'constrained-allow': 2,
+  allow: 3,
+  advisory: 4,
+});
+
+function rootCapability(capability) {
+  if (capability.startsWith('network.')) return 'network';
+  if (capability.startsWith('credentials.')) return 'credentials';
+  return capability;
+}
+
+function validateRoleAssignment(value, context, errors) {
+  const specialistIds = (value.selectedRoles ?? [])
+    .map((role) => role?.specialistRoleId)
+    .filter((roleId) => roleId && roleId !== 'unassigned');
+  if (
+    new Set(specialistIds).size !== specialistIds.length
+    || duplicateId(value.selectedRoles, 'responsibility')
+  ) {
+    addSchemaError(errors, 'DUPLICATE_ID', '$.selectedRoles');
+  }
+  if (
+    Array.isArray(context.knownTaskIds)
+    && !context.knownTaskIds.includes(value.taskId)
+  ) {
+    addSchemaError(errors, 'TASK_REFERENCE_MISSING', '$.taskId');
+  }
+  const ceiling = context.riskProfile?.permissionCeiling ?? value.permissionCeiling;
+  for (const [index, role] of (value.selectedRoles ?? []).entries()) {
+    for (const [capability, grant] of Object.entries(
+      role.grantedCapabilityCeiling ?? {},
+    )) {
+      const allowed = ceiling?.[rootCapability(capability)];
+      if (
+        allowed === undefined
+        || PERMISSION_RANK[grant] === undefined
+        || PERMISSION_RANK[allowed] === undefined
+        || PERMISSION_RANK[grant] > PERMISSION_RANK[allowed]
+      ) {
+        addSchemaError(
+          errors,
+          'ROLE_PRIVILEGE_EXPANSION',
+          `$.selectedRoles[${index}].grantedCapabilityCeiling`,
+        );
+      }
+    }
+    if (['external', 'external-catalog'].includes(role.source)) {
+      const catalog = context.roleCatalog;
+      const source = catalog?.source;
+      const catalogPath = context.roleCatalogPath?.replaceAll('\\', '/');
+      const locked = findLockedSource(
+        context.sourceLock,
+        source?.sourceId,
+      );
+      if (
+        !catalog
+        || !catalogPath
+        || catalogPath !== role.sourceCatalog?.replaceAll('\\', '/')
+        || source?.revision !== role.sourceRevision
+        || source?.license !== role.sourceLicense
+        || source?.sha256 !== role.sourceHash
+        || !locked
+        || locked.repository !== source?.repository
+        || locked.commit !== source?.revision
+        || locked.license !== source?.license
+        || locked.importedMode !== source?.importedMode
+        || locked.sha256 !== source?.sha256
+        || !locked.importedFiles?.includes(catalogPath)
+        || !(catalog.roles ?? []).some(
+          (candidate) => candidate.roleId === role.specialistRoleId,
+        )
+      ) {
+        addSchemaError(
+          errors,
+          'SOURCE_PROVENANCE_MISMATCH',
+          `$.selectedRoles[${index}]`,
+        );
+      }
+    } else if (
+      role.source === 'builtin'
+      && (
+        role.sourceCatalog !== BUILTIN_CATALOG.catalogId
+        || role.sourceRevision !== BUILTIN_CATALOG.revision
+        || role.sourceLicense !== BUILTIN_CATALOG.license
+        || role.sourceHash !== BUILTIN_CATALOG.sourceHash
+      )
+    ) {
+      addSchemaError(
+        errors,
+        'SOURCE_PROVENANCE_MISMATCH',
+        `$.selectedRoles[${index}]`,
+      );
+    }
+  }
+  const separation = value.separationOfDuties;
+  if (
+    separation?.required
+    && separation.implementationOwner
+    && separation.implementationOwner === separation.finalVerifier
+  ) {
+    addSchemaError(errors, 'ROLE_SEPARATION_VIOLATION', '$.separationOfDuties');
+  }
+  const previous = context.previousArtifact;
+  if (previous) {
+    const allowed = {
+      assigned: new Set(['superseded']),
+      'needs-human-selection': new Set(['assigned', 'superseded']),
+      blocked: new Set(['superseded']),
+    };
+    if (!allowed[previous.status]?.has(value.status)) {
+      addSchemaError(errors, 'INVALID_STATUS_TRANSITION', '$.status');
+    }
+  }
+}
+
+function validatePlan(value, context, errors) {
+  if (
+    Array.isArray(context.knownDecisionIds)
+    && !context.knownDecisionIds.includes(value.decisionId)
+  ) {
+    addSchemaError(errors, 'DECISION_REFERENCE_MISSING', '$.decisionId');
+  }
+  if (duplicateId(value.seats, 'seatId')) {
+    addSchemaError(errors, 'DUPLICATE_ID', '$.seats');
+  }
+  if (duplicateId(value.rounds, 'round')) {
+    addSchemaError(errors, 'DUPLICATE_ID', '$.rounds');
+  }
+  if (context.decision) {
+    if (
+      context.decision.decisionId !== value.decisionId
+      || context.decision.revision !== value.decisionRevision
+    ) {
+      addSchemaError(errors, 'DECISION_REFERENCE_MISSING', '$.decisionId');
+    }
+    if (sha256Canonical(context.decision) !== value.decisionSha256) {
+      addSchemaError(errors, 'DELIBERATION_HASH_MISMATCH', '$.decisionSha256');
+    }
+  }
+  if (value.planSha256) {
+    const unhashed = structuredClone(value);
+    delete unhashed.planSha256;
+    if (sha256Canonical(unhashed) !== value.planSha256) {
+      addSchemaError(errors, 'DELIBERATION_HASH_MISMATCH', '$.planSha256');
+    }
+  }
+}
+
+function importedResultHashInput(value) {
+  const hashable = structuredClone(value);
+  delete hashable.resultSha256;
+  hashable.importStatus = 'imported';
+  return hashable;
+}
+
+function normalizedReceiptHashInput(value) {
+  const hashable = importedResultHashInput(value);
+  if (
+    hashable.afterReceipt
+    && Object.hasOwn(hashable.afterReceipt, 'normalizedResultSha256')
+  ) {
+    delete hashable.afterReceipt.normalizedResultSha256;
+  }
+  return hashable;
+}
+
+function validateResult(value, context, errors) {
+  for (const [values, key, location] of [
+    [value.seatResults, 'seatId', '$.seatResults'],
+    [value.claims, 'claimId', '$.claims'],
+    [value.disagreements, 'disagreementId', '$.disagreements'],
+    [value.assumptions, 'assumptionId', '$.assumptions'],
+    [value.unknowns, 'unknownId', '$.unknowns'],
+    [value.rankedOptions, 'optionId', '$.rankedOptions'],
+  ]) {
+    if (duplicateId(values, key)) {
+      addSchemaError(errors, 'DUPLICATE_ID', location);
+    }
+  }
+  const plan = context.plan;
+  if (
+    Array.isArray(context.knownDecisionIds)
+    && !context.knownDecisionIds.includes(value.decisionId)
+  ) {
+    addSchemaError(errors, 'DECISION_REFERENCE_MISSING', '$.decisionId');
+  }
+  if (plan) {
+    if (
+      value.graphId !== plan.graphId
+      || value.graphVersion !== plan.graphVersion
+    ) {
+      addSchemaError(errors, 'DELIBERATION_VERSION_MISMATCH', '$.graphVersion');
+    }
+    if (value.sourceRevision !== plan.sourceRevision) {
+      addSchemaError(errors, 'DELIBERATION_SOURCE_MISMATCH', '$.sourceRevision');
+    }
+    if (
+      value.decisionId !== plan.decisionId
+      || value.decisionRevision !== plan.decisionRevision
+    ) {
+      addSchemaError(errors, 'DECISION_REFERENCE_MISSING', '$.decisionId');
+    }
+    if (
+      value.decisionSha256 !== plan.decisionSha256
+      || value.planRevision !== plan.planRevision
+      || value.planSha256 !== plan.planSha256
+    ) {
+      addSchemaError(errors, 'DELIBERATION_HASH_MISMATCH', '$.planSha256');
+    }
+    if (
+      value.beforeReceipt
+      && Object.hasOwn(value.beforeReceipt, 'decisionSha256')
+      && (
+        value.beforeReceipt.decisionSha256 !== plan.decisionSha256
+        || value.beforeReceipt.planSha256 !== plan.planSha256
+        || value.beforeReceipt.graphId !== plan.graphId
+        || value.beforeReceipt.graphVersion !== plan.graphVersion
+        || value.beforeReceipt.sourceRevision !== plan.sourceRevision
+      )
+    ) {
+      addSchemaError(errors, 'DELIBERATION_HASH_MISMATCH', '$.beforeReceipt');
+    }
+    if (
+      value.afterReceipt
+      && Object.hasOwn(value.afterReceipt, 'normalizedResultSha256')
+      && (
+        value.afterReceipt.graphId !== plan.graphId
+        || value.afterReceipt.graphVersion !== plan.graphVersion
+        || value.afterReceipt.sourceRevision !== plan.sourceRevision
+        || value.afterReceipt.normalizedResultSha256
+          !== sha256Canonical(normalizedReceiptHashInput(value))
+      )
+    ) {
+      addSchemaError(errors, 'DELIBERATION_HASH_MISMATCH', '$.afterReceipt');
+    }
+  }
+  if (
+    value.resultSha256 !== undefined
+    && value.resultSha256 !== sha256Canonical(importedResultHashInput(value))
+  ) {
+    addSchemaError(errors, 'DELIBERATION_HASH_MISMATCH', '$.resultSha256');
+  }
+  if (
+    context.operation === 'stored'
+    && value.resultSha256 === undefined
+  ) {
+    addSchemaError(errors, 'DELIBERATION_HASH_MISMATCH', '$.resultSha256');
+  }
+  if (
+    value.beforeReceipt?.stage === 'before'
+    && value.beforeReceipt.status !== 'accepted'
+  ) {
+    addSchemaError(errors, 'INVALID_STATUS_TRANSITION', '$.beforeReceipt.status');
+  }
+  if (
+    value.afterReceipt?.stage === 'after'
+    && value.afterReceipt.status !== 'ready'
+  ) {
+    addSchemaError(errors, 'INVALID_STATUS_TRANSITION', '$.afterReceipt.status');
+  }
+  if (value.importStatus === 'human-confirmed') {
+    if (context.operation === 'import') {
+      addSchemaError(errors, 'INVALID_STATUS_TRANSITION', '$.importStatus');
+      return;
+    }
+    const confirmation = context.humanConfirmation;
+    const imported = structuredClone(value);
+    imported.importStatus = 'imported';
+    if (
+      !confirmation
+      || confirmation.decisionId !== value.decisionId
+      || confirmation.decisionRevision !== value.decisionRevision
+      || confirmation.decisionSha256 !== value.decisionSha256
+      || confirmation.planSha256 !== value.planSha256
+      || confirmation.resultSha256
+        !== (value.resultSha256 ?? sha256Canonical(importedResultHashInput(imported)))
+      || confirmation.status !== 'human-confirmed'
+    ) {
+      addSchemaError(
+        errors,
+        'DELIBERATION_NOT_HUMAN_CONFIRMED',
+        '$.importStatus',
+      );
+    }
+  }
+}
+
+function validateSemantic(schemaName, value, context, errors) {
+  if (value?.schemaVersion !== 1) {
+    addSchemaError(errors, 'SCHEMA_VERSION_UNSUPPORTED', '$.schemaVersion');
+  }
+  if (schemaName === 'source-lock.schema.json') {
+    if (duplicateId(value?.sources, 'sourceId')) {
+      addSchemaError(errors, 'DUPLICATE_ID', '$.sources');
+    }
+    for (const [index, source] of (value?.sources ?? []).entries()) {
+      if (!source.commit) {
+        addSchemaError(
+          errors,
+          'SOURCE_REVISION_UNPINNED',
+          `$.sources[${index}].commit`,
+        );
+      }
+      if (!source.license) {
+        addSchemaError(
+          errors,
+          'SOURCE_LICENSE_MISSING',
+          `$.sources[${index}].license`,
+        );
+      }
+      if (!source.sha256) {
+        addSchemaError(
+          errors,
+          'SOURCE_HASH_MISSING',
+          `$.sources[${index}].sha256`,
+        );
+      }
+    }
+  }
+  if (
+    schemaName === 'risk-profile.schema.json'
+    && duplicateId(value?.tasks, 'taskId')
+  ) {
+    addSchemaError(errors, 'DUPLICATE_ID', '$.tasks');
+  }
+  if (
+    schemaName === 'role-catalog.schema.json'
+    || schemaName === 'governance-pack.schema.json'
+  ) {
+    validateExternalSource(
+      value?.source,
+      context.sourceLock,
+      errors,
+      '$.source',
+      context.artifactPath,
+    );
+  }
+  if (
+    schemaName === 'role-catalog.schema.json'
+    && duplicateId(value?.roles, 'roleId')
+  ) {
+    addSchemaError(errors, 'DUPLICATE_ID', '$.roles');
+  }
+  if (schemaName === 'role-assignment.schema.json') {
+    validateRoleAssignment(value, context, errors);
+  }
+  if (schemaName === 'deliberation-plan.schema.json') {
+    validatePlan(value, context, errors);
+  }
+  if (schemaName === 'deliberation-result.schema.json') {
+    validateResult(value, context, errors);
+  }
+}
+
+export function validateArtifact(nameOrValue, valueOrOptions = {}, context = {}) {
+  if (
+    typeof nameOrValue === 'string'
+    && SCHEMA_NAMES.has(nameOrValue)
+  ) {
+    const schemaName = nameOrValue;
+    const value = valueOrOptions;
+    const schema = loadSchema(schemaName);
+    const errors = [];
+    validateSchemaNode(schema, value, schema, '$', errors);
+    try {
+      scanArtifact(value, context.subject);
+    } catch (error) {
+      addSchemaError(errors, error.code, '$');
+    }
+    validateSemantic(schemaName, value, context, errors);
+    return { valid: errors.length === 0, errors };
+  }
+  const value = nameOrValue;
+  const options = valueOrOptions ?? {};
+  scanArtifact(value, options.subject);
+  return { valid: true, errors: [] };
+}
