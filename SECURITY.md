@@ -50,9 +50,47 @@ GovernSeed provides project governance documents, scripts, and agent workflow ro
 - External catalog, Pack, and specialist provenance must exact-match one pinned
   source-lock repository, commit, license, import mode, and hash. Normal
   commands never fetch or update a source.
+- A selected external role must also exact-match the catalog role's
+  responsibility, relevant task surface, and requested capabilities. Catalog
+  metadata cannot widen or contradict the assignment.
 - Errors and JSON findings expose only a stable code and safe subject. They
   never reflect a matched secret, raw input, provider content, or external
   absolute path.
+
+## Policy Compiler Safety Boundary
+
+- Compilation reads only bounded project-local governance inputs and writes
+  content-addressed policy, Codex Adapter, and receipt JSON below
+  `.agent-governance/`.
+- The most-restrictive meet is authoritative: role requests and optional Packs
+  can narrow a permission ceiling but cannot expand it.
+- Dry-run performs no filesystem mutation. A normal transaction writes its
+  receipt last; policy or Adapter output without the matching receipt remains
+  incomplete and doctor reports `COMPILE_PARTIAL_OUTPUT`.
+- Final policy and Adapter bytes, hashes, ownership, and parent identities are
+  revalidated immediately before the receipt is written.
+- Final create/replace publication rechecks every parent component; detected
+  swaps roll back only identity-matched new output or restore the exact prior
+  identity.
+- Existing non-owned or drifted output is preserved and blocked. Rollback
+  removes only newly created output that still exact-matches the planned
+  GovernSeed owner and hash.
+- Normal compile does not use the network, spawn an Agent/model/Provider,
+  inspect credentials or user-global Codex state, or write `.codex` runtime
+  configuration. It never reads `.agent-governance/local/`.
+- Secret-bearing URL keys are normalized before query and fragment scanning;
+  OAuth token/secret families fail closed without reflecting values.
+- Pack checks remain explicit `EVD-PACK-*` evidence obligations. A
+  task-scoped Pack fails closed when multiple active tasks would make the
+  aggregate version-1 policy ambiguous.
+- A denied generated-artifact capability permits a no-write dry-run preview but
+  blocks the write transaction; approval cannot turn a deny into permission.
+- Unsupported and representable-only controls remain explicit. A successful
+  compile is not an OS sandbox, Attestation, runtime evidence, approval, or
+  proof that Codex enforced the policy.
+- Phase 2 has no approval-evidence input. Active publish or delete work that
+  requires approval remains a strict doctor failure; generated guidance never
+  counts as approval.
 
 ## Governance Evidence Safety Boundary
 
@@ -86,6 +124,11 @@ If you find a security issue in the starter scripts, templates, examples, or gen
 - `scripts/doctor.mjs` must not read secrets or print private values.
 - Templates should teach projects to record secret names and ownership, not secret values.
 - Examples must use placeholder data only.
+- Policy Compiler review must verify the most-restrictive permission meet,
+  governed input hashes, source/owner conflicts, path/symlink/hardlink and
+  parent-swap defenses, exact-owner rollback, receipt-last completion, and the
+  absence of `.codex`, credential, network, child-process, or user-global
+  access.
 - Runtime-proof and governance-impact paths must scan before persistence, remove raw temporary data in `finally`, and leave no artifact when cleanup cannot be proven.
 - OCI review must verify the exact digest/version/binary hash, receipt and manifest identity, `sudo -n`/`nsenter` command boundary and invoking-UID/GID drop, bounded stdin configuration/lifeline, absence of secret-bearing environment preservation and a container UDS mount, lazy credential ordering, closed request fields/references/tool execution, progressive SSE limits, real netns-to-host-UDS behavior, whole-boundary teardown, and post-attempt cleanup.
 

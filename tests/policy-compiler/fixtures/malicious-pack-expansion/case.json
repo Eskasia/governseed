@@ -1,0 +1,4 @@
+{
+  "fixture": "malicious-pack-expansion",
+  "expected": ["compile-blocked", "POLICY_PRIVILEGE_EXPANSION"]
+}

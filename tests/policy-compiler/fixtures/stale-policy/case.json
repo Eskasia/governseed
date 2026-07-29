@@ -1,0 +1,4 @@
+{
+  "fixture": "stale-policy",
+  "expected": ["POLICY_SOURCE_HASH_MISMATCH", "strict-doctor-fails"]
+}

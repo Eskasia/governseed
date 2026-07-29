@@ -1,0 +1,579 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Eskasia/governseed/schemas/policy-manifest.schema.json",
+  "title": "GovernSeed Policy Manifest",
+  "description": "A deterministic, target-neutral policy candidate compiled from project-local governance inputs.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "policyId",
+    "revision",
+    "projectId",
+    "generatedAt",
+    "compilerVersion",
+    "inputHashes",
+    "riskProfileRef",
+    "sourceRefs",
+    "roleAssignmentRefs",
+    "enabledPacks",
+    "controls",
+    "targets",
+    "unsupportedControls",
+    "humanApprovalControls",
+    "evidenceRequirements",
+    "ownership",
+    "status"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "policyId": {
+      "$ref": "#/$defs/policyId"
+    },
+    "revision": {
+      "type": "integer",
+      "minimum": 1,
+      "maximum": 2147483647
+    },
+    "projectId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^(?:RISK-[A-Z0-9-]+|[a-z][a-z0-9-]*)$"
+    },
+    "generatedAt": {
+      "const": null
+    },
+    "compilerVersion": {
+      "$ref": "#/$defs/version"
+    },
+    "inputHashes": {
+      "$ref": "#/$defs/hashReferences"
+    },
+    "riskProfileRef": {
+      "$ref": "#/$defs/riskProfileReference"
+    },
+    "sourceRefs": {
+      "$ref": "#/$defs/sourceReferences"
+    },
+    "roleAssignmentRefs": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/roleAssignmentReference"
+      }
+    },
+    "enabledPacks": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/enabledPack"
+      }
+    },
+    "controls": {
+      "$ref": "#/$defs/controlGroups"
+    },
+    "targets": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/target"
+      }
+    },
+    "unsupportedControls": {
+      "$ref": "#/$defs/unsupportedControls"
+    },
+    "humanApprovalControls": {
+      "$ref": "#/$defs/controlIds"
+    },
+    "evidenceRequirements": {
+      "$ref": "#/$defs/stableReferences"
+    },
+    "ownership": {
+      "$ref": "#/$defs/ownership"
+    },
+    "status": {
+      "$ref": "#/$defs/status"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "policyId": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 128,
+      "pattern": "^POL-[A-Z0-9](?:[A-Z0-9-]{0,122}[A-Z0-9])?$"
+    },
+    "controlId": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 128,
+      "pattern": "^POL-[A-Z0-9](?:[A-Z0-9-]{0,122}[A-Z0-9])?$"
+    },
+    "assignmentId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^ROLE-[0-9]{3,}$"
+    },
+    "taskId": {
+      "type": "string",
+      "minLength": 8,
+      "maxLength": 128,
+      "pattern": "^TASK-[0-9]{3,}$"
+    },
+    "profileId": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^(?:RISK-[A-Z0-9-]+|[a-z][a-z0-9-]*)$"
+    },
+    "stableReference": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 256,
+      "pattern": "^(?:SRC|REQ|DEC|DLB|AC|TASK|ROLE|POL|EVD|ATT|RISK|PACK|CAT|CONF)-[A-Z0-9@.-]+$"
+    },
+    "reasonCode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[0-9A-Za-z][0-9A-Za-z._+-]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "portablePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9._@+-]+(?:/[A-Za-z0-9._@+-]+)*$"
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 64,
+      "format": "date-time"
+    },
+    "stableReferences": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/stableReference"
+      }
+    },
+    "sourceReferences": {
+      "type": "array",
+      "maxItems": 512,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 5,
+        "maxLength": 256,
+        "pattern": "^(?:(?:SRC|REQ|DEC|DLB|AC|TASK|ROLE|POL|EVD|ATT|RISK|PACK|CAT|CONF)-[A-Z0-9@.-]+|PACK:[A-Za-z0-9][A-Za-z0-9-]*@[0-9A-Za-z][0-9A-Za-z._+-]*)$"
+      }
+    },
+    "controlIds": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/controlId"
+      }
+    },
+    "boundedStrings": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 512
+      }
+    },
+    "hashReference": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/portablePath"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "hashReferences": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 512,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/hashReference"
+      }
+    },
+    "riskProfileReference": {
+      "type": "object",
+      "required": [
+        "profileId",
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "profileId": {
+          "$ref": "#/$defs/profileId"
+        },
+        "path": {
+          "$ref": "#/$defs/portablePath"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "roleAssignmentReference": {
+      "type": "object",
+      "required": [
+        "assignmentId",
+        "taskId",
+        "revision",
+        "path",
+        "sha256"
+      ],
+      "properties": {
+        "assignmentId": {
+          "$ref": "#/$defs/assignmentId"
+        },
+        "taskId": {
+          "$ref": "#/$defs/taskId"
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 2147483647
+        },
+        "path": {
+          "$ref": "#/$defs/portablePath"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "enabledPack": {
+      "type": "object",
+      "required": [
+        "packId",
+        "version",
+        "path",
+        "sha256",
+        "sourceRef",
+        "mechanicalCheckIds",
+        "humanReviewCheckIds",
+        "checkRequirements"
+      ],
+      "properties": {
+        "packId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128,
+          "pattern": "^(?:PACK-[A-Z0-9-]+|[a-z][a-z0-9-]*)$"
+        },
+        "version": {
+          "$ref": "#/$defs/version"
+        },
+        "path": {
+          "$ref": "#/$defs/portablePath"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "sourceRef": {
+          "$ref": "#/$defs/stableReference"
+        },
+        "mechanicalCheckIds": {
+          "$ref": "#/$defs/boundedStrings"
+        },
+        "humanReviewCheckIds": {
+          "$ref": "#/$defs/boundedStrings"
+        },
+        "checkRequirements": {
+          "type": "array",
+          "maxItems": 512,
+          "items": {
+            "$ref": "#/$defs/checkRequirement"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "checkRequirement": {
+      "type": "object",
+      "required": [
+        "checkId",
+        "kind",
+        "evidenceRef"
+      ],
+      "properties": {
+        "checkId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "kind": {
+          "type": "string",
+          "enum": [
+            "mechanical",
+            "human-review"
+          ]
+        },
+        "evidenceRef": {
+          "$ref": "#/$defs/stableReference"
+        }
+      },
+      "additionalProperties": false
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "deny",
+        "require-approval",
+        "constrained-allow",
+        "allow",
+        "advisory"
+      ]
+    },
+    "support": {
+      "type": "string",
+      "enum": [
+        "enforceable",
+        "representable-only",
+        "unsupported",
+        "requires-human-approval",
+        "runtime-evidence-required"
+      ]
+    },
+    "targetSupport": {
+      "type": "object",
+      "required": [
+        "codex"
+      ],
+      "properties": {
+        "codex": {
+          "$ref": "#/$defs/support"
+        }
+      },
+      "additionalProperties": false
+    },
+    "control": {
+      "type": "object",
+      "required": [
+        "controlId",
+        "capability",
+        "mode",
+        "source",
+        "reasonCodes",
+        "scope",
+        "targetSupport",
+        "evidenceRequirement"
+      ],
+      "properties": {
+        "controlId": {
+          "$ref": "#/$defs/controlId"
+        },
+        "capability": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[a-z][a-z0-9.-]*$"
+        },
+        "mode": {
+          "$ref": "#/$defs/mode"
+        },
+        "source": {
+          "$ref": "#/$defs/boundedStrings"
+        },
+        "reasonCodes": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 256,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/reasonCode"
+          }
+        },
+        "scope": {
+          "$ref": "#/$defs/boundedStrings"
+        },
+        "targetSupport": {
+          "$ref": "#/$defs/targetSupport"
+        },
+        "evidenceRequirement": {
+          "$ref": "#/$defs/stableReferences"
+        }
+      },
+      "additionalProperties": false
+    },
+    "controlArray": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/control"
+      }
+    },
+    "controlGroups": {
+      "type": "object",
+      "required": [
+        "filesystem",
+        "shell",
+        "network",
+        "credentials",
+        "destructiveActions",
+        "publishActions",
+        "externalContent",
+        "generatedArtifacts",
+        "retention",
+        "verification"
+      ],
+      "properties": {
+        "filesystem": {
+          "$ref": "#/$defs/controlArray"
+        },
+        "shell": {
+          "$ref": "#/$defs/controlArray"
+        },
+        "network": {
+          "$ref": "#/$defs/controlArray"
+        },
+        "credentials": {
+          "$ref": "#/$defs/controlArray"
+        },
+        "destructiveActions": {
+          "$ref": "#/$defs/controlArray"
+        },
+        "publishActions": {
+          "$ref": "#/$defs/controlArray"
+        },
+        "externalContent": {
+          "$ref": "#/$defs/controlArray"
+        },
+        "generatedArtifacts": {
+          "$ref": "#/$defs/controlArray"
+        },
+        "retention": {
+          "$ref": "#/$defs/controlArray"
+        },
+        "verification": {
+          "$ref": "#/$defs/controlArray"
+        }
+      },
+      "additionalProperties": false
+    },
+    "target": {
+      "type": "object",
+      "required": [
+        "target",
+        "adapterVersion",
+        "status"
+      ],
+      "properties": {
+        "target": {
+          "const": "codex"
+        },
+        "adapterVersion": {
+          "$ref": "#/$defs/version"
+        },
+        "status": {
+          "$ref": "#/$defs/status"
+        }
+      },
+      "additionalProperties": false
+    },
+    "unsupportedControl": {
+      "type": "object",
+      "required": [
+        "controlId",
+        "capability",
+        "target",
+        "support",
+        "reasonCode"
+      ],
+      "properties": {
+        "controlId": {
+          "$ref": "#/$defs/controlId"
+        },
+        "capability": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[a-z][a-z0-9.-]*$"
+        },
+        "target": {
+          "const": "codex"
+        },
+        "support": {
+          "const": "unsupported"
+        },
+        "reasonCode": {
+          "$ref": "#/$defs/reasonCode"
+        }
+      },
+      "additionalProperties": false
+    },
+    "unsupportedControls": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/unsupportedControl"
+      }
+    },
+    "ownership": {
+      "type": "object",
+      "required": [
+        "generator",
+        "artifactType"
+      ],
+      "properties": {
+        "generator": {
+          "const": "GovernSeed"
+        },
+        "artifactType": {
+          "const": "policy-manifest"
+        }
+      },
+      "additionalProperties": false
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "blocked",
+        "superseded"
+      ]
+    }
+  }
+}

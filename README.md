@@ -7,7 +7,7 @@ agent-native projects. It turns intent, decisions, roles, risk boundaries,
 and evidence requirements into versioned, machine-checkable contracts
 before implementation begins.
 
-[![CI](https://github.com/Eskasia/agent-governance-starter/actions/workflows/validate-starter.yml/badge.svg)](https://github.com/Eskasia/agent-governance-starter/actions/workflows/validate-starter.yml)
+[![CI](https://github.com/Eskasia/governseed/actions/workflows/validate-starter.yml/badge.svg)](https://github.com/Eskasia/governseed/actions/workflows/validate-starter.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node >=20](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](package.json)
 
@@ -28,11 +28,12 @@ The starter makes four things explicit:
 |---|---|
 | Primary use | Bootstrap governance for a new or existing agent-assisted project |
 | Input | Target directory, runtime selection, and governance profile |
-| Output | Markdown governance documents, project-local decision and role data, runtime entrypoints, profile metadata, and doctor checks |
+| Output | Markdown governance documents, project-local decision, role, and policy data, a Codex policy Adapter and compile receipt, runtime entrypoints, profile metadata, and doctor checks |
 | Supported runtimes | Codex, Claude Code, Antigravity, or all three |
+| Phase 2 policy target | Codex only |
 | Default profile | `base` |
 | Runtime requirement | Node.js 20 or newer |
-| Local network requirement | None for `init`, `doctor`, or deterministic test execution |
+| Local network requirement | None for `init`, `doctor`, `compile`, or deterministic test execution |
 | Public CI boundary | No secrets, provider calls, or real agent-runtime calls |
 
 ## What this repository is — and is not
@@ -44,8 +45,9 @@ It is:
 - a project-intake and decision-governance bootstrapper;
 - a source of canonical agent rules and thin runtime entrypoints;
 - a profile-driven document generator;
-- a local doctor, fixture, runtime-contract, and evidence-validation suite.
-- a deterministic, project-local decision review and responsibility-assignment foundation.
+- a local doctor, fixture, runtime-contract, and evidence-validation suite;
+- a deterministic, project-local decision review and responsibility-assignment foundation;
+- a deterministic Policy Compiler with a project-local Codex Adapter.
 
 It is not:
 
@@ -93,13 +95,13 @@ The `init` and `doctor` CLIs use Node.js built-ins and do not require `npm insta
 ### Generate a base Codex project
 
 ```bash
-git clone https://github.com/Eskasia/agent-governance-starter.git
+git clone https://github.com/Eskasia/governseed.git
 
-node agent-governance-starter/scripts/init.mjs ./my-new-project \
+node governseed/scripts/init.mjs ./my-new-project \
   --agent codex \
   --profile base
 
-node agent-governance-starter/scripts/doctor.mjs ./my-new-project
+node governseed/scripts/doctor.mjs ./my-new-project
 ```
 
 `init` preserves existing project files. When a destination already exists, the command reports `SKIP` instead of overwriting it.
@@ -107,11 +109,11 @@ node agent-governance-starter/scripts/doctor.mjs ./my-new-project
 ### Generate all runtime entrypoints for a fullstack AI project
 
 ```bash
-node agent-governance-starter/scripts/init.mjs ./my-ai-product \
+node governseed/scripts/init.mjs ./my-ai-product \
   --agent all \
   --profile fullstack-ai
 
-node agent-governance-starter/scripts/doctor.mjs --json ./my-ai-product
+node governseed/scripts/doctor.mjs --json ./my-ai-product
 ```
 
 ### Continue with the agent
@@ -166,13 +168,17 @@ node scripts/doctor.mjs
 
 Without `--profile`, doctor reads `.agent-governance.json` and falls back to `base`.
 
-### Decision and role foundation
+### Decision, role, and policy foundation
 
-Milestone 1 uses these terms as strict product contracts:
+Milestone 1 and Phase 2 use these terms as strict product contracts:
 
 - **Governance Pack** — an optional collection of processes, rules, and checks that can only add restrictions or checks and cannot expand existing permissions.
-- **Policy Compiler** — a pure-local compiler that converts confirmed risks, project rules, and Governance Packs into Agent-tool-readable settings. It is designed here for a later milestone and is not implemented.
-- **Attestation** — a comparison of declared policy, compiled output, and observable target settings; it does not mean an Agent Runtime necessarily obeys that policy. It is designed here for a later milestone and is not implemented.
+- **Policy Compiler** — a pure-local compiler that converts confirmed risks,
+  project rules, role permission ceilings, and Governance Packs into a neutral
+  policy manifest and Agent-tool-specific project-local settings.
+- **Attestation** — a comparison of declared policy, compiled output, and
+  observable target settings; it does not mean an Agent Runtime necessarily
+  obeys that policy. It remains deferred to Phase 3.
 - **Adapter** — a thin layer that converts neutral governance data into a tool-specific format; it must not repeat core decision logic or execute an Agent.
 - **Deliberation** — four AI seats making multi-round proposals, critiques, verification, and synthesis about one decision; its result is decision advice, not human approval.
 - **Role Assignment** — selection of the minimum necessary delivery, review, and verification responsibilities from task, risk, stack, and acceptance data; a role cannot acquire extra tools, network, credentials, or write access.
@@ -186,10 +192,12 @@ SRC → REQ → DEC → AC → TASK → ROLE → POL → EVD → ATT
 ```
 
 `OPEN_LOOP` may reference an unconfirmed `SRC`, `REQ`, `DEC`, `TASK`, or `EVD`.
-Milestone 1 implements `SRC` through `ROLE` plus evidence references. `POL` and
-`ATT` remain later, separately reviewed work.
+Milestone 1 implements `SRC` through `ROLE` plus evidence references. Phase 2
+adds candidate `POL` artifacts for Codex; `ATT` remains later, separately
+reviewed work.
 
 ```text
+agent-governance compile <project> --target codex [--dry-run] [--json]
 agent-governance assess <project> [--task <id>] [--json]
 agent-governance deliberate plan <project> --decision <id> [--json]
 agent-governance deliberate import <project> --file <path> [--json]
@@ -198,13 +206,26 @@ agent-governance roles assign <project> --task <id> [--catalog <path>] [--overri
 agent-governance pack list <project> [--json]
 ```
 
-These commands use only explicit project files and deterministic rules. They do
+These commands use only explicit project files and deterministic rules. Compile
+produces a neutral candidate policy, a thin Codex JSON Adapter, and a
+receipt-last transaction record; it does not configure or execute Codex. They do
 not call an external model, run an Agent, access credentials, install plugins,
 write user-global settings, or use the network. JSON mode writes one object to
 stdout; diagnostics go to stderr. Stable exit codes are `0` success, `1`
 incomplete governed input, `2` usage error, `3` schema or semantic validation
 failure, `4` a fail-closed safety, policy, reference, permission, or replay
 block, and `5` bounded project-local I/O failure.
+
+Phase 2 does not import or validate approval evidence. Active publish or delete
+work that requires approval therefore remains a strict doctor failure; a
+generated policy or Adapter never clears that gate.
+
+The version-1 manifest keeps target-independent restriction decisions but
+contains Codex-specific support annotations. Pack checks become explicit
+`EVD-PACK-*` evidence obligations. A task-scoped Pack is retained for a single
+active task and fails closed when multiple active tasks would make an aggregate
+policy ambiguous. Compile never reads `.agent-governance/local/`; if generated
+artifacts are denied, only dry-run preview is available.
 
 ## Generated project
 
@@ -220,6 +241,9 @@ my-new-project/
 │   ├── packs.lock.json
 │   ├── decisions/
 │   ├── role-assignments/
+│   ├── policies/              # created by compile
+│   ├── adapters/codex/        # created by compile; JSON guidance only
+│   ├── receipts/              # created last after a complete compile
 │   └── local/                 # ignored: raw/private runtime material only
 ├── AGENTS.md
 ├── CONTEXT.md
@@ -251,6 +275,9 @@ my-new-project/
 | `.agent-governance/packs.lock.json` | Enabled Pack summaries, exact project-local artifact paths, and pinned source metadata |
 | `.agent-governance/decisions/DEC-*/` | Content-bound decision, plan, imported result, and separate human confirmation records |
 | `.agent-governance/role-assignments/TASK-*.json` | Deterministic, reason-coded responsibility selections and append-only overrides |
+| `.agent-governance/policies/POL-*.json` | Canonical, content-addressed policy candidate produced from governed structured inputs |
+| `.agent-governance/adapters/codex/POL-*.json` | Thin Codex mapping with unsupported controls and human-review guidance; not runtime configuration |
+| `.agent-governance/receipts/COMPILE-*.json` | Receipt-last input/output hashes and transaction outcome; not Attestation |
 
 Import persists only `imported`; it never supplies approval. A separate
 project-local declared-human-confirmation record, bound to the exact decision,
@@ -351,6 +378,7 @@ See [`workflows/research-synthesis.md`](workflows/research-synthesis.md) and the
 | Runtime entrypoint contracts | `npm run runtime:proof` |
 | Governance and rule lifecycle | `npm run test:governance` |
 | Decision, role, schema, and artifact safety | `npm run test:decision-role` |
+| Policy Compiler, Codex Adapter, receipt, doctor, and eight fixtures | `npm run test:policy-compiler` |
 | Governance-impact harness mechanics | `npm run test:governance-impact` |
 | Privacy-negative paths | `npm run test:privacy` |
 | Complete deterministic local suite | `npm run ci` |
@@ -377,6 +405,7 @@ These checks answer different questions and must not be combined into one claim:
 |---|---|---|
 | Project doctor | Required documents, content quality, conditional hints, routing, and traceability | Product correctness or production safety |
 | Fixture checks | Coherent filled examples and stable doctor JSON | External adoption |
+| Policy Compiler | Canonical project-local policy, Codex mapping, and receipt integrity | That Codex loaded or enforced the policy |
 | Runtime proof | Minimal first-response contract for generated Codex, Claude, and Antigravity entrypoints | Live-model quality or governance effectiveness |
 | Governance-impact evaluator | Deterministic mechanics for comparing the same synthetic task in baseline and governed arms | That governance improves delivery |
 
@@ -426,11 +455,13 @@ See [`docs/governance-impact-eval.md`](docs/governance-impact-eval.md) for the f
 | [`scripts/`](scripts/) | Init, umbrella governance CLI, doctor, validation, smoke, runtime-proof, and evaluator CLIs |
 | [`tests/governance/`](tests/governance/) | Doctor, rule-lifecycle, and traceability tests |
 | [`tests/decision-role/`](tests/decision-role/) | Decision/role fixtures, schema contracts, CLI behavior, artifact safety, and doctor integration |
+| [`tests/policy-compiler/`](tests/policy-compiler/) | Policy merge, Codex Adapter, transaction safety, doctor, and eight executable fixture contracts |
 | [`tests/runtime/`](tests/runtime/) | Runtime first-response fixtures and contracts |
 | [`tests/governance-impact/`](tests/governance-impact/) | Synthetic scenarios, deterministic scorer, adapters, and containment tests |
 | [`tests/privacy/`](tests/privacy/) | Negative privacy and unsafe-input regression tests |
 | [`examples/template-adoption/`](examples/template-adoption/) | Filled synthetic project packs and expected doctor JSON |
 | [`docs/research/source-adoption-matrix.md`](docs/research/source-adoption-matrix.md) | Exact research commits, adopted/rejected scope, licenses, and attribution |
+| [`docs/policy-compiler.md`](docs/policy-compiler.md) | Phase 2 compiler inputs, merge rules, CLI, outputs, findings, and non-claims |
 | [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) | Required attribution and future-copying boundary |
 | [`.github/`](.github/) | CI workflows, contribution templates, and release-note configuration |
 | [`docs/index.md`](docs/index.md) | Complete documentation index |
@@ -449,6 +480,9 @@ For a new maintainer, read in this order:
 - Generated documents record secret names and ownership, never secret values.
 - Committable decision and role artifacts contain normalized metadata and
   bounded synthesis only; ignored local storage is never evidence.
+- A compile receipt proves only a complete local materialization transaction.
+  It is not Attestation, runtime evidence, or proof that Codex enforced a
+  control.
 - Public CI uses synthetic fixtures, deterministic checks, and forced mock runtime proof without credentials.
 - Real execution paths are explicit, synthetic-only, and fail closed on privacy, containment, persistence, schema, or cleanup uncertainty.
 - A passing fixture, doctor run, runtime smoke test, or offline evaluator control is not proof of production readiness, external adoption, universal suitability, or governance effectiveness.
@@ -487,6 +521,12 @@ No. It copies every fixed and conditional Markdown template. Activation still de
 ### Does runtime proof show that governance works?
 
 No. Runtime proof checks generated entrypoint behavior. Governance-impact evaluation is separate, and its offline controls do not support an effectiveness claim.
+
+### Does `agent-governance compile` enforce policy in Codex?
+
+No. It generates a canonical policy candidate, a project-local Codex JSON
+mapping, and a receipt. It does not write Codex runtime configuration, inspect
+effective settings, execute an Agent, or establish runtime enforcement.
 
 ### Is there a hosted service or HTTP API?
 

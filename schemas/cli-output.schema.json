@@ -67,6 +67,9 @@
           "$ref": "deliberation-result.schema.json"
         },
         {
+          "$ref": "compile-receipt.schema.json"
+        },
+        {
           "$ref": "#/$defs/riskAssessment"
         },
         {

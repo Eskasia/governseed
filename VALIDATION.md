@@ -26,7 +26,11 @@ For filled fixtures or release checks, use strict mode:
 node scripts/doctor.mjs --strict /path/to/your/project
 ```
 
-Strict mode treats missing documents and warnings as failures. Normal mode allows placeholder warnings so a freshly initialized project can still be inspected.
+Strict mode treats missing documents and blocking warnings as failures. Honest
+Policy Compiler limitation codes such as `POLICY_UNSUPPORTED_CONTROL` and
+`CODEX_CONTROL_NOT_ENFORCEABLE` remain advisory in strict mode. Normal mode
+allows placeholder warnings so a freshly initialized project can still be
+inspected.
 
 ## Decision And Role Foundation
 
@@ -73,6 +77,68 @@ to stdout; progress and diagnostics belong on stderr. The documented exit codes
 are `0` success, `1` incomplete governed input, `2` usage error, `3` schema or
 semantic validation failure, `4` a fail-closed safety/policy/reference block,
 and `5` bounded project-local I/O failure.
+
+## Risk-to-Policy Compiler
+
+Run the deterministic Phase 2 suite with:
+
+```bash
+npm run test:policy-compiler
+```
+
+It covers the three closed compiler Schemas, most-restrictive policy merge,
+role/Pack non-expansion, canonical hashes and byte stability, Codex
+representable/unsupported controls, dry-run non-mutation, receipt-last atomic
+writes, owner conflicts, stale/drift/partial doctor findings, traversal,
+symlink/hardlink and parent-swap defenses, UTF-8/CRLF and 1 MiB limits, secret
+blocking, ignored-local exclusion, Pack evidence obligations and task-scope
+fail-closed behavior, final pre-receipt output revalidation, isolated
+user-global state, valid proposed/active decision handling, external role
+catalog provenance plus responsibility/surface/capability compatibility,
+normalized OAuth secret-bearing URL key rejection, malformed-assignment
+classification, JSON output, and stable exit codes.
+
+The eight executable fixture contracts are:
+
+- `low-risk-codex`
+- `restricted-data-codex`
+- `publish-approval-codex`
+- `malicious-pack-expansion`
+- `owner-conflict`
+- `stale-policy`
+- `dry-run`
+- `cross-platform-paths`
+
+`cross-platform-paths` pins the expected policy ID plus manifest and Adapter
+SHA-256 values. Ubuntu, macOS, and Windows therefore compare the same canonical
+bytes rather than merely passing independent path-normalization checks.
+
+Direct checks:
+
+```bash
+node --test tests/policy-compiler/artifact-safety.test.mjs
+node --test tests/policy-compiler/cli-contracts.test.mjs
+node --test tests/policy-compiler/core.test.mjs
+node --test tests/policy-compiler/doctor-contracts.test.mjs
+node --test tests/policy-compiler/fixture-contracts.test.mjs
+node --test tests/policy-compiler/schema-contracts.test.mjs
+```
+
+Compile creates only:
+
+```text
+.agent-governance/policies/<policy-id>.json
+.agent-governance/adapters/codex/<policy-id>.json
+.agent-governance/receipts/<compile-id>.json
+```
+
+The Adapter is JSON guidance, not Codex runtime configuration or a sandbox.
+The receipt proves local transaction completion, not enforcement or
+Attestation.
+
+Phase 2 does not import or verify approval evidence. Active publish or delete
+work that requires approval remains a strict doctor failure even after
+compilation.
 
 ## Init Smoke Checks
 
@@ -175,10 +241,11 @@ npm pack --dry-run --json
 git diff --check
 ```
 
-The package dry-run must list the umbrella CLI, both legacy binaries, schemas,
-built-in responsibility catalog, and third-party notices without
-`.agent-governance/local/` content. `git diff --check` must report no whitespace
-errors.
+The package dry-run must list the umbrella CLI, both legacy binaries, all three
+compiler modules and doctor integration, the three compiler Schemas, compiler
+docs/tests/eight fixtures, the built-in responsibility catalog, and third-party
+notices without `.agent-governance/local/` content. `git diff --check` must
+report no whitespace errors.
 
 The public runtime-proof workflow also stays in mock mode and never sets `RUNTIME_PROOF_REAL`.
 It runs `npm run runtime:proof:mock`, which explicitly overrides any inherited real-mode opt-in.

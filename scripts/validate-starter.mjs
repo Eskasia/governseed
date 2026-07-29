@@ -578,8 +578,13 @@ const requiredRepositoryFiles = [
   'docs/research/source-adoption-matrix.md',
   'docs/adr/002-modular-core-and-adapter-boundary.md',
   'docs/adr/003-deliberation-and-role-assignment-model.md',
+  'docs/adr/004-risk-to-policy-compiler.md',
+  'docs/policy-compiler.md',
+  'docs/research/2026-07-29-codex-policy-capability-matrix.md',
   'docs/superpowers/specs/2026-07-29-decision-role-foundation-design.md',
   'docs/superpowers/plans/2026-07-29-decision-role-foundation-plan.md',
+  'docs/superpowers/specs/2026-07-29-risk-to-policy-compiler-design.md',
+  'docs/superpowers/plans/2026-07-29-risk-to-policy-compiler-plan.md',
   'workflows/research-synthesis.md',
   'templates/conditional/RESEARCH_SYNTHESIS.md',
   'docs/adr/001-linux-codex-oci-containment.md',
@@ -615,6 +620,10 @@ const requiredRepositoryFiles = [
   'scripts/lib/governance-artifacts.mjs',
   'scripts/lib/decision-role-core.mjs',
   'scripts/lib/decision-role-doctor.mjs',
+  'scripts/lib/policy-compiler-core.mjs',
+  'scripts/lib/policy-compiler-project.mjs',
+  'scripts/lib/codex-policy-adapter.mjs',
+  'scripts/lib/policy-compiler-doctor.mjs',
   'scripts/lib/governance-impact-core.mjs',
   'scripts/lib/governance-impact-adapters.mjs',
   'scripts/lib/governance-impact-credential-proxy.mjs',
@@ -632,6 +641,9 @@ const requiredRepositoryFiles = [
   'schemas/role-assignment.schema.json',
   'schemas/deliberation-plan.schema.json',
   'schemas/deliberation-result.schema.json',
+  'schemas/policy-manifest.schema.json',
+  'schemas/codex-policy-adapter.schema.json',
+  'schemas/compile-receipt.schema.json',
   'schemas/cli-output.schema.json',
   'schemas/governance-impact-scenario.schema.json',
   'schemas/governance-impact-preflight.schema.json',
@@ -644,6 +656,12 @@ const requiredRepositoryFiles = [
   'tests/decision-role/schema-contracts.test.mjs',
   'tests/decision-role/cli-contracts.test.mjs',
   'tests/decision-role/doctor-contracts.test.mjs',
+  'tests/policy-compiler/artifact-safety.test.mjs',
+  'tests/policy-compiler/cli-contracts.test.mjs',
+  'tests/policy-compiler/core.test.mjs',
+  'tests/policy-compiler/doctor-contracts.test.mjs',
+  'tests/policy-compiler/fixture-contracts.test.mjs',
+  'tests/policy-compiler/schema-contracts.test.mjs',
   'catalogs/governance-responsibilities.json',
   'tests/governance-impact/scorer.test.mjs',
   'tests/governance-impact/scenario-schema.test.mjs',
@@ -690,6 +708,34 @@ if (decisionRoleFixtureFiles.length < 20) {
   fail(errors, 'Decision-role fixtures are incomplete');
 }
 requiredRepositoryFiles.push(...decisionRoleFixtureFiles);
+
+const expectedPolicyCompilerFixtures = [
+  'cross-platform-paths',
+  'dry-run',
+  'low-risk-codex',
+  'malicious-pack-expansion',
+  'owner-conflict',
+  'publish-approval-codex',
+  'restricted-data-codex',
+  'stale-policy',
+];
+const actualPolicyCompilerFixtures = fs.readdirSync(
+  path.join(root, 'tests/policy-compiler/fixtures'),
+  { withFileTypes: true },
+).filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name)
+  .sort();
+if (
+  JSON.stringify(actualPolicyCompilerFixtures)
+  !== JSON.stringify(expectedPolicyCompilerFixtures)
+) {
+  fail(errors, 'Policy compiler fixture set does not match the closed matrix');
+}
+for (const fixture of expectedPolicyCompilerFixtures) {
+  requiredRepositoryFiles.push(
+    `tests/policy-compiler/fixtures/${fixture}/case.json`,
+  );
+}
 
 for (const file of requiredRepositoryFiles) {
   requireFile(errors, file);
@@ -796,7 +842,9 @@ requireIncludes(errors, 'README.md', [
   '## Community',
   'CODE_OF_CONDUCT.md',
   'README.md',
-  'node agent-governance-starter/scripts/doctor.mjs ./my-new-project',
+  'node governseed/scripts/doctor.mjs ./my-new-project',
+  'agent-governance compile <project> --target codex',
+  'docs/policy-compiler.md',
   '## Governance Impact',
   '## Conditional research synthesis',
   'workflows/research-synthesis.md',
@@ -895,6 +943,7 @@ requireIncludes(errors, 'package.json', [
   '"test:governance"',
   '"test:brand"',
   '"test:decision-role"',
+  '"test:policy-compiler"',
   '"test:governance-impact"',
   '"test:privacy"',
   '"validate:governance-impact"',
@@ -917,6 +966,7 @@ for (const requiredScript of [
   'test:governance',
   'test:brand',
   'test:decision-role',
+  'test:policy-compiler',
   'test:governance-impact',
   'test:privacy',
   'validate:governance-impact',
@@ -1173,8 +1223,8 @@ requireIncludes(errors, 'docs/migrations/governseed-brand-transition.md', [
   'legacy machine identifier',
   'compatibility text',
   'historical record',
-  'repository reference pending manual rename',
-  'Stage 2 Manual Gate',
+  'completed repository transition',
+  'Completed Repository Transition',
 ]);
 
 for (const file of ['README.md', 'CLAUDE.md', 'ANTIGRAVITY.md']) {
@@ -1274,6 +1324,10 @@ for (const file of [
   'scripts/lib/governance-artifacts.mjs',
   'scripts/lib/decision-role-core.mjs',
   'scripts/lib/decision-role-doctor.mjs',
+  'scripts/lib/policy-compiler-core.mjs',
+  'scripts/lib/policy-compiler-project.mjs',
+  'scripts/lib/codex-policy-adapter.mjs',
+  'scripts/lib/policy-compiler-doctor.mjs',
   'scripts/lib/governance-impact-core.mjs',
   'scripts/lib/governance-impact-adapters.mjs',
   'scripts/lib/governance-impact-credential-proxy.mjs',
@@ -1282,9 +1336,14 @@ for (const file of [
   'docs/adr/001-linux-codex-oci-containment.md',
   'docs/adr/002-modular-core-and-adapter-boundary.md',
   'docs/adr/003-deliberation-and-role-assignment-model.md',
+  'docs/adr/004-risk-to-policy-compiler.md',
+  'docs/policy-compiler.md',
+  'docs/research/2026-07-29-codex-policy-capability-matrix.md',
   'docs/research/source-adoption-matrix.md',
   'docs/superpowers/specs/2026-07-29-decision-role-foundation-design.md',
   'docs/superpowers/plans/2026-07-29-decision-role-foundation-plan.md',
+  'docs/superpowers/specs/2026-07-29-risk-to-policy-compiler-design.md',
+  'docs/superpowers/plans/2026-07-29-risk-to-policy-compiler-plan.md',
   'docs/governance-impact-eval.md',
   'docs/superpowers/plans/2026-07-26-linux-codex-oci-containment.md',
   'schemas/governance-impact-scenario.schema.json',
@@ -1298,6 +1357,12 @@ for (const file of [
   'tests/decision-role/schema-contracts.test.mjs',
   'tests/decision-role/cli-contracts.test.mjs',
   'tests/decision-role/doctor-contracts.test.mjs',
+  'tests/policy-compiler/artifact-safety.test.mjs',
+  'tests/policy-compiler/cli-contracts.test.mjs',
+  'tests/policy-compiler/core.test.mjs',
+  'tests/policy-compiler/doctor-contracts.test.mjs',
+  'tests/policy-compiler/fixture-contracts.test.mjs',
+  'tests/policy-compiler/schema-contracts.test.mjs',
   'tests/governance-impact/scorer.test.mjs',
   'tests/governance-impact/scenario-schema.test.mjs',
   'tests/governance-impact/cli.test.mjs',

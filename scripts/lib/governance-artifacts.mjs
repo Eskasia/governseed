@@ -2,7 +2,10 @@ import { createHash, randomBytes } from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { BUILTIN_CATALOG } from './decision-role-core.mjs';
+import {
+  BUILTIN_CATALOG,
+  selectResponsibilities,
+} from './decision-role-core.mjs';
 
 const MAX_BYTES = 1024 * 1024;
 const MAX_DEPTH = 64;
@@ -20,6 +23,9 @@ const SCHEMA_NAMES = new Set([
   'role-assignment.schema.json',
   'deliberation-plan.schema.json',
   'deliberation-result.schema.json',
+  'policy-manifest.schema.json',
+  'codex-policy-adapter.schema.json',
+  'compile-receipt.schema.json',
   'cli-output.schema.json',
 ]);
 const SAFE_SUBJECT = /^(?:SRC|REQ|DEC|DLB|AC|TASK|ROLE|POL|EVD|ATT|RISK|PACK|CAT|CONF)-[A-Z0-9@.-]+$/;
@@ -135,6 +141,14 @@ function canonicalize(value, ancestors, state, depth) {
 
 export function canonicalJson(value) {
   return canonicalize(value, new Set(), { members: 0 }, 0);
+}
+
+export function canonicalJsonBytes(value) {
+  return Buffer.from(`${canonicalJson(value)}\n`, 'utf8');
+}
+
+export function sha256Bytes(value) {
+  return createHash('sha256').update(value).digest('hex');
 }
 
 export function sha256Canonical(value) {
@@ -313,17 +327,28 @@ function unsafePathString(value) {
   return /(?:^|[\\/])\.\.(?:[\\/]|$)/u.test(value);
 }
 
+function secretUrlKey(value) {
+  const normalized = String(value)
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9]/gu, '');
+  return normalized === 'key'
+    || /(?:token|secret|signature|password|passwd|credential|cookie|session|privatekey)/u
+      .test(normalized);
+}
+
 function secretQueryString(value) {
   if (typeof value !== 'string' || !/^https?:\/\//iu.test(value)) return false;
   try {
     const url = new URL(value);
+    if (url.username || url.password) return true;
     for (const key of url.searchParams.keys()) {
-      if (
-        /^(?:access_?token|api_?key|key|token|secret|signature|password|credential|cookie|session)$/iu
-          .test(key)
-      ) {
-        return true;
-      }
+      if (secretUrlKey(key)) return true;
+    }
+    const fragment = new URLSearchParams(
+      url.hash.slice(1).replaceAll(';', '&'),
+    );
+    for (const key of fragment.keys()) {
+      if (secretUrlKey(key)) return true;
     }
   } catch {
     return false;
@@ -344,6 +369,7 @@ function scanArtifact(value, subject) {
       }
       if (
         /\bgh[pousr]_[A-Za-z0-9]{20,}\b/u.test(entry)
+        || /\bgithub_pat_[A-Za-z0-9_]{20,}\b/u.test(entry)
         || /\bAKIA[A-Z0-9]{16}\b/u.test(entry)
         || /-----BEGIN [A-Z ]*PRIVATE KEY-----/u.test(entry)
         || /\bBearer\s+[A-Za-z0-9._~+/=-]{20,}\b/iu.test(entry)
@@ -522,6 +548,7 @@ function resolveRoot(projectRoot, fsApi, subject) {
 function inspectComponents(root, segments, fsApi, subject, allowMissing) {
   let current = root;
   let lastStat = fsApi.lstatSync(root, { bigint: true });
+  const components = [{ absolute: root, stat: lastStat }];
   for (const segment of segments) {
     current = path.join(current, segment);
     let stat;
@@ -537,8 +564,9 @@ function inspectComponents(root, segments, fsApi, subject, allowMissing) {
     }
     if (stat.isSymbolicLink()) fail('SYMLINK_BLOCKED', subject);
     lastStat = stat;
+    components.push({ absolute: current, stat });
   }
-  return { absolute: current, stat: lastStat };
+  return { absolute: current, stat: lastStat, components };
 }
 
 function resolveReadPath(projectRoot, relativePath, fsApi, subject) {
@@ -560,7 +588,7 @@ function resolveReadPath(projectRoot, relativePath, fsApi, subject) {
   return { ...inspected, root };
 }
 
-export function readJsonArtifact(projectRoot, relativePath, options = {}) {
+function readJsonArtifactRecord(projectRoot, relativePath, options = {}) {
   const fsApi = options.fs ?? fs;
   const subject = options.subject;
   const resolved = resolveReadPath(
@@ -581,6 +609,21 @@ export function readJsonArtifact(projectRoot, relativePath, options = {}) {
     after = fsApi.lstatSync(resolved.absolute, { bigint: true });
   } catch {
     fail('SYMLINK_BLOCKED', subject);
+  }
+  for (const component of resolved.components.slice(0, -1)) {
+    let current;
+    try {
+      current = fsApi.lstatSync(component.absolute, { bigint: true });
+    } catch {
+      fail('SYMLINK_BLOCKED', subject);
+    }
+    if (
+      current.isSymbolicLink()
+      || !current.isDirectory()
+      || !sameIdentity(component.stat, current)
+    ) {
+      fail('SYMLINK_BLOCKED', subject);
+    }
   }
   if (
     after.isSymbolicLink()
@@ -616,7 +659,23 @@ export function readJsonArtifact(projectRoot, relativePath, options = {}) {
   }
   const value = parseExactJson(text, relativePath, subject);
   scanArtifact(value, subject);
-  return value;
+  return { value, bytes: opened.bytes };
+}
+
+export function readJsonArtifact(projectRoot, relativePath, options = {}) {
+  return readJsonArtifactRecord(
+    projectRoot,
+    relativePath,
+    options,
+  ).value;
+}
+
+export function readJsonArtifactWithBytes(
+  projectRoot,
+  relativePath,
+  options = {},
+) {
+  return readJsonArtifactRecord(projectRoot, relativePath, options);
 }
 
 function ensureWriteParent(projectRoot, relativePath, fsApi, subject) {
@@ -637,8 +696,58 @@ function ensureWriteParent(projectRoot, relativePath, fsApi, subject) {
     root,
     parent: inspected.absolute,
     parentStat: inspected.stat,
+    components: inspected.components,
     target: path.join(inspected.absolute, filename),
   };
+}
+
+function assertWriteBoundary(resolved, fsApi, subject) {
+  for (const component of resolved.components) {
+    let current;
+    try {
+      current = fsApi.lstatSync(component.absolute, { bigint: true });
+    } catch {
+      fail('SYMLINK_BLOCKED', subject);
+    }
+    if (
+      current.isSymbolicLink()
+      || !current.isDirectory()
+      || !sameIdentity(component.stat, current)
+    ) {
+      fail('SYMLINK_BLOCKED', subject);
+    }
+  }
+}
+
+function checkedRegularFile(fsApi, file, subject) {
+  let stat;
+  try {
+    stat = fsApi.lstatSync(file, { bigint: true });
+  } catch {
+    fail('SYMLINK_BLOCKED', subject);
+  }
+  if (stat.isSymbolicLink() || !stat.isFile()) {
+    fail('SYMLINK_BLOCKED', subject);
+  }
+  return stat;
+}
+
+function unlinkIfIdentityMatches(fsApi, file, expected) {
+  if (!expected) return false;
+  try {
+    const current = fsApi.lstatSync(file, { bigint: true });
+    if (
+      !current.isSymbolicLink()
+      && current.isFile()
+      && sameIdentity(expected, current)
+    ) {
+      fsApi.unlinkSync(file);
+      return true;
+    }
+  } catch {
+    // Best-effort rollback never removes an identity it did not create.
+  }
+  return false;
 }
 
 export function writeJsonArtifact(
@@ -650,7 +759,7 @@ export function writeJsonArtifact(
   const fsApi = options.fs ?? fs;
   const subject = options.subject;
   scanArtifact(value, subject);
-  const bytes = Buffer.from(`${canonicalJson(value)}\n`, 'utf8');
+  const bytes = canonicalJsonBytes(value);
   if (bytes.length > MAX_BYTES) fail('PRIVATE_CONTENT_BLOCKED', subject);
   const resolved = ensureWriteParent(
     projectRoot,
@@ -663,6 +772,9 @@ export function writeJsonArtifact(
     `.agent-governance-${randomBytes(12).toString('hex')}.tmp`,
   );
   let tempCreated = false;
+  let backupCreated = false;
+  let backup = null;
+  let backupIdentity = null;
   try {
     const descriptor = fsApi.openSync(
       temp,
@@ -678,15 +790,8 @@ export function writeJsonArtifact(
     } finally {
       fsApi.closeSync(descriptor);
     }
-
-    const parentAfter = fsApi.lstatSync(resolved.parent, { bigint: true });
-    if (
-      parentAfter.isSymbolicLink()
-      || !parentAfter.isDirectory()
-      || !sameIdentity(resolved.parentStat, parentAfter)
-    ) {
-      fail('SYMLINK_BLOCKED', subject);
-    }
+    const tempStat = checkedRegularFile(fsApi, temp, subject);
+    assertWriteBoundary(resolved, fsApi, subject);
 
     let existing;
     try {
@@ -698,24 +803,118 @@ export function writeJsonArtifact(
       if (existing.isSymbolicLink() || !existing.isFile()) {
         fail('SYMLINK_BLOCKED', subject);
       }
-      const current = readJsonArtifact(projectRoot, relativePath, {
+      const current = readJsonArtifactWithBytes(projectRoot, relativePath, {
         ...options,
         fs: fsApi,
       });
-      if (sha256Canonical(current) === sha256Canonical(value)) {
+      if (current.bytes.equals(bytes)) {
+        assertWriteBoundary(resolved, fsApi, subject);
         fsApi.unlinkSync(temp);
         tempCreated = false;
+        assertWriteBoundary(resolved, fsApi, subject);
+        options.onWriteResult?.('unchanged');
         return value;
       }
       if (!options.allowReplace) fail('INVALID_STATUS_TRANSITION', subject);
-      fsApi.renameSync(temp, resolved.target);
-      tempCreated = false;
+      backup = path.join(
+        resolved.parent,
+        `.agent-governance-${randomBytes(12).toString('hex')}.bak`,
+      );
+      assertWriteBoundary(resolved, fsApi, subject);
+      const existingBefore = checkedRegularFile(
+        fsApi,
+        resolved.target,
+        subject,
+      );
+      if (!sameIdentity(existing, existingBefore)) {
+        fail('SYMLINK_BLOCKED', subject);
+      }
+      backupIdentity = existingBefore;
+      fsApi.linkSync(resolved.target, backup);
+      backupCreated = true;
+      const backupStat = checkedRegularFile(fsApi, backup, subject);
+      if (!sameIdentity(existingBefore, backupStat)) {
+        fail('SYMLINK_BLOCKED', subject);
+      }
+      backupIdentity = backupStat;
+      assertWriteBoundary(resolved, fsApi, subject);
+      const existingReady = checkedRegularFile(
+        fsApi,
+        resolved.target,
+        subject,
+      );
+      if (!sameIdentity(existingBefore, existingReady)) {
+        fail('SYMLINK_BLOCKED', subject);
+      }
+      let replaced = false;
+      try {
+        fsApi.renameSync(temp, resolved.target);
+        tempCreated = false;
+        replaced = true;
+        assertWriteBoundary(resolved, fsApi, subject);
+        const published = checkedRegularFile(
+          fsApi,
+          resolved.target,
+          subject,
+        );
+        if (!sameIdentity(tempStat, published)) {
+          fail('SYMLINK_BLOCKED', subject);
+        }
+      } catch (error) {
+        if (replaced) {
+          const currentTarget = checkedRegularFile(
+            fsApi,
+            resolved.target,
+            subject,
+          );
+          const currentBackup = checkedRegularFile(fsApi, backup, subject);
+          if (
+            sameIdentity(tempStat, currentTarget)
+            && sameIdentity(existingBefore, currentBackup)
+          ) {
+            fsApi.renameSync(backup, resolved.target);
+            backupCreated = false;
+          }
+        }
+        throw error;
+      }
+      fsApi.unlinkSync(backup);
+      backupCreated = false;
+      options.onWriteResult?.('updated');
       return value;
     }
 
-    fsApi.linkSync(temp, resolved.target);
-    fsApi.unlinkSync(temp);
-    tempCreated = false;
+    let published = false;
+    try {
+      fsApi.linkSync(temp, resolved.target);
+      published = true;
+      assertWriteBoundary(resolved, fsApi, subject);
+      const targetStat = checkedRegularFile(
+        fsApi,
+        resolved.target,
+        subject,
+      );
+      if (!sameIdentity(tempStat, targetStat)) {
+        fail('SYMLINK_BLOCKED', subject);
+      }
+      fsApi.unlinkSync(temp);
+      tempCreated = false;
+      assertWriteBoundary(resolved, fsApi, subject);
+      const finalStat = checkedRegularFile(
+        fsApi,
+        resolved.target,
+        subject,
+      );
+      if (!sameIdentity(tempStat, finalStat)) {
+        fail('SYMLINK_BLOCKED', subject);
+      }
+    } catch (error) {
+      if (published) {
+        unlinkIfIdentityMatches(fsApi, resolved.target, tempStat);
+      }
+      throw error;
+    }
+    options.onWriteResult?.('created');
     return value;
   } catch (error) {
     if (error instanceof GovernanceArtifactError) throw error;
@@ -724,6 +923,9 @@ export function writeJsonArtifact(
     }
     fail('PATH_ESCAPE_BLOCKED', subject);
   } finally {
+    if (backupCreated && backup) {
+      unlinkIfIdentityMatches(fsApi, backup, backupIdentity);
+    }
     if (tempCreated) {
       try {
         fsApi.unlinkSync(temp);
@@ -931,6 +1133,391 @@ function duplicateId(values, key) {
   return new Set(ids).size !== ids.length;
 }
 
+function duplicateValue(values) {
+  if (!Array.isArray(values)) return false;
+  return new Set(values).size !== values.length;
+}
+
+function addDuplicateError(errors, values, key, location) {
+  if (duplicateId(values, key)) {
+    addSchemaError(errors, 'DUPLICATE_ID', location);
+  }
+}
+
+function sameCanonicalSet(left, right) {
+  if (!Array.isArray(left) || !Array.isArray(right)) return false;
+  const normalize = (values) => values
+    .map((entry) => canonicalJson(entry))
+    .sort();
+  const normalizedLeft = normalize(left);
+  const normalizedRight = normalize(right);
+  return normalizedLeft.length === normalizedRight.length
+    && normalizedLeft.every(
+      (entry, index) => entry === normalizedRight[index],
+    );
+}
+
+function validatePolicyManifestSemantic(value, errors) {
+  addDuplicateError(errors, value?.inputHashes, 'path', '$.inputHashes');
+  for (const [index, input] of (value?.inputHashes ?? []).entries()) {
+    if (
+      input?.path === '.agent-governance/local'
+      || input?.path?.startsWith('.agent-governance/local/')
+    ) {
+      addSchemaError(
+        errors,
+        'PRIVATE_CONTENT_BLOCKED',
+        `$.inputHashes[${index}].path`,
+      );
+    }
+  }
+  addDuplicateError(
+    errors,
+    value?.roleAssignmentRefs,
+    'assignmentId',
+    '$.roleAssignmentRefs',
+  );
+  addDuplicateError(
+    errors,
+    value?.roleAssignmentRefs,
+    'taskId',
+    '$.roleAssignmentRefs',
+  );
+  addDuplicateError(
+    errors,
+    value?.roleAssignmentRefs,
+    'path',
+    '$.roleAssignmentRefs',
+  );
+  addDuplicateError(errors, value?.enabledPacks, 'packId', '$.enabledPacks');
+  addDuplicateError(errors, value?.enabledPacks, 'path', '$.enabledPacks');
+  addDuplicateError(errors, value?.targets, 'target', '$.targets');
+  const packEvidenceRefs = [];
+  for (const [index, pack] of (value?.enabledPacks ?? []).entries()) {
+    const expectedRequirements = [
+      ...(pack.mechanicalCheckIds ?? []).map((checkId) => ({
+        checkId,
+        kind: 'mechanical',
+      })),
+      ...(pack.humanReviewCheckIds ?? []).map((checkId) => ({
+        checkId,
+        kind: 'human-review',
+      })),
+    ].map((requirement) => ({
+      ...requirement,
+      evidenceRef: `EVD-PACK-${sha256Canonical({
+        packId: pack.packId,
+        version: pack.version,
+        ...requirement,
+      }).slice(0, 16).toUpperCase()}`,
+    }));
+    if (!sameCanonicalSet(
+      pack.checkRequirements,
+      expectedRequirements,
+    )) {
+      addSchemaError(
+        errors,
+        'SCHEMA_VALIDATION_FAILED',
+        `$.enabledPacks[${index}].checkRequirements`,
+      );
+    }
+    packEvidenceRefs.push(
+      ...expectedRequirements.map((entry) => entry.evidenceRef),
+    );
+  }
+
+  const controls = Object.values(value?.controls ?? {})
+    .filter(Array.isArray)
+    .flat();
+  addDuplicateError(errors, controls, 'controlId', '$.controls');
+  addDuplicateError(errors, controls, 'capability', '$.controls');
+  if (
+    duplicateValue(packEvidenceRefs)
+    || packEvidenceRefs.some((evidenceRef) => (
+      !value?.evidenceRequirements?.includes(evidenceRef)
+      || controls.some(
+        (control) => !control.evidenceRequirement?.includes(evidenceRef),
+      )
+    ))
+  ) {
+    addSchemaError(
+      errors,
+      'SCHEMA_VALIDATION_FAILED',
+      '$.evidenceRequirements',
+    );
+  }
+  const byId = new Map(
+    controls.map((control) => [control.controlId, control]),
+  );
+  addDuplicateError(
+    errors,
+    value?.unsupportedControls,
+    'controlId',
+    '$.unsupportedControls',
+  );
+  addDuplicateError(
+    errors,
+    value?.unsupportedControls,
+    'capability',
+    '$.unsupportedControls',
+  );
+  for (const [index, unsupported] of (
+    value?.unsupportedControls ?? []
+  ).entries()) {
+    const control = byId.get(unsupported.controlId);
+    if (
+      !control
+      || control.capability !== unsupported.capability
+      || control.targetSupport?.codex !== 'unsupported'
+    ) {
+      addSchemaError(
+        errors,
+        'SCHEMA_VALIDATION_FAILED',
+        `$.unsupportedControls[${index}]`,
+      );
+    }
+  }
+  const expectedUnsupported = controls
+    .filter((control) => control.targetSupport?.codex === 'unsupported')
+    .map((control) => ({
+      controlId: control.controlId,
+      capability: control.capability,
+      target: 'codex',
+      support: 'unsupported',
+      reasonCode: 'CODEX_CONTROL_NOT_ENFORCEABLE',
+    }));
+  if (!sameCanonicalSet(value?.unsupportedControls, expectedUnsupported)) {
+    addSchemaError(
+      errors,
+      'SCHEMA_VALIDATION_FAILED',
+      '$.unsupportedControls',
+    );
+  }
+  if (duplicateValue(value?.humanApprovalControls)) {
+    addSchemaError(errors, 'DUPLICATE_ID', '$.humanApprovalControls');
+  }
+  for (const [index, controlId] of (
+    value?.humanApprovalControls ?? []
+  ).entries()) {
+    if (!byId.has(controlId)) {
+      addSchemaError(
+        errors,
+        'SCHEMA_VALIDATION_FAILED',
+        `$.humanApprovalControls[${index}]`,
+      );
+    }
+  }
+  const expectedApproval = controls
+    .filter((control) => (
+      control.mode === 'require-approval'
+      || (
+        control.mode !== 'deny'
+        && control.targetSupport?.codex === 'requires-human-approval'
+      )
+    ))
+    .map((control) => control.controlId);
+  if (!sameCanonicalSet(value?.humanApprovalControls, expectedApproval)) {
+    addSchemaError(
+      errors,
+      'SCHEMA_VALIDATION_FAILED',
+      '$.humanApprovalControls',
+    );
+  }
+  if (typeof value?.policyId === 'string') {
+    const seed = structuredClone(value);
+    delete seed.policyId;
+    const expectedPolicyId =
+      `POL-${sha256Canonical(seed).slice(0, 12).toUpperCase()}`;
+    if (value.policyId !== expectedPolicyId) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', '$.policyId');
+    }
+  }
+}
+
+function validateCodexAdapterSemantic(value, context, errors) {
+  const mapped = value?.mappedControls ?? [];
+  const unsupported = value?.unsupportedControls ?? [];
+  addDuplicateError(errors, mapped, 'controlId', '$.mappedControls');
+  addDuplicateError(errors, mapped, 'capability', '$.mappedControls');
+  addDuplicateError(
+    errors,
+    unsupported,
+    'controlId',
+    '$.unsupportedControls',
+  );
+  addDuplicateError(
+    errors,
+    unsupported,
+    'capability',
+    '$.unsupportedControls',
+  );
+  const mappedIds = new Set(mapped.map((entry) => entry?.controlId));
+  const mappedCapabilities = new Set(
+    mapped.map((entry) => entry?.capability),
+  );
+  if (unsupported.some((entry) => (
+    mappedIds.has(entry?.controlId)
+    || mappedCapabilities.has(entry?.capability)
+  ))) {
+    addSchemaError(errors, 'DUPLICATE_ID', '$.unsupportedControls');
+  }
+  if (typeof value?.policyId === 'string') {
+    const expected = [
+      `.agent-governance/adapters/codex/${value.policyId}.json`,
+      `.agent-governance/policies/${value.policyId}.json`,
+    ].sort();
+    const actual = [...(value.generatedFiles ?? [])].sort();
+    if (
+      actual.length !== expected.length
+      || actual.some((entry, index) => entry !== expected[index])
+    ) {
+      addSchemaError(
+        errors,
+        'SCHEMA_VALIDATION_FAILED',
+        '$.generatedFiles',
+      );
+    }
+  }
+  const manifest = context.manifest;
+  if (manifest) {
+    const controls = Object.values(manifest.controls ?? {})
+      .filter(Array.isArray)
+      .flat();
+    const expectedMapped = controls
+      .filter((control) => control.targetSupport?.codex !== 'unsupported')
+      .map((control) => ({
+        controlId: control.controlId,
+        capability: control.capability,
+        mode: control.mode,
+        support: control.targetSupport.codex,
+        representation: control.targetSupport.codex === 'enforceable'
+          ? 'compiler-owned-artifact'
+          : control.targetSupport.codex === 'requires-human-approval'
+            ? 'human-approval-guidance'
+            : 'guidance',
+      }));
+    if (
+      value.policyId !== manifest.policyId
+      || value.policyHash !== sha256Bytes(canonicalJsonBytes(manifest))
+      || !sameCanonicalSet(value.mappedControls, expectedMapped)
+      || !sameCanonicalSet(
+        value.unsupportedControls,
+        manifest.unsupportedControls,
+      )
+      || !sameCanonicalSet(
+        value.humanReviewRequired,
+        manifest.humanApprovalControls,
+      )
+    ) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', '$');
+    }
+  }
+}
+
+function validateCompileReceiptSemantic(value, context, errors) {
+  addDuplicateError(errors, value?.inputHashes, 'path', '$.inputHashes');
+  addDuplicateError(errors, value?.outputHashes, 'path', '$.outputHashes');
+  const fileStates = [
+    ...(value?.filesCreated ?? []),
+    ...(value?.filesUpdated ?? []),
+    ...(value?.filesUnchanged ?? []),
+  ];
+  if (duplicateValue(fileStates)) {
+    addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', '$.filesCreated');
+  }
+  if (
+    typeof value?.policyId === 'string'
+    && typeof value?.compileId === 'string'
+  ) {
+    const expectedStates = [
+      `.agent-governance/adapters/codex/${value.policyId}.json`,
+      `.agent-governance/policies/${value.policyId}.json`,
+      `.agent-governance/receipts/${value.compileId}.json`,
+    ].sort();
+    const actualStates = [...fileStates].sort();
+    if (
+      actualStates.length !== expectedStates.length
+      || actualStates.some(
+        (entry, index) => entry !== expectedStates[index],
+      )
+    ) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', '$.filesCreated');
+    }
+  }
+  if (typeof value?.policyId === 'string') {
+    const expected = [
+      `.agent-governance/adapters/codex/${value.policyId}.json`,
+      `.agent-governance/policies/${value.policyId}.json`,
+    ].sort();
+    const actual = (value.outputHashes ?? [])
+      .map((entry) => entry?.path)
+      .sort();
+    if (
+      actual.length !== expected.length
+      || actual.some((entry, index) => entry !== expected[index])
+    ) {
+      addSchemaError(
+        errors,
+        'SCHEMA_VALIDATION_FAILED',
+        '$.outputHashes',
+      );
+    }
+  }
+  if (
+    typeof value?.compileId === 'string'
+    && typeof value?.policyId === 'string'
+    && Array.isArray(value?.outputHashes)
+  ) {
+    const expectedCompileId =
+      `COMPILE-${sha256Canonical({
+        policyId: value.policyId,
+        target: value.target,
+        outputHashes: value.outputHashes,
+      }).slice(0, 12).toUpperCase()}`;
+    if (value.compileId !== expectedCompileId) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', '$.compileId');
+    }
+  }
+  const manifest = context.manifest;
+  const adapter = context.adapter;
+  if (manifest && adapter) {
+    const expectedOutputHashes = [
+      {
+        path: `.agent-governance/adapters/codex/${manifest.policyId}.json`,
+        sha256: sha256Bytes(canonicalJsonBytes(adapter)),
+      },
+      {
+        path: `.agent-governance/policies/${manifest.policyId}.json`,
+        sha256: sha256Bytes(canonicalJsonBytes(manifest)),
+      },
+    ];
+    const expectedWarnings = [
+      ...(manifest.unsupportedControls.length > 0
+        ? ['POLICY_UNSUPPORTED_CONTROL']
+        : []),
+      ...(Object.values(manifest.controls).flat().some(
+        (control) => !['enforceable', 'unsupported'].includes(
+          control.targetSupport.codex,
+        ),
+      )
+        ? ['CODEX_CONTROL_NOT_ENFORCEABLE']
+        : []),
+    ];
+    if (
+      value.policyId !== manifest.policyId
+      || !sameCanonicalSet(value.inputHashes, manifest.inputHashes)
+      || !sameCanonicalSet(value.outputHashes, expectedOutputHashes)
+      || !sameCanonicalSet(
+        value.unsupportedControls,
+        manifest.unsupportedControls,
+      )
+      || !sameCanonicalSet(value.warnings, expectedWarnings)
+    ) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', '$');
+    }
+  }
+}
+
 function findLockedSource(sourceLock, sourceId) {
   return sourceLock?.sources?.find((entry) => entry.sourceId === sourceId);
 }
@@ -983,38 +1570,94 @@ const PERMISSION_RANK = Object.freeze({
 });
 
 function rootCapability(capability) {
+  if (typeof capability !== 'string') return capability;
   if (capability.startsWith('network.')) return 'network';
   if (capability.startsWith('credentials.')) return 'credentials';
   return capability;
 }
 
 function validateRoleAssignment(value, context, errors) {
-  const specialistIds = (value.selectedRoles ?? [])
+  const selectedRoles = Array.isArray(value?.selectedRoles)
+    ? value.selectedRoles
+    : [];
+  const specialistIds = selectedRoles
     .map((role) => role?.specialistRoleId)
     .filter((roleId) => roleId && roleId !== 'unassigned');
   if (
     new Set(specialistIds).size !== specialistIds.length
-    || duplicateId(value.selectedRoles, 'responsibility')
+    || duplicateId(selectedRoles, 'responsibility')
   ) {
     addSchemaError(errors, 'DUPLICATE_ID', '$.selectedRoles');
   }
   if (
     Array.isArray(context.knownTaskIds)
-    && !context.knownTaskIds.includes(value.taskId)
+    && !context.knownTaskIds.includes(value?.taskId)
   ) {
     addSchemaError(errors, 'TASK_REFERENCE_MISSING', '$.taskId');
   }
-  const ceiling = context.riskProfile?.permissionCeiling ?? value.permissionCeiling;
-  for (const [index, role] of (value.selectedRoles ?? []).entries()) {
+  const ceiling = context.riskProfile?.permissionCeiling
+    ?? value?.permissionCeiling;
+  const task = context.riskProfile?.tasks?.find(
+    (candidate) => candidate.taskId === value?.taskId,
+  );
+  const taskCapabilities = task
+    ? new Set((task.requestedCapabilities ?? []).map(rootCapability))
+    : null;
+  for (const [index, selectedRole] of selectedRoles.entries()) {
+    const role = selectedRole
+      && typeof selectedRole === 'object'
+      && !Array.isArray(selectedRole)
+      ? selectedRole
+      : {};
+    const assignedTaskScope = Array.isArray(role.assignedTaskScope)
+      ? role.assignedTaskScope
+      : [];
+    const requestedCapabilities = Array.isArray(role.requestedCapabilities)
+      ? role.requestedCapabilities
+      : [];
+    const grantedCapabilityCeiling = role.grantedCapabilityCeiling
+      && typeof role.grantedCapabilityCeiling === 'object'
+      && !Array.isArray(role.grantedCapabilityCeiling)
+      ? role.grantedCapabilityCeiling
+      : {};
+    const allowedRequests = new Set(taskCapabilities ?? []);
+    if (role.responsibility !== 'implementation-owner') {
+      allowedRequests.add('filesystem.project-read');
+    }
+    if (
+      assignedTaskScope.length !== 1
+      || assignedTaskScope[0] !== value?.taskId
+      || (
+        Array.isArray(context.knownTaskIds)
+        && !context.knownTaskIds.includes(assignedTaskScope[0])
+      )
+      || (
+        taskCapabilities
+        && requestedCapabilities.some(
+          (capability) => !allowedRequests.has(rootCapability(capability)),
+        )
+      )
+    ) {
+      addSchemaError(
+        errors,
+        'ROLE_PRIVILEGE_EXPANSION',
+        `$.selectedRoles[${index}]`,
+      );
+    }
     for (const [capability, grant] of Object.entries(
-      role.grantedCapabilityCeiling ?? {},
+      grantedCapabilityCeiling,
     )) {
       const allowed = ceiling?.[rootCapability(capability)];
+      const assignmentAllowed =
+        value?.permissionCeiling?.[rootCapability(capability)];
       if (
         allowed === undefined
+        || assignmentAllowed === undefined
         || PERMISSION_RANK[grant] === undefined
         || PERMISSION_RANK[allowed] === undefined
+        || PERMISSION_RANK[assignmentAllowed] === undefined
         || PERMISSION_RANK[grant] > PERMISSION_RANK[allowed]
+        || PERMISSION_RANK[grant] > PERMISSION_RANK[assignmentAllowed]
       ) {
         addSchemaError(
           errors,
@@ -1027,14 +1670,20 @@ function validateRoleAssignment(value, context, errors) {
       const catalog = context.roleCatalog;
       const source = catalog?.source;
       const catalogPath = context.roleCatalogPath?.replaceAll('\\', '/');
+      const assignedCatalogPath = typeof role.sourceCatalog === 'string'
+        ? role.sourceCatalog.replaceAll('\\', '/')
+        : null;
       const locked = findLockedSource(
         context.sourceLock,
         source?.sourceId,
       );
+      const catalogRole = (catalog?.roles ?? []).find(
+        (candidate) => candidate.roleId === role.specialistRoleId,
+      );
       if (
         !catalog
         || !catalogPath
-        || catalogPath !== role.sourceCatalog?.replaceAll('\\', '/')
+        || catalogPath !== assignedCatalogPath
         || source?.revision !== role.sourceRevision
         || source?.license !== role.sourceLicense
         || source?.sha256 !== role.sourceHash
@@ -1045,13 +1694,33 @@ function validateRoleAssignment(value, context, errors) {
         || locked.importedMode !== source?.importedMode
         || locked.sha256 !== source?.sha256
         || !locked.importedFiles?.includes(catalogPath)
-        || !(catalog.roles ?? []).some(
-          (candidate) => candidate.roleId === role.specialistRoleId,
-        )
+        || !catalogRole
       ) {
         addSchemaError(
           errors,
           'SOURCE_PROVENANCE_MISMATCH',
+          `$.selectedRoles[${index}]`,
+        );
+      }
+      if (
+        catalogRole
+        && task
+        && (
+          !catalogRole.supportedResponsibilities?.includes(
+            role.responsibility,
+          )
+          || !(catalogRole.supportedSurfaces ?? []).some(
+            (surface) => (task.surfaces ?? []).includes(surface),
+          )
+          || !sameCanonicalSet(
+            requestedCapabilities,
+            catalogRole.requestedCapabilities ?? [],
+          )
+        )
+      ) {
+        addSchemaError(
+          errors,
+          'ROLE_CATALOG_INVALID',
           `$.selectedRoles[${index}]`,
         );
       }
@@ -1071,11 +1740,34 @@ function validateRoleAssignment(value, context, errors) {
       );
     }
   }
-  const separation = value.separationOfDuties;
+  const selectedByResponsibility = new Map(
+    selectedRoles.map((role) => [role?.responsibility, role]),
+  );
+  const requiredResponsibilities = task
+    ? selectResponsibilities(task).responsibilities
+    : ['implementation-owner'];
+  const implementation =
+    selectedByResponsibility.get('implementation-owner');
+  const reviewerIds = new Set(
+    selectedRoles
+      .filter((role) => role?.responsibility !== 'implementation-owner')
+      .map((role) => role?.specialistRoleId),
+  );
+  const separation = value?.separationOfDuties;
   if (
-    separation?.required
-    && separation.implementationOwner
-    && separation.implementationOwner === separation.finalVerifier
+    value?.status === 'assigned'
+    && separation?.required === true
+    && (
+      requiredResponsibilities.some(
+        (responsibility) => !selectedByResponsibility.has(responsibility),
+      )
+      || !implementation
+      || separation.implementationOwner
+        !== implementation.specialistRoleId
+      || implementation.cannotApprove !== true
+      || !reviewerIds.has(separation?.finalVerifier)
+      || separation.finalVerifier === implementation.specialistRoleId
+    )
   ) {
     addSchemaError(errors, 'ROLE_SEPARATION_VIOLATION', '$.separationOfDuties');
   }
@@ -1294,6 +1986,28 @@ function validateSemantic(schemaName, value, context, errors) {
           `$.sources[${index}].sha256`,
         );
       }
+      const importedFiles = source.importedFiles ?? [];
+      const folded = importedFiles.map((entry) => entry.toLowerCase());
+      if (
+        duplicateValue(importedFiles)
+        || duplicateValue(folded)
+      ) {
+        addSchemaError(
+          errors,
+          'DUPLICATE_ID',
+          `$.sources[${index}].importedFiles`,
+        );
+      }
+      if (importedFiles.some((entry) => (
+        typeof entry !== 'string'
+        || entry.includes('\\')
+      ))) {
+        addSchemaError(
+          errors,
+          'SCHEMA_VALIDATION_FAILED',
+          `$.sources[${index}].importedFiles`,
+        );
+      }
     }
   }
   if (
@@ -1314,6 +2028,21 @@ function validateSemantic(schemaName, value, context, errors) {
       context.artifactPath,
     );
   }
+  if (schemaName === 'governance-pack.schema.json') {
+    addDuplicateError(errors, value?.controls, 'controlId', '$.controls');
+    addDuplicateError(
+      errors,
+      value?.mechanicalChecks,
+      'checkId',
+      '$.mechanicalChecks',
+    );
+    addDuplicateError(
+      errors,
+      value?.humanReviewChecks,
+      'checkId',
+      '$.humanReviewChecks',
+    );
+  }
   if (
     schemaName === 'role-catalog.schema.json'
     && duplicateId(value?.roles, 'roleId')
@@ -1328,6 +2057,15 @@ function validateSemantic(schemaName, value, context, errors) {
   }
   if (schemaName === 'deliberation-result.schema.json') {
     validateResult(value, context, errors);
+  }
+  if (schemaName === 'policy-manifest.schema.json') {
+    validatePolicyManifestSemantic(value, errors);
+  }
+  if (schemaName === 'codex-policy-adapter.schema.json') {
+    validateCodexAdapterSemantic(value, context, errors);
+  }
+  if (schemaName === 'compile-receipt.schema.json') {
+    validateCompileReceiptSemantic(value, context, errors);
   }
 }
 

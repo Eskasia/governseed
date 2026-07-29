@@ -1,0 +1,286 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Eskasia/governseed/schemas/codex-policy-adapter.schema.json",
+  "title": "GovernSeed Codex Policy Adapter",
+  "description": "A thin project-local Codex representation of a canonical GovernSeed policy candidate; it is not runtime enforcement evidence.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "target",
+    "adapterVersion",
+    "policyId",
+    "policyHash",
+    "generatedFiles",
+    "mappedControls",
+    "unsupportedControls",
+    "humanReviewRequired",
+    "compatibility",
+    "repositoryInstructionRefs",
+    "approvalGuidance",
+    "verificationCommands",
+    "prohibitedActionGuidance",
+    "ownership",
+    "status"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "target": {
+      "const": "codex"
+    },
+    "adapterVersion": {
+      "$ref": "#/$defs/version"
+    },
+    "policyId": {
+      "$ref": "#/$defs/policyId"
+    },
+    "policyHash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "generatedFiles": {
+      "$ref": "#/$defs/portablePaths"
+    },
+    "mappedControls": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/mappedControl"
+      }
+    },
+    "unsupportedControls": {
+      "$ref": "#/$defs/unsupportedControls"
+    },
+    "humanReviewRequired": {
+      "$ref": "#/$defs/controlIds"
+    },
+    "compatibility": {
+      "$ref": "#/$defs/compatibility"
+    },
+    "repositoryInstructionRefs": {
+      "$ref": "#/$defs/portablePaths"
+    },
+    "approvalGuidance": {
+      "$ref": "#/$defs/guidance"
+    },
+    "verificationCommands": {
+      "$ref": "#/$defs/guidance"
+    },
+    "prohibitedActionGuidance": {
+      "$ref": "#/$defs/guidance"
+    },
+    "ownership": {
+      "$ref": "#/$defs/ownership"
+    },
+    "status": {
+      "$ref": "#/$defs/status"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "policyId": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 128,
+      "pattern": "^POL-[A-Z0-9](?:[A-Z0-9-]{0,122}[A-Z0-9])?$"
+    },
+    "controlId": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 128,
+      "pattern": "^POL-[A-Z0-9](?:[A-Z0-9-]{0,122}[A-Z0-9])?$"
+    },
+    "reasonCode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+    },
+    "version": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64,
+      "pattern": "^[0-9A-Za-z][0-9A-Za-z._+-]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "portablePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9._@+-]+(?:/[A-Za-z0-9._@+-]+)*$"
+    },
+    "support": {
+      "type": "string",
+      "enum": [
+        "enforceable",
+        "representable-only",
+        "unsupported",
+        "requires-human-approval",
+        "runtime-evidence-required"
+      ]
+    },
+    "mode": {
+      "type": "string",
+      "enum": [
+        "deny",
+        "require-approval",
+        "constrained-allow",
+        "allow",
+        "advisory"
+      ]
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "candidate",
+        "blocked",
+        "superseded"
+      ]
+    },
+    "portablePaths": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/portablePath"
+      }
+    },
+    "controlIds": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/controlId"
+      }
+    },
+    "guidance": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      }
+    },
+    "mappedControl": {
+      "type": "object",
+      "required": [
+        "controlId",
+        "capability",
+        "mode",
+        "support",
+        "representation"
+      ],
+      "properties": {
+        "controlId": {
+          "$ref": "#/$defs/controlId"
+        },
+        "capability": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[a-z][a-z0-9.-]*$"
+        },
+        "mode": {
+          "$ref": "#/$defs/mode"
+        },
+        "support": {
+          "$ref": "#/$defs/support"
+        },
+        "representation": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[a-z][a-z0-9.-]*$"
+        }
+      },
+      "additionalProperties": false
+    },
+    "unsupportedControl": {
+      "type": "object",
+      "required": [
+        "controlId",
+        "capability",
+        "target",
+        "support",
+        "reasonCode"
+      ],
+      "properties": {
+        "controlId": {
+          "$ref": "#/$defs/controlId"
+        },
+        "capability": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256,
+          "pattern": "^[a-z][a-z0-9.-]*$"
+        },
+        "target": {
+          "const": "codex"
+        },
+        "support": {
+          "const": "unsupported"
+        },
+        "reasonCode": {
+          "$ref": "#/$defs/reasonCode"
+        }
+      },
+      "additionalProperties": false
+    },
+    "unsupportedControls": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/unsupportedControl"
+      }
+    },
+    "compatibility": {
+      "type": "object",
+      "required": [
+        "projectInstructions",
+        "projectConfigGenerated",
+        "runtimeEvidenceRequired",
+        "notes"
+      ],
+      "properties": {
+        "projectInstructions": {
+          "$ref": "#/$defs/portablePath"
+        },
+        "projectConfigGenerated": {
+          "const": false
+        },
+        "runtimeEvidenceRequired": {
+          "const": true
+        },
+        "notes": {
+          "$ref": "#/$defs/guidance"
+        }
+      },
+      "additionalProperties": false
+    },
+    "ownership": {
+      "type": "object",
+      "required": [
+        "generator",
+        "artifactType"
+      ],
+      "properties": {
+        "generator": {
+          "const": "GovernSeed"
+        },
+        "artifactType": {
+          "const": "codex-policy-adapter"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

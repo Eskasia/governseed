@@ -1,0 +1,9 @@
+{
+  "fixture": "cross-platform-paths",
+  "expected": ["windows-macos-linux-canonical-output-identical"],
+  "artifactEvidence": {
+    "policyId": "POL-7C0E73297E0E",
+    "policySha256": "18edf50ee16c40776fd2eff6f3ff25ddb8c4d2018200a118cec8a99a09c0f5de",
+    "adapterSha256": "23a66e9ff97fe0b8f48b37c8c40720e0bd553e1362aa6a6f80e1535ae188833c"
+  }
+}
