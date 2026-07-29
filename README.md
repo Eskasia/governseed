@@ -6,7 +6,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Node >=20](https://img.shields.io/badge/node-%3E%3D20-brightgreen.svg)](package.json)
 
-Agent-native project governance starter for Codex, Claude Code, and Antigravity — a dependency-free Node.js generator for the intake documents, decision records, task contracts, runtime entrypoints, and local checks an AI coding agent should use before writing application code.
+Agent-native project governance starter for Codex, Claude Code, and Antigravity — a dependency-free Node.js generator and validator for governance documents, governance data, Agent-specific configuration, decision records, task contracts, runtime entrypoints, and local checks an AI coding agent should use before writing application code.
 
 The starter makes four things explicit:
 
@@ -18,8 +18,8 @@ The starter makes four things explicit:
 | At a glance | Value |
 |---|---|
 | Primary use | Bootstrap governance for a new or existing agent-assisted project |
-| Input | Target directory, runtime adapter, and governance profile |
-| Output | Markdown governance pack, runtime entrypoints, profile metadata, and doctor checks |
+| Input | Target directory, runtime selection, and governance profile |
+| Output | Markdown governance documents, project-local decision and role data, runtime entrypoints, profile metadata, and doctor checks |
 | Supported runtimes | Codex, Claude Code, Antigravity, or all three |
 | Default profile | `base` |
 | Runtime requirement | Node.js 20 or newer |
@@ -28,14 +28,15 @@ The starter makes four things explicit:
 
 ## What this repository is — and is not
 
-This repository is the reusable source starter. An initialized downstream project receives a tailored governance pack; it does not receive this repository's test harness or maintenance documentation.
+This repository is the reusable source starter. An initialized downstream project receives a tailored governance document set; it does not receive this repository's test harness or maintenance documentation.
 
 It is:
 
 - a project-intake and decision-governance bootstrapper;
-- a source of canonical agent rules and thin runtime adapters;
+- a source of canonical agent rules and thin runtime entrypoints;
 - a profile-driven document generator;
 - a local doctor, fixture, runtime-contract, and evidence-validation suite.
+- a deterministic, project-local decision review and responsibility-assignment foundation.
 
 It is not:
 
@@ -43,6 +44,7 @@ It is not:
 - an application, UI, backend, or deployment template;
 - a PRD prompt pack;
 - a multi-agent orchestrator;
+- an Agent Runtime Framework, desktop app, Provider automation tool, Agent Marketplace, or Hosted Control Plane;
 - proof that governance improves delivery, that a generated project is production-ready, or that anyone outside this repository has adopted it.
 
 ## How it works
@@ -51,8 +53,8 @@ It is not:
 flowchart LR
     A["Target directory"] --> B["init.mjs"]
     P["Selected profile"] --> B
-    R["Selected runtime adapter"] --> B
-    B --> C["Governance pack"]
+    R["Selected runtime"] --> B
+    B --> C["Governance documents"]
     C --> D["Read runtime entrypoint and START_HERE.md"]
     D --> E["Q1-Q9 intake"]
     E --> F{"Material research trigger?"}
@@ -93,7 +95,7 @@ node agent-governance-starter/scripts/doctor.mjs ./my-new-project
 
 `init` preserves existing project files. When a destination already exists, the command reports `SKIP` instead of overwriting it.
 
-### Generate all runtime adapters for a fullstack AI project
+### Generate all runtime entrypoints for a fullstack AI project
 
 ```bash
 node agent-governance-starter/scripts/init.mjs ./my-ai-product \
@@ -129,7 +131,7 @@ node scripts/init.mjs <target-directory>
 | Option | Default | Behavior |
 |---|---|---|
 | `<target-directory>` | required | Directory to create or augment |
-| `--agent` | `codex` | Generates the selected runtime entrypoint; `all` generates every adapter |
+| `--agent` | `codex` | Generates the selected runtime entrypoint; `all` generates every supported entrypoint |
 | `--profile` | `base` | Selects the profile manifest and its document set |
 | `--all` | off | Copies every fixed and conditional Markdown template |
 | `--help`, `-h` | — | Shows current options and available profiles |
@@ -155,6 +157,46 @@ node scripts/doctor.mjs
 
 Without `--profile`, doctor reads `.agent-governance.json` and falls back to `base`.
 
+### Decision and role foundation
+
+Milestone 1 uses these terms as strict product contracts:
+
+- **Governance Pack** — an optional collection of processes, rules, and checks that can only add restrictions or checks and cannot expand existing permissions.
+- **Policy Compiler** — a pure-local compiler that converts confirmed risks, project rules, and Governance Packs into Agent-tool-readable settings. It is designed here for a later milestone and is not implemented.
+- **Attestation** — a comparison of declared policy, compiled output, and observable target settings; it does not mean an Agent Runtime necessarily obeys that policy. It is designed here for a later milestone and is not implemented.
+- **Adapter** — a thin layer that converts neutral governance data into a tool-specific format; it must not repeat core decision logic or execute an Agent.
+- **Deliberation** — four AI seats making multi-round proposals, critiques, verification, and synthesis about one decision; its result is decision advice, not human approval.
+- **Role Assignment** — selection of the minimum necessary delivery, review, and verification responsibilities from task, risk, stack, and acceptance data; a role cannot acquire extra tools, network, credentials, or write access.
+- **Evidence Graph** — a logical evidence graph made from stable IDs and references, represented in JSON and Markdown and validated by doctor without adding a graph database.
+
+Deliberation seats use the `DLB-*` namespace only. Delivery roles use the
+`ROLE-*` namespace only. The complete logical lineage is:
+
+```text
+SRC → REQ → DEC → AC → TASK → ROLE → POL → EVD → ATT
+```
+
+`OPEN_LOOP` may reference an unconfirmed `SRC`, `REQ`, `DEC`, `TASK`, or `EVD`.
+Milestone 1 implements `SRC` through `ROLE` plus evidence references. `POL` and
+`ATT` remain later, separately reviewed work.
+
+```text
+agent-governance assess <project> [--task <id>] [--json]
+agent-governance deliberate plan <project> --decision <id> [--json]
+agent-governance deliberate import <project> --file <path> [--json]
+agent-governance deliberate confirm <project> --decision <id> --file <path> [--json]
+agent-governance roles assign <project> --task <id> [--catalog <path>] [--override <path>] [--json]
+agent-governance pack list <project> [--json]
+```
+
+These commands use only explicit project files and deterministic rules. They do
+not call an external model, run an Agent, access credentials, install plugins,
+write user-global settings, or use the network. JSON mode writes one object to
+stdout; diagnostics go to stderr. Stable exit codes are `0` success, `1`
+incomplete governed input, `2` usage error, `3` schema or semantic validation
+failure, `4` a fail-closed safety, policy, reference, permission, or replay
+block, and `5` bounded project-local I/O failure.
+
 ## Generated project
 
 ### Generated base project tree
@@ -162,6 +204,14 @@ Without `--profile`, doctor reads `.agent-governance.json` and falls back to `ba
 ```text
 my-new-project/
 ├── .agent-governance.json
+├── .agent-governance/
+│   ├── .gitignore
+│   ├── risk-profile.json
+│   ├── source-lock.json
+│   ├── packs.lock.json
+│   ├── decisions/
+│   ├── role-assignments/
+│   └── local/                 # ignored: raw/private runtime material only
 ├── AGENTS.md
 ├── CONTEXT.md
 ├── OPEN_LOOPS.md
@@ -187,6 +237,18 @@ my-new-project/
 | `TASK_CONTRACT.md` | Executable tasks with inputs, tools, outputs, validation, evidence, and non-goals |
 | `OPEN_LOOPS.md` | Unresolved decisions, ownership, status, lineage, and confirmation state |
 | `AGENTS.md` | Canonical project rules and lifecycle ownership for the intent and route gates |
+| `.agent-governance/risk-profile.json` | Explicit task risk facts, open questions, and the project permission ceiling |
+| `.agent-governance/source-lock.json` | Exact external source commit, license, mode, hash, and attribution metadata |
+| `.agent-governance/packs.lock.json` | Enabled Pack summaries, exact project-local artifact paths, and pinned source metadata |
+| `.agent-governance/decisions/DEC-*/` | Content-bound decision, plan, imported result, and separate human confirmation records |
+| `.agent-governance/role-assignments/TASK-*.json` | Deterministic, reason-coded responsibility selections and append-only overrides |
+
+Import persists only `imported`; it never supplies approval. A separate
+project-local declared-human-confirmation record, bound to the exact decision,
+plan, and imported-result hash, transitions the stored result to
+`human-confirmed`. Raw prompts, complete model output, provider sessions,
+cookies, credentials, and provider traces belong only in ignored
+`.agent-governance/local/` storage and are blocked from committable artifacts.
 
 ### Conditional documents
 
@@ -279,6 +341,7 @@ See [`workflows/research-synthesis.md`](workflows/research-synthesis.md) and the
 | Filled adoption fixtures and expected doctor JSON | `npm run fixtures` |
 | Runtime entrypoint contracts | `npm run runtime:proof` |
 | Governance and rule lifecycle | `npm run test:governance` |
+| Decision, role, schema, and artifact safety | `npm run test:decision-role` |
 | Governance-impact harness mechanics | `npm run test:governance-impact` |
 | Privacy-negative paths | `npm run test:privacy` |
 | Complete deterministic local suite | `npm run ci` |
@@ -350,12 +413,16 @@ See [`docs/governance-impact-eval.md`](docs/governance-impact-eval.md) for the f
 | [`profiles/`](profiles/) | Inheritable document manifests |
 | [`prompts/`](prompts/) | Pasteable first prompts for supported runtimes |
 | [`schemas/`](schemas/) | Doctor, project-document, runtime, and governance-impact JSON contracts |
-| [`scripts/`](scripts/) | Init, doctor, validation, smoke, runtime-proof, and evaluator CLIs |
+| [`catalogs/`](catalogs/) | Minimal built-in governance responsibilities; no persona library |
+| [`scripts/`](scripts/) | Init, umbrella governance CLI, doctor, validation, smoke, runtime-proof, and evaluator CLIs |
 | [`tests/governance/`](tests/governance/) | Doctor, rule-lifecycle, and traceability tests |
+| [`tests/decision-role/`](tests/decision-role/) | Decision/role fixtures, schema contracts, CLI behavior, artifact safety, and doctor integration |
 | [`tests/runtime/`](tests/runtime/) | Runtime first-response fixtures and contracts |
 | [`tests/governance-impact/`](tests/governance-impact/) | Synthetic scenarios, deterministic scorer, adapters, and containment tests |
 | [`tests/privacy/`](tests/privacy/) | Negative privacy and unsafe-input regression tests |
 | [`examples/template-adoption/`](examples/template-adoption/) | Filled synthetic project packs and expected doctor JSON |
+| [`docs/research/source-adoption-matrix.md`](docs/research/source-adoption-matrix.md) | Exact research commits, adopted/rejected scope, licenses, and attribution |
+| [`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) | Required attribution and future-copying boundary |
 | [`.github/`](.github/) | CI workflows, contribution templates, and release-note configuration |
 | [`docs/index.md`](docs/index.md) | Complete documentation index |
 
@@ -371,6 +438,8 @@ For a new maintainer, read in this order:
 
 - Never commit API keys, tokens, cookies, private keys, `.env` files, deployment credentials, raw tester identifiers, private prompts, customer data, raw model output, tool traces, or unredacted evidence.
 - Generated documents record secret names and ownership, never secret values.
+- Committable decision and role artifacts contain normalized metadata and
+  bounded synthesis only; ignored local storage is never evidence.
 - Public CI uses synthetic fixtures, deterministic checks, and forced mock runtime proof without credentials.
 - Real execution paths are explicit, synthetic-only, and fail closed on privacy, containment, persistence, schema, or cleanup uncertainty.
 - A passing fixture, doctor run, runtime smoke test, or offline evaluator control is not proof of production readiness, external adoption, universal suitability, or governance effectiveness.

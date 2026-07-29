@@ -28,6 +28,52 @@ node scripts/doctor.mjs --strict /path/to/your/project
 
 Strict mode treats missing documents and warnings as failures. Normal mode allows placeholder warnings so a freshly initialized project can still be inspected.
 
+## Decision And Role Foundation
+
+Run the deterministic Milestone 1 contract suite with:
+
+```bash
+npm run test:decision-role
+```
+
+It covers the seven public artifact schemas, the separate CLI-output schema,
+exact JSON parsing, UTF-8 and size limits, path traversal and symlink defenses,
+hard-link rejection, secret and private-content blocking, deterministic assess/plan/import/assign
+behavior, no-plan handling for untriggered decisions, graph replay mismatch,
+explicit human-confirmation state transition, enabled-Pack permission
+intersection, stable doctor finding codes, legacy compatibility, and no
+network or user-global writes.
+
+The six named fixture projects are:
+
+- `low-risk-docs-task`
+- `architecture-decision`
+- `restricted-publish-task`
+- `malicious-role-catalog`
+- `replay-version-mismatch`
+- `privacy-negative`
+
+Useful direct checks:
+
+```bash
+node --test tests/decision-role/artifact-safety.test.mjs
+node --test tests/decision-role/schema-contracts.test.mjs
+node --test tests/decision-role/cli-contracts.test.mjs
+node --test tests/decision-role/doctor-contracts.test.mjs
+npm run fixtures
+```
+
+Decision-role fixture directories are bounded governance-artifact overlays, not
+standalone initialized projects. The doctor contract suite applies each
+scenario to the filled `base-minimal` project before normal and strict checks;
+`npm run fixtures` continues to run every existing standalone strict fixture.
+
+All `agent-governance --json` commands must emit exactly one closed JSON object
+to stdout; progress and diagnostics belong on stderr. The documented exit codes
+are `0` success, `1` incomplete governed input, `2` usage error, `3` schema or
+semantic validation failure, `4` a fail-closed safety/policy/reference block,
+and `5` bounded project-local I/O failure.
+
 ## Init Smoke Checks
 
 ```bash
@@ -121,6 +167,18 @@ RUNTIME_PROOF_REAL=1 npm run runtime:proof
 `RUNTIME_PROOF_REAL=1` is synthetic-only and fails closed when a required CLI or safety capability is unavailable. It does not imply that the separate governance-impact evaluator supports the same runtime.
 
 `npm run ci` includes all deterministic governance and governance-impact checks and must never set `GOVERNANCE_IMPACT_REAL`.
+
+Before a release review, also run:
+
+```bash
+npm pack --dry-run --json
+git diff --check
+```
+
+The package dry-run must list the umbrella CLI, both legacy binaries, schemas,
+built-in responsibility catalog, and third-party notices without
+`.agent-governance/local/` content. `git diff --check` must report no whitespace
+errors.
 
 The public runtime-proof workflow also stays in mock mode and never sets `RUNTIME_PROOF_REAL`.
 It runs `npm run runtime:proof:mock`, which explicitly overrides any inherited real-mode opt-in.

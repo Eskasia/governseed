@@ -10,6 +10,8 @@
 | `../startup/02-required-project-docs.md` | Required and conditional project docs |
 | `runtime-proof.md` | Mock and real runtime proof commands for generated adapters |
 | `governance-impact-eval.md` | Paired evaluator contract, privacy boundary, claim gate, and non-claims |
+| `superpowers/specs/2026-07-29-decision-role-foundation-design.md` | Milestone 1 decision, role, schema, CLI, privacy, migration, testing, and future-roadmap design |
+| `superpowers/plans/2026-07-29-decision-role-foundation-plan.md` | Test-first implementation and verification plan |
 | `superpowers/reviews/2026-07-26-governance-evidence-overhaul-audit.md` | Independent review, QA evidence, completion matrix, and release blockers |
 
 ## Runtime Entrypoints And Adapters
@@ -60,5 +62,8 @@
 | `../SECURITY.md` | Security policy |
 | `../CODE_OF_CONDUCT.md` | Contributor behavior expectations |
 | `../ROADMAP.md` | Public release roadmap |
+| `research/source-adoption-matrix.md` | Exact source revisions, licenses, adopted patterns, rejected scope, and attribution decisions |
 | `adr/000-template.md` | ADR template |
+| `adr/002-modular-core-and-adapter-boundary.md` | Modular-monolith core and external translation boundary |
+| `adr/003-deliberation-and-role-assignment-model.md` | Decision-deliberation and responsibility-assignment contracts |
 | `experiments/context-mode.md` | Experimental context pressure workflow |

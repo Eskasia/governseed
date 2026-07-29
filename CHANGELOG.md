@@ -1,5 +1,29 @@
 # Changelog
 
+## 2026-07-29 — Decision And Role Foundation
+
+- Added seven closed, versioned governance artifact schemas plus a separate
+  closed CLI-output contract, deterministic canonical hashes, exact JSON
+  limits, pinned source provenance, privacy scanning, and fail-closed path and
+  symlink handling.
+- Added the dependency-free `agent-governance` umbrella CLI for explicit risk
+  assessment, four-seat decision-plan export/result import, separate
+  hash-bound human confirmation, deterministic role assignment, and Pack
+  listing. The CLI does not execute an Agent or model, access credentials,
+  write user-global settings, or use the network.
+- Extended doctor with stable risk, decision, deliberation, role, source,
+  privacy, and path finding codes while retaining legacy-project
+  compatibility.
+- Added the five-item built-in governance responsibility catalog and six
+  positive/negative fixture families for low-risk documentation, architecture
+  decisions, restricted publishing, malicious catalogs, replay mismatch, and
+  privacy.
+- Recorded the modular-core/external-Adapter boundary, exact source adoption
+  SHAs and licenses, and implementation plans for later Policy Compiler,
+  Effective Policy Attestation, source-specific optional Pack, and external
+  Adapter milestones. Those later capabilities remain unimplemented and no
+  runtime-enforcement claim is made.
+
 ## 2026-07-29 — Conditional Research Synthesis
 
 - Added an advisory, user-confirmed `RESEARCH_SYNTHESIS.md` workflow for material evidence conflict, high-impact decisions, multiple credible routes, and explicit multi-perspective research requests.

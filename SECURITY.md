@@ -13,6 +13,47 @@ This repository is a starter kit for project governance documents, scripts, and 
 - Raw model stdout/stderr, raw tool traces, environment variables, absolute home paths, or raw diff hunks.
 - Logs or evidence artifacts that contain credentials or any prohibited value above.
 
+## Decision And Role Foundation Boundary
+
+- The Milestone 1 core is local and dependency-free. Normal `assess`,
+  `deliberate`, `roles`, and `pack` commands do not use the network, execute an
+  Agent or model, install a Plugin, read credentials, or write user-global
+  configuration.
+- Treat every imported deliberation result, role catalog, Pack, override, and
+  source-lock record as untrusted input. Exact JSON uses fatal UTF-8 decoding,
+  a 1 MiB descriptor-bound, decoded-key duplicate detection, bounded nesting
+  and members, closed contracts, and privacy scanning before persistence.
+- Every governed path must remain under the real project root. Each path
+  component is checked for symlinks, and governed files with multiple hard
+  links are rejected; reads use no-follow and post-open identity checks, and
+  writes re-check the verified parent before no-replace publication. A changed
+  identity or detected link fails closed with no success artifact.
+- `.agent-governance/.gitignore` must ignore `local/` before any private staging
+  directory is created. On POSIX, local directories/files created by the tool
+  use modes `0700`/`0600`. Doctor verifies ignore coverage and symlink status
+  without traversing local contents.
+- Raw prompts, raw model output, provider sessions, cookies, credentials, and
+  traces may never become governance evidence. The only core access to
+  `local/` is an explicitly named `deliberate import --file` input, and that
+  input must already be a normalized result contract.
+- Import always persists `imported`; externally supplied `human-confirmed` or
+  confirmation-like data is rejected. Only a separate project-local
+  declared-human-confirmation transition may advance the stored result, and it
+  must match the canonical decision, plan, and result hashes. This record
+  declares confirmation; it does not prove human identity.
+- Exported plans and their decision inputs are content-bound. Decision
+  revision/hash, plan revision/hash, graph version, and pinned source revision
+  must all match on import; mismatch fails closed rather than replaying.
+- Role/catalog capability metadata is a request, never a grant. Effective
+  permission is the most restrictive meet of project, risk, canonical, and
+  enabled-Pack constraints. Packs and overrides may only narrow authority.
+- External catalog, Pack, and specialist provenance must exact-match one pinned
+  source-lock repository, commit, license, import mode, and hash. Normal
+  commands never fetch or update a source.
+- Errors and JSON findings expose only a stable code and safe subject. They
+  never reflect a matched secret, raw input, provider content, or external
+  absolute path.
+
 ## Governance Evidence Safety Boundary
 
 - Real execution is synthetic-only. Governance-impact evaluation accepts only clean, committed synthetic scenarios; runtime proof accepts only generated synthetic fixtures. Private, customer, tenant, and production content are prohibited.
