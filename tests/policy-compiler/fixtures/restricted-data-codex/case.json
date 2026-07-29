@@ -1,0 +1,4 @@
+{
+  "fixture": "restricted-data-codex",
+  "expected": ["network-not-enforced", "credentials-unsupported", "no-enforcement-claim"]
+}

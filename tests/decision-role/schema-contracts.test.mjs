@@ -507,17 +507,32 @@ test('catalog requests cannot expand the project permission ceiling', () => {
 });
 
 test('external-catalog assignments exact-match catalog provenance and role identity', () => {
+  const compatibleCatalog = clone(roleCatalog);
+  compatibleCatalog.roles[0].supportedResponsibilities = [
+    'implementation-owner',
+  ];
+  compatibleCatalog.roles[0].requestedCapabilities = clone(
+    lowAssignment.selectedRoles[0].requestedCapabilities,
+  );
+  const compatibleContext = {
+    ...lowContext,
+    roleCatalog: compatibleCatalog,
+  };
   const assignment = clone(lowAssignment);
   assignment.selectedRoles[0] = {
     ...assignment.selectedRoles[0],
-    specialistRoleId: roleCatalog.roles[0].roleId,
+    specialistRoleId: compatibleCatalog.roles[0].roleId,
     source: 'external-catalog',
     sourceCatalog: lowContext.roleCatalogPath,
-    sourceRevision: roleCatalog.source.revision,
-    sourceLicense: roleCatalog.source.license,
-    sourceHash: roleCatalog.source.sha256,
+    sourceRevision: compatibleCatalog.source.revision,
+    sourceLicense: compatibleCatalog.source.license,
+    sourceHash: compatibleCatalog.source.sha256,
   };
-  assertValid('role-assignment.schema.json', assignment, lowContext);
+  assertValid(
+    'role-assignment.schema.json',
+    assignment,
+    compatibleContext,
+  );
 
   const forged = clone(assignment);
   forged.selectedRoles[0].sourceRevision = 'f'.repeat(40);
@@ -525,7 +540,7 @@ test('external-catalog assignments exact-match catalog provenance and role ident
     'role-assignment.schema.json',
     forged,
     'SOURCE_PROVENANCE_MISMATCH',
-    lowContext,
+    compatibleContext,
   );
 
   const unknownRole = clone(assignment);
@@ -534,7 +549,7 @@ test('external-catalog assignments exact-match catalog provenance and role ident
     'role-assignment.schema.json',
     unknownRole,
     'SOURCE_PROVENANCE_MISMATCH',
-    lowContext,
+    compatibleContext,
   );
 });
 

@@ -1,0 +1,4 @@
+{
+  "fixture": "owner-conflict",
+  "expected": ["fail-closed", "non-owned-file-preserved"]
+}

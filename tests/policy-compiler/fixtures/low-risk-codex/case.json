@@ -1,0 +1,4 @@
+{
+  "fixture": "low-risk-codex",
+  "expected": ["compile-pass", "project-local-only", "second-run-zero-diff"]
+}

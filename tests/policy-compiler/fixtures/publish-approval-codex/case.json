@@ -1,0 +1,4 @@
+{
+  "fixture": "publish-approval-codex",
+  "expected": ["human-approval-guidance", "strict-doctor-fails-without-approval"]
+}

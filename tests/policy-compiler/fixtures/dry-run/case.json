@@ -1,0 +1,4 @@
+{
+  "fixture": "dry-run",
+  "expected": ["complete-change-plan", "filesystem-unchanged"]
+}

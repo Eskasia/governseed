@@ -125,7 +125,10 @@ function readRequiredJson(projectDir, relativePath, subject) {
 function validateOrFail(schema, value, context, fallback) {
   const validation = validateArtifact(schema, value, context);
   if (validation.valid) return;
-  const code = validation.errors[0]?.code;
+  failValidationCode(validation.errors[0]?.code, fallback);
+}
+
+function failValidationCode(code, fallback) {
   if (code === 'SOURCE_PROVENANCE_MISMATCH') {
     fail('POLICY_SOURCE_HASH_MISMATCH');
   }
@@ -284,7 +287,9 @@ function loadRoleCatalog(
   cache,
 ) {
   const paths = sortedUnique(
-    (assignment.selectedRoles ?? [])
+    (Array.isArray(assignment?.selectedRoles)
+      ? assignment.selectedRoles
+      : [])
       .filter((role) => ['external', 'external-catalog'].includes(role?.source))
       .map((role) => normalizePortablePath(role.sourceCatalog)),
   );
@@ -321,6 +326,21 @@ function loadAssignments(projectDir, riskProfile, sourceLock, inputHashes) {
     const relative =
       `.agent-governance/role-assignments/${task.taskId}.json`;
     const assignment = readRequiredJson(projectDir, relative, task.taskId);
+    const preliminary = validateArtifact(
+      'role-assignment.schema.json',
+      assignment,
+      {
+        knownTaskIds: riskProfile.tasks.map((candidate) => candidate.taskId),
+        riskProfile,
+        sourceLock,
+      },
+    );
+    const blockingError = preliminary.errors.find(
+      (error) => error.code !== 'SOURCE_PROVENANCE_MISMATCH',
+    );
+    if (blockingError) {
+      failValidationCode(blockingError.code, 'POLICY_MANIFEST_INVALID');
+    }
     const catalog = loadRoleCatalog(
       projectDir,
       assignment,

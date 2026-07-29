@@ -75,6 +75,11 @@ test('public brand surfaces identify GovernSeed', () => {
       `GovernSeed was previously developed as ${'`'}${LEGACY}${'`'}.`,
     ),
   );
+  assert.match(readme, /github\.com\/Eskasia\/governseed/iu);
+  assert.equal(
+    readme.includes(`https://github.com/Eskasia/${LEGACY}`),
+    false,
+  );
 
   const brandedFiles = [
     'CHANGELOG.md',
@@ -113,6 +118,27 @@ test('public brand surfaces identify GovernSeed', () => {
     'agent-native',
     'governance',
   ]);
+
+  for (const relativePath of [
+    '.github/ISSUE_TEMPLATE/config.yml',
+    'examples/template-adoption/base-minimal/PROJECT_BRIEF.md',
+  ]) {
+    const content = read(relativePath);
+    assert.match(content, /github\.com\/Eskasia\/governseed/iu);
+    assert.equal(
+      content.includes(`https://github.com/Eskasia/${LEGACY}`),
+      false,
+      `${relativePath} retains the pre-rename repository URL`,
+    );
+  }
+  assert.match(
+    read('scripts/init.mjs'),
+    /node governseed\/scripts\/doctor\.mjs/u,
+  );
+  assert.match(
+    read('templates/runtime/README.md'),
+    /node governseed\/scripts\/doctor\.mjs/u,
+  );
 });
 
 test('generated projects and CLI help display GovernSeed without renaming commands', (t) => {
@@ -206,15 +232,13 @@ test('legacy package, generator, schema, and fixture machine identifiers stay st
 
 test('every retained legacy brand token has an explicit compatibility class', () => {
   const expectedCounts = {
-    '.github/ISSUE_TEMPLATE/config.yml': 1,
     'CHANGELOG.md': 1,
-    'README.md': 8,
+    'README.md': 1,
     'THIRD_PARTY_NOTICES.md': 1,
-    'docs/migrations/governseed-brand-transition.md': 4,
+    'docs/migrations/governseed-brand-transition.md': 3,
     'docs/superpowers/specs/2026-07-13-governance-evidence-overhaul-design.md': 1,
     'docs/superpowers/specs/2026-07-29-decision-role-foundation-design.md': 1,
     'examples/template-adoption/base-minimal/.agent-governance.json': 1,
-    'examples/template-adoption/base-minimal/PROJECT_BRIEF.md': 1,
     'examples/template-adoption/fullstack-ai-saas/.agent-governance.json': 1,
     'examples/template-adoption/macos-beta-handoff/.agent-governance.json': 1,
     'package.json': 1,
@@ -231,9 +255,9 @@ test('every retained legacy brand token has an explicit compatibility class', ()
     'schemas/role-assignment.schema.json': 1,
     'schemas/role-catalog.schema.json': 1,
     'schemas/source-lock.schema.json': 1,
-    'scripts/init.mjs': 2,
-    'scripts/validate-starter.mjs': 3,
-    'templates/runtime/README.md': 2,
+    'scripts/init.mjs': 1,
+    'scripts/validate-starter.mjs': 2,
+    'templates/runtime/README.md': 1,
     'tests/governance/traceability.test.mjs': 10,
   };
   const actualCounts = {};
@@ -251,7 +275,7 @@ test('every retained legacy brand token has an explicit compatibility class', ()
     'legacy machine identifier',
     'compatibility text',
     'historical record',
-    'repository reference pending manual rename',
+    'completed repository transition',
   ]) {
     assert.match(transition, new RegExp(classification, 'u'));
   }
@@ -272,7 +296,7 @@ test('every retained legacy brand token has an explicit compatibility class', ()
   }
 });
 
-test('package dry run contains brand transition evidence and excludes local artifacts', () => {
+test('package dry run contains required governance surfaces and excludes local artifacts', () => {
   const npmExecPath = process.env.npm_execpath;
   assert.ok(
     npmExecPath && fs.existsSync(npmExecPath),
@@ -302,6 +326,28 @@ test('package dry run contains brand transition evidence and excludes local arti
   assert.ok(paths.includes('docs/migrations/governseed-brand-transition.md'));
   assert.ok(paths.includes('docs/research/2026-07-29-governseed-name-audit.md'));
   assert.ok(paths.includes('docs/research/evidence/2026-07-29-tmview-governseed-no-results.png'));
+  for (const required of [
+    'docs/policy-compiler.md',
+    'docs/research/2026-07-29-codex-policy-capability-matrix.md',
+    'schemas/policy-manifest.schema.json',
+    'schemas/codex-policy-adapter.schema.json',
+    'schemas/compile-receipt.schema.json',
+    'scripts/lib/policy-compiler-core.mjs',
+    'scripts/lib/policy-compiler-project.mjs',
+    'scripts/lib/codex-policy-adapter.mjs',
+    'scripts/lib/policy-compiler-doctor.mjs',
+    'tests/policy-compiler/fixture-contracts.test.mjs',
+    'tests/policy-compiler/fixtures/low-risk-codex/case.json',
+    'tests/policy-compiler/fixtures/restricted-data-codex/case.json',
+    'tests/policy-compiler/fixtures/publish-approval-codex/case.json',
+    'tests/policy-compiler/fixtures/malicious-pack-expansion/case.json',
+    'tests/policy-compiler/fixtures/owner-conflict/case.json',
+    'tests/policy-compiler/fixtures/stale-policy/case.json',
+    'tests/policy-compiler/fixtures/dry-run/case.json',
+    'tests/policy-compiler/fixtures/cross-platform-paths/case.json',
+  ]) {
+    assert.ok(paths.includes(required), `package is missing ${required}`);
+  }
   assert.equal(
     paths.some((entry) => (
       /(?:^|\/)(?:\.agent-governance\/local|\.tmp|tmp)(?:\/|$)/u.test(entry)

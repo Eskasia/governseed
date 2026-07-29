@@ -327,24 +327,28 @@ function unsafePathString(value) {
   return /(?:^|[\\/])\.\.(?:[\\/]|$)/u.test(value);
 }
 
+function secretUrlKey(value) {
+  const normalized = String(value)
+    .toLowerCase()
+    .replaceAll(/[^a-z0-9]/gu, '');
+  return normalized === 'key'
+    || /(?:token|secret|signature|password|passwd|credential|cookie|session|privatekey)/u
+      .test(normalized);
+}
+
 function secretQueryString(value) {
   if (typeof value !== 'string' || !/^https?:\/\//iu.test(value)) return false;
   try {
     const url = new URL(value);
     if (url.username || url.password) return true;
     for (const key of url.searchParams.keys()) {
-      if (
-        /^(?:access_?token|api_?key|key|token|secret|signature|password|credential|cookie|session)$/iu
-          .test(key)
-      ) {
-        return true;
-      }
+      if (secretUrlKey(key)) return true;
     }
-    if (
-      /(?:^|[&;])(?:access_?token|api_?key|key|token|secret|signature|password|credential|cookie|session)=/iu
-        .test(url.hash.slice(1))
-    ) {
-      return true;
+    const fragment = new URLSearchParams(
+      url.hash.slice(1).replaceAll(';', '&'),
+    );
+    for (const key of fragment.keys()) {
+      if (secretUrlKey(key)) return true;
     }
   } catch {
     return false;
@@ -1566,49 +1570,70 @@ const PERMISSION_RANK = Object.freeze({
 });
 
 function rootCapability(capability) {
+  if (typeof capability !== 'string') return capability;
   if (capability.startsWith('network.')) return 'network';
   if (capability.startsWith('credentials.')) return 'credentials';
   return capability;
 }
 
 function validateRoleAssignment(value, context, errors) {
-  const specialistIds = (value.selectedRoles ?? [])
+  const selectedRoles = Array.isArray(value?.selectedRoles)
+    ? value.selectedRoles
+    : [];
+  const specialistIds = selectedRoles
     .map((role) => role?.specialistRoleId)
     .filter((roleId) => roleId && roleId !== 'unassigned');
   if (
     new Set(specialistIds).size !== specialistIds.length
-    || duplicateId(value.selectedRoles, 'responsibility')
+    || duplicateId(selectedRoles, 'responsibility')
   ) {
     addSchemaError(errors, 'DUPLICATE_ID', '$.selectedRoles');
   }
   if (
     Array.isArray(context.knownTaskIds)
-    && !context.knownTaskIds.includes(value.taskId)
+    && !context.knownTaskIds.includes(value?.taskId)
   ) {
     addSchemaError(errors, 'TASK_REFERENCE_MISSING', '$.taskId');
   }
-  const ceiling = context.riskProfile?.permissionCeiling ?? value.permissionCeiling;
+  const ceiling = context.riskProfile?.permissionCeiling
+    ?? value?.permissionCeiling;
   const task = context.riskProfile?.tasks?.find(
-    (candidate) => candidate.taskId === value.taskId,
+    (candidate) => candidate.taskId === value?.taskId,
   );
   const taskCapabilities = task
     ? new Set((task.requestedCapabilities ?? []).map(rootCapability))
     : null;
-  for (const [index, role] of (value.selectedRoles ?? []).entries()) {
+  for (const [index, selectedRole] of selectedRoles.entries()) {
+    const role = selectedRole
+      && typeof selectedRole === 'object'
+      && !Array.isArray(selectedRole)
+      ? selectedRole
+      : {};
+    const assignedTaskScope = Array.isArray(role.assignedTaskScope)
+      ? role.assignedTaskScope
+      : [];
+    const requestedCapabilities = Array.isArray(role.requestedCapabilities)
+      ? role.requestedCapabilities
+      : [];
+    const grantedCapabilityCeiling = role.grantedCapabilityCeiling
+      && typeof role.grantedCapabilityCeiling === 'object'
+      && !Array.isArray(role.grantedCapabilityCeiling)
+      ? role.grantedCapabilityCeiling
+      : {};
     const allowedRequests = new Set(taskCapabilities ?? []);
     if (role.responsibility !== 'implementation-owner') {
       allowedRequests.add('filesystem.project-read');
     }
     if (
-      role.assignedTaskScope?.length !== 1
-      || role.assignedTaskScope[0] !== value.taskId
+      assignedTaskScope.length !== 1
+      || assignedTaskScope[0] !== value?.taskId
       || (
         Array.isArray(context.knownTaskIds)
-        && !context.knownTaskIds.includes(role.assignedTaskScope[0])
+        && !context.knownTaskIds.includes(assignedTaskScope[0])
       )
       || (
         taskCapabilities
-        && (role.requestedCapabilities ?? []).some(
+        && requestedCapabilities.some(
           (capability) => !allowedRequests.has(rootCapability(capability)),
         )
       )
@@ -1620,11 +1645,11 @@ function validateRoleAssignment(value, context, errors) {
       );
     }
     for (const [capability, grant] of Object.entries(
-      role.grantedCapabilityCeiling ?? {},
+      grantedCapabilityCeiling,
     )) {
       const allowed = ceiling?.[rootCapability(capability)];
       const assignmentAllowed =
-        value.permissionCeiling?.[rootCapability(capability)];
+        value?.permissionCeiling?.[rootCapability(capability)];
       if (
         allowed === undefined
         || assignmentAllowed === undefined
@@ -1645,14 +1670,20 @@ function validateRoleAssignment(value, context, errors) {
       const catalog = context.roleCatalog;
       const source = catalog?.source;
       const catalogPath = context.roleCatalogPath?.replaceAll('\\', '/');
+      const assignedCatalogPath = typeof role.sourceCatalog === 'string'
+        ? role.sourceCatalog.replaceAll('\\', '/')
+        : null;
       const locked = findLockedSource(
         context.sourceLock,
         source?.sourceId,
       );
+      const catalogRole = (catalog?.roles ?? []).find(
+        (candidate) => candidate.roleId === role.specialistRoleId,
+      );
       if (
         !catalog
         || !catalogPath
-        || catalogPath !== role.sourceCatalog?.replaceAll('\\', '/')
+        || catalogPath !== assignedCatalogPath
         || source?.revision !== role.sourceRevision
         || source?.license !== role.sourceLicense
         || source?.sha256 !== role.sourceHash
@@ -1663,13 +1694,33 @@ function validateRoleAssignment(value, context, errors) {
         || locked.importedMode !== source?.importedMode
         || locked.sha256 !== source?.sha256
         || !locked.importedFiles?.includes(catalogPath)
-        || !(catalog.roles ?? []).some(
-          (candidate) => candidate.roleId === role.specialistRoleId,
-        )
+        || !catalogRole
       ) {
         addSchemaError(
           errors,
           'SOURCE_PROVENANCE_MISMATCH',
+          `$.selectedRoles[${index}]`,
+        );
+      }
+      if (
+        catalogRole
+        && task
+        && (
+          !catalogRole.supportedResponsibilities?.includes(
+            role.responsibility,
+          )
+          || !(catalogRole.supportedSurfaces ?? []).some(
+            (surface) => (task.surfaces ?? []).includes(surface),
+          )
+          || !sameCanonicalSet(
+            requestedCapabilities,
+            catalogRole.requestedCapabilities ?? [],
+          )
+        )
+      ) {
+        addSchemaError(
+          errors,
+          'ROLE_CATALOG_INVALID',
           `$.selectedRoles[${index}]`,
         );
       }
@@ -1689,9 +1740,8 @@ function validateRoleAssignment(value, context, errors) {
       );
     }
   }
-  const selectedRoles = value.selectedRoles ?? [];
   const selectedByResponsibility = new Map(
-    selectedRoles.map((role) => [role.responsibility, role]),
+    selectedRoles.map((role) => [role?.responsibility, role]),
   );
   const requiredResponsibilities = task
     ? selectResponsibilities(task).responsibilities
@@ -1700,12 +1750,12 @@ function validateRoleAssignment(value, context, errors) {
     selectedByResponsibility.get('implementation-owner');
   const reviewerIds = new Set(
     selectedRoles
-      .filter((role) => role.responsibility !== 'implementation-owner')
-      .map((role) => role.specialistRoleId),
+      .filter((role) => role?.responsibility !== 'implementation-owner')
+      .map((role) => role?.specialistRoleId),
   );
-  const separation = value.separationOfDuties;
+  const separation = value?.separationOfDuties;
   if (
-    value.status === 'assigned'
+    value?.status === 'assigned'
     && separation?.required === true
     && (
       requiredResponsibilities.some(
