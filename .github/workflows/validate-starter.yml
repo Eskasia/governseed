@@ -1,4 +1,4 @@
-name: Validate starter
+name: Validate GovernSeed
 
 on:
   pull_request:

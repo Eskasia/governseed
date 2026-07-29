@@ -1,6 +1,6 @@
-# Base Minimal Fixture
+# GovernSeed Base Minimal Fixture
 
-This fixture demonstrates a filled base profile project for `agent-governance-starter`.
+This fixture demonstrates a filled GovernSeed base profile project.
 
 ## Start Here
 

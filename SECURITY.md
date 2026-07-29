@@ -1,8 +1,8 @@
-# Security Policy
+# GovernSeed Security Policy
 
 ## Scope
 
-This repository is a starter kit for project governance documents, scripts, and agent workflow routing. It does not ship a production application or hosted service.
+GovernSeed provides project governance documents, scripts, and agent workflow routing. It does not ship a production application or hosted service.
 
 ## Do Not Commit
 

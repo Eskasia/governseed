@@ -16,6 +16,9 @@ const PROJECT_CONFIG_FILE = '.agent-governance.json';
 const FATAL_PRIVACY_STATE = Symbol('fatalPrivacyState');
 
 function usage() {
+  console.log('GovernSeed — Governance foundations for agent-native projects.');
+  console.log('Command: agent-governance-doctor');
+  console.log();
   console.log('Usage: node scripts/doctor.mjs [--strict] [--json] [--profile base|fullstack-ai|macos] <project-directory>');
   console.log();
   console.log('--strict treats warnings as failures.');

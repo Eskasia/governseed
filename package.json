@@ -1,7 +1,13 @@
 {
   "name": "agent-governance-starter",
   "version": "0.1.0",
-  "description": "Governance bootstrap generator for agent-native projects.",
+  "description": "GovernSeed — governance foundations for agent-native projects.",
+  "keywords": [
+    "governseed",
+    "agent-governance",
+    "agent-native",
+    "governance"
+  ],
   "type": "module",
   "private": false,
   "license": "MIT",

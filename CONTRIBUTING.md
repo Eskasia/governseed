@@ -1,4 +1,4 @@
-# Contributing
+# Contributing to GovernSeed
 
 ## How to Contribute
 

@@ -2,7 +2,8 @@
 
 ## Purpose
 
-This project was initialized from agent-governance-starter. The agent must complete intake, project documents, and a task contract before implementation starts.
+This project was initialized with GovernSeed. The agent must complete intake,
+project documents, and a task contract before implementation starts.
 
 ## Read Order
 

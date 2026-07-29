@@ -1,8 +1,8 @@
-# Roadmap
+# GovernSeed Roadmap
 
 ## v1 Public Release
 
-- Keep the starter positioning clear: project governance starter for Codex, Claude Code, and Antigravity.
+- Keep GovernSeed positioned clearly as project governance infrastructure for Codex, Claude Code, and Antigravity.
 - Maintain `AGENTS.md` as the canonical source of truth.
 - Keep `CLAUDE.md` as a thin adapter.
 - Keep generated Antigravity output under `.agents/AGENTS.md` and `.agents/skills/*/SKILL.md`.

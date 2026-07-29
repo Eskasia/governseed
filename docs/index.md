@@ -1,4 +1,4 @@
-# Docs Index
+# GovernSeed Documentation
 
 ## Start Here
 

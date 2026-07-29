@@ -77,6 +77,20 @@ const REQUIRED_OPTIONS = Object.freeze({
   'pack.list': [],
 });
 
+function usage() {
+  console.log('GovernSeed — Governance foundations for agent-native projects.');
+  console.log('Command: agent-governance');
+  console.log();
+  console.log('Usage: agent-governance <command> <project> [options]');
+  console.log();
+  console.log('Commands:');
+  console.log('  assess');
+  console.log('  deliberate plan|import|confirm');
+  console.log('  roles assign');
+  console.log('  pack list');
+  process.exit(0);
+}
+
 class CliFailure extends Error {
   constructor(exitCode, code, status = 'blocked', subject = 'governance-artifact') {
     super(code);
@@ -990,6 +1004,7 @@ function execute(command) {
 }
 
 const argv = process.argv.slice(2);
+if (argv.length === 1 && (argv[0] === '--help' || argv[0] === '-h')) usage();
 const requestedJson = argv.includes('--json');
 let command = null;
 try {

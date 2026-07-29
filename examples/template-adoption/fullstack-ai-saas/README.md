@@ -1,6 +1,6 @@
-# Fullstack AI SaaS Fixture
+# GovernSeed Fullstack AI SaaS Fixture
 
-This fixture demonstrates a filled fullstack AI profile with data, API, environment, RAG, eval, and AI security documents.
+This fixture demonstrates a filled GovernSeed fullstack AI profile with data, API, environment, RAG, eval, and AI security documents.
 
 ## Start Here
 

@@ -90,6 +90,9 @@ function usage() {
     fixedDocs = [];
   }
 
+  console.log('GovernSeed — Governance foundations for agent-native projects.');
+  console.log('Command: agent-governance-init');
+  console.log();
   console.log(`Usage: node scripts/init.mjs <target-directory> [--agent codex|claude|antigravity|all] [--profile ${profiles}] [--all]`);
   console.log();
   console.log('Defaults: --agent codex --profile base');

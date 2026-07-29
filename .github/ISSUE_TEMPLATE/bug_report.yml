@@ -1,5 +1,5 @@
 name: Bug report
-description: Report a reproducible problem with the governance starter.
+description: Report a reproducible problem with GovernSeed.
 title: "bug: "
 labels:
   - bug

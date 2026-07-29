@@ -1,4 +1,4 @@
-name: Governance impact OCI preflight
+name: GovernSeed governance impact OCI preflight
 
 on:
   workflow_dispatch:

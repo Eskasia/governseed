@@ -1,7 +1,7 @@
-# Antigravity New Project Prompt
+# GovernSeed Antigravity New Project Prompt
 
 ```text
-You are starting a new project from agent-governance-starter.
+You are starting a new agent-native project with GovernSeed.
 
 Read these files first:
 1. START_HERE.md
