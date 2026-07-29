@@ -1,5 +1,28 @@
 # GovernSeed Changelog
 
+## 2026-07-29 — Risk-to-Policy Compiler for Codex
+
+- Added a dependency-free, deterministic compiler from assessed risk,
+  canonical project rules, role permission ceilings, confirmed decision
+  provenance, and source-locked active Packs to a neutral policy manifest.
+- Added a thin project-local Codex JSON Adapter that preserves unsupported and
+  representable-only controls without writing `.codex`, user-global settings,
+  credentials, or a second policy owner.
+- Added receipt-last local transactions, content-addressed IDs, canonical
+  hashes, dry-run, no-overwrite ownership checks, stable doctor findings, and
+  eight executable fixture contracts.
+- Preserved Pack checks as deterministic evidence obligations, retained
+  single-task Pack scope, blocked ambiguous multi-task Pack scope, and
+  revalidated final outputs immediately before receipt commit.
+- Revalidated proposed/active decision records and source-locked external role
+  catalog provenance, responsibility, task-surface, and capability metadata;
+  normalized OAuth secret-bearing URL keys; and closed final link/rename
+  parent-swap rollback gaps.
+- Compilation does not execute Codex or another model, establish human
+  approval, attest effective settings, or prove runtime enforcement.
+- Phase 2 does not import approval evidence, so active publish or delete work
+  that requires approval remains a strict doctor failure.
+
 ## 2026-07-29 — GovernSeed Brand Transition
 
 - Adopted GovernSeed as the public display brand and Eskasia GovernSeed as the
@@ -7,8 +30,8 @@
 - Preserved the existing `agent-governance-starter` package, commands, schemas,
   generated-project metadata, configuration paths, and machine identifiers for
   compatibility.
-- Kept the current GitHub repository URLs unchanged pending a separately
-  approved repository rename. No npm package or CLI alias changed.
+- Recorded the separately approved repository rename to
+  `https://github.com/Eskasia/governseed`; no npm package or CLI alias changed.
 
 ## 2026-07-29 — Decision And Role Foundation
 
@@ -29,10 +52,10 @@
   decisions, restricted publishing, malicious catalogs, replay mismatch, and
   privacy.
 - Recorded the modular-core/external-Adapter boundary, exact source adoption
-  SHAs and licenses, and implementation plans for later Policy Compiler,
-  Effective Policy Attestation, source-specific optional Pack, and external
-  Adapter milestones. Those later capabilities remain unimplemented and no
-  runtime-enforcement claim is made.
+  SHAs and licenses, and, at that milestone, implementation plans for a later
+  Policy Compiler, Effective Policy Attestation, source-specific optional Pack,
+  and external Adapter milestones. Those capabilities were not yet implemented
+  in Milestone 1, and no runtime-enforcement claim was made.
 
 ## 2026-07-29 — Conditional Research Synthesis
 

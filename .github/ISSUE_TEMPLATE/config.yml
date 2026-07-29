@@ -1,5 +1,5 @@
 blank_issues_enabled: true
 contact_links:
   - name: Security policy
-    url: https://github.com/Eskasia/agent-governance-starter/security/policy
+    url: https://github.com/Eskasia/governseed/security/policy
     about: Report security issues through the repository security policy.

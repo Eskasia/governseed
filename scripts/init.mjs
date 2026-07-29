@@ -443,4 +443,4 @@ console.log('Next steps:');
 console.log('  1. Fill PROJECT_BRIEF.md with the one-line project direction, target user, and product shape decision.');
 console.log('  2. Fill TECH_STACK.md with the user-declared or AI-recommended technology route.');
 console.log('  3. Ask the agent to read START_HERE.md and its runtime instruction file.');
-console.log('  4. Run: node agent-governance-starter/scripts/doctor.mjs <target-directory>');
+console.log('  4. Run: node governseed/scripts/doctor.mjs <target-directory>');

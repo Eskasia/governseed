@@ -1,12 +1,14 @@
 # GovernSeed Brand Transition
 
 GovernSeed was previously developed as `agent-governance-starter`. Stage 1
-changes the public display brand only. It does not change the product boundary,
-execute an Agent, add a hosted service, or begin the Risk-to-Policy Compiler.
+changed the public display brand. A separately approved repository transition
+then renamed the GitHub repository to `Eskasia/governseed`. Neither change
+renames compatibility-sensitive package, CLI, schema, generator, configuration,
+or evidence identifiers.
 
-## Stage 1 Contract
+## Current Contract
 
-| Surface | Stage 1 state |
+| Surface | Current state |
 |---|---|
 | Display brand | `GovernSeed` |
 | Formal brand | `Eskasia GovernSeed` |
@@ -16,10 +18,11 @@ execute an Agent, add a hosted service, or begin the Risk-to-Policy Compiler.
 | CLI commands | `agent-governance`, `agent-governance-init`, and `agent-governance-doctor` — unchanged |
 | Project configuration | `.agent-governance.json` and `.agent-governance/` — unchanged |
 | Schema, version, field, finding, and evidence IDs | unchanged |
-| GitHub repository | `Eskasia/agent-governance-starter` — unchanged pending manual Stage 2 approval |
+| GitHub repository | `Eskasia/governseed` — repository transition completed on 2026-07-29 |
 
 The future npm candidate `@eskasia/governseed` and CLI alias `governseed`
-require separate ADRs and pull requests. They are not part of this transition.
+require separate ADRs and pull requests. The completed repository transition
+does not authorize either change.
 
 ## Legacy Token Classification
 
@@ -29,33 +32,32 @@ brand test until it is reviewed and classified.
 
 | Path | Count | Classification | Reason |
 |---|---:|---|---|
-| `.github/ISSUE_TEMPLATE/config.yml` | 1 | repository reference pending manual rename | Security-policy URL must keep resolving before Stage 2. |
 | `CHANGELOG.md` | 1 | compatibility text | Records the former public name once. |
-| `README.md` | 8 | compatibility text; repository reference pending manual rename | One transition statement plus current badge, clone, and command paths. |
+| `README.md` | 1 | compatibility text | Records the former public name once. |
 | `THIRD_PARTY_NOTICES.md` | 1 | historical record | Attribution wording records the project name at adaptation time. |
-| `docs/migrations/governseed-brand-transition.md` | 4 | compatibility text; legacy machine identifier; repository reference pending manual rename | Owns the transition contract and protected identities. |
+| `docs/migrations/governseed-brand-transition.md` | 3 | compatibility text; legacy machine identifier; completed repository transition | Owns the transition contract and protected identities. |
 | `docs/superpowers/specs/2026-07-13-governance-evidence-overhaul-design.md` | 1 | historical record | Preserves the approved historical specification. |
 | `docs/superpowers/specs/2026-07-29-decision-role-foundation-design.md` | 1 | historical record | Preserves the approved historical specification. |
 | `examples/template-adoption/base-minimal/.agent-governance.json` | 1 | legacy machine identifier | Fixture generator value remains compatible. |
-| `examples/template-adoption/base-minimal/PROJECT_BRIEF.md` | 1 | repository reference pending manual rename | Fixture source pointer remains valid. |
 | `examples/template-adoption/fullstack-ai-saas/.agent-governance.json` | 1 | legacy machine identifier | Fixture generator value remains compatible. |
 | `examples/template-adoption/macos-beta-handoff/.agent-governance.json` | 1 | legacy machine identifier | Fixture generator value remains compatible. |
 | `package.json` | 1 | legacy machine identifier | Published package identity is protected in Stage 1. |
 | `schemas/*.schema.json` | 13 | legacy machine identifier | Existing schema `$id` contracts remain stable. |
-| `scripts/init.mjs` | 2 | legacy machine identifier; repository reference pending manual rename | Generated metadata and the current doctor path remain compatible. |
-| `scripts/validate-starter.mjs` | 3 | compatibility text; repository reference pending manual rename | Validator protects the transition statement, current documented doctor path, and generated-project compatibility identifier. |
-| `templates/runtime/README.md` | 2 | compatibility text; repository reference pending manual rename | Generated projects explain the transition while preserving the doctor path. |
-| `tests/governance/traceability.test.mjs` | 10 | repository reference pending manual rename | Synthetic traceability fixtures keep the current public source pointer. |
+| `scripts/init.mjs` | 1 | legacy machine identifier | Generated metadata keeps the compatibility identifier. |
+| `scripts/validate-starter.mjs` | 2 | compatibility text; legacy machine identifier | Validator protects the transition statement and generated-project compatibility identifier. |
+| `templates/runtime/README.md` | 1 | compatibility text; legacy machine identifier | Generated projects explain the retained generator identifier. |
+| `tests/governance/traceability.test.mjs` | 10 | historical record | Synthetic test strings preserve their reviewed historical source values; they are not public navigation links. |
 
 There are no retained occurrences classified as `missed public-brand
 occurrence`.
 
-## Stage 2 Manual Gate
+## Completed Repository Transition
 
-Only after this brand pull request is merged and a human explicitly approves
-Stage 2 may the GitHub repository be renamed to `Eskasia/governseed`. That
-separate operation must verify redirects, Actions, branch protection, issues,
-pull requests, releases, badges, clone URLs, and local remotes.
+The human-approved repository rename completed on 2026-07-29. Public badges,
+clone commands, security-policy links, fixture source pointers, generated
+doctor instructions, and local remotes now use `Eskasia/governseed` or the
+default checkout directory `governseed`. GitHub redirects may preserve old
+links, but new public guidance does not depend on that redirect.
 
 This preliminary name audit is not legal clearance and does not reserve a
 repository, package, domain, organization, or trade mark.

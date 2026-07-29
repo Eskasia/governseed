@@ -33,7 +33,7 @@ identifier remains `agent-governance-starter`.
 ## Validation
 
 ```bash
-node agent-governance-starter/scripts/doctor.mjs <this-project>
+node governseed/scripts/doctor.mjs <this-project>
 ```
 
 Treat warnings as unfinished governance work, not as approval to start implementation.
