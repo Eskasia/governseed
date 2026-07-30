@@ -323,6 +323,21 @@ export function validateAuditStatus(content) {
   return [];
 }
 
+/**
+ * spawnSync reports a command that never ran through `error`, or through a null
+ * status when a signal killed it. Neither says anything about the file being
+ * checked, so reading them as a per-file verdict blames the repository for the
+ * environment. A checkout without a usable git yields no signal at all, and the
+ * check fails closed once rather than once per file.
+ */
+function gitDidNotRun(result) {
+  return Boolean(result.error) || result.status === null;
+}
+
+function gitUnavailableError(subject) {
+  return `${subject} could not be verified: git could not be executed in this environment`;
+}
+
 function validateTrackedFiles(
   repoRoot,
   files,
@@ -339,6 +354,7 @@ function validateTrackedFiles(
       encoding: 'utf8',
       shell: false,
     });
+    if (gitDidNotRun(result)) return [gitUnavailableError('Git tracking')];
     if (result.status !== 0) errors.push(`${errorPrefix}: ${file}`);
   }
   return errors;
@@ -372,6 +388,7 @@ export function validateRequiredArtifactCommit(
       encoding: 'utf8',
       shell: false,
     });
+    if (gitDidNotRun(result)) return [gitUnavailableError('Required artifact commit state')];
     if (result.status !== 0) {
       errors.push(`Required repository artifact is not committed in HEAD: ${file}`);
       continue;
@@ -381,6 +398,7 @@ export function validateRequiredArtifactCommit(
       encoding: 'utf8',
       shell: false,
     });
+    if (gitDidNotRun(diff)) return [gitUnavailableError('Required artifact commit state')];
     if (diff.status !== 0) {
       errors.push(`Required repository artifact does not match committed HEAD: ${file}`);
     }
