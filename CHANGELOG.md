@@ -18,6 +18,10 @@
 - Removed the experimental surface from `npm run ci` and from the Core
   release-unit validation; added `npm run ci:experimental` and a separate
   workflow that is not a required check for Core pull requests.
+- Restricted the published package to a `files` whitelist. The tarball now
+  carries 94 entries and 857,171 unpacked bytes, down from 282 entries and
+  2,374,948 bytes, and no longer ships `tests/`, `experimental/`, `docs/`, or
+  `examples/`. The package name and all three bin names are unchanged.
 - Recorded override: this consolidation deliberately changes the CLI dispatch
   layer for `run` and `preflight` — their entry location, Core's usage refusal,
   and the approval-gated workflows' spawn target. The OCI and credential logic

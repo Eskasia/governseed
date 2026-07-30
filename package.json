@@ -44,5 +44,19 @@
     "agent-governance": "./scripts/agent-governance.mjs",
     "agent-governance-init": "./scripts/init.mjs",
     "agent-governance-doctor": "./scripts/doctor.mjs"
-  }
+  },
+  "files": [
+    "scripts/",
+    "schemas/",
+    "profiles/",
+    "templates/",
+    "startup/",
+    "workflows/",
+    "catalogs/",
+    "prompts/",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "CHANGELOG.md"
+  ]
 }
