@@ -1126,6 +1126,33 @@ than against the reviews. Three would have blocked implementation outright.
    This design follows §C4, so the downgrade rule wins and the example is
    illustrative only. Section 6.3.
 
+### 10.4 Corrected during implementation on 2026-07-30
+
+11. **The fixed identifier list in section 9.2 was replaced by a prose/identifier
+   split.** The phase-one review already found that a closed list cannot work
+   because every identifier the milestone introduces contains the substring; the
+   list it produced still failed the moment the implementation existed, because
+   the attest output needs a field literally named `materialized`. The check now
+   scans Markdown whole and scans source and schema files only inside quoted
+   strings containing a space — user-visible text — after masking the three
+   qualified terms. It still caught six real occurrences, one of them in the
+   attestation's own `knownLimitations` text.
+12. **A ceiling is bounded at three layers, and an unrequested capability
+   compiles to `deny` regardless of its ceiling.** Editing only the risk
+   profile is rejected as `POLICY_PRIVILEGE_EXPANSION`
+   (`policy-compiler-core.mjs:229-234`), and `requestedGrant` falls back to
+   `deny` when no role requested the capability (`policy-compiler-core.mjs:374-380`).
+   The tests that need a different compiled policy therefore change the risk
+   profile, the assignment ceiling and every role grant together, and add the
+   capability to the task and role requests when a looser mode is required.
+   Two helpers in `tests/policy-compiler/helpers.mjs` carry this.
+13. **`sha256Before` is run state, not identity.** The first run records `null`
+   and every later run records the file's own hash, so receipt equivalence
+   compares `path` and `sha256After` only. The emitted report carries the
+   current run's `sha256Before`; the persisted receipt keeps the transition it
+   recorded. This mirrors how the compile receipt excludes `compiledAt` and the
+   file-state lists.
+
 ## 11. Test Plan
 
 Failing tests first, red evidence captured before any implementation, per the
@@ -1202,6 +1229,12 @@ CHANGELOG.md           the rule-lifecycle record required by AGENTS.md
 Per the frozen decision, the README rewrite lands in the same commit as the
 `materialize` implementation and not before, because the current wording stays
 true until the command exists.
+
+Landed on 2026-07-30 in `6f6e5ed`, one commit, all of the above. `npm run ci`
+exits 0; the strict doctors for both examples exit 0; `npm pack --dry-run` ships
+113 entries with the new schemas, modules and boundary document included and
+nothing from `tests/` outside the fixture surface, `docs/` outside the whitelist,
+`experimental/`, or `examples/`.
 
 ## 13. Non-Goals
 
