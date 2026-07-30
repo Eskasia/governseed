@@ -13,13 +13,37 @@ const ROOT = path.resolve(
 // npm always ships these regardless of the whitelist.
 const ALWAYS_SHIPPED = new Set(['package.json', 'README.md', 'LICENSE']);
 
+// Run npm through its own CLI entry point rather than the `npm` shim: on
+// Windows the shim is a .cmd batch file that spawnSync cannot launch without a
+// shell, so a bare 'npm' never starts and reports status null.
 function packedPaths() {
-  const result = spawnSync(
-    'npm',
-    ['pack', '--dry-run', '--json'],
-    { cwd: ROOT, encoding: 'utf8', maxBuffer: 32 * 1024 * 1024 },
+  const npmExecPath = process.env.npm_execpath;
+  assert.ok(
+    npmExecPath && fs.existsSync(npmExecPath),
+    'npm_execpath must identify the npm CLI used to run this test',
   );
-  assert.equal(result.status, 0, result.stderr);
+  const result = spawnSync(
+    process.execPath,
+    [npmExecPath, 'pack', '--dry-run', '--json'],
+    {
+      cwd: ROOT,
+      encoding: 'utf8',
+      maxBuffer: 32 * 1024 * 1024,
+      env: {
+        ...process.env,
+        NO_UPDATE_NOTIFIER: '1',
+        npm_config_audit: 'false',
+        npm_config_fund: 'false',
+        npm_config_update_notifier: 'false',
+      },
+      shell: false,
+    },
+  );
+  assert.equal(
+    result.status,
+    0,
+    result.error?.message ?? result.stderr ?? result.stdout,
+  );
   const [tarball] = JSON.parse(result.stdout);
   return tarball.files.map((entry) => entry.path.replaceAll('\\', '/'));
 }
