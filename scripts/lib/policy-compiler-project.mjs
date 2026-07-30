@@ -18,6 +18,10 @@ import {
   validateHumanConfirmation,
 } from './decision-role-core.mjs';
 import {
+  buildClaudePolicyAdapter,
+  claudeSupportForControl,
+} from './claude-policy-adapter.mjs';
+import {
   buildCodexPolicyAdapter,
   codexSupportForControl,
 } from './codex-policy-adapter.mjs';
@@ -26,16 +30,48 @@ import {
   normalizePortablePath,
   PolicyCompilerError,
 } from './policy-compiler-core.mjs';
+import {
+  adapterPathFor,
+  isRegisteredTarget,
+  REGISTERED_TARGETS,
+  targetDefinition,
+} from './target-registry.mjs';
 
 const RECEIPT_TYPE = 'compile-receipt';
 const POLICY_TYPE = 'policy-manifest';
-const ADAPTER_TYPE = 'codex-policy-adapter';
 const MAX_ARTIFACT_BYTES = 1024 * 1024;
+
+// Each target owns a distinct adapter artifact type, so the artifact's own
+// ownership marker is enough to recover which target's schema and reason codes
+// apply. The alternative, threading the target through every artifact helper,
+// would put the same fact in two places that could disagree.
+const ADAPTER_TYPES = new Map(REGISTERED_TARGETS.map((name) => {
+  const definition = targetDefinition(name);
+  return [definition.adapterArtifactType, definition];
+}));
+
+const ADAPTER_BUILDERS = Object.freeze({
+  claude: buildClaudePolicyAdapter,
+  codex: buildCodexPolicyAdapter,
+});
+
+const SUPPORT_RESOLVERS = Object.freeze({
+  claude: claudeSupportForControl,
+  codex: codexSupportForControl,
+});
+
 const OWNED_TYPES = new Map([
   [POLICY_TYPE, 'policy-manifest.schema.json'],
-  [ADAPTER_TYPE, 'codex-policy-adapter.schema.json'],
+  ...[...ADAPTER_TYPES.values()].map((definition) => [
+    definition.adapterArtifactType,
+    definition.adapterSchema,
+  ]),
   [RECEIPT_TYPE, 'compile-receipt.schema.json'],
 ]);
+
+function adapterDefinition(artifactType) {
+  return ADAPTER_TYPES.get(artifactType) ?? null;
+}
 
 function fail(code, subject = 'policy-compiler') {
   throw new PolicyCompilerError(code, subject);
@@ -507,28 +543,26 @@ function existingArtifact(
       subject: expected.policyId ?? expected.compileId,
     });
   } catch (error) {
-    if (artifactType === ADAPTER_TYPE) {
-      fail('CODEX_ADAPTER_OWNER_CONFLICT');
+    if (adapterDefinition(artifactType)) {
+      fail(adapterDefinition(artifactType).adapterOwnerConflictCode);
     }
     throw error;
   }
   ensureOwned(
     current.value,
     artifactType,
-    artifactType === ADAPTER_TYPE
-      ? 'CODEX_ADAPTER_OWNER_CONFLICT'
-      : 'POLICY_OUTPUT_DRIFT',
+    adapterDefinition(artifactType)?.adapterOwnerConflictCode
+      ?? 'POLICY_OUTPUT_DRIFT',
   );
   const schema = OWNED_TYPES.get(artifactType);
   validateOrFail(
     schema,
     current.value,
     {},
-    artifactType === ADAPTER_TYPE
-      ? 'CODEX_ADAPTER_INVALID'
-      : artifactType === RECEIPT_TYPE
+    adapterDefinition(artifactType)?.adapterInvalidCode
+      ?? (artifactType === RECEIPT_TYPE
         ? 'COMPILE_RECEIPT_INVALID'
-        : 'POLICY_MANIFEST_INVALID',
+        : 'POLICY_MANIFEST_INVALID'),
   );
   if (
     sha256Bytes(current.bytes)
@@ -539,10 +573,10 @@ function existingArtifact(
   return 'unchanged';
 }
 
-function compileIdFor(policyId, outputHashes) {
+function compileIdFor(policyId, target, outputHashes) {
   return `COMPILE-${sha256Canonical({
     policyId,
-    target: 'codex',
+    target,
     outputHashes,
   }).slice(0, 12).toUpperCase()}`;
 }
@@ -582,13 +616,17 @@ function persistentReceipt({
   states,
   compiledAt,
 }) {
+  // The manifest records the one target it was compiled for, so the receipt
+  // reads it from there rather than taking it as a second parameter that could
+  // disagree with the artifact it describes.
+  const target = manifest.targets[0].target;
   return {
     schemaVersion: 1,
     compileId,
     policyId: manifest.policyId,
     inputHashes: structuredClone(manifest.inputHashes),
     outputHashes,
-    target: 'codex',
+    target,
     dryRun: false,
     filesCreated: [...states]
       .filter(([, state]) => state === 'created')
@@ -606,10 +644,10 @@ function persistentReceipt({
         : []),
       ...(Object.values(manifest.controls).flat().some(
         (control) => !['enforceable', 'unsupported'].includes(
-          control.targetSupport.codex,
+          control.targetSupport[target],
         ),
       )
-        ? ['CODEX_CONTROL_NOT_ENFORCEABLE']
+        ? [targetDefinition(target).unsupportedReasonCode]
         : []),
     ]),
     compiledAt,
@@ -640,7 +678,7 @@ export function preparePolicyCompile(
     compiledAt,
   } = {},
 ) {
-  if (target !== 'codex') fail('CLI_TARGET_UNSUPPORTED');
+  if (!isRegisteredTarget(target)) fail('CLI_TARGET_UNSUPPORTED');
   const effectiveCompiledAt = compiledAt
     ?? (dryRun
       ? '1970-01-01T00:00:00.000Z'
@@ -704,7 +742,7 @@ export function preparePolicyCompile(
     },
     {
       target,
-      supportForControl: codexSupportForControl,
+      supportForControl: SUPPORT_RESOLVERS[target],
     },
   );
   validateOrFail(
@@ -714,18 +752,18 @@ export function preparePolicyCompile(
     'POLICY_MANIFEST_INVALID',
   );
   assertArtifactSize(manifest, manifest.policyId);
-  const adapter = buildCodexPolicyAdapter(manifest);
+  const targetDef = targetDefinition(target);
+  const adapter = ADAPTER_BUILDERS[target](manifest);
   validateOrFail(
-    'codex-policy-adapter.schema.json',
+    targetDef.adapterSchema,
     adapter,
     { manifest },
-    'CODEX_ADAPTER_INVALID',
+    targetDef.adapterInvalidCode,
   );
   assertArtifactSize(adapter, manifest.policyId);
   const policyPath =
     `.agent-governance/policies/${manifest.policyId}.json`;
-  const adapterPath =
-    `.agent-governance/adapters/codex/${manifest.policyId}.json`;
+  const adapterPath = adapterPathFor(target, manifest.policyId);
   const outputHashes = [
     {
       path: adapterPath,
@@ -736,7 +774,7 @@ export function preparePolicyCompile(
       sha256: sha256Bytes(canonicalJsonBytes(manifest)),
     },
   ].sort((left, right) => compareText(left.path, right.path));
-  const compileId = compileIdFor(manifest.policyId, outputHashes);
+  const compileId = compileIdFor(manifest.policyId, target, outputHashes);
   const finalReceiptPath = receiptPath(compileId);
   const states = new Map([
     [
@@ -745,7 +783,7 @@ export function preparePolicyCompile(
         projectDir,
         adapterPath,
         adapter,
-        ADAPTER_TYPE,
+        targetDef.adapterArtifactType,
       ),
     ],
     [
@@ -925,7 +963,7 @@ function assertCommittedArtifact(projectDir, artifact) {
   const artifactType = artifact.kind === 'policy'
     ? POLICY_TYPE
     : artifact.kind === 'adapter'
-      ? ADAPTER_TYPE
+      ? targetDefinition(artifact.value.target).adapterArtifactType
       : RECEIPT_TYPE;
   if (
     existingArtifact(
@@ -938,9 +976,8 @@ function assertCommittedArtifact(projectDir, artifact) {
     fail(
       artifactType === RECEIPT_TYPE
         ? 'COMPILE_RECEIPT_INVALID'
-        : artifactType === ADAPTER_TYPE
-          ? 'CODEX_ADAPTER_INVALID'
-          : 'POLICY_OUTPUT_DRIFT',
+        : adapterDefinition(artifactType)?.adapterInvalidCode
+          ?? 'POLICY_OUTPUT_DRIFT',
       artifact.path,
     );
   }

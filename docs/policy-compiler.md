@@ -4,21 +4,28 @@ The GovernSeed Policy Compiler——將已確認的風險、專案規則、角�
 Governance Pack，轉換成中立 policy manifest 及特定 Agent 工具的
 project-local 設定。
 
-Phase 2 supports one target: a Codex project-local JSON Adapter. It does not
-execute Codex or configure a Codex runtime.
+Two compile targets exist: `codex` and `claude`. Each produces a project-local
+JSON Adapter under its own directory. Compiling executes neither runtime and
+configures neither runtime.
+
+Compile support and materialize support are separate. `codex` compiles and
+materializes; `claude` compiles only, and `materialize --target claude` is
+refused with `CLI_TARGET_UNSUPPORTED` until its materializer lands.
 
 ## What It Produces
 
 ```text
 .agent-governance/policies/POL-<12 HEX>.json
-.agent-governance/adapters/codex/POL-<12 HEX>.json
+.agent-governance/adapters/<target>/POL-<12 HEX>.json
 .agent-governance/receipts/COMPILE-<12 HEX>.json
 ```
 
 - The policy manifest is the canonical policy owner. Its restriction decisions
-  are target-independent; its version-1 target-support annotations are
-  intentionally Codex-specific.
-- The Codex Adapter is a thin target-specific candidate and limitation map.
+  are target-independent; its target-support annotations are not. A manifest
+  records the support map of the one target it was compiled for, so compiling
+  the same governed inputs for two targets produces two manifests with two
+  content-addressed policy IDs.
+- The Adapter is a thin target-specific candidate and limitation map.
 - The receipt binds input/output hashes and is written last.
 
 Receipt existence marks a completed local compile transaction. It does not
@@ -157,7 +164,7 @@ The Phase 2 Adapter records:
 - project-trust/runtime compatibility limitations;
 - GovernSeed-owned generated files.
 
-It emits JSON only under `.agent-governance/adapters/codex/`.
+It emits JSON only under `.agent-governance/adapters/<target>/`.
 
 It does not write:
 
@@ -267,9 +274,9 @@ POLICY_APPROVAL_MISSING
 POLICY_OUTPUT_STALE
 POLICY_OUTPUT_DRIFT
 POLICY_SOURCE_HASH_MISMATCH
-CODEX_ADAPTER_INVALID
-CODEX_ADAPTER_OWNER_CONFLICT
-CODEX_CONTROL_NOT_ENFORCEABLE
+CODEX_ADAPTER_INVALID / CLAUDE_ADAPTER_INVALID
+CODEX_ADAPTER_OWNER_CONFLICT / CLAUDE_ADAPTER_OWNER_CONFLICT
+CODEX_CONTROL_NOT_ENFORCEABLE / CLAUDE_CONTROL_NOT_ENFORCEABLE
 COMPILE_RECEIPT_INVALID
 COMPILE_PARTIAL_OUTPUT
 COMPILE_PATH_BLOCKED
@@ -358,7 +365,7 @@ Inspect the referenced role or Pack. It requested a wider mode or scope than
 the assessed project ceiling. Narrow the request or complete a separately
 reviewed risk-policy revision; do not weaken the compiler check.
 
-### `CODEX_ADAPTER_OWNER_CONFLICT`
+### `CODEX_ADAPTER_OWNER_CONFLICT` or `CLAUDE_ADAPTER_OWNER_CONFLICT`
 
 The target path exists with unknown or different content. GovernSeed does not
 overwrite it. Preserve the file and resolve ownership explicitly.
@@ -376,8 +383,8 @@ only when the expected policy and Adapter already exact-match the planned,
 GovernSeed-owned bytes. It does not delete orphan output; otherwise resolve the
 conflict manually.
 
-### `CODEX_CONTROL_NOT_ENFORCEABLE`
+### `CODEX_CONTROL_NOT_ENFORCEABLE` or `CLAUDE_CONTROL_NOT_ENFORCEABLE`
 
-The candidate is honest about a control that the Phase 2 Adapter cannot enforce
-or observe. Apply the required human/runtime control outside compilation and
-retain the warning as evidence of the limitation.
+The candidate is honest about a control that the target's Adapter cannot
+enforce or observe. Apply the required human/runtime control outside
+compilation and retain the warning as evidence of the limitation.

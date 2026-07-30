@@ -13,12 +13,14 @@
 | `policy-compiler.md` | Phase 2 compiler inputs, merge rules, CLI, outputs, findings, and non-claims |
 | `enforcement-boundary.md` | What `materialize` writes, what `attest` observes, and what neither establishes |
 | `research/2026-07-29-codex-policy-capability-matrix.md` | Official Codex capability evidence and honest Adapter classifications |
+| `research/2026-07-31-claude-code-policy-capability-matrix.md` | Official Claude Code capability evidence, structural findings, and BLOCKED items |
 | `superpowers/specs/2026-07-29-risk-to-policy-compiler-design.md` | Policy Compiler architecture, schemas, transaction, privacy, and testing contract |
 | `superpowers/plans/2026-07-29-risk-to-policy-compiler-plan.md` | Test-first Phase 2 implementation and verification plan |
 | `superpowers/specs/2026-07-29-decision-role-foundation-design.md` | Milestone 1 decision, role, schema, CLI, privacy, migration, testing, and future-roadmap design |
 | `superpowers/plans/2026-07-29-decision-role-foundation-plan.md` | Test-first implementation and verification plan |
 | `superpowers/specs/2026-07-30-materialization-attestation-design.md` | Milestone 3 materialization identity, attestation contract, and claim ceiling |
 | `superpowers/plans/2026-07-30-milestone-3-materialization-attestation-plan.md` | Test-first Milestone 3 implementation and verification plan |
+| `superpowers/plans/2026-07-31-milestone-4-runtime-materialization-parity-plan.md` | Test-first Milestone 4 runtime materialization parity plan |
 | `superpowers/reviews/2026-07-26-governance-evidence-overhaul-audit.md` | Independent review, QA evidence, completion matrix, and release blockers |
 
 ## Proposed Direction And Experiments
