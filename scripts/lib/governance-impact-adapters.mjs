@@ -248,6 +248,27 @@ function signalProcessGroup(child, signal, platform, killImpl) {
   }
 }
 
+// SIGKILL cannot be refused, so a group that is still present afterwards is
+// waiting to be reaped, not resisting. Probing once after a fixed grace makes a
+// scheduling delay report the same code as a tree that genuinely cannot be
+// cleaned up. Polling to a deadline returns as soon as the group is gone rather
+// than always sleeping the grace first.
+const REAP_PROBE_INTERVAL_MS = 5;
+const REAP_DEADLINE_MS = 2000;
+
+async function awaitProcessGroupReap(child, platform, killImpl, scheduler, deadlineMs) {
+  for (let waited = 0; waited <= deadlineMs; waited += REAP_PROBE_INTERVAL_MS) {
+    const probe = signalProcessGroup(child, 0, platform, killImpl);
+    if (probe.state === 'absent') return;
+    // A refused probe says nothing more the next one would answer.
+    if (probe.state === 'failed') fail('PROCESS_TREE_UNAVAILABLE');
+    await new Promise((resolve) => {
+      scheduler.setTimeout(resolve, REAP_PROBE_INTERVAL_MS);
+    });
+  }
+  fail('PROCESS_TREE_UNAVAILABLE');
+}
+
 // Fails closed with the same code and the same exit status as any other
 // process-tree failure. The marker only lets a caller tell a missing capability
 // apart from a real cleanup failure.
@@ -290,10 +311,13 @@ export async function terminateProcessTree(child, options = {}) {
         if (signalProcessGroup(child, 'SIGKILL', platform, killImpl).state === 'failed') {
           fail('PROCESS_TREE_UNAVAILABLE');
         }
-        await new Promise((resolve) => scheduler.setTimeout(resolve, graceMs));
-        if (signalProcessGroup(child, 0, platform, killImpl).state !== 'absent') {
-          fail('PROCESS_TREE_UNAVAILABLE');
-        }
+        await awaitProcessGroupReap(
+          child,
+          platform,
+          killImpl,
+          scheduler,
+          Math.max(REAP_DEADLINE_MS, graceMs),
+        );
       }
     }
   }
