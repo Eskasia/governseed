@@ -219,8 +219,10 @@ test('hand-written deny entries in an existing settings file are all preserved',
     assert.ok(settings.permissions.deny.includes(entry));
   }
   assert.deepEqual(
-    output.result.ownedEntries,
-    [{ key: 'permissions.deny', entries: ['Edit', 'NotebookEdit', 'Write'] }],
+    output.result.ownedEntries.find(
+      (entry) => entry.key === 'permissions.deny',
+    ),
+    { key: 'permissions.deny', entries: ['Edit', 'NotebookEdit', 'Write'] },
     'the receipt records only what GovernSeed requires, not what it found',
   );
 });

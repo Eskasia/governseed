@@ -8,9 +8,49 @@ Two compile targets exist: `codex` and `claude`. Each produces a project-local
 JSON Adapter under its own directory. Compiling executes neither runtime and
 configures neither runtime.
 
-Compile support and materialize support are separate. `codex` compiles and
-materializes; `claude` compiles only, and `materialize --target claude` is
-refused with `CLI_TARGET_UNSUPPORTED` until its materializer lands.
+Compile support and materialize support stay separate in the target registry, so
+a target can compile before it materializes. Both registered targets now do
+both. An unregistered target is refused with `CLI_TARGET_UNSUPPORTED`.
+
+Each target owns exactly one project-local file, and nothing else:
+
+| Target | File it owns | Ownership |
+|---|---|---|
+| `codex` | `.codex/config.toml` | whole file |
+| `claude` | `.claude/settings.json` | the entries and scalar keys named in the receipt |
+
+The ownership models differ because the files differ. Codex's file is one
+GovernSeed writes and no one else does, so any byte that changes is drift.
+Claude Code documents `.claude/settings.json` as checked into git and shared
+with the team, so it usually exists already and carries entries GovernSeed did
+not write. Refusing to materialize in that case would make the target unusable
+on exactly the projects it exists for, so ownership is entry-level:
+
+- `permissions.deny` and `permissions.ask` use required-entry semantics. A
+  missing required entry is drift. An extra entry is reported as an additional
+  restriction and is never removed. This is sound because permission rules merge
+  across scopes rather than override, and `deny` is evaluated first with
+  specificity ignored, so an extra entry can only restrict further.
+- `permissions.disableAutoMode` and `permissions.disableBypassPermissionsMode`
+  use no-overwrite semantics. A different existing value is
+  `TARGET_SETTINGS_SCALAR_CONFLICT`, which names both values and writes nothing.
+- Ownership is recorded in the receipt. No marker key is written into the file,
+  because a project that references the official settings schema would show the
+  user a validation warning on a key GovernSeed invented.
+- A pre-existing file that does not parse is `TARGET_SETTINGS_UNPARSEABLE` and
+  is never overwritten. Claude Code rejects an invalid project settings file as
+  a whole, so writing over one would drop the entire project layer including the
+  team's own `deny` entries — the one outcome a governance tool must not produce.
+
+The claude target emits only restricting keys. `permissions.allow`,
+`permissions.additionalDirectories`, and `permissions.defaultMode` are never
+written: the first two grant capability, and no compiled control expresses a
+session default mode, so emitting one would be a restriction the policy never
+declared. Network egress has no verified project-layer key for this target, so
+the control is reported as `deferred` rather than approximated with a
+`Bash(curl *)` deny, which the
+[Claude Code capability matrix](research/2026-07-31-claude-code-policy-capability-matrix.md)
+refuses as non-equivalent.
 
 ## What It Produces
 
@@ -168,10 +208,12 @@ It emits JSON only under `.agent-governance/adapters/<target>/`.
 
 It does not write:
 
-- `.codex/config.toml`;
+- `.codex/config.toml` or `.claude/settings.json`, which only `materialize`
+  writes;
 - `.codex/rules/`;
-- `AGENTS.md`;
-- `~/.codex` or another user-global location;
+- `AGENTS.md` or `CLAUDE.md`;
+- `.claude/settings.local.json`, any user-global location such as `~/.codex` or
+  `~/.claude`, or any managed settings path;
 - a Skill, Agent persona, model, Provider, credential, or session setting.
 
 Codex documents project configuration, sandboxing, approvals, and command
@@ -340,11 +382,12 @@ These statements are not established:
 
 Two different steps used to share the word. They are now named apart:
 
-- `adapter-materialized` — the Codex Adapter JSON exists in the GovernSeed
+- `adapter-materialized` — the target's Adapter JSON exists in the GovernSeed
   namespace and its hash matches the receipt. This is what `compile` produces.
 - `target-materialized` — the strictest value each written key admits has been
-  written into the project-local `.codex/config.toml` and recorded in a
-  materialize receipt. This is what `materialize` produces.
+  written into the file that target owns, `.codex/config.toml` or
+  `.claude/settings.json`, and recorded in a materialize receipt. This is what
+  `materialize` produces.
 
 Effective Policy Attestation remains later work. `attest` reports the project
 layer only, at level `materialized-unverified`; neither that level nor any

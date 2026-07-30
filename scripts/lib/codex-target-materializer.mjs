@@ -10,10 +10,10 @@ import {
 import {
   PolicyCompilerError,
 } from './policy-compiler-core.mjs';
+import { ATTEST_CLAIM } from './target-registry.mjs';
 
 export const TARGET_CONFIG_PATH = '.codex/config.toml';
 export const TARGET_ARTIFACT_TYPE = 'codex-project-config';
-export const ATTEST_CLAIM = 'PROJECT_LAYER_OBSERVED_NOT_RUNTIME_ENFORCED';
 
 const MAX_TARGET_BYTES = 64 * 1024;
 const MAX_SCANNED_CONFIGS = 64;
@@ -459,7 +459,7 @@ function receiptEquivalent(left, right) {
   return sha256Canonical(comparable(left)) === sha256Canonical(comparable(right));
 }
 
-function classifyControls(plan, manifest) {
+function classifyControls(plan, manifest, target) {
   const materialized = [];
   const unmaterialized = [];
   for (const control of plan.controls) {
@@ -477,7 +477,7 @@ function classifyControls(plan, manifest) {
         controlId: control.controlId,
         capability: control.capability,
         mode: control.mode,
-        classification: control.targetSupport.codex,
+        classification: control.targetSupport[target],
         materializationStatus: 'materializable',
         modeCoverage: gateOnly ? 'approval-gate-only' : 'full',
         nativeKeys,
@@ -545,7 +545,7 @@ export function prepareTargetMaterialize(projectDir, {
     }
   }
 
-  const classified = classifyControls(plan, manifest);
+  const classified = classifyControls(plan, manifest, target);
   const receiptPath =
     `.agent-governance/receipts/${materializeId}.json`;
   const previousReceipt = existingReceipt(projectDir, receiptPath);
@@ -696,20 +696,123 @@ export function targetConfigBytes(projectDir) {
   return targetState(projectDir);
 }
 
-export function materializationBreakdown(receipt) {
-  const counts = {
-    'not-applicable': 0,
-    materializable: 0,
-    deferred: 0,
-  };
-  for (const entry of receipt.materializedControls) {
-    counts[entry.materializationStatus] += 1;
+const PRECEDENCE_CAVEAT = Object.freeze([
+  'The command line and --config overrides sit above the project layer, so a run can override every value in this file.',
+  'A .codex/config.toml nearer the working directory overrides this file under the closest-file-wins rule.',
+  'The project layer loads only for a trusted project. trustStateObserved is unknown, and trust is set through projects.<path>.trust_level in a layer GovernSeed must not read.',
+  'Managed requirement layers may add restrictions from /etc/codex/requirements.toml, %ProgramData%\\OpenAI\\Codex\\requirements.toml, a cloud config bundle, legacy managed_config.toml, or macOS MDM preferences. All lie outside the project root, so their composed effect is unobservable here.',
+  'allowed_sandbox_modes in a managed layer may reject the sandbox_mode value written here, including a restrictive one.',
+  'The user layer or a managed allowed_permission_profiles setting may switch the client to permission profiles, which do not compose with the sandbox settings written here. GovernSeed cannot read either location.',
+  'Because sandbox_mode in any loaded config file makes Codex use the sandbox settings instead of default_permissions, the sandbox_mode written here can displace a stricter permission profile set in the user layer or a managed layer. This file may therefore widen the effective configuration even though every value it contains is the strictest value that key admits.',
+]);
+
+const KNOWN_LIMITATIONS = Object.freeze([
+  {
+    controlId: 'POL-SHELL-EXECUTION',
+    note: 'Command rules are experimental and govern commands outside the sandbox; no rules file is written.',
+    source: 'docs/enforcement-boundary.md',
+  },
+  {
+    controlId: 'POL-FILESYSTEM-PROJECT-READ',
+    note: 'A read-scope surface exists as [permissions.<name>.filesystem], but it is Beta and mutually exclusive with the sandbox settings written here, so it is out of scope this milestone rather than unavailable.',
+    source: 'docs/enforcement-boundary.md',
+  },
+  {
+    controlId: 'POL-CREDENTIALS',
+    note: 'Project config cannot override provider, auth, or telemetry keys.',
+    source: 'docs/enforcement-boundary.md',
+  },
+  {
+    controlId: 'POL-EXTERNAL-CONTENT',
+    note: 'Web-search keys exist but the mapping from untrusted-content handling to them is unreviewed.',
+    source: 'docs/enforcement-boundary.md',
+  },
+  {
+    controlId: 'all-materializable-controls',
+    note: 'For Codex 0.138.0 and later the documentation prefers permission profiles and recommends the sandbox-mode surface only for legacy deployments; this milestone writes the legacy surface by frozen scope, not by platform preference.',
+    source: 'docs/enforcement-boundary.md',
+  },
+  {
+    controlId: 'all-materializable-controls',
+    note: 'A written project-layer value is reported as ignored on some Codex surfaces, so a target-materialized value is not an effective value.',
+    source: 'docs/enforcement-boundary.md',
+  },
+  {
+    controlId: 'all-materializable-controls',
+    note: 'The project .codex directory is recursively read-only under the default workspace-write sandbox, so materialize is a user-run operation and cannot be assumed to work from inside a standard Codex session.',
+    source: 'docs/enforcement-boundary.md',
+  },
+  {
+    controlId: 'all-materializable-controls',
+    note: 'Writing sandbox_mode makes Codex use the sandbox settings instead of default_permissions, so this file can displace a stricter permission profile in a layer GovernSeed must not read. A deny mapped to approval_policy prompts rather than denies.',
+    source: 'docs/enforcement-boundary.md',
+  },
+]);
+
+/**
+ * Whole-file ownership makes the comparison a single hash: this target owns
+ * every byte of the file, so any difference is an edit made outside GovernSeed.
+ */
+function compareObserved(projectDir, { receipt }) {
+  const state = targetState(projectDir);
+  const currentSha256 = state.exists ? sha256Bytes(state.bytes) : null;
+  const expected = receipt.targetFiles[0];
+  const drift = [];
+  if (!state.exists) {
+    drift.push({
+      subject: TARGET_CONFIG_PATH,
+      reason: 'TARGET_SETTINGS_REMOVED',
+      expectedHash: expected.sha256After,
+      observedHash: null,
+    });
+  } else if (currentSha256 !== expected.sha256After) {
+    drift.push({
+      subject: TARGET_CONFIG_PATH,
+      reason: 'TARGET_SETTINGS_EDITED_OUTSIDE_GOVERNSEED',
+      expectedHash: expected.sha256After,
+      observedHash: currentSha256,
+    });
   }
-  for (const entry of receipt.unmaterializedControls) {
-    counts[entry.materializationStatus] += 1;
-  }
-  return counts;
+  return { drift, observations: [] };
 }
+
+export const ATTEST_PROFILE = Object.freeze({
+  target: 'codex',
+  artifactType: TARGET_ARTIFACT_TYPE,
+  configPath: TARGET_CONFIG_PATH,
+  claim: ATTEST_CLAIM,
+  // Copied verbatim from the frozen capability matrix, which stays canonical for
+  // the narrative. The compiled Adapter is canonical for the counts, so any gap
+  // between them is carried rather than absorbed.
+  matrixClassification: Object.freeze({
+    'filesystem.project-read': 'representable-only',
+    'filesystem.project-write': 'representable-only',
+    'filesystem.root-write': 'representable-only',
+    'shell.execution': 'representable-only',
+    network: 'representable-only',
+    credentials: 'unsupported',
+    delete: 'requires-human-approval',
+    publish: 'requires-human-approval',
+    'external-content': 'representable-only',
+    'generated-artifacts': 'enforceable',
+    'provider-retention': 'unsupported',
+    verification: 'representable-only',
+  }),
+  precedenceCaveat: PRECEDENCE_CAVEAT,
+  knownLimitations: KNOWN_LIMITATIONS,
+  preflight: preflightTarget,
+  selectReceipt(receipts, { projectDir }) {
+    const state = targetState(projectDir);
+    const currentSha256 = state.exists ? sha256Bytes(state.bytes) : null;
+    const matching = receipts.find((entry) => (
+      (entry.value.targetFiles ?? []).some(
+        (file) => file?.sha256After === currentSha256,
+      )
+    ));
+    return matching ?? receipts[receipts.length - 1];
+  },
+  compare: compareObserved,
+});
 
 export function canonicalReceiptBytes(receipt) {
   return canonicalJsonBytes(receipt);

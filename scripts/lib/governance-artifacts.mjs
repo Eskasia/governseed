@@ -1968,6 +1968,10 @@ function validateResult(value, context, errors) {
 }
 
 function validateMaterializeReceiptSemantic(value, errors) {
+  // The one file this target's materializer may write. A receipt naming any
+  // other path is rejected here rather than in the materializer, so the
+  // boundary holds for a receipt that arrived from anywhere.
+  const targetPath = targetDefinition(value?.target)?.targetPath;
   const fileStates = [
     ...(value?.filesCreated ?? []),
     ...(value?.filesUpdated ?? []),
@@ -1982,7 +1986,7 @@ function validateMaterializeReceiptSemantic(value, errors) {
   ) {
     const expected = [
       '.agent-governance/receipts/' + value.materializeId + '.json',
-      '.codex/config.toml',
+      targetPath,
     ].sort();
     const actual = [...fileStates].sort();
     if (
@@ -2002,7 +2006,7 @@ function validateMaterializeReceiptSemantic(value, errors) {
     addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', '$.status');
   }
   for (const [index, entry] of (value?.targetFiles ?? []).entries()) {
-    if (entry?.path !== '.codex/config.toml') {
+    if (entry?.path !== targetPath) {
       addSchemaError(
         errors,
         'SCHEMA_VALIDATION_FAILED',

@@ -102,10 +102,14 @@ test('the published surface the brand test pins is still shipped', () => {
     'docs/policy-compiler.md',
     'docs/enforcement-boundary.md',
     'docs/research/2026-07-29-codex-policy-capability-matrix.md',
+    // Every claude knownLimitation names this file as its source, so a package
+    // that omits it publishes an attestation pointing at nothing.
+    'docs/research/2026-07-31-claude-code-policy-capability-matrix.md',
     'docs/research/2026-07-29-governseed-name-audit.md',
     'tests/policy-compiler/fixture-contracts.test.mjs',
     'schemas/materialize-receipt.schema.json',
     'schemas/attest-output.schema.json',
+    'scripts/lib/claude-target-materializer.mjs',
     'scripts/lib/codex-target-materializer.mjs',
     'scripts/lib/target-attest.mjs',
   ]) {

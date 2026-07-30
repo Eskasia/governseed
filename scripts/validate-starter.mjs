@@ -625,6 +625,7 @@ const requiredRepositoryFiles = [
   'scripts/lib/policy-compiler-project.mjs',
   'scripts/lib/codex-policy-adapter.mjs',
   'scripts/lib/claude-policy-adapter.mjs',
+  'scripts/lib/claude-target-materializer.mjs',
   'scripts/lib/codex-target-materializer.mjs',
   'scripts/lib/target-attest.mjs',
   'scripts/lib/policy-compiler-doctor.mjs',

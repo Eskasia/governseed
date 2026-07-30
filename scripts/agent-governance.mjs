@@ -27,8 +27,12 @@ import {
   preparePolicyCompile,
 } from './lib/policy-compiler-project.mjs';
 import {
-  commitTargetMaterialize,
-  prepareTargetMaterialize,
+  commitTargetMaterialize as commitClaudeMaterialize,
+  prepareTargetMaterialize as prepareClaudeMaterialize,
+} from './lib/claude-target-materializer.mjs';
+import {
+  commitTargetMaterialize as commitCodexMaterialize,
+  prepareTargetMaterialize as prepareCodexMaterialize,
 } from './lib/codex-target-materializer.mjs';
 import { buildAttestation } from './lib/target-attest.mjs';
 import {
@@ -76,7 +80,9 @@ const SECURITY_CODES = new Set([
   'TARGET_SETTINGS_DRIFT',
   'TARGET_SETTINGS_OWNER_CONFLICT',
   'TARGET_SETTINGS_PROFILE_MODEL_CONFLICT',
+  'TARGET_SETTINGS_SCALAR_CONFLICT',
   'TARGET_SETTINGS_SHADOWED',
+  'TARGET_SETTINGS_UNPARSEABLE',
   'PATH_ESCAPE_BLOCKED',
   'POLICY_CONFLICT',
   'POLICY_OUTPUT_DRIFT',
@@ -1196,11 +1202,17 @@ function loadCompiledPolicy(command) {
   };
 }
 
+const MATERIALIZERS = Object.freeze({
+  claude: { prepare: prepareClaudeMaterialize, commit: commitClaudeMaterialize },
+  codex: { prepare: prepareCodexMaterialize, commit: commitCodexMaterialize },
+});
+
 function materializeTarget(command) {
   const { manifest, policyHash } = loadCompiledPolicy(command);
+  const materializer = MATERIALIZERS[command.target];
   let prepared;
   try {
-    prepared = prepareTargetMaterialize(command.project, {
+    prepared = materializer.prepare(command.project, {
       manifest,
       policyHash,
       target: command.target,
@@ -1221,7 +1233,7 @@ function materializeTarget(command) {
   let report = prepared.report;
   if (!command.dryRun) {
     try {
-      report = commitTargetMaterialize(command.project, prepared);
+      report = materializer.commit(command.project, prepared);
     } catch (error) {
       throw targetFailure(error);
     }
@@ -1255,6 +1267,12 @@ function attestTarget(command) {
   } catch (error) {
     throw targetFailure(error);
   }
+  // Observations are not drift, so they never change the exit code. They are
+  // still reported: an empty drift list alone would leave a reader to infer a
+  // stricter-than-required entry or a higher-precedence scope that was seen.
+  const observed = (attestation.observations ?? []).map((entry) => (
+    finding(entry.reason, entry.subject)
+  ));
   if (attestation.drift.length > 0) {
     throw Object.assign(
       new CliFailure(
@@ -1264,9 +1282,10 @@ function attestTarget(command) {
         attestation.materializeId,
       ),
       {
-        extraFindings: attestation.drift.map((entry) => (
-          finding(entry.reason, entry.subject)
-        )),
+        extraFindings: [
+          ...attestation.drift.map((entry) => finding(entry.reason, entry.subject)),
+          ...observed,
+        ],
       },
     );
   }
@@ -1278,6 +1297,7 @@ function attestTarget(command) {
       code: 'OK',
       status: 'attested',
       result: attestation,
+      findings: observed,
     }),
   };
 }

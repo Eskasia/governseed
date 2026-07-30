@@ -12,6 +12,14 @@
  * reason a target can be compilable without being materializable.
  */
 
+/**
+ * The one claim every target-materialized artifact makes, and the ceiling on
+ * what any of them may claim. It lives here rather than in a materializer
+ * because both materializers and the attestation builder assert it, and a
+ * second copy of this string is a second place it could drift.
+ */
+export const ATTEST_CLAIM = 'PROJECT_LAYER_OBSERVED_NOT_RUNTIME_ENFORCED';
+
 const CODEX = Object.freeze({
   name: 'codex',
   adapterVersion: '1.0.0',
@@ -26,6 +34,10 @@ const CODEX = Object.freeze({
   adapterInvalidCode: 'CODEX_ADAPTER_INVALID',
   adapterOwnerConflictCode: 'CODEX_ADAPTER_OWNER_CONFLICT',
   supportsMaterialization: true,
+  // The one project-local file this target's materializer may write. The
+  // receipt validator needs it to reject a receipt that names any other path,
+  // which is the check that keeps a materializer inside its own boundary.
+  targetPath: '.codex/config.toml',
 });
 
 const CLAUDE = Object.freeze({
@@ -36,7 +48,8 @@ const CLAUDE = Object.freeze({
   adapterArtifactType: 'claude-policy-adapter',
   adapterInvalidCode: 'CLAUDE_ADAPTER_INVALID',
   adapterOwnerConflictCode: 'CLAUDE_ADAPTER_OWNER_CONFLICT',
-  supportsMaterialization: false,
+  supportsMaterialization: true,
+  targetPath: '.claude/settings.json',
 });
 
 const TARGETS = Object.freeze({ claude: CLAUDE, codex: CODEX });
