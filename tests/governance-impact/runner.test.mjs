@@ -13,6 +13,7 @@ import {
   resolveRuntimeExecutable,
   runChildSafely,
   runtimeCapabilities,
+  terminateProcessTree,
 } from '../../scripts/lib/governance-impact-adapters.mjs';
 import {
   deriveAttemptId,
@@ -412,6 +413,91 @@ test('POSIX timeout reaps descendants before returning', {
   assert.equal(result.errorCode, 'CHILD_TIMEOUT');
   await new Promise((resolve) => setTimeout(resolve, 400));
   assert.equal(fs.existsSync(sentinel), false);
+});
+
+// A killImpl whose signal-0 probe reports the group present until `reapProbes`
+// probes have followed the SIGKILL, then reports ESRCH. Nothing here depends on
+// wall-clock timing, so the reap window is exercised the same way everywhere.
+function groupReapedAfter(reapProbes, signals) {
+  let killed = false;
+  let probesAfterKill = 0;
+  return (target, signal) => {
+    signals.push([target, signal]);
+    if (signal === 'SIGKILL') {
+      killed = true;
+      return;
+    }
+    if (signal !== 0 || !killed) return;
+    probesAfterKill += 1;
+    if (probesAfterKill <= reapProbes) return;
+    throw Object.assign(new Error('no such process'), { code: 'ESRCH' });
+  };
+}
+
+// setTimeout fires immediately, so a deadline is reached without spending it.
+const immediateScheduler = {
+  setTimeout: (callback) => {
+    queueMicrotask(callback);
+    return 0;
+  },
+  clearTimeout() {},
+};
+
+// SIGKILL cannot be refused, so a group still present right after it is waiting
+// to be reaped, not resisting. Deciding on one look makes a scheduling delay
+// indistinguishable from a containment failure, which is what this code exists
+// to detect.
+test('a group reaped just after the kill grace window is not called unreapable', async () => {
+  const signals = [];
+  await terminateProcessTree({ pid: 4242 }, {
+    platform: 'linux',
+    killImpl: groupReapedAfter(3, signals),
+    killGraceMs: 0,
+    scheduler: immediateScheduler,
+  });
+
+  assert.deepEqual(
+    signals.filter(([target]) => target !== -4242),
+    [],
+    'every signal must address the whole group, never the leader alone',
+  );
+  assert.ok(
+    signals.filter(([, signal]) => signal === 0).length > 3,
+    'the reap must be re-probed rather than decided on a single look',
+  );
+});
+
+test('a group that never exits still fails closed', async () => {
+  await assert.rejects(
+    terminateProcessTree({ pid: 4242 }, {
+      platform: 'linux',
+      killImpl: groupReapedAfter(Number.MAX_SAFE_INTEGER, []),
+      killGraceMs: 0,
+      scheduler: immediateScheduler,
+    }),
+    (error) => error.code === 'PROCESS_TREE_UNAVAILABLE',
+  );
+});
+
+test('a probe that cannot signal fails closed without waiting out the deadline', async () => {
+  let probes = 0;
+  const killImpl = (target, signal) => {
+    if (signal !== 0) return;
+    probes += 1;
+    if (probes === 1) return;
+    throw Object.assign(new Error('operation not permitted'), { code: 'EPERM' });
+  };
+
+  await assert.rejects(
+    terminateProcessTree({ pid: 4242 }, {
+      platform: 'linux',
+      killImpl,
+      killGraceMs: 0,
+      scheduler: immediateScheduler,
+    }),
+    (error) => error.code === 'PROCESS_TREE_UNAVAILABLE',
+  );
+  assert.equal(probes, 2, 'a refused probe is a verdict, not something to retry');
 });
 
 for (const [label, exitCode, status] of [
