@@ -19,7 +19,7 @@
   release-unit validation; added `npm run ci:experimental` and a separate
   workflow that is not a required check for Core pull requests.
 - Restricted the published package to a `files` whitelist. The tarball now
-  carries 108 entries and 1,083,420 unpacked bytes, down from 282 entries and
+  carries 108 entries and 1,083,718 unpacked bytes, down from 282 entries and
   2,374,948 bytes. It no longer ships `experimental/`, `examples/`, the test
   suites, or the documentation tree, and it keeps the published governance
   surfaces that `tests/brand/brand-compatibility.test.mjs` pins: the brand
