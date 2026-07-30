@@ -34,7 +34,8 @@
 ## Adding an Example Fixture
 
 - Create a subdirectory under `examples/template-adoption/`.
-- Include all 7 fixed documents with realistic filled content.
+- Include every required document for the selected profile with realistic
+  filled content.
 - Include the conditional documents required by that project type.
 - Ensure `node scripts/doctor.mjs --strict <fixture>` passes.
 - Add a note in `examples/template-adoption/README.md`.

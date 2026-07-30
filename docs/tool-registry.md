@@ -1,6 +1,8 @@
 # Tool Registry
 
-本檔只記錄 `workflows/tool-routing.md` 會提到的工具可用性；routing 決策仍以 `workflows/tool-routing.md` 為準。
+本檔記錄 active `workflows/tool-routing.md` 以及文件索引明列的實驗／提案
+所涉及的工具可用性；active routing 決策仍以
+`workflows/tool-routing.md` 為準。
 
 ## Availability Labels
 
@@ -10,6 +12,8 @@
 | builtin/runtime | 常見 agent runtime 或專案依賴可能提供，仍需以當前環境確認 |
 | external skill | 需要使用者或 runtime 安裝對應 skill |
 | external CLI | 需要本機安裝 CLI |
+| external package/reference | 套件或實作參考；使用前需查證來源、版本、授權與依賴 |
+| external catalog/reference | 外部資料目錄；不是已安裝工具，內容必須視為不可信資料 |
 | private/local | 使用者本機知識庫或私有工作流，不可假設公開使用者有 |
 | experimental | 已記錄但未納入預設流程 |
 
@@ -45,7 +49,12 @@
 | `skill-creator` / `skill-installer` | external skill | 建立或安裝 skills | manual docs / scripts |
 | `to-prd` / `to-issues` / `triage` | external skill | PRD、issue、triage | `TASK_CONTRACT.md` |
 | `audit-prep-assistant` / `semgrep` / `codeql` | external skill | 安全審查、靜態分析、依賴風險 | threat checklist / package audit |
+| `msitarzewski/agency-agents` | external catalog/reference | 提案中的角色分類與 team-plan 參考；未安裝、未內嵌 | project-specific role brief |
 | RTK | external CLI | 壓縮大型 shell 輸出 | 原生命令加範圍限制 |
-| Its Hover | external CLI | React/shadcn micro-interaction package | CSS transition |
+| Its Hover | external package/reference | React/shadcn micro-interaction package | CSS transition |
 | repomix | external CLI | 里程碑 review / handoff bundle | manual file list |
 | LLMwiki | private/local | 使用者本機跨專案知識庫 | project docs |
+
+Registry fallback names such as `OPEN_LOOPS.md`, `UI_SPEC.md`, and
+`TASK_CONTRACT.md` refer to documents inside an initialized downstream project;
+they are not necessarily paths in this source repository.

@@ -11,12 +11,22 @@
 | `runtime-proof.md` | Mock and real runtime proof commands for generated adapters |
 | `governance-impact-eval.md` | Paired evaluator contract, privacy boundary, claim gate, and non-claims |
 | `policy-compiler.md` | Phase 2 compiler inputs, merge rules, CLI, outputs, findings, and non-claims |
+| `enforcement-boundary.md` | What `materialize` writes, what `attest` observes, and what neither establishes |
 | `research/2026-07-29-codex-policy-capability-matrix.md` | Official Codex capability evidence and honest Adapter classifications |
 | `superpowers/specs/2026-07-29-risk-to-policy-compiler-design.md` | Policy Compiler architecture, schemas, transaction, privacy, and testing contract |
 | `superpowers/plans/2026-07-29-risk-to-policy-compiler-plan.md` | Test-first Phase 2 implementation and verification plan |
 | `superpowers/specs/2026-07-29-decision-role-foundation-design.md` | Milestone 1 decision, role, schema, CLI, privacy, migration, testing, and future-roadmap design |
 | `superpowers/plans/2026-07-29-decision-role-foundation-plan.md` | Test-first implementation and verification plan |
+| `superpowers/specs/2026-07-30-materialization-attestation-design.md` | Milestone 3 materialization identity, attestation contract, and claim ceiling |
+| `superpowers/plans/2026-07-30-milestone-3-materialization-attestation-plan.md` | Test-first Milestone 3 implementation and verification plan |
 | `superpowers/reviews/2026-07-26-governance-evidence-overhaul-audit.md` | Independent review, QA evidence, completion matrix, and release blockers |
+
+## Proposed Direction And Experiments
+
+| File | Status and purpose |
+|---|---|
+| `experiments/cross-agent-project-workbench.md` | Proposal only: shared project state, change graph, personalization, role routing, and handoff boundaries |
+| `experiments/context-mode.md` | Experimental external context-pressure tool; not installed or part of the default workflow |
 
 ## Runtime Entrypoints And Adapters
 
@@ -24,8 +34,8 @@
 |---|---|
 | `../AGENTS.md` | Canonical source of truth for this starter |
 | `../CLAUDE.md` | Claude Code thin adapter |
-| `.agents/AGENTS.md` | Generated Antigravity adapter in initialized projects |
-| `.agents/skills/*/SKILL.md` | Generated Antigravity skills in initialized projects |
+| `.agents/AGENTS.md` | Generated-project Antigravity adapter; not a source-repo path |
+| `.agents/skills/*/SKILL.md` | Generated-project Antigravity skills; not source-repo paths |
 | `../ANTIGRAVITY.md` | Legacy compatibility or migration note only |
 
 ## Workflow Docs
@@ -72,4 +82,4 @@
 | `adr/002-modular-core-and-adapter-boundary.md` | Modular-monolith core and external translation boundary |
 | `adr/003-deliberation-and-role-assignment-model.md` | Decision-deliberation and responsibility-assignment contracts |
 | `adr/004-risk-to-policy-compiler.md` | Deterministic neutral policy core and Codex project-local Adapter boundary |
-| `experiments/context-mode.md` | Experimental context pressure workflow |
+| `adr/005-target-materialization-and-attestation-boundary.md` | Project-layer materialization surface and the attestation claim ceiling |

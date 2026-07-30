@@ -23,8 +23,35 @@
 - Add one presentation or one-pager fixture.
 - Keep all example data synthetic and privacy-safe.
 
+## Proposed: Cross-Agent Project Workbench
+
+Status: design proposal only — not current functionality or a release
+commitment. See `docs/experiments/cross-agent-project-workbench.md`.
+
+- Preserve local Markdown, closed JSON contracts, and Git history as the
+  canonical project state.
+- Add an adaptive PRD layer without duplicating simple projects' existing brief
+  and spec.
+- Make mid-project ideas first-class change records with impact review, an
+  explicit accept/defer/reject decision, and requirement/task/evidence lineage.
+- Let Codex, Claude Code, Antigravity, and future adapters consume the same
+  project state without owning separate truth.
+- Add a portable, advisory personalization layer that cannot weaken project
+  gates.
+- Evaluate a pinned, curated role catalog for advisory team plans; keep user
+  confirmation and one main integration owner.
+- Prove the local CLI/file protocol before considering a dashboard or runtime
+  orchestration.
+
+Implementation requires a separately approved architecture decision, public
+contract, migration plan, security review, and test/evidence plan.
+
 ## Out of Scope
 
 - No claims of external adoption without evidence.
 - No root `codex_mvp_prd_pack.md`.
 - No bundled secrets, generated app code, or deployment credentials.
+- No automatic agent spawning, scheduling, or global third-party role
+  installation in the proposed V1.
+- No unreviewed upstream prompt bodies and no role text that can override
+  canonical project rules.
