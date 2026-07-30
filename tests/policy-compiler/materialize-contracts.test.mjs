@@ -390,12 +390,12 @@ test('materialize without a compiled policy needs input rather than guessing', (
   assert.equal(fs.existsSync(targetFile(state.project)), false);
 });
 
-test('materialize rejects a non-codex target and any level argument', (t) => {
+test('materialize rejects an unregistered target and any level argument', (t) => {
   const state = makeProject(t, 'materialize-usage');
   compiled(state);
 
   const target = parseSingleJson(
-    runCli(state, ['materialize', state.project, '--target', 'claude', '--json']),
+    runCli(state, ['materialize', state.project, '--target', 'gemini', '--json']),
     2,
   );
   assert.equal(target.code, 'CLI_TARGET_UNSUPPORTED');

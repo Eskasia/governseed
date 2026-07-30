@@ -1,5 +1,54 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — Claude Code Target Materialization and Attestation
+
+- `materialize` and `attest` now accept `--target claude`. The target owns
+  `.claude/settings.json` and nothing else: not `.claude/settings.local.json`,
+  not `~/.claude`, not any managed settings path. A negative test asserts each.
+- **Ownership is entry-level for this target, not whole-file.** Claude Code
+  documents `.claude/settings.json` as checked into git and shared with the
+  team, so it usually exists and carries entries GovernSeed did not write.
+  `permissions.deny` and `permissions.ask` use required-entry semantics — a
+  missing required entry is drift, an extra entry is reported as an additional
+  restriction and is never removed. That holds as a property of the runtime
+  rather than as a relaxation: permission rules merge across scopes rather than
+  override, and `deny` is evaluated first with specificity ignored, so an extra
+  entry can only restrict further.
+- The two mode locks use no-overwrite semantics. A different existing value is
+  `TARGET_SETTINGS_SCALAR_CONFLICT`, which names both values and writes nothing.
+  GovernSeed does not decide which of a human's two values is stricter.
+- Ownership lives in the receipt as `ownedEntries` and `ownedScalars`. No marker
+  key is written into the file: a project referencing the official settings
+  schema would show the user a validation warning on a key GovernSeed invented.
+- A pre-existing file that does not parse is `TARGET_SETTINGS_UNPARSEABLE` and
+  is never overwritten. Claude Code rejects an invalid project settings file as
+  a whole, so overwriting one would drop the entire project layer including the
+  team's own `deny` entries. That is fail-open, and it is refused.
+- `permissions.allow` and `permissions.additionalDirectories` are never written;
+  they grant. `permissions.defaultMode` is never written either: no compiled
+  control expresses a session default, so emitting one would be a restriction
+  the policy never declared.
+- Network egress is reported as `deferred` with a reason code, not approximated.
+  The frozen Claude Code capability matrix records no verified project-layer
+  egress key and refuses a `Bash(curl *)` deny as non-equivalent.
+- `attest --target claude` separates drift from observation. Drift is the
+  project-layer file no longer matching the receipt. A `.claude/settings.local.json`
+  that merely exists is an observation; one that sets a governed scalar is
+  drift. Observations are reported as findings and never change the exit code.
+- The attestation ceiling is unchanged: `materialized-unverified`,
+  `trustStateObserved: unknown`, and the hard-coded claim
+  `PROJECT_LAYER_OBSERVED_NOT_RUNTIME_ENFORCED`. Claude Code's workspace trust
+  dialog is interactive and leaves no documented project-local record, so trust
+  is no more observable here than for Codex.
+- The Codex target's observable behavior is unchanged and proven so: the
+  byte-identity guard still pins its emitted config bytes, its receipt hash, and
+  its attestation output hash.
+- Two shared surfaces were generalized to reach this point. The materialize
+  receipt validator derived its allowed target path from a `codex` literal, and
+  `target-attest.mjs` imported Codex's caveats and comparison directly. The
+  path now comes from the target registry, and each target's attestation profile
+  lives in that target's own materializer.
+
 ## 2026-07-30 — Target Materialization and Project-Layer Attestation
 
 - Added `agent-governance materialize <project> --target codex [--dry-run]`. It

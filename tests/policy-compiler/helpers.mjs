@@ -407,7 +407,9 @@ export function makeRuntimeGuard(state) {
 const fs = require('node:fs');
 const moduleApi = require('node:module');
 const marker = process.env.GOVERNSEED_TEST_GUARD_MARKER;
-const codexHome = require('node:path').join(process.env.HOME, '.codex');
+const userGlobal = ['.codex', '.claude'].map(
+  (name) => require('node:path').join(process.env.HOME, name)
+);
 const appendMarker = fs.appendFileSync.bind(fs);
 function record(name) {
   appendMarker(marker, name + '\\n');
@@ -443,10 +445,10 @@ for (const method of [
   fs[method] = (...args) => {
     const blocked = args.some((candidate) => (
       typeof candidate === 'string'
-      && (
-        candidate === codexHome
-        || candidate.startsWith(codexHome + require('node:path').sep)
-      )
+      && userGlobal.some((root) => (
+        candidate === root
+        || candidate.startsWith(root + require('node:path').sep)
+      ))
     ));
     if (blocked) {
       return record('user-global.' + method);

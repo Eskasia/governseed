@@ -11,6 +11,7 @@ import {
   runCli,
 } from './helpers.mjs';
 import {
+  MATERIALIZABLE_TARGETS,
   REGISTERED_TARGETS,
   targetDefinition,
 } from '../../scripts/lib/target-registry.mjs';
@@ -147,16 +148,32 @@ test('the shared schemas admit every registered target', () => {
   }
 });
 
-test('materialize refuses the claude target while it has no materializer', (t) => {
-  const { state } = compileForClaude(t);
-  const output = parseSingleJson(
-    runCli(state, claudeArgs('materialize', state.project)),
+test('every target the registry advertises as materializable actually materializes', (t) => {
+  // This replaces the compile-only refusal contract, whose premise ended when
+  // the claude materializer landed. What it protected is still worth pinning:
+  // the registry must not advertise a command that has no implementation behind
+  // it, in either direction.
+  const state = makeProject(t, 'claude-materializability');
+  for (const target of MATERIALIZABLE_TARGETS) {
+    assert.equal(
+      runCli(state, ['compile', state.project, '--target', target, '--json']).status,
+      0,
+      `${target} must compile`,
+    );
+    const output = parseSingleJson(
+      runCli(state, ['materialize', state.project, '--target', target, '--dry-run', '--json']),
+      0,
+    );
+    assert.equal(output.result.target, target);
+    assert.equal(
+      fs.existsSync(path.join(state.project, targetDefinition(target).targetPath)),
+      false,
+      'a dry run must write nothing',
+    );
+  }
+  const unregistered = parseSingleJson(
+    runCli(state, ['materialize', state.project, '--target', 'gemini', '--json']),
     2,
   );
-  assert.equal(output.code, 'CLI_TARGET_UNSUPPORTED');
-  assert.equal(
-    fs.existsSync(path.join(state.project, '.claude/settings.json')),
-    false,
-    'a refused materialize must write nothing',
-  );
+  assert.equal(unregistered.code, 'CLI_TARGET_UNSUPPORTED');
 });

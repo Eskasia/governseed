@@ -39,7 +39,10 @@
       "$ref": "#/$defs/trustStateObserved"
     },
     "target": {
-      "const": "codex"
+      "enum": [
+        "claude",
+        "codex"
+      ]
     },
     "policyId": {
       "$ref": "#/$defs/policyId"
@@ -81,6 +84,15 @@
         "$ref": "#/$defs/driftEntry"
       }
     },
+    "observations": {
+      "description": "Facts about the observed layer that are not drift: a restriction stricter than the one required, or a higher-precedence scope whose presence GovernSeed can see but whose effect it cannot resolve. Reported so a reader is not left to infer them from an empty drift list.",
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/observation"
+      }
+    },
     "precedenceCaveat": {
       "type": "array",
       "minItems": 1,
@@ -106,6 +118,22 @@
     }
   },
   "additionalProperties": false,
+  "if": {
+    "properties": {
+      "target": {
+        "const": "claude"
+      }
+    },
+    "required": [
+      "target"
+    ]
+  },
+  "then": {
+    "description": "Entry-level ownership makes \"stricter than required\" a reachable state, so the claude target must always report the array even when it is empty.",
+    "required": [
+      "observations"
+    ]
+  },
   "$defs": {
     "materializeId": {
       "type": "string",
@@ -143,14 +171,14 @@
       "maximum": 4096
     },
     "trustStateObserved": {
-      "description": "No documented Codex surface exposes resolved project trust to a project-local reader, so unknown is the only representable value. This is what keeps the reserved level unreachable.",
+      "description": "Neither target exposes resolved project trust to a project-local reader: Codex documents no such surface, and Claude Code's workspace trust dialog is interactive and leaves no documented project-local record. unknown is therefore the only representable value, and it is what keeps the reserved level unreachable.",
       "type": "string",
       "enum": [
         "unknown"
       ]
     },
     "classificationBreakdown": {
-      "description": "Counted from the compiled Codex Adapter, which is canonical for this field. The frozen capability matrix stays canonical for the narrative.",
+      "description": "Counted from the compiled Adapter for this target, which is canonical for this field. The frozen capability matrix stays canonical for the narrative.",
       "type": "object",
       "required": [
         "enforceable",
@@ -262,6 +290,30 @@
               "$ref": "#/$defs/sha256"
             }
           ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "observation": {
+      "type": "object",
+      "required": [
+        "subject",
+        "reason",
+        "detail"
+      ],
+      "properties": {
+        "subject": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "reason": {
+          "$ref": "#/$defs/reasonCode"
+        },
+        "detail": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
         }
       },
       "additionalProperties": false
