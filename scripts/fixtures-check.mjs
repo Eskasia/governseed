@@ -71,6 +71,7 @@ function mutateFile(projectDir, relativePath, mutate) {
 function runMutationChecks() {
   const temporaryRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'governance-fixtures-'));
   const source = path.join(root, 'examples/template-adoption/base-minimal');
+  const fullstackSource = path.join(root, 'examples/template-adoption/fullstack-ai-saas');
   const cases = [
     {
       name: 'route-mode-conflict',
@@ -110,12 +111,37 @@ function runMutationChecks() {
         });
       },
     },
+    // The filled fullstack fixture passes every field-level check, so emptying
+    // one governed field is what proves the check is load-bearing rather than
+    // satisfied by the heading alone.
+    {
+      name: 'conditional-field-unfilled',
+      source: fullstackSource,
+      expectedWarning: '[CONDITIONAL_FIELD_UNFILLED] AI_SECURITY_REVIEW.md: "Kill Switch" is present but says nothing',
+      mutate(projectDir) {
+        mutateFile(projectDir, 'AI_SECURITY_REVIEW.md', (content) => content.replace(
+          '- Disable answer generation feature flag.',
+          '-',
+        ));
+      },
+    },
+    {
+      name: 'conditional-field-missing',
+      source: fullstackSource,
+      expectedWarning: '[CONDITIONAL_FIELD_MISSING] EVAL_PLAN.md: regression method has no "Regression Gate" section',
+      mutate(projectDir) {
+        mutateFile(projectDir, 'EVAL_PLAN.md', (content) => content.replace(
+          /## Regression Gate\n[\s\S]*?(?=\n## )/u,
+          '',
+        ));
+      },
+    },
   ];
 
   try {
     for (const mutation of cases) {
       const projectDir = path.join(temporaryRoot, mutation.name);
-      fs.cpSync(source, projectDir, { recursive: true });
+      fs.cpSync(mutation.source ?? source, projectDir, { recursive: true });
       mutation.mutate(projectDir);
       const result = doctorResult(projectDir, true);
       if (!Number.isInteger(result.status) || result.status === 0) {

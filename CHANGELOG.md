@@ -1,5 +1,26 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — Doctor Checks Conditional Documents Field By Field
+
+- `doctor` checked that `AGENT_RUNTIME.md`, `EVAL_PLAN.md`, and
+  `AI_SECURITY_REVIEW.md` existed and were not verbatim templates. A document
+  that kept its headings and emptied their contents passed. Closes #4.
+- Nine governed fields are now checked for coverage, not mention: tool
+  permission, side effect, and rollback plus human approval in `AGENT_RUNTIME.md`;
+  golden set, regression method, and monitoring boundary in `EVAL_PLAN.md`;
+  prompt injection, tool side effect, tenant and PII risk, tenant isolation, and
+  kill switch in `AI_SECURITY_REVIEW.md`.
+- Two codes, so a missing section reads differently from an empty one:
+  `CONDITIONAL_FIELD_MISSING` and `CONDITIONAL_FIELD_UNFILLED`. Both are
+  ordinary warnings, so `--strict` blocks on them.
+- Table columns match every accepted spelling. The templates label these tables
+  in Chinese and the filled examples label them in English, so matching one
+  vocabulary would pass whichever document used the other.
+- The filled `fullstack-ai-saas` fixture already covers all nine fields, so its
+  expected doctor JSON is unchanged. Two fixture mutations prove the checks are
+  load-bearing: emptying one bullet and deleting one section each make strict
+  doctor fail.
+
 ## 2026-07-31 — Process-Tree Reap Is Polled, Not Decided On One Look
 
 - `terminateProcessTree` sent `SIGKILL`, slept one fixed `killGraceMs`, and

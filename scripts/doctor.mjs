@@ -3,6 +3,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  CONDITIONAL_DEPTH_FILES,
+  evaluateConditionalDocumentDepth,
   evaluateRouteDecision,
   evaluateTraceability,
   formatGovernanceFinding,
@@ -373,6 +375,14 @@ function buildResult(profile) {
   const policyCompiler = evaluatePolicyCompilerGovernance(projectDir);
   for (const item of policyCompiler.findings) addFinding(item);
   if (policyCompiler.fatal) fatalPrivacy = true;
+
+  // Presence and template-fill detection do not distinguish a document that
+  // covers its governed fields from one that only has their headings.
+  const conditionalDepth = Object.fromEntries(CONDITIONAL_DEPTH_FILES.map((file) => {
+    const read = safeProjectRead(file);
+    return [file, read.ok ? read.content : null];
+  }));
+  for (const item of evaluateConditionalDocumentDepth(conditionalDepth)) addFinding(item);
 
   const missing = required.filter((check) => check.status === 'missing').map((check) => check.file);
   const unfilled = required.filter((check) => check.status === 'unfilled').map((check) => check.file);

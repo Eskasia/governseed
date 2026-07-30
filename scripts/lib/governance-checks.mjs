@@ -197,6 +197,160 @@ function isPlaceholder(value) {
   return typeof value === 'string' && PLACEHOLDER.test(value.trim());
 }
 
+export const CONDITIONAL_DEPTH_FILES = Object.freeze([
+  'AGENT_RUNTIME.md',
+  'EVAL_PLAN.md',
+  'AI_SECURITY_REVIEW.md',
+]);
+
+/**
+ * The fields each conditional document must actually cover, not merely mention.
+ *
+ * A column carries every accepted spelling because the templates label these
+ * tables in Chinese and the filled examples label them in English; matching one
+ * vocabulary would pass whichever document happened to use the other.
+ */
+const CONDITIONAL_DEPTH_SPECS = Object.freeze([
+  {
+    file: 'AGENT_RUNTIME.md',
+    fields: [
+      {
+        field: 'tool permission, side effect, and rollback',
+        section: 'Tools',
+        columns: [['權限', 'permission'], ['副作用', 'side effect'], ['rollback']],
+      },
+      { field: 'human approval', section: 'Human Approval' },
+    ],
+  },
+  {
+    file: 'EVAL_PLAN.md',
+    fields: [
+      {
+        field: 'golden set',
+        section: 'Golden Set',
+        columns: [['case'], ['input'], ['expected behavior']],
+      },
+      { field: 'regression method', section: 'Regression Gate' },
+      // What may be observed and retained in production is the monitoring
+      // boundary; the claim boundary below it is a separate statement.
+      { field: 'monitoring boundary', section: 'Traces' },
+    ],
+  },
+  {
+    file: 'AI_SECURITY_REVIEW.md',
+    fields: [
+      { field: 'prompt injection', section: 'Prompt Injection' },
+      {
+        field: 'tool side effect',
+        section: 'Tool Side Effects',
+        columns: [['permission'], ['side effect'], ['human approval'], ['rollback']],
+      },
+      { field: 'tenant and PII risk', section: 'Data Leakage' },
+      { field: 'tenant isolation', section: 'Tenant / Access Isolation' },
+      { field: 'kill switch', section: 'Kill Switch' },
+    ],
+  },
+]);
+
+function sectionLines(content, section) {
+  const lines = visibleMarkdownLines(content);
+  const sections = findSections(lines, [section]);
+  if (sections.length !== 1) return null;
+  const [{ start, end }] = sections;
+  return lines.slice(start, end).filter((line) => line !== null);
+}
+
+function columnIndex(header, accepted) {
+  return header.findIndex((cell) => accepted.includes(cell.trim().toLowerCase()));
+}
+
+/** The first table in the section, as a header row plus its data rows. */
+function firstTable(lines) {
+  for (let index = 0; index < lines.length; index += 1) {
+    const header = markdownCells(lines[index]);
+    if (!header) continue;
+    if (!isTableSeparator(markdownCells(lines[index + 1]), header.length)) continue;
+    const rows = [];
+    for (let cursor = index + 2; cursor < lines.length; cursor += 1) {
+      const row = markdownCells(lines[cursor]);
+      if (!row || row.length !== header.length) break;
+      if (row.every((cell) => cell === '')) continue;
+      rows.push(row);
+    }
+    return { header, rows };
+  }
+  return null;
+}
+
+function isUnfilled(value) {
+  return typeof value !== 'string' || value.trim() === '' || isPlaceholder(value);
+}
+
+function tableFindings(spec, lines) {
+  const table = firstTable(lines);
+  if (!table) {
+    return [`the ${spec.field} table in "${spec.section}" is missing`];
+  }
+  const findings = [];
+  for (const accepted of spec.columns) {
+    const index = columnIndex(table.header, accepted);
+    if (index === -1) {
+      findings.push(`"${spec.section}" has no ${accepted[0]} column`);
+      continue;
+    }
+    if (table.rows.length === 0) {
+      findings.push(`"${spec.section}" has no ${accepted[0]} entry`);
+      continue;
+    }
+    if (table.rows.some((row) => isUnfilled(row[index]))) {
+      findings.push(`"${spec.section}" leaves ${accepted[0]} empty for at least one entry`);
+    }
+  }
+  return findings;
+}
+
+/**
+ * A labelled section is covered when every label carries a value. A section
+ * written as plain bullets is covered when at least one bullet says something.
+ */
+function proseFindings(spec, lines) {
+  const labelled = [...bulletValues(lines.join('\n')).entries()];
+  if (labelled.length > 0) {
+    const empty = labelled.filter(([, value]) => isUnfilled(value)).map(([label]) => label);
+    return empty.length === 0
+      ? []
+      : [`"${spec.section}" leaves empty: ${empty.sort().join(', ')}`];
+  }
+  const said = lines.some((line) => /^\s*-\s*\S/u.test(line) && !isUnfilled(line.replace(/^\s*-\s*/u, '')));
+  return said ? [] : [`"${spec.section}" is present but says nothing`];
+}
+
+export function evaluateConditionalDocumentDepth(documents = {}) {
+  const findings = [];
+  for (const { file, fields } of CONDITIONAL_DEPTH_SPECS) {
+    const content = documents[file];
+    if (typeof content !== 'string') continue;
+    for (const spec of fields) {
+      const lines = sectionLines(content, spec.section);
+      if (lines === null) {
+        findings.push(finding(
+          'CONDITIONAL_FIELD_MISSING',
+          file,
+          `${spec.field} has no "${spec.section}" section`,
+        ));
+        continue;
+      }
+      const messages = spec.columns
+        ? tableFindings(spec, lines)
+        : proseFindings(spec, lines);
+      for (const message of messages) {
+        findings.push(finding('CONDITIONAL_FIELD_UNFILLED', file, message));
+      }
+    }
+  }
+  return findings;
+}
+
 export function evaluateRouteDecision(projectBrief, techStack) {
   const projectValues = bulletValues(projectBrief);
   const stackValues = bulletValues(techStack);

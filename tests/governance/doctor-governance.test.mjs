@@ -6,6 +6,8 @@ import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import {
+  CONDITIONAL_DEPTH_FILES,
+  evaluateConditionalDocumentDepth,
   evaluateRouteDecision,
   formatGovernanceFinding,
   safeReadGovernanceFile,
@@ -43,6 +45,72 @@ function runDoctor(projectDir, ...options) {
     shell: false,
   });
 }
+
+function documentsFrom(directory) {
+  return Object.fromEntries(CONDITIONAL_DEPTH_FILES.map((file) => {
+    const absolute = path.join(directory, file);
+    return [file, fs.existsSync(absolute) ? fs.readFileSync(absolute, 'utf8') : null];
+  }));
+}
+
+// The shipped template is the exact shape of an underfilled document, so it is
+// the honest negative case: a check that passes on it verifies nothing.
+test('every unfilled conditional template is reported field by field', () => {
+  const templates = Object.fromEntries(CONDITIONAL_DEPTH_FILES.map((file) => [
+    file,
+    fs.readFileSync(path.join(ROOT, 'templates/conditional', file), 'utf8'),
+  ]));
+  const findings = evaluateConditionalDocumentDepth(templates);
+
+  for (const file of CONDITIONAL_DEPTH_FILES) {
+    assert.ok(
+      findings.some((item) => item.subject === file),
+      `${file} as shipped must not pass a field-level check`,
+    );
+  }
+  assert.deepEqual(
+    findings.filter((item) => !/^CONDITIONAL_FIELD_(?:MISSING|UNFILLED)$/u.test(item.code)),
+    [],
+  );
+});
+
+test('the filled fullstack fixture passes every field-level check', () => {
+  assert.deepEqual(
+    evaluateConditionalDocumentDepth(documentsFrom(FULLSTACK_FIXTURE)).map(formatGovernanceFinding),
+    [],
+  );
+});
+
+test('absent conditional documents are not field-checked', () => {
+  assert.deepEqual(
+    evaluateConditionalDocumentDepth(documentsFrom(BASE_FIXTURE)).map(formatGovernanceFinding),
+    [],
+  );
+});
+
+test('a removed section is reported as missing, not as unfilled', () => {
+  const filled = fs.readFileSync(path.join(FULLSTACK_FIXTURE, 'AI_SECURITY_REVIEW.md'), 'utf8');
+  const withoutKillSwitch = filled.replace(/## Kill Switch\n[\s\S]*?(?=\n## )/u, '');
+  const findings = evaluateConditionalDocumentDepth({
+    'AI_SECURITY_REVIEW.md': withoutKillSwitch,
+  });
+
+  assert.deepEqual(findings.map((item) => item.code), ['CONDITIONAL_FIELD_MISSING']);
+  assert.match(findings[0].message, /kill switch/iu);
+});
+
+test('a table row with an empty governed cell does not count as coverage', () => {
+  const filled = fs.readFileSync(path.join(FULLSTACK_FIXTURE, 'AGENT_RUNTIME.md'), 'utf8');
+  const emptiedRollback = filled.replace(
+    '| document delete | delete workspace document | destructive | no | restore from backup if available |',
+    '| document delete | delete workspace document | destructive | no |  |',
+  );
+  assert.notEqual(emptiedRollback, filled, 'the fixture row must still be there to empty');
+
+  const findings = evaluateConditionalDocumentDepth({ 'AGENT_RUNTIME.md': emptiedRollback });
+  assert.deepEqual(findings.map((item) => item.code), ['CONDITIONAL_FIELD_UNFILLED']);
+  assert.match(findings[0].message, /rollback/iu);
+});
 
 test('reports conflicting route modes', () => {
   const findings = evaluateRouteDecision(
