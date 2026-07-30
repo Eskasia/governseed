@@ -1,0 +1,296 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Eskasia/governseed/schemas/attest-output.schema.json",
+  "title": "GovernSeed Project-Layer Attestation",
+  "description": "A project-layer attestation. It reports what was written into one configuration layer and compared byte for byte. It never reports an effective configuration and never claims runtime enforcement.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "level",
+    "trustStateObserved",
+    "target",
+    "policyId",
+    "policyHash",
+    "materializeId",
+    "declared",
+    "materialized",
+    "projectLayerObserved",
+    "classificationBreakdown",
+    "classificationSourceDivergence",
+    "materializationBreakdown",
+    "drift",
+    "precedenceCaveat",
+    "knownLimitations",
+    "claim"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "level": {
+      "description": "project-layer-observed is schema-reserved: it stays in the enum so a future trust-observation design needs no breaking change, and it is unreachable while trustStateObserved admits only unknown.",
+      "type": "string",
+      "enum": [
+        "project-layer-observed",
+        "materialized-unverified"
+      ]
+    },
+    "trustStateObserved": {
+      "$ref": "#/$defs/trustStateObserved"
+    },
+    "target": {
+      "const": "codex"
+    },
+    "policyId": {
+      "$ref": "#/$defs/policyId"
+    },
+    "policyHash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "materializeId": {
+      "$ref": "#/$defs/materializeId"
+    },
+    "declared": {
+      "$ref": "#/$defs/count"
+    },
+    "materialized": {
+      "$ref": "#/$defs/count"
+    },
+    "projectLayerObserved": {
+      "$ref": "#/$defs/count"
+    },
+    "classificationBreakdown": {
+      "$ref": "#/$defs/classificationBreakdown"
+    },
+    "classificationSourceDivergence": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/divergence"
+      }
+    },
+    "materializationBreakdown": {
+      "$ref": "#/$defs/materializationBreakdown"
+    },
+    "drift": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/driftEntry"
+      }
+    },
+    "precedenceCaveat": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 1024
+      }
+    },
+    "knownLimitations": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/knownLimitation"
+      }
+    },
+    "claim": {
+      "const": "PROJECT_LAYER_OBSERVED_NOT_RUNTIME_ENFORCED"
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "materializeId": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 16,
+      "pattern": "^MAT-[0-9A-F]{12}$"
+    },
+    "policyId": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 128,
+      "pattern": "^POL-[A-Z0-9](?:[A-Z0-9-]{0,122}[A-Z0-9])?$"
+    },
+    "controlId": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 128,
+      "pattern": "^POL-[A-Z0-9](?:[A-Z0-9-]{0,122}[A-Z0-9])?$"
+    },
+    "reasonCode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "count": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 4096
+    },
+    "trustStateObserved": {
+      "description": "No documented Codex surface exposes resolved project trust to a project-local reader, so unknown is the only representable value. This is what keeps the reserved level unreachable.",
+      "type": "string",
+      "enum": [
+        "unknown"
+      ]
+    },
+    "classificationBreakdown": {
+      "description": "Counted from the compiled Codex Adapter, which is canonical for this field. The frozen capability matrix stays canonical for the narrative.",
+      "type": "object",
+      "required": [
+        "enforceable",
+        "representable-only",
+        "unsupported",
+        "requires-human-approval",
+        "runtime-evidence-required"
+      ],
+      "properties": {
+        "enforceable": {
+          "$ref": "#/$defs/count"
+        },
+        "representable-only": {
+          "$ref": "#/$defs/count"
+        },
+        "unsupported": {
+          "$ref": "#/$defs/count"
+        },
+        "requires-human-approval": {
+          "$ref": "#/$defs/count"
+        },
+        "runtime-evidence-required": {
+          "$ref": "#/$defs/count"
+        }
+      },
+      "additionalProperties": false
+    },
+    "materializationBreakdown": {
+      "type": "object",
+      "required": [
+        "not-applicable",
+        "materializable",
+        "deferred"
+      ],
+      "properties": {
+        "not-applicable": {
+          "$ref": "#/$defs/count"
+        },
+        "materializable": {
+          "$ref": "#/$defs/count"
+        },
+        "deferred": {
+          "$ref": "#/$defs/count"
+        }
+      },
+      "additionalProperties": false
+    },
+    "divergence": {
+      "type": "object",
+      "required": [
+        "controlId",
+        "adapterValue",
+        "matrixValue",
+        "note"
+      ],
+      "properties": {
+        "controlId": {
+          "$ref": "#/$defs/controlId"
+        },
+        "adapterValue": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "matrixValue": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        }
+      },
+      "additionalProperties": false
+    },
+    "driftEntry": {
+      "type": "object",
+      "required": [
+        "subject",
+        "reason"
+      ],
+      "properties": {
+        "subject": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        },
+        "reason": {
+          "$ref": "#/$defs/reasonCode"
+        },
+        "expectedHash": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/sha256"
+            }
+          ]
+        },
+        "observedHash": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/sha256"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "knownLimitation": {
+      "type": "object",
+      "required": [
+        "controlId",
+        "note",
+        "source"
+      ],
+      "properties": {
+        "controlId": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 128
+        },
+        "note": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 1024
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

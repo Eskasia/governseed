@@ -1,0 +1,315 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Eskasia/governseed/schemas/materialize-receipt.schema.json",
+  "title": "GovernSeed Target Materialize Receipt",
+  "description": "A project-local receipt describing one deterministic target materialization transaction. Writing a native setting produces an artifact, not an enforcement guarantee.",
+  "type": "object",
+  "required": [
+    "schemaVersion",
+    "materializeId",
+    "policyId",
+    "policyHash",
+    "target",
+    "dryRun",
+    "trustStateObserved",
+    "targetFiles",
+    "materializedControls",
+    "unmaterializedControls",
+    "filesCreated",
+    "filesUpdated",
+    "filesUnchanged",
+    "materializedAt",
+    "ownership",
+    "status"
+  ],
+  "properties": {
+    "schemaVersion": {
+      "const": 1
+    },
+    "materializeId": {
+      "$ref": "#/$defs/materializeId"
+    },
+    "policyId": {
+      "$ref": "#/$defs/policyId"
+    },
+    "policyHash": {
+      "$ref": "#/$defs/sha256"
+    },
+    "target": {
+      "const": "codex"
+    },
+    "dryRun": {
+      "type": "boolean"
+    },
+    "trustStateObserved": {
+      "$ref": "#/$defs/trustStateObserved"
+    },
+    "targetFiles": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/targetFile"
+      }
+    },
+    "materializedControls": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/materializedControl"
+      }
+    },
+    "unmaterializedControls": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/unmaterializedControl"
+      }
+    },
+    "filesCreated": {
+      "$ref": "#/$defs/portablePaths"
+    },
+    "filesUpdated": {
+      "$ref": "#/$defs/portablePaths"
+    },
+    "filesUnchanged": {
+      "$ref": "#/$defs/portablePaths"
+    },
+    "materializedAt": {
+      "$ref": "#/$defs/timestamp"
+    },
+    "ownership": {
+      "$ref": "#/$defs/ownership"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "target-materialized",
+        "dry-run"
+      ]
+    }
+  },
+  "additionalProperties": false,
+  "$defs": {
+    "materializeId": {
+      "type": "string",
+      "minLength": 16,
+      "maxLength": 16,
+      "pattern": "^MAT-[0-9A-F]{12}$"
+    },
+    "policyId": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 128,
+      "pattern": "^POL-[A-Z0-9](?:[A-Z0-9-]{0,122}[A-Z0-9])?$"
+    },
+    "controlId": {
+      "type": "string",
+      "minLength": 5,
+      "maxLength": 128,
+      "pattern": "^POL-[A-Z0-9](?:[A-Z0-9-]{0,122}[A-Z0-9])?$"
+    },
+    "reasonCode": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[A-Z][A-Z0-9_]*$"
+    },
+    "sha256": {
+      "type": "string",
+      "minLength": 64,
+      "maxLength": 64,
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 64,
+      "format": "date-time"
+    },
+    "portablePath": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 512,
+      "pattern": "^(?!.*(?:^|/)\\.{1,2}(?:/|$))[A-Za-z0-9._@+-]+(?:/[A-Za-z0-9._@+-]+)*$"
+    },
+    "portablePaths": {
+      "type": "array",
+      "maxItems": 256,
+      "uniqueItems": true,
+      "items": {
+        "$ref": "#/$defs/portablePath"
+      }
+    },
+    "trustStateObserved": {
+      "description": "No documented Codex surface exposes resolved project trust to a project-local reader, so unknown is the only representable value. Widening this enum requires a reviewed schema change.",
+      "type": "string",
+      "enum": [
+        "unknown"
+      ]
+    },
+    "materializationStatus": {
+      "description": "Orthogonal to the five capability-matrix classifications. It records whether a native project-layer surface was written, never what GovernSeed can enforce.",
+      "type": "string",
+      "enum": [
+        "not-applicable",
+        "materializable",
+        "deferred"
+      ]
+    },
+    "capability": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256,
+      "pattern": "^[a-z][a-z0-9.-]*$"
+    },
+    "classification": {
+      "type": "string",
+      "enum": [
+        "enforceable",
+        "representable-only",
+        "unsupported",
+        "requires-human-approval",
+        "runtime-evidence-required"
+      ]
+    },
+    "nativeKey": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 128,
+      "pattern": "^[a-z][a-z0-9_.]*$"
+    },
+    "targetFile": {
+      "type": "object",
+      "required": [
+        "path",
+        "sha256Before",
+        "sha256After"
+      ],
+      "properties": {
+        "path": {
+          "$ref": "#/$defs/portablePath"
+        },
+        "sha256Before": {
+          "oneOf": [
+            {
+              "type": "null"
+            },
+            {
+              "$ref": "#/$defs/sha256"
+            }
+          ]
+        },
+        "sha256After": {
+          "$ref": "#/$defs/sha256"
+        }
+      },
+      "additionalProperties": false
+    },
+    "materializedControl": {
+      "type": "object",
+      "required": [
+        "controlId",
+        "capability",
+        "mode",
+        "classification",
+        "materializationStatus",
+        "modeCoverage",
+        "nativeKeys",
+        "emittedValue"
+      ],
+      "properties": {
+        "controlId": {
+          "$ref": "#/$defs/controlId"
+        },
+        "capability": {
+          "$ref": "#/$defs/capability"
+        },
+        "mode": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64,
+          "pattern": "^[a-z][a-z-]*$"
+        },
+        "classification": {
+          "$ref": "#/$defs/classification"
+        },
+        "materializationStatus": {
+          "$ref": "#/$defs/materializationStatus"
+        },
+        "modeCoverage": {
+          "description": "approval-gate-only marks a control whose emitted key prompts rather than enforces its mode. A deny written as approval_policy is not a denial.",
+          "type": "string",
+          "enum": [
+            "full",
+            "approval-gate-only"
+          ]
+        },
+        "nativeKeys": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/nativeKey"
+          }
+        },
+        "emittedValue": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 512
+        }
+      },
+      "additionalProperties": false
+    },
+    "unmaterializedControl": {
+      "type": "object",
+      "required": [
+        "controlId",
+        "capability",
+        "materializationStatus",
+        "reasonCode",
+        "source"
+      ],
+      "properties": {
+        "controlId": {
+          "$ref": "#/$defs/controlId"
+        },
+        "capability": {
+          "$ref": "#/$defs/capability"
+        },
+        "materializationStatus": {
+          "$ref": "#/$defs/materializationStatus"
+        },
+        "reasonCode": {
+          "$ref": "#/$defs/reasonCode"
+        },
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 256
+        }
+      },
+      "additionalProperties": false
+    },
+    "ownership": {
+      "type": "object",
+      "required": [
+        "generator",
+        "artifactType"
+      ],
+      "properties": {
+        "generator": {
+          "const": "GovernSeed"
+        },
+        "artifactType": {
+          "const": "codex-project-config"
+        }
+      },
+      "additionalProperties": false
+    }
+  }
+}

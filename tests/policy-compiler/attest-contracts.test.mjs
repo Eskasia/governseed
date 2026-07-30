@@ -11,6 +11,7 @@ import {
   parseSingleJson,
   readJson,
   runCli,
+  setCeiling,
   snapshotFiles,
   writeJson,
 } from './helpers.mjs';
@@ -143,7 +144,7 @@ test('the classification breakdown comes from the compiled adapter', (t) => {
   assert.equal(shell.matrixValue, 'representable-only');
 });
 
-test('counts are defined: declared, materialized and project-layer observed', (t) => {
+test('counts are defined: declared, target-materialized and project-layer observed', (t) => {
   const state = makeProject(t, 'attest-counts');
   const materialized = prepared(state);
   const output = parseSingleJson(runCli(state, attestArgs(state.project)), 0);
@@ -202,13 +203,7 @@ test('a removed target file is drift', (t) => {
 test('a policy compiled after materialize is stale, not silently accepted', (t) => {
   const state = makeProject(t, 'attest-stale');
   prepared(state);
-  const profilePath = governancePath(
-    state.project,
-    '.agent-governance/risk-profile.json',
-  );
-  const profile = readJson(profilePath);
-  profile.permissionCeiling['filesystem.project-write'] = 'deny';
-  fs.writeFileSync(profilePath, `${JSON.stringify(profile, null, 2)}\n`, 'utf8');
+  setCeiling(state.project, 'filesystem.project-write', 'deny');
   assert.equal(runCli(state, compileArgs(state.project)).status, 0);
 
   const output = parseSingleJson(runCli(state, attestArgs(state.project)), 4);

@@ -406,6 +406,8 @@ These checks answer different questions and must not be combined into one claim:
 | Project doctor | Required documents, content quality, conditional hints, routing, and traceability | Product correctness or production safety |
 | Fixture checks | Coherent filled examples and stable doctor JSON | External adoption |
 | Policy Compiler | Canonical project-local policy, Codex mapping, and receipt integrity | That Codex loaded or enforced the policy |
+| Target materialization | That the project-local `.codex/config.toml` GovernSeed owns holds the strictest value each written key admits, recorded in a content-addressed receipt | That Codex read the file, that the project is trusted, or that a nearer or higher layer did not override it |
+| Project-layer attestation | That the bytes on disk still match the receipt and the receipt still matches the compiled policy | The effective configuration; the level stays `materialized-unverified` because project trust is not observable |
 | Runtime proof | Minimal first-response contract for generated Codex, Claude, and Antigravity entrypoints | Live-model quality or governance effectiveness |
 | Governance-impact evaluator | Deterministic mechanics for comparing the same synthetic task in baseline and governed arms | That governance improves delivery |
 
@@ -480,9 +482,16 @@ For a new maintainer, read in this order:
 - Generated documents record secret names and ownership, never secret values.
 - Committable decision and role artifacts contain normalized metadata and
   bounded synthesis only; ignored local storage is never evidence.
-- A compile receipt proves only a complete local materialization transaction.
-  It is not Attestation, runtime evidence, or proof that Codex enforced a
-  control.
+- A compile receipt proves only a complete local transaction that produced a
+  policy candidate and an Adapter. It is not Attestation, runtime evidence, or
+  proof that Codex enforced a control.
+- `materialize` writes one project-local file, `.codex/config.toml`, and its own
+  receipt. It never writes user-global configuration, managed requirement
+  layers, or any path outside the project root, and it refuses rather than
+  overwrite a file GovernSeed does not own.
+- `attest` is read-only and its ceiling is the project layer. It compares bytes
+  and hashes; it never reports an effective configuration and never claims
+  runtime enforcement.
 - Public CI uses synthetic fixtures, deterministic checks, and forced mock runtime proof without credentials.
 - Real execution paths are explicit, synthetic-only, and fail closed on privacy, containment, persistence, schema, or cleanup uncertainty.
 - A passing fixture, doctor run, runtime smoke test, or offline evaluator control is not proof of production readiness, external adoption, universal suitability, or governance effectiveness.
@@ -524,9 +533,14 @@ No. Runtime proof checks generated entrypoint behavior. Governance-impact evalua
 
 ### Does `agent-governance compile` enforce policy in Codex?
 
-No. It generates a canonical policy candidate, a project-local Codex JSON
-mapping, and a receipt. It does not write Codex runtime configuration, inspect
-effective settings, execute an Agent, or establish runtime enforcement.
+No. `compile` produces a policy candidate and a Codex Adapter inside the
+GovernSeed namespace. `materialize` writes project-local target settings, and
+only under that explicit command. `attest` reads those settings back and
+compares them. None of the three establishes runtime enforcement: the project
+layer is one of several configuration layers, the layers above and below it lie
+outside the project root, and GovernSeed never observes the effective
+configuration or executes an Agent. See
+[`docs/enforcement-boundary.md`](docs/enforcement-boundary.md).
 
 ### Is there a hosted service or HTTP API?
 

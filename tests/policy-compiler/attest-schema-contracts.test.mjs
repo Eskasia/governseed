@@ -181,7 +181,7 @@ test('classificationSourceDivergence may be empty but never omitted', () => {
   );
 });
 
-test('the receipt schema requires modeCoverage on every materialized control', () => {
+test('the receipt schema requires modeCoverage on every target-materialized control', () => {
   const schema = readSchema('materialize-receipt.schema.json');
   const definition = schema.$defs.materializedControl;
   assert.ok(definition.required.includes('modeCoverage'));

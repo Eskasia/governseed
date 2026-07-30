@@ -11,8 +11,9 @@ import {
   makeProject,
   makeRuntimeGuard,
   parseSingleJson,
-  readJson,
+  requestCapability,
   runCli,
+  setCeiling,
   snapshotFiles,
 } from './helpers.mjs';
 
@@ -39,10 +40,14 @@ function receiptFor(project, materializeId) {
   );
 }
 
+// Compile writes COMPILE- receipts to the same directory, so only MAT- entries
+// answer "did materialize write a receipt".
 function listReceipts(project) {
   const directory = governancePath(project, '.agent-governance/receipts');
   if (!fs.existsSync(directory)) return [];
-  return fs.readdirSync(directory).sort();
+  return fs.readdirSync(directory)
+    .filter((name) => name.startsWith('MAT-'))
+    .sort();
 }
 
 test('materialize writes one project-local target file and a receipt', (t) => {
@@ -172,13 +177,7 @@ test('re-materializing over GovernSeed-owned bytes from an earlier policy update
   compiled(state);
   parseSingleJson(runCli(state, materializeArgs(state.project)), 0);
 
-  const profilePath = governancePath(
-    state.project,
-    '.agent-governance/risk-profile.json',
-  );
-  const profile = readJson(profilePath);
-  profile.permissionCeiling['filesystem.project-write'] = 'deny';
-  fs.writeFileSync(profilePath, `${JSON.stringify(profile, null, 2)}\n`, 'utf8');
+  setCeiling(state.project, 'filesystem.project-write', 'deny');
   compiled(state);
 
   const output = parseSingleJson(
@@ -226,7 +225,7 @@ test('unsupported and deferred controls are reported, never silently dropped', (
   assert.equal(declared, 12);
 });
 
-test('a deny control materialized as an approval gate says so in machine-readable output', (t) => {
+test('a deny control target-materialized as an approval gate says so in machine-readable output', (t) => {
   const state = makeProject(t, 'materialize-deny-gate');
   compiled(state);
   const output = parseSingleJson(
@@ -239,7 +238,7 @@ test('a deny control materialized as an approval gate says so in machine-readabl
   );
   for (const controlId of ['POL-DESTRUCTIVE-ACTIONS', 'POL-PUBLISH-ACTIONS']) {
     const entry = byId.get(controlId);
-    assert.ok(entry, `${controlId} must be materialized`);
+    assert.ok(entry, `${controlId} must be target-materialized`);
     assert.equal(entry.mode, 'deny');
     assert.deepEqual(entry.nativeKeys, ['approval_policy']);
     assert.equal(
@@ -256,13 +255,8 @@ test('a deny control materialized as an approval gate says so in machine-readabl
 test('a policy that would widen a key fails closed and writes nothing', (t) => {
   const state = makeProject(t, 'materialize-would-widen');
   compiled(state);
-  const profilePath = governancePath(
-    state.project,
-    '.agent-governance/risk-profile.json',
-  );
-  const profile = readJson(profilePath);
-  profile.permissionCeiling['filesystem.root-write'] = 'allow';
-  fs.writeFileSync(profilePath, `${JSON.stringify(profile, null, 2)}\n`, 'utf8');
+  setCeiling(state.project, 'filesystem.root-write', 'allow');
+  requestCapability(state.project, 'filesystem.root-write');
   compiled(state);
   const snapshot = snapshotFiles(state.project);
 
@@ -347,15 +341,19 @@ test('a sandbox-protected target path is a named refusal, not a generic I/O erro
   const directory = path.join(state.project, '.codex');
   fs.mkdirSync(directory, { recursive: true });
   fs.chmodSync(directory, 0o500);
-  t.after(() => fs.chmodSync(directory, 0o700));
-
-  const output = parseSingleJson(
-    runCli(state, materializeArgs(state.project)),
-    4,
-  );
-  assert.equal(output.code, 'MATERIALIZE_TARGET_PATH_PROTECTED');
-  assert.equal(fs.existsSync(targetFile(state.project)), false);
-  assert.deepEqual(listReceipts(state.project), []);
+  try {
+    const output = parseSingleJson(
+      runCli(state, materializeArgs(state.project)),
+      4,
+    );
+    assert.equal(output.code, 'MATERIALIZE_TARGET_PATH_PROTECTED');
+    assert.equal(fs.existsSync(targetFile(state.project)), false);
+    assert.deepEqual(listReceipts(state.project), []);
+  } finally {
+    // Restored inline: the sandbox cleanup hook registered by makeProject runs
+    // before any hook registered here.
+    fs.chmodSync(directory, 0o700);
+  }
 });
 
 test('materialize refuses a target path that is a symlink', (t) => {
@@ -494,13 +492,7 @@ test('CRLF governed input produces byte-identical target output', (t) => {
 
 test('the emitted table is present only when the sandbox mode uses it', (t) => {
   const state = makeProject(t, 'materialize-table-scope');
-  const profilePath = governancePath(
-    state.project,
-    '.agent-governance/risk-profile.json',
-  );
-  const profile = readJson(profilePath);
-  profile.permissionCeiling['filesystem.project-write'] = 'deny';
-  fs.writeFileSync(profilePath, `${JSON.stringify(profile, null, 2)}\n`, 'utf8');
+  setCeiling(state.project, 'filesystem.project-write', 'deny');
   compiled(state);
   parseSingleJson(runCli(state, materializeArgs(state.project)), 0);
 

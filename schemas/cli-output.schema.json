@@ -70,6 +70,12 @@
           "$ref": "compile-receipt.schema.json"
         },
         {
+          "$ref": "materialize-receipt.schema.json"
+        },
+        {
+          "$ref": "attest-output.schema.json"
+        },
+        {
           "$ref": "#/$defs/riskAssessment"
         },
         {

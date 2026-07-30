@@ -26,6 +26,8 @@ const SCHEMA_NAMES = new Set([
   'policy-manifest.schema.json',
   'codex-policy-adapter.schema.json',
   'compile-receipt.schema.json',
+  'materialize-receipt.schema.json',
+  'attest-output.schema.json',
   'cli-output.schema.json',
 ]);
 const SAFE_SUBJECT = /^(?:SRC|REQ|DEC|DLB|AC|TASK|ROLE|POL|EVD|ATT|RISK|PACK|CAT|CONF)-[A-Z0-9@.-]+$/;
@@ -1956,6 +1958,127 @@ function validateResult(value, context, errors) {
   }
 }
 
+function validateMaterializeReceiptSemantic(value, errors) {
+  const fileStates = [
+    ...(value?.filesCreated ?? []),
+    ...(value?.filesUpdated ?? []),
+    ...(value?.filesUnchanged ?? []),
+  ];
+  if (duplicateValue(fileStates)) {
+    addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', '$.filesCreated');
+  }
+  if (
+    typeof value?.materializeId === 'string'
+    && value?.dryRun === false
+  ) {
+    const expected = [
+      '.agent-governance/receipts/' + value.materializeId + '.json',
+      '.codex/config.toml',
+    ].sort();
+    const actual = [...fileStates].sort();
+    if (
+      actual.length !== expected.length
+      || actual.some((entry, index) => entry !== expected[index])
+    ) {
+      addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', '$.filesCreated');
+    }
+  }
+  if (value?.dryRun === true && fileStates.length > 0) {
+    addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', '$.filesCreated');
+  }
+  if (
+    (value?.dryRun === true && value?.status !== 'dry-run')
+    || (value?.dryRun === false && value?.status !== 'target-materialized')
+  ) {
+    addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', '$.status');
+  }
+  for (const [index, entry] of (value?.targetFiles ?? []).entries()) {
+    if (entry?.path !== '.codex/config.toml') {
+      addSchemaError(
+        errors,
+        'SCHEMA_VALIDATION_FAILED',
+        `$.targetFiles[${index}].path`,
+      );
+    }
+  }
+  // A deny that is only prompted for must never read as full coverage.
+  for (const [index, entry] of (value?.materializedControls ?? []).entries()) {
+    if (
+      entry?.mode === 'deny'
+      && Array.isArray(entry?.nativeKeys)
+      && entry.nativeKeys.length === 1
+      && entry.nativeKeys[0] === 'approval_policy'
+      && entry?.modeCoverage !== 'approval-gate-only'
+    ) {
+      addSchemaError(
+        errors,
+        'SCHEMA_VALIDATION_FAILED',
+        `$.materializedControls[${index}].modeCoverage`,
+      );
+    }
+  }
+  if (
+    duplicateValue(
+      (value?.materializedControls ?? []).map((entry) => entry?.controlId),
+    )
+    || duplicateValue(
+      (value?.unmaterializedControls ?? []).map((entry) => entry?.controlId),
+    )
+  ) {
+    addSchemaError(errors, 'DUPLICATE_ID', '$.materializedControls');
+  }
+}
+
+function validateAttestOutputSemantic(value, errors) {
+  // The higher level requires observed trust. Trust is not observable in this
+  // milestone, so the level stays reserved rather than merely unreached.
+  if (
+    value?.level === 'project-layer-observed'
+    && value?.trustStateObserved !== 'trusted'
+  ) {
+    addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', '$.level');
+  }
+  const breakdown = value?.materializationBreakdown;
+  if (breakdown && typeof value?.declared === 'number') {
+    const total = ['not-applicable', 'materializable', 'deferred']
+      .reduce((sum, key) => sum + (breakdown[key] ?? 0), 0);
+    if (total !== value.declared) {
+      addSchemaError(
+        errors,
+        'SCHEMA_VALIDATION_FAILED',
+        '$.materializationBreakdown',
+      );
+    }
+  }
+  if (
+    typeof value?.materialized === 'number'
+    && typeof value?.declared === 'number'
+    && value.materialized > value.declared
+  ) {
+    addSchemaError(errors, 'SCHEMA_VALIDATION_FAILED', '$.materialized');
+  }
+  if (
+    typeof value?.projectLayerObserved === 'number'
+    && typeof value?.materialized === 'number'
+    && value.projectLayerObserved > value.materialized
+  ) {
+    addSchemaError(
+      errors,
+      'SCHEMA_VALIDATION_FAILED',
+      '$.projectLayerObserved',
+    );
+  }
+  if (
+    duplicateValue(
+      (value?.classificationSourceDivergence ?? []).map(
+        (entry) => entry?.controlId,
+      ),
+    )
+  ) {
+    addSchemaError(errors, 'DUPLICATE_ID', '$.classificationSourceDivergence');
+  }
+}
+
 function validateSemantic(schemaName, value, context, errors) {
   if (value?.schemaVersion !== 1) {
     addSchemaError(errors, 'SCHEMA_VERSION_UNSUPPORTED', '$.schemaVersion');
@@ -2066,6 +2189,12 @@ function validateSemantic(schemaName, value, context, errors) {
   }
   if (schemaName === 'compile-receipt.schema.json') {
     validateCompileReceiptSemantic(value, context, errors);
+  }
+  if (schemaName === 'materialize-receipt.schema.json') {
+    validateMaterializeReceiptSemantic(value, errors);
+  }
+  if (schemaName === 'attest-output.schema.json') {
+    validateAttestOutputSemantic(value, errors);
   }
 }
 

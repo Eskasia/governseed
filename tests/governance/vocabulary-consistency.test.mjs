@@ -35,17 +35,19 @@ const ALLOWLISTED_FILES = new Set([
   'tests/governance/vocabulary-consistency.test.mjs',
 ]);
 
-// Machine names introduced by milestone 3. A field name is not a claim, so the
-// check skips these by exact match rather than banning the substring.
+// The two explicit terms and the one machine level built from them. Masked
+// first so a line that already uses the qualified form is not reported.
 const ALLOWLISTED_IDENTIFIERS = [
   'adapter-materialized',
   'target-materialized',
   'materialized-unverified',
-  'materializedControls',
-  'unmaterializedControls',
-  'materializedAt',
-  'materializedControl',
 ];
+
+// The rule governs the published governance term, not machine names: a field
+// called materialized makes no claim, a sentence containing the bare word does.
+// Markdown is scanned whole; source and schema files are scanned only inside
+// quoted strings that read as prose, which is where user-visible text lives.
+const PROSE_STRING = /(["'`])((?:(?!\1)[^\\]|\\.)*\s(?:(?!\1)[^\\]|\\.)*)\1/gu;
 
 function collectFiles(directory, collected = []) {
   for (const entry of fs.readdirSync(directory, { withFileTypes: true })) {
@@ -73,13 +75,18 @@ function maskAllowedIdentifiers(line) {
   return masked;
 }
 
+function scannedText(file, line) {
+  if (path.extname(file) === '.md') return line;
+  return [...line.matchAll(PROSE_STRING)].map((match) => match[2]).join(' ');
+}
+
 function ambiguousOccurrences(file) {
   const relative = path.relative(ROOT, file).replaceAll('\\', '/');
   if (ALLOWLISTED_FILES.has(relative)) return [];
   const lines = fs.readFileSync(file, 'utf8').split('\n');
   const findings = [];
   for (const [index, line] of lines.entries()) {
-    const masked = maskAllowedIdentifiers(line);
+    const masked = maskAllowedIdentifiers(scannedText(file, line));
     if (/materialized/iu.test(masked)) {
       findings.push(`${relative}:${index + 1}: ${line.trim()}`);
     }
