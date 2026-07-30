@@ -8,7 +8,9 @@
 
 **Implementation branch:** `feature/core-boundary-consolidation`
 
-**Scope:** 範圍 A only。Target materialization、Project-layer attestation 與詞彙修正屬後續獨立 PR，見 `2026-07-30-milestone-3-materialization-attestation-plan.md`。本次不實作、不預留介面、不建立 stub。
+**Scope:** 範圍 A only。Target materialization、Project-layer attestation 與詞彙修正屬後續獨立 PR，見 2026-07-30-milestone-3-materialization-attestation-plan.md。本次不實作、不預留介面、不建立 stub。
+
+**Revision 2026-07-30:** 依裁決修訂 A1 切分邊界與 A4 記錄位置，並移除指向尚不存在或已退役路徑的 inline backtick 引用。
 
 ---
 
@@ -49,10 +51,15 @@ scripts/governance-impact-oci-integration.mjs
 
 ## A1. 搬遷 experimental 能力出 Core release unit
 
+### 依賴規則
+
+單向依賴：Core 不得 import experimental；experimental 允許 import Core。
+
 ### 目標結構
 
 ```text
 experimental/governance-impact/
+  eval.mjs           # run/preflight 子命令入口，import Core 引擎
   lib/oci-supervisor.mjs
   lib/oci-proxy-facade.mjs
   lib/credential-proxy.mjs
@@ -62,21 +69,42 @@ experimental/governance-impact/
   README.md          # 說明此目錄不屬 Core release unit
 ```
 
+### 切分邊界
+
+留在 Core（`scripts/governance-impact-eval.mjs`）：
+
+```text
+runPairedScenario 引擎
+controls 子命令與離線 controls
+validate / replay / aggregate / gate 子命令
+```
+
+搬至 experimental（experimental/governance-impact/eval.mjs）：
+
+```text
+run / preflight 子命令
+createLinuxCodexOciSupervisor、OCI_RUNTIME_PATH、createOciCredentialProxyFacade 的 import 與使用
+```
+
 ### 規則
 
-- Core 的 `scripts/` 不得 import `experimental/` 內任何模組。**必須新增測試強制此約束**，不得只依賴目錄慣例或 code review。
+- Core 的 `scripts/` 不得 import experimental/ 內任何模組。**必須新增測試強制此約束**，不得只依賴目錄慣例或 code review。
+- Core 的 `scripts/governance-impact-eval.mjs` 收到 `run` 或 `preflight` 時回 exit 2 usage 錯誤，訊息指向 experimental 入口。**不得以 import experimental 的方式委派。**
+- live 路徑的子行程 spawn 目標改為 experimental 入口，屬機械路徑修正。
 - `npm run ci` 不再包含 experimental 測試；新增獨立 `npm run ci:experimental`。
 - `.github/workflows/validate-starter.yml` 只跑 Core；experimental 走獨立 workflow，且不得成為 Core PR 的必要檢查。
 - `scripts/governance-impact-eval.mjs` 的離線 controls 留在 Core（純本地、無 OCI、無 credential）。僅搬遷 OCI 與 credential proxy 相關部分。
-- **這是純搬遷。不得改變 experimental 程式碼的任何行為。** 搬遷過程中發現的 bug 記入 `OPEN_LOOPS.md`，不得順手修正。
-- 若離線 controls 與 OCI 路徑耦合到無法乾淨切分，**停止並回報耦合點**，不得為了切分而重構。
+- **OCI 與 credential 邏輯本身須逐位元不變。** 搬遷過程中發現的 bug 記入完成報告的 Remaining work，不得順手修正。
+- **對「不得改變 experimental 程式碼任何行為」的限定覆寫：** CLI 分派層切分是本次目的，故 `run`/`preflight` 的入口位置、Core 對這兩個子命令的 usage 拒絕、以及 live 路徑的 spawn 目標會改變。此覆寫記入 CHANGELOG。
 
 ### 驗收
 
-- [ ] 存在一個測試，會在 Core `scripts/` import `experimental/` 時失敗。
+- [ ] 存在一個測試，會在 Core `scripts/` import experimental/ 時失敗。
+- [ ] Core 入口對 `run` 與 `preflight` 回 exit 2 usage 錯誤，且訊息指向 experimental 入口。
+- [ ] Core 入口不含任何 experimental import。
 - [ ] `npm run ci` 不再執行 OCI 或 credential proxy 測試。
 - [ ] `npm run ci:experimental` 存在且可獨立執行。
-- [ ] experimental 程式碼行為與搬遷前逐位元相同（以 diff 證明僅路徑與 import 變更）。
+- [ ] OCI 與 credential 模組行為與搬遷前逐位元相同（以 diff 證明僅路徑與 import 變更）。
 - [ ] `npm run validate` 的 release-unit 檢查不再要求 governance-impact workflow。
 
 ---
@@ -133,14 +161,17 @@ experimental/governance-impact/
 
 ## A4. 記錄已退役分支
 
-在 `OPEN_LOOPS.md` 新增一列（依該檔案現有欄位格式調整）：
+新增 docs/research/retired-branches.md，記錄：
 
-> Antigravity `implementation-plan` / `release-handoff` skills 與 `workflows/skill-and-plugin-adoption.md` 從未併入 main。想法保留於已退役分支 `codex/github-skills-routing@2861c60`（基底 `21b7874`，2026-06-02，早於品牌改名與 PR #9／#11，main 已前進 46 個 commit）。不 rebase；若採用需以現行樹重寫。狀態：unconfirmed。
+> Antigravity `implementation-plan` / `release-handoff` skills 與 workflows/skill-and-plugin-adoption.md 從未併入 main。想法保留於已退役分支 `codex/github-skills-routing@2861c60`（基底 `21b7874`，2026-06-02，早於品牌改名與 PR #9／#11，main 已前進 46 個 commit）。不 rebase；若採用需以現行樹重寫。狀態：unconfirmed。
+
+位置理由：`scripts/validate-starter.mjs` 的 `collectMarkdown` 跳過 `docs/research/`，故該檔可記錄已退役路徑而不觸發 inline backtick 引用檢查。不寫入 OPEN_LOOPS、不寫入 `templates/fixed/`（會被 init 複製給所有下游專案）、不新增 root 文件、不修改 validator。
 
 ### 驗收
 
-- [ ] `OPEN_LOOPS.md` 含該筆記錄，且 commit SHA 與基底 SHA 正確。
-- [ ] `npm run validate` 與 doctor 對該檔案的既有檢查仍通過。
+- [ ] docs/research/retired-branches.md 含該筆記錄，且 commit SHA 與基底 SHA 正確。
+- [ ] `npm run validate` 與 doctor 對既有檔案的檢查仍通過。
+- [ ] 未新增 root 文件、未修改 validator、未寫入 `templates/fixed/`。
 
 ---
 
@@ -217,6 +248,7 @@ docs(loops): record retired skills-routing branch
 另外必須包含：
 
 - `npm pack` 的 `entryCount` 與 `unpackedSize` 前後對比數字。
+- 一行分佈診斷：`npm pack --dry-run --json` 的檔案清單按頂層目錄計數，說明本機 baseline 與乾淨 clone 的差額來源。A2 驗收以白名單終態為準，與 baseline 數字無關。
 - Core → experimental import 依賴為零的證明，指出強制它的測試檔名。
 - 受限或非 root 環境下 A3 的實測行為。
 
