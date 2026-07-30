@@ -14,7 +14,9 @@ In a Git checkout, required release artifacts must already exist in and match `H
 
 ## Project Doctor
 
-Validates a project initialized from the starter: fixed documents, content quality, and conditional document hints.
+Validates a project initialized from the starter: required documents, content
+quality, product-shape and technology-route decisions, traceability,
+research-synthesis activation, and conditional document hints.
 
 ```bash
 node scripts/doctor.mjs /path/to/your/project
@@ -26,11 +28,12 @@ For filled fixtures or release checks, use strict mode:
 node scripts/doctor.mjs --strict /path/to/your/project
 ```
 
-Strict mode treats missing documents and blocking warnings as failures. Honest
+Missing required documents and fatal privacy findings fail in every mode.
+Strict mode additionally treats blocking warnings as failures. Honest
 Policy Compiler limitation codes such as `POLICY_UNSUPPORTED_CONTROL` and
 `CODEX_CONTROL_NOT_ENFORCEABLE` remain advisory in strict mode. Normal mode
-allows placeholder warnings so a freshly initialized project can still be
-inspected.
+reports placeholder and governance warnings so a freshly initialized project
+can still be inspected.
 
 ## Decision And Role Foundation
 
@@ -252,7 +255,7 @@ It runs `npm run runtime:proof:mock`, which explicitly overrides any inherited r
 
 ## Governance
 
-- Git repository initialized on branch `main`.
+- The upstream default branch is `main`; feature work may use other branches.
 - `.DS_Store`, `node_modules/`, build outputs, editor folders, and env files are ignored by `.gitignore`.
 - Do not change public readiness wording unless the validation commands above pass.
 - Do not publish a governance-effectiveness claim unless a preregistered real paired report passes the documented claim gate.
