@@ -271,7 +271,7 @@ agent-governance attest <project> --target codex [--json]
 - `trustStateObserved` 為 `unknown` 時，等級必須自動降級，不得由使用者參數覆寫。
 - 偵測到 drift 時 exit 非 0。
 
-### C5. `docs/enforcement-boundary.md`
+### C5. docs/enforcement-boundary.md
 
 沿用既有「What it does not prove」表格風格，逐一列出每個 capability 的：矩陣分類、materializationStatus、依據的官方文件、已知繞過路徑、precedence 風險、建議的補償控制。此文件為 attest 輸出中 `source` 欄位的權威來源。
 
