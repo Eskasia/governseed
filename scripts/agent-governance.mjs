@@ -31,6 +31,12 @@ import {
   prepareTargetMaterialize,
 } from './lib/codex-target-materializer.mjs';
 import { buildAttestation } from './lib/target-attest.mjs';
+import {
+  MATERIALIZABLE_TARGETS,
+  REGISTERED_TARGETS,
+  isRegisteredTarget,
+  supportsMaterialization,
+} from './lib/target-registry.mjs';
 
 const EXIT = Object.freeze({
   OK: 0,
@@ -117,9 +123,11 @@ function usage() {
   console.log('Usage: agent-governance <command> <project> [options]');
   console.log();
   console.log('Commands:');
-  console.log('  compile <project> --target codex [--dry-run] [--json]');
-  console.log('  materialize <project> --target codex [--dry-run] [--json]');
-  console.log('  attest <project> --target codex [--json]');
+  const compileTargets = REGISTERED_TARGETS.join('|');
+  const materializeTargets = MATERIALIZABLE_TARGETS.join('|');
+  console.log(`  compile <project> --target ${compileTargets} [--dry-run] [--json]`);
+  console.log(`  materialize <project> --target ${materializeTargets} [--dry-run] [--json]`);
+  console.log(`  attest <project> --target ${materializeTargets} [--json]`);
   console.log('  assess');
   console.log('  deliberate plan|import|confirm');
   console.log('  roles assign');
@@ -1030,7 +1038,7 @@ function packList(command) {
 }
 
 function compilePolicy(command) {
-  if (command.target !== 'codex') {
+  if (!isRegisteredTarget(command.target)) {
     throw new CliFailure(
       EXIT.USAGE,
       'CLI_TARGET_UNSUPPORTED',
@@ -1139,7 +1147,7 @@ function targetFailure(error) {
  * side effect: an uncompiled project is missing input, not a reason to write.
  */
 function loadCompiledPolicy(command) {
-  if (command.target !== 'codex') {
+  if (!supportsMaterialization(command.target)) {
     throw new CliFailure(
       EXIT.USAGE,
       'CLI_TARGET_UNSUPPORTED',
