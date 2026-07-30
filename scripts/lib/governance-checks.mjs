@@ -197,6 +197,17 @@ function isPlaceholder(value) {
   return typeof value === 'string' && PLACEHOLDER.test(value.trim());
 }
 
+export const CONDITIONAL_DEPTH_FILES = Object.freeze([
+  'AGENT_RUNTIME.md',
+  'EVAL_PLAN.md',
+  'AI_SECURITY_REVIEW.md',
+]);
+
+// Stub: the field-level checks are not implemented yet.
+export function evaluateConditionalDocumentDepth() {
+  return [];
+}
+
 export function evaluateRouteDecision(projectBrief, techStack) {
   const projectValues = bulletValues(projectBrief);
   const stackValues = bulletValues(techStack);
