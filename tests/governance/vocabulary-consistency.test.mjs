@@ -4,6 +4,11 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
+import {
+  MATERIALIZABLE_TARGETS,
+  targetDefinition,
+} from '../../scripts/lib/target-registry.mjs';
+
 const ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '../..',
@@ -140,6 +145,22 @@ test('the published enforcement boundary names the schema-reserved level', () =>
     'the invariant scope belongs in the published narrative',
   );
   assert.match(boundary, /read-only/u);
+});
+
+// The boundary is the published claim surface, so a target that ships without
+// appearing here publishes a narrower claim than the tool actually makes.
+test('the published enforcement boundary covers every materializable target', () => {
+  const boundary = fs.readFileSync(
+    path.join(ROOT, 'docs/enforcement-boundary.md'),
+    'utf8',
+  );
+  for (const target of MATERIALIZABLE_TARGETS) {
+    const { targetPath } = targetDefinition(target);
+    assert.ok(
+      boundary.includes(targetPath),
+      `docs/enforcement-boundary.md must state what materialize writes into ${targetPath}`,
+    );
+  }
 });
 
 test('no public document describes materialize as agent-self-bootstrappable', () => {
