@@ -2,8 +2,12 @@
 
 ## Status
 
-Proposed on 2026-07-30. Awaiting the Milestone 3 phase-one design review. This
-ADR is the reopen record required by ADR-004 "Reopen Conditions" before
+Proposed on 2026-07-30. Revised the same day after the Milestone 3 phase-one
+design review returned a conditional pass; decisions 7 and 8 and the
+permission-profile alternative are the response to its three conditions.
+Implementation has not started.
+
+This ADR is the reopen record required by ADR-004 "Reopen Conditions" before
 GovernSeed emits a Codex-native runtime setting or makes any materialized or
 observed claim.
 
@@ -121,6 +125,45 @@ runtime-evidenced` recorded in `docs/policy-compiler.md` is superseded by
 Historical plan and spec documents are not rewritten; this ADR is the supersession
 record.
 
+### 7. The written surface is a legacy one, and the two models must not be mixed
+
+Codex documents two permission models. Current documentation prefers permission
+profiles with `allowed_permission_profiles` and managed `default_permissions` for
+Codex 0.138.0 and later, and recommends `allowed_sandbox_modes` only for legacy
+deployments. It also states that "Permission profiles do not compose with the
+older sandbox settings. Configure either `default_permissions` and
+`[permissions]`, or `sandbox_mode` / `sandbox_workspace_write`, but not both."
+
+This milestone writes the older `sandbox_mode` and `[sandbox_workspace_write]`
+surface. That follows from frozen scope, from the profile model being labelled
+Beta, and from project-layer availability for profiles being undocumented. It is
+recorded here explicitly so no reader infers a claim that the written surface is
+the target's preferred or long-term one; the documentation says the opposite.
+
+Because the models do not compose and cross-layer behaviour is undocumented,
+`materialize` preflights the project-tree configuration Codex would load and fails
+closed with `TARGET_SETTINGS_PROFILE_MODEL_CONFLICT` when it finds
+`default_permissions` or a `[permissions` table. The user layer and the managed
+layers may also switch the client to the profile model, and GovernSeed is
+forbidden from reading either, so those cases are required precedence caveats
+rather than silent assumptions.
+
+### 8. One canonical classification owner per artifact
+
+The compiled Adapter artifact is canonical for `classificationBreakdown` in
+`attest` output, because attestation compares artifacts that exist and must not
+report a value absent from the JSON it just read. The frozen capability matrix
+remains canonical for the design mapping table and the enforcement-boundary
+narrative.
+
+Neither source is edited. The gap is carried in a required
+`classificationSourceDivergence[]` output field, which may be empty but is never
+omitted, so a divergence surfaces instead of being absorbed.
+
+`project-layer-observed` ships as schema-reserved: present in the enum so a future
+trust-observation design needs no breaking change, labelled as such everywhere it
+appears, and held unproducible by test.
+
 ## How ADR-004's Three Rejection Reasons Are Handled
 
 | ADR-004 reason | Handling in this ADR |
@@ -149,6 +192,12 @@ configuration is written, and compilation is not combined with attestation.
   arbitrary TOML.
 - The capability matrix remains accurate as written, because its statements are
   scoped to the Phase 2 Adapter, which still emits no native configuration.
+- GovernSeed writes the surface the target documents as legacy, so this milestone
+  acquires a standing obligation to re-check the permission-profile model rather
+  than a stable position.
+- A project that configures permission profiles cannot be materialized at all.
+  That is a deliberate refusal, not a gap: the alternative is emitting a
+  configuration the target documents as invalid.
 
 ## Alternatives Considered
 
@@ -191,10 +240,32 @@ Rejected, keeping ADR-004's position. The official documentation states "Rules
 are experimental and may change", and rules govern commands outside the sandbox
 rather than the whole neutral policy.
 
+### Adopt permission profiles as the written surface
+
+Rejected for this milestone, and this is the closest call in the ADR. Permission
+profiles are the model the documentation prefers for Codex 0.138.0 and later, and
+they can express read scope, which the sandbox surface cannot. Against that: they
+are labelled "Beta. Permission profiles are under active development and may
+change", their availability in a project-scoped `.codex/config.toml` is not
+documented, and adopting them would change the target selection that this
+milestone's decision 3 froze.
+
+Choosing them would also not remove the non-composition problem, only invert it: a
+project that already sets `sandbox_mode` would then be the conflicting case.
+
+This is the first reopen condition below, not a deferral without a trigger.
+
 ## Reopen Conditions
 
-Reopen this ADR before observing or claiming an effective Codex configuration,
-reporting any level above `project-layer-observed`, writing a second native
-target surface such as `.codex/rules/`, adding a non-Codex materialize target,
-writing outside the project root, merging into a file GovernSeed does not own, or
-emitting any value that is less restrictive than the target's default.
+Reopen this ADR before adopting permission profiles as the written surface,
+observing or claiming an effective Codex configuration, reporting any level above
+`project-layer-observed`, writing a second native target surface such as
+`.codex/rules/`, adding a non-Codex materialize target, writing outside the
+project root, merging into a file GovernSeed does not own, or emitting any value
+that is less restrictive than the target's default.
+
+Reopen it on a target-side trigger too: if permission profiles leave Beta, if
+project-layer availability for `[permissions]` becomes documented, or if a surface
+for observing resolved project trust appears. The first two would make the
+surface choice in decision 7 stale; the third would unblock BLOCKED-3 and make
+`project-layer-observed` reachable.
