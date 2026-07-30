@@ -107,6 +107,18 @@ canonical one and both spellings resolve to the same document.
 - `allowed_sandbox_modes` — `array<string>`, "Allowed values for `sandbox_mode`."
   A managed layer can therefore reject a `sandbox_mode` value GovernSeed writes,
   including a restrictive one. [S1]
+- Model selection is a documented rule, not undefined behaviour: "If
+  `sandbox_mode` appears in any loaded config file, you pass `--sandbox`, or the
+  selected config profile sets `sandbox_mode`, Codex uses those older sandbox
+  settings instead of `default_permissions`." [S5]
+- Under the default `workspace-write` sandbox policy, "`.codex` is protected as
+  read-only when it exists as a directory", alongside `.git` and `.agents`, and
+  "Protection is recursive, so everything under those paths is read-only." [S3]
+  The permissions page states the same: "Codex's safeguards ensure subfolders such
+  as `.codex/` and `.git/` within a workspace root are read-only while the rest of
+  the folder is writable." [S5] No mechanism to lift the protection is documented;
+  [S3] is NOT STATED on both lifting it and on whether such a write triggers an
+  approval or escalation path.
 
 ### 2.2 Managed requirement layers, verified
 
@@ -159,7 +171,7 @@ cites a precedence rule instead of asserting that the layer is undocumented.
   allowed profiles. It allows profiles set to `true` and denies profiles omitted
   or set to `false`." [S6]
 
-Three consequences, none of which is optional:
+Four consequences, none of which is optional:
 
 1. Read scope **is** expressible in Codex, through
    `[permissions.<name>.filesystem]` and admin `deny_read`. This design must not
@@ -167,27 +179,63 @@ Three consequences, none of which is optional:
 2. Writing `sandbox_mode` and `[sandbox_workspace_write]` is the **legacy** path
    for Codex 0.138.0 and later. Section 2.5 records why this milestone still uses
    it and states plainly that this is not a claim about the platform's direction.
-3. Because the two models do not compose, writing `sandbox_mode` into a project
-   where a permission profile is configured produces a configuration the target
-   documents as invalid. Section 5.3 turns that into a fail-closed preflight.
+3. The two models do not compose, and which one applies is decided by a documented
+   selection rule rather than left undefined: `sandbox_mode` in **any** loaded
+   config file wins over `default_permissions` [S5]. Section 5.3 turns that into a
+   fail-closed preflight, and section 5.3.1 explains why the rule makes the
+   preflight a safety gate rather than a tidiness check.
+4. Because `.codex` is a recursively read-only protected path under the default
+   `workspace-write` policy, `materialize` cannot be assumed to work from inside a
+   standard Codex session. Section 5.5 records that constraint.
+
+### 2.3.1 Project-layer availability is documented only negatively
+
+No page states, for any key, that it *may* be set in a project-scoped
+`.codex/config.toml`. What is documented is the inverse: project-local config is an
+ordinary config layer [S2], and a closed ten-key list is ignored there [S2].
+Availability is therefore an inference by exclusion in every case.
+
+This design relies on that inference for the four keys it writes — `sandbox_mode`,
+`sandbox_workspace_write.writable_roots`,
+`sandbox_workspace_write.network_access`, and `approval_policy`. Consistency then
+forbids using the opposite standard elsewhere: `default_permissions` and
+`[permissions.<name>.*]` are equally absent from the ignore list and are equally
+documented as ordinary `config.toml` keys [S1], so **this design does not claim
+that permission profiles are unavailable at the project layer.**
+
+An earlier draft used "project-layer availability is undocumented" as the primary
+reason to defer `filesystem.project-read`. That reason was inconsistent with the
+inference the same document relies on to write four other keys, and it is
+withdrawn. Section 2.4 records the replacement reason, which is scope, not
+knowledge.
 
 ### 2.4 BLOCKED items
 
-Two items remain BLOCKED. A third was resolved by the managed-configuration and
-permissions documentation on 2026-07-30 and is now a cited known limitation. A
-BLOCKED item degrades a claim; it is never worked around and never guessed from
-model memory.
+A BLOCKED item degrades a claim; it is never worked around and never guessed from
+model memory. Two items remain BLOCKED, one of them newly found. Two earlier
+items are retired: one resolved by documentation, one withdrawn as a bad reason.
 
 | ID | State | Question | Consequence |
 |---|---|---|---|
-| BLOCKED-1 | narrowed | Whether a **project-scoped** `.codex/config.toml` may define `default_permissions` or `[permissions.<name>.*]`. [S5] documents the profile syntax and [S6] documents the admin form, but project-layer availability is NOT STATED in [S1], [S2], or [S5]. | `filesystem.project-read` stays `deferred`. The reason is now precise: a read-scope surface **does** exist, but its project-layer availability is undocumented, it is labelled Beta, it does not compose with the surface this milestone writes, and A4 independently rejects depending on permission profiles. |
-| BLOCKED-3 | retained, stronger basis | Whether Codex exposes the **resolved** trust state to a project-local reader. `projects.<path>.trust_level` is documented as the way to *set* trust [S1], and user-level configuration lives in `~/.codex/config.toml`, which A4 forbids GovernSeed from reading. No key, command, or file that *reports* effective trust is documented; [S1] is NOT STATED on this. | `trustStateObserved` is hard-wired to `unknown`, which forces every `attest` result down to `materialized-unverified`. |
-| ~~BLOCKED-2~~ | resolved | The location and precedence of the managed requirement layer. | Resolved by [S6]; see section 2.2. Now a cited known limitation: the four admin locations and their precedence are documented and all lie outside the project root, so the composed effective result stays unobservable to a project-local reader. |
+| BLOCKED-3 | retained, stronger basis | Whether Codex exposes the **resolved** trust state to a project-local reader. `projects.<path>.trust_level` is documented as the way to *set* trust [S1], and user-level configuration lives in `~/.codex/config.toml`, which A4 forbids GovernSeed from reading. No key, command, or file that *reports* effective trust is documented; [S1] is NOT STATED. | `trustStateObserved` is hard-wired to `unknown`, which forces every `attest` result down to `materialized-unverified`. |
+| BLOCKED-4 | new | Whether **creating** a `.codex` directory that does not yet exist is permitted under the default `workspace-write` policy. [S3] states the protection applies "when it exists as a directory" and is recursive, and is NOT STATED on creation. | `materialize` must not assume either answer. Section 5.5 treats a write failure under `.codex` as a first-class, named outcome rather than an unexpected I/O error, and no document may imply that a Codex session can materialize its own project configuration. |
+| ~~BLOCKED-1~~ | withdrawn | Whether a project-scoped `.codex/config.toml` may define `default_permissions` or `[permissions.<name>.*]`. | Withdrawn as a reason. Project-layer availability is documented only negatively for *every* key (section 2.3.1), so treating profiles as unavailable while writing four other keys on the same inference was inconsistent. `filesystem.project-read` stays `deferred` on scope grounds instead, recorded below. |
+| ~~BLOCKED-2~~ | resolved | The location and precedence of the managed requirement layer. | Resolved by [S6]; see section 2.2. Its residue is not a knowledge gap and is renamed accordingly: **managed and other non-project precedence is external and non-observable from project-local evidence.** The four admin locations and their precedence are documented, and all four lie outside the project root, so no amount of further research makes the composed effective result readable from here. It is a cited known limitation, not a BLOCKED item. |
 
-BLOCKED-3 is the single most consequential finding in this design. Its basis
-improved from "no surface was found" to "the documented mechanism sets trust in a
-layer this product is forbidden to read, and no reporting surface is documented".
-Section 6.3 states plainly what this milestone therefore cannot reach.
+Replacement reason for deferring `filesystem.project-read`, which is a scope
+decision rather than a knowledge gap:
+
+1. The frozen plan selects the sandbox surface for this milestone, and the
+   documented selection rule means writing `sandbox_mode` and adopting profiles are
+   mutually exclusive, so switching would be a target-surface change, not an
+   addition. [S5]
+2. Permission profiles are labelled "Beta … and may change". [S5]
+3. A4 independently rejects depending on permissions profiles.
+
+BLOCKED-3 is still the most consequential finding. Its basis improved from "no
+surface was found" to "the documented mechanism sets trust in a layer this product
+is forbidden to read, and no reporting surface is documented". Section 6.3 states
+plainly what this milestone therefore cannot reach.
 
 ### 2.5 Why this milestone still writes the legacy sandbox surface
 
@@ -202,8 +250,9 @@ three reasons that are scope facts, not technical claims:
    permission profiles would change the target selection that decision 3 locked.
 2. Permission profiles are labelled Beta and "may change" [S5], which is the same
    objection A4 raised against depending on them.
-3. Their project-layer availability is undocumented (BLOCKED-1), so a
-   project-local writer cannot establish that a profile it writes would load.
+3. The documented selection rule makes the two mutually exclusive [S5], so this is
+   a choice between surfaces, not an incremental addition that could be made later
+   in the same milestone.
 
 **This is a backward-compatibility choice constrained by frozen scope. It is not
 a claim that `sandbox_mode` is the target's preferred or long-term permission
@@ -254,7 +303,7 @@ capability` uses the capability keys already present in
 
 | POL capability | Matrix classification (verbatim) | materializationStatus | Native project-layer surface | Source |
 |---|---|---|---|---|
-| `filesystem.project-read` | `representable-only` | `deferred` | `[permissions.<name>.filesystem]` exists and expresses read scope, but it is Beta, does not compose with the surface written here, and its project-layer availability is undocumented | S5, S6, A4, BLOCKED-1 |
+| `filesystem.project-read` | `representable-only` | `deferred` | `[permissions.<name>.filesystem]` exists and expresses read scope, but it is Beta and mutually exclusive with the surface written here, so adopting it is a target-surface change outside this milestone | S5, S6, A4, section 2.4 |
 | `filesystem.project-write` | `representable-only`, `runtime-evidence-required` | `materializable` | `sandbox_mode` | S1 |
 | `filesystem.root-write` | `representable-only`, `runtime-evidence-required` | `materializable` | `sandbox_mode` plus `sandbox_workspace_write.writable_roots` | S1 |
 | `shell.execution` | `representable-only`, `runtime-evidence-required` | `deferred` | `.codex/rules/`, documented as experimental | S4, A4 |
@@ -374,10 +423,14 @@ check in memory and creates no directory, no temporary file, and no receipt.
 
 "Permission profiles do not compose with the older sandbox settings. Configure
 either `default_permissions` and `[permissions]`, or `sandbox_mode` /
-`sandbox_workspace_write`, but not both." [S5] The documentation does not define
-what happens when the two models are configured in *different* layers; [S2] is
-NOT STATED on cross-layer interaction. Undefined behaviour is not a licence to
-proceed.
+`sandbox_workspace_write`, but not both." [S5]
+
+An earlier draft of this section said cross-layer behaviour was undocumented. That
+was wrong, and the correction makes the situation worse rather than better. The
+behaviour is a documented selection rule: "If `sandbox_mode` appears in **any**
+loaded config file, you pass `--sandbox`, or the selected config profile sets
+`sandbox_mode`, Codex uses those older sandbox settings instead of
+`default_permissions`." [S5]
 
 So `materialize` preflights before writing anything. It scans the project-tree
 `.codex/config.toml` files that Codex itself would load — from the real project
@@ -398,6 +451,53 @@ Two limits are stated rather than hidden:
 - A managed layer may set `allowed_permission_profiles`, which switches the client
   to the profile model wholesale [S6]. All four managed locations are outside the
   project root, so this is also undetectable and also a caveat.
+
+### 5.3.1 The selection rule makes the preflight a safety gate, not a tidiness check
+
+The selection rule quoted above resolves the conflict in favour of the older
+sandbox settings — that is, in favour of exactly the surface this milestone writes.
+Defined behaviour is not the same as safe behaviour, and here the defined
+behaviour is the dangerous one.
+
+The failure case, stated concretely. A user or managed layer sets
+`default_permissions` to a restrictive profile and no layer sets `sandbox_mode`.
+GovernSeed then writes `sandbox_mode = "workspace-write"` into the project layer.
+By the selection rule, `sandbox_mode` now appears in a loaded config file, so Codex
+uses the older sandbox settings *instead of* `default_permissions`. The profile's
+restrictions stop applying. GovernSeed's restrictive-looking write has widened the
+effective configuration.
+
+This is a widening the restriction-only invariant cannot catch. Decision 3 compares
+each emitted value against the target's documented default *for that key*, and
+every value this design emits passes that comparison. The widening happens one
+level up, by displacing a different permission model, so no per-key check sees it.
+The invariant's scope has to be written down rather than left implied: it
+guarantees that no emitted key is looser than that key's default, and it does not
+guarantee that the effective configuration after materialization is no looser than
+it was before.
+
+Detection is partial, and the partiality is the point:
+
+| Layer holding the conflicting profile | Detectable | Handling |
+|---|---|---|
+| project tree, from the project root down to the working directory | yes | preflight, `TARGET_SETTINGS_PROFILE_MODEL_CONFLICT`, exit 4, no write |
+| user `~/.codex/config.toml` | no — A4 forbids reading it | required `precedenceCaveat` entry |
+| any of the four managed locations | no — all outside the project root | required `precedenceCaveat` entry |
+
+So the response is layered by what is actually knowable:
+
+1. Fail closed on the detectable case. Section 5.3.
+2. Carry the undetectable case as a required `precedenceCaveat` entry in every
+   receipt and every attestation, so the hazard travels with the artifact instead
+   of living only in this document. Baseline entry in section 6.4.
+3. State the invariant's scope in the enforcement-boundary narrative, not just
+   here, because a reader who sees "restriction-only" will otherwise read it as a
+   guarantee about effective configuration.
+
+No error code is defined for the undetectable case. An undetectable condition
+cannot be a runtime error, and manufacturing one would require reading the layers
+ADR-004 forbids. A caveat that is always present is the honest instrument; a check
+that runs only when GovernSeed breaks its own boundary is not.
 
 ### 5.4 Receipt
 
@@ -433,6 +533,59 @@ the partial-support fixture.
 
 `trustStateObserved` is a single-value enum in this schema on purpose. Widening
 it later requires a schema change and therefore a review.
+
+### 5.5 `.codex` is a protected read-only path inside a Codex session
+
+Verified facts. "`.codex` is protected as read-only when it exists as a directory",
+alongside `.git` and `.agents`, and "Protection is recursive, so everything under
+those paths is read-only" [S3]. The permissions page says the same from the other
+side: "Codex's safeguards ensure subfolders such as `.codex/` and `.git/` within a
+workspace root are read-only while the rest of the folder is writable" [S5]. No
+documented mechanism lifts the protection. Whether creating a `.codex` directory
+that does not yet exist is permitted is NOT STATED, which is BLOCKED-4.
+
+The consequence is a scope statement about who runs this command.
+
+`materialize` is a user-run CLI operation. It must not be described, documented,
+helped, or tested as something an agent self-bootstraps from inside a standard
+Codex `workspace-write` session. Under the default sandbox the target path is
+read-only by design, and that design is a Codex safeguard, not an obstacle to
+route around. So: no `--force`, no approval-escalation request, no probing for
+sandbox membership, no fallback location outside `.codex`, and no retry that lands
+the same bytes somewhere else. A refused write stays refused.
+
+The refusal gets its own name rather than surfacing as a generic I/O failure:
+
+```text
+MATERIALIZE_TARGET_PATH_PROTECTED    exit 4
+```
+
+Exit 4, not exit 5. Exit 5 means the environment failed and the bounded I/O budget
+or the filesystem is at fault; this is a governed-boundary refusal with a specific
+remedy — run the command from a context where `<project>/.codex` is writable.
+Collapsing it into exit 5 would tell an operator to retry, which will fail
+identically every time.
+
+Detection is after the fact, by errno on the create or rename of `.codex` or
+`.codex/config.toml`: `EACCES`, `EPERM`, or `EROFS` maps to
+`MATERIALIZE_TARGET_PATH_PROTECTED`. GovernSeed does not try to predict it. It
+cannot know whether it is running inside a sandbox, and inventing a heuristic for
+that would be a guess dressed as a check.
+
+Two honesty notes follow from the errno mapping:
+
+- `--dry-run` cannot predict this outcome. Dry run writes nothing, so it never
+  touches the protected path; a green dry run is not evidence that the real run
+  will be permitted. Section 5.1's determinism guarantee is unaffected — it is
+  about bytes, not about permission.
+- BLOCKED-4 stays BLOCKED. Because directory creation is NOT STATED, the design
+  assumes neither outcome: if creation is permitted the normal path runs, and if it
+  is refused the errno mapping fires. Neither branch is presented as documented
+  target behaviour.
+
+This constraint also belongs in the artifact, not only in this document, so the
+protected-path condition is a required `knownLimitations` entry in section 6.4 and
+has a dedicated test in section 11.
 
 ## 6. Attest
 
@@ -494,7 +647,7 @@ unconstructible.
 
 The plan's §C3 example output shows `level: "project-layer-observed"` together
 with `trustStateObserved: "unknown"`, which its own §C4 downgrade rule forbids.
-The downgrade rule wins and the example is illustrative only; section 10 records
+The downgrade rule wins and the example is illustrative only; section 10.3 records
 it.
 
 ### 6.4 Output contract
@@ -544,6 +697,12 @@ allowed_sandbox_modes in a managed layer may reject the sandbox_mode value writt
 The user layer or a managed allowed_permission_profiles setting may switch the
   client to permission profiles, which do not compose with the sandbox settings
   written here; GovernSeed cannot read either location. [S5, S6]
+Because sandbox_mode in any loaded config file makes Codex use the sandbox settings
+  instead of default_permissions, the sandbox_mode written here can displace a
+  stricter permission profile set in the user layer or a managed layer. Neither
+  layer is readable from the project, so this file may widen the effective
+  configuration even though every value it contains is at least as restrictive as
+  that key's default. [S5]
 ```
 
 Baseline `knownLimitations` content:
@@ -551,14 +710,19 @@ Baseline `knownLimitations` content:
 | controlId | note | source |
 |---|---|---|
 | `POL-SHELL-EXECUTION` | Command rules are experimental and govern commands outside the sandbox; not written. | S4 |
-| `POL-FILESYSTEM-PROJECT-READ` | A read-scope surface exists as `[permissions.<name>.filesystem]`, but it is Beta, does not compose with the sandbox settings written here, and its project-layer availability is undocumented. | S5, S6, BLOCKED-1 |
+| `POL-FILESYSTEM-PROJECT-READ` | A read-scope surface exists as `[permissions.<name>.filesystem]`, but it is Beta and mutually exclusive with the sandbox settings written here, so it is out of scope this milestone rather than unavailable. | S5, S6 |
 | `POL-CREDENTIALS` | Project config cannot override provider, auth, or telemetry keys. | S2 |
 | `POL-EXTERNAL-CONTENT` | Web-search keys exist but the mapping from untrusted-content handling to them is unreviewed. | S1 |
 | all `materializable` controls | For Codex 0.138.0 and later the documentation prefers permission profiles and recommends the sandbox-mode surface only for legacy deployments; this milestone writes the legacy surface by frozen scope, not by platform preference. | S5, S6 |
 | all `materializable` controls | A written project-layer value is reported as ignored on some Codex surfaces. | I30001, I8714 |
+| all `materializable` controls | `<project>/.codex` is recursively read-only under the default `workspace-write` sandbox, so `materialize` is a user-run operation and cannot be assumed to work from inside a standard Codex session. | S3, S5 |
+| all `materializable` controls | Writing `sandbox_mode` makes Codex use the sandbox settings instead of `default_permissions`, so this file can displace a stricter permission profile in a layer GovernSeed must not read. | S5 |
 
-The last two rows are why `materializationStatus` never implies effectiveness. One
-is drawn from the target's own documentation and one from its issue tracker.
+The `materializable` rows are why `materializationStatus` never implies
+effectiveness. They come from the target's own documentation and its issue tracker,
+not from GovernSeed's judgement: two say the written value may not take effect, one
+says the write itself may be refused, and one says the write can subtract a
+restriction that came from elsewhere.
 
 ### 6.5 Drift
 
@@ -596,6 +760,7 @@ fail-closed safety or ownership, 5 bounded I/O.
 | `TARGET_SETTINGS_PROFILE_MODEL_CONFLICT` | materialize (preflight), attest (drift) | 4 |
 | `MATERIALIZE_WOULD_WIDEN` | materialize | 4 |
 | `MATERIALIZE_PATH_BLOCKED` | materialize | 4 |
+| `MATERIALIZE_TARGET_PATH_PROTECTED` | materialize | 4 |
 | `MATERIALIZE_OUTSIDE_PROJECT` | materialize | 4 |
 | `MATERIALIZE_PARTIAL_OUTPUT` | materialize, attest | 4 |
 | `TARGET_SETTINGS_DRIFT` | attest | 4 |
@@ -604,6 +769,13 @@ fail-closed safety or ownership, 5 bounded I/O.
 `CLI_TARGET_UNSUPPORTED` and `CLI_USAGE_ERROR` reuse the codes the existing
 compile usage test already pins, so `--target claude` behaves consistently across
 all three commands.
+
+`MATERIALIZE_PATH_BLOCKED` and `MATERIALIZE_TARGET_PATH_PROTECTED` are different
+refusals and stay separate. The first is GovernSeed refusing its own write —
+symlink, hardlink, traversal, or absolute path — decided before anything is
+staged. The second is the target's sandbox refusing the write, discovered by errno
+while committing it (section 5.5). One says the request was malformed; the other
+says the request was well-formed and the environment declined it.
 
 ## 8. ADR-004 Rejection Reasons, Point by Point
 
@@ -718,27 +890,46 @@ constitute a behaviour change outside this milestone's scope.
 
 ### 10.2 Resolved by further research on 2026-07-30
 
-5. **BLOCKED-2 is closed.** The managed requirement locations and their precedence
-   are documented [S6], so the caveat now names real paths instead of asserting
-   that the layer is undocumented. What remains true is narrower and still
-   material: all four locations lie outside the project root, so the composed
-   effective result is unobservable to a project-local reader. Sections 2.2, 2.4.
-6. **BLOCKED-1 is narrowed, not closed.** A read-scope surface does exist
-   (`[permissions.<name>.filesystem]`, plus admin `deny_read`), so the earlier
-   wording that Codex has no read-scope surface was wrong and is corrected.
-   `filesystem.project-read` stays `deferred` for three cited reasons instead:
-   Beta status, non-composition with the surface written here, and undocumented
-   project-layer availability. Sections 2.3, 2.4.
-7. **A hazard the earlier draft missed.** Permission profiles and the sandbox
-   settings "do not compose" [S5], and cross-layer behaviour is undocumented.
-   Writing `sandbox_mode` into a project that configures a profile would produce a
-   configuration the target calls invalid. This is now a fail-closed materialize
-   preflight and an attest drift reason, with the undetectable user and managed
-   layers recorded as caveats. Sections 2.3, 5.3, 6.5.
+5. **BLOCKED-2 is closed, and its residue is renamed.** The managed requirement
+   locations and their precedence are documented [S6], so the caveat names real
+   paths instead of asserting that the layer is undocumented. The residue is not a
+   documentation gap at all, so calling it BLOCKED would be wrong: managed and
+   other non-project precedence is external and non-observable from project-local
+   evidence. That is a permanent property of where those files live, not something
+   further research can close. Sections 2.2, 2.4.
+6. **BLOCKED-1 is withdrawn as a reason, and the deferral is restated on scope.**
+   A read-scope surface does exist (`[permissions.<name>.filesystem]`, plus admin
+   `deny_read`), so the earlier wording that Codex has no read-scope surface was
+   wrong and is deleted. The follow-up reason "project-layer availability is
+   undocumented" is withdrawn too, because the same inference by exclusion is what
+   licenses writing four other keys; using it as a blocker here and a licence there
+   was inconsistent. `filesystem.project-read` is `deferred` on scope: Beta status,
+   mutual exclusivity with the surface this milestone writes, and no reviewed
+   mapping. Sections 2.3, 2.3.1, 2.4.
+7. **Non-composition is a documented selection rule, not undefined behaviour.** An
+   earlier draft called cross-layer behaviour undocumented. It is documented: any
+   loaded `sandbox_mode` makes Codex use the sandbox settings instead of
+   `default_permissions` [S5]. The correction is worse news, because it means the
+   `sandbox_mode` written here can displace a stricter permission profile in the
+   user or a managed layer and thereby widen the effective configuration, while
+   every emitted value still passes the per-key restriction-only check. Handled as
+   a fail-closed preflight for the detectable case, an attest drift reason, a
+   required `precedenceCaveat` and `knownLimitations` pair for the undetectable
+   case, and an explicit statement of what restriction-only does not guarantee.
+   Sections 2.3, 5.3, 5.3.1, 6.4, 6.5.
+8. **`.codex` is a protected read-only path, so materialize is user-run.**
+   `.codex` is recursively read-only under the default `workspace-write` sandbox
+   [S3, S5]. Materialize is therefore never described or tested as
+   agent-self-bootstrappable, the sandbox refusal gets its own exit-4 code
+   `MATERIALIZE_TARGET_PATH_PROTECTED` rather than a generic exit 5, and the
+   constraint is carried in `knownLimitations` and a dedicated test instead of
+   prose. BLOCKED-4 is added and stays open: whether creating a missing `.codex`
+   directory is permitted is NOT STATED, so neither outcome is assumed.
+   Sections 2.1, 2.4, 5.5, 6.4, 7, 11.
 
 ### 10.3 Still open for the phase-one review
 
-8. **The plan's §C3 example contradicts its own §C4 downgrade rule.** The example
+9. **The plan's §C3 example contradicts its own §C4 downgrade rule.** The example
    shows `level: "project-layer-observed"` with `trustStateObserved: "unknown"`.
    This design follows §C4, so the downgrade rule wins and the example is
    illustrative only. Section 6.3.
@@ -778,6 +969,9 @@ Additional negative and property tests:
 | level-unproducible | no governed input, target state, flag, or environment variable produces `project-layer-observed`; the enum still contains it |
 | divergence-field-present | `classificationSourceDivergence[]` carries the `shell.execution` entry while the matrix and Adapter disagree, and the field is present even when empty |
 | managed-layer-caveat | `precedenceCaveat` contains the managed-requirement, `allowed_sandbox_modes`, and permission-profile entries; removing any one fails the test |
+| model-override-caveat | `precedenceCaveat` contains the entry stating that the written `sandbox_mode` can displace a stricter `default_permissions` profile in an unreadable layer, and `knownLimitations` carries its `materializable` counterpart; removing either fails the test |
+| target-path-protected | with `<project>/.codex` made unwritable (`chmod 0o500`), materialize exits 4 with `MATERIALIZE_TARGET_PATH_PROTECTED`, writes no config bytes, and writes no receipt; POSIX-only, skipped on Windows and when running as root, and the skip is reported rather than silent |
+| protected-path-caveat | `knownLimitations` carries the `.codex`-recursively-read-only entry, and no help text, README line, or output string describes materialize as agent-self-bootstrappable |
 
 ## 12. Implementation Registration
 
@@ -791,7 +985,11 @@ scripts/lib/           new codex-target-materializer and attest modules
 schemas/               materialize-receipt and attest-output schemas
 scripts/validate-starter.mjs   required-file lists for the new schemas and docs
 docs/policy-compiler.md        non-claims section and the superseded four levels
-README.md              FAQ, evidence surfaces table, claim boundaries
+docs/enforcement-boundary.md   what restriction-only does not guarantee (5.3.1),
+                      the .codex protected-path constraint (5.5), and the
+                      schema-reserved label on project-layer-observed
+README.md              FAQ, evidence surfaces table, claim boundaries; materialize
+                      described as a user-run command
 CHANGELOG.md           the rule-lifecycle record required by AGENTS.md
 ```
 

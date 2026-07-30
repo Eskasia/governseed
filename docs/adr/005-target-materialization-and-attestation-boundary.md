@@ -2,9 +2,10 @@
 
 ## Status
 
-Proposed on 2026-07-30. Revised the same day after the Milestone 3 phase-one
-design review returned a conditional pass; decisions 7 and 8 and the
-permission-profile alternative are the response to its three conditions.
+Proposed on 2026-07-30. Revised twice the same day in response to two Milestone 3
+phase-one design reviews. Decisions 7 and 8 and the permission-profile alternative
+answer the first review's three conditions; decision 9, the selection-rule
+correction in decision 7, and the two new consequences answer the second review.
 Implementation has not started.
 
 This ADR is the reopen record required by ADR-004 "Reopen Conditions" before
@@ -136,17 +137,52 @@ older sandbox settings. Configure either `default_permissions` and
 
 This milestone writes the older `sandbox_mode` and `[sandbox_workspace_write]`
 surface. That follows from frozen scope, from the profile model being labelled
-Beta, and from project-layer availability for profiles being undocumented. It is
-recorded here explicitly so no reader infers a claim that the written surface is
-the target's preferred or long-term one; the documentation says the opposite.
+Beta, and from the two surfaces being mutually exclusive, so adopting profiles
+would be a change of target surface rather than an addition. It is recorded here
+explicitly so no reader infers a claim that the written surface is the target's
+preferred or long-term one; the documentation says the opposite.
 
-Because the models do not compose and cross-layer behaviour is undocumented,
-`materialize` preflights the project-tree configuration Codex would load and fails
-closed with `TARGET_SETTINGS_PROFILE_MODEL_CONFLICT` when it finds
-`default_permissions` or a `[permissions` table. The user layer and the managed
-layers may also switch the client to the profile model, and GovernSeed is
-forbidden from reading either, so those cases are required precedence caveats
-rather than silent assumptions.
+This ADR does not claim that permission profiles are unavailable in a
+project-scoped `.codex/config.toml`. No Codex page documents project-layer
+availability positively for *any* key; availability is an inference by exclusion
+from the closed ignore list, and that same inference is what licenses the four keys
+this milestone writes. Using it as a licence in one place and a blocker in another
+would be inconsistent, so the deferral rests on scope.
+
+Which model applies is not undefined behaviour. It is a documented selection rule:
+if `sandbox_mode` appears in any loaded config file, Codex uses the older sandbox
+settings instead of `default_permissions`. That makes the conflict worse rather
+than benign, and it has two consequences.
+
+First, `materialize` preflights the project-tree configuration Codex would load and
+fails closed with `TARGET_SETTINGS_PROFILE_MODEL_CONFLICT` when it finds
+`default_permissions` or a `[permissions` table.
+
+Second, and undetectably: if a stricter permission profile lives in the user layer
+or a managed layer, the `sandbox_mode` this ADR authorizes will displace it, and the
+effective configuration gets wider even though every emitted value is at least as
+restrictive as that key's own default. Decision 3's restriction-only invariant is
+per-key against the target's documented default; it does not guarantee that the
+effective configuration after materialization is no wider than before. GovernSeed is
+forbidden from reading those layers, so this is a required precedence caveat and a
+required known limitation on every materializable control, not a check.
+
+### 9. The target path is protected, so `materialize` is a user-run operation
+
+`.codex` is recursively read-only under Codex's default `workspace-write` policy,
+the same protection applied to `.git`. No documented mechanism lifts it.
+
+`materialize` is therefore a command a person runs, and no GovernSeed document,
+help text, or output string may describe it as something an agent bootstraps for
+itself from inside a standard Codex session. The design does not attempt to defeat
+the protection: no `--force`, no escalation request, no fallback path outside
+`.codex`. A sandbox refusal is reported as `MATERIALIZE_TARGET_PATH_PROTECTED` at
+exit 4 — a governed-boundary refusal with a specific remedy — rather than as a
+generic bounded-I/O failure that would invite a retry that always fails.
+
+Whether creating a `.codex` directory that does not yet exist is permitted is not
+documented, so neither outcome is assumed: the normal path runs if the write
+succeeds, and the named refusal fires if it does not.
 
 ### 8. One canonical classification owner per artifact
 
@@ -198,6 +234,14 @@ configuration is written, and compilation is not combined with attestation.
 - A project that configures permission profiles cannot be materialized at all.
   That is a deliberate refusal, not a gap: the alternative is emitting a
   configuration the target documents as invalid.
+- `materialize` can widen the effective configuration in exactly one way GovernSeed
+  cannot detect: by displacing a stricter permission profile held in the user layer
+  or a managed layer. This is disclosed in every receipt and attestation rather than
+  guarded, because guarding it would require reading a layer ADR-004 forbids.
+- `materialize` is not runnable from inside a standard Codex `workspace-write`
+  session, because the path it writes is protected. GovernSeed acquires a user-run
+  command whose success depends on the caller's context, and a named exit-4 outcome
+  for the refusal.
 
 ## Alternatives Considered
 
@@ -246,12 +290,15 @@ Rejected for this milestone, and this is the closest call in the ADR. Permission
 profiles are the model the documentation prefers for Codex 0.138.0 and later, and
 they can express read scope, which the sandbox surface cannot. Against that: they
 are labelled "Beta. Permission profiles are under active development and may
-change", their availability in a project-scoped `.codex/config.toml` is not
-documented, and adopting them would change the target selection that this
-milestone's decision 3 froze.
+change", and adopting them would change the target selection that this milestone's
+decision 3 froze. Their project-layer availability is *not* an argument against
+them, per decision 7.
 
 Choosing them would also not remove the non-composition problem, only invert it: a
-project that already sets `sandbox_mode` would then be the conflicting case.
+project that already sets `sandbox_mode` would then be the conflicting case. It
+would, though, remove the silent-widening hazard in decision 7, because writing a
+profile cannot displace a stricter profile the way writing `sandbox_mode` can. That
+is the strongest argument for reopening this alternative early.
 
 This is the first reopen condition below, not a deferral without a trigger.
 
@@ -264,8 +311,9 @@ observing or claiming an effective Codex configuration, reporting any level abov
 project root, merging into a file GovernSeed does not own, or emitting any value
 that is less restrictive than the target's default.
 
-Reopen it on a target-side trigger too: if permission profiles leave Beta, if
-project-layer availability for `[permissions]` becomes documented, or if a surface
-for observing resolved project trust appears. The first two would make the
-surface choice in decision 7 stale; the third would unblock BLOCKED-3 and make
+Reopen it on a target-side trigger too: if permission profiles leave Beta, if the
+selection rule between the two permission models changes, if the `.codex`
+protected-path behaviour changes, or if a surface for observing resolved project
+trust appears. The first two would make the surface choice in decision 7 stale, the
+third would change decision 9, and the fourth would unblock BLOCKED-3 and make
 `project-layer-observed` reachable.
