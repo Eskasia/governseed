@@ -620,6 +620,7 @@ const requiredRepositoryFiles = [
   'scripts/lib/governance-artifacts.mjs',
   'scripts/lib/decision-role-core.mjs',
   'scripts/lib/decision-role-doctor.mjs',
+  'scripts/lib/target-registry.mjs',
   'scripts/lib/policy-compiler-core.mjs',
   'scripts/lib/policy-compiler-project.mjs',
   'scripts/lib/codex-policy-adapter.mjs',

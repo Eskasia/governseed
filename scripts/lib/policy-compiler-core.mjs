@@ -7,6 +7,10 @@ import {
 import {
   selectResponsibilities,
 } from './decision-role-core.mjs';
+import {
+  isRegisteredTarget,
+  targetDefinition,
+} from './target-registry.mjs';
 
 export const POLICY_COMPILER_VERSION = '1.0.0';
 export const POLICY_MODE_ORDER = Object.freeze([
@@ -485,6 +489,7 @@ function makeControl({
   scope,
   evidenceRequirement,
   supportForControl,
+  target,
   controlId = CONTROL_IDS[capability],
 }) {
   const support = supportForControl(capability, mode);
@@ -495,7 +500,7 @@ function makeControl({
     source: sortedUnique(source),
     reasonCodes: sortedUnique(reasonCodes),
     scope: sortedUnique(scope),
-    targetSupport: { codex: support },
+    targetSupport: { [target]: support },
     evidenceRequirement: sortedUnique(evidenceRequirement),
   };
 }
@@ -504,6 +509,7 @@ function buildControls(
   input,
   effective,
   supportForControl,
+  target,
   evidenceRequirements,
 ) {
   const controls = {
@@ -537,6 +543,7 @@ function buildControls(
       scope,
       evidenceRequirement: evidenceRequirements,
       supportForControl,
+      target,
     }));
   }
 
@@ -548,6 +555,7 @@ function buildControls(
     scope: effective.scopes['shell.execution'] ?? ['project-local'],
     evidenceRequirement: evidenceRequirements,
     supportForControl,
+    target,
   }));
   controls.externalContent.push(makeControl({
     capability: 'external-content',
@@ -558,6 +566,7 @@ function buildControls(
       effective.scopes['external-content'] ?? ['network-derived-content'],
     evidenceRequirement: evidenceRequirements,
     supportForControl,
+    target,
   }));
   controls.generatedArtifacts.push(makeControl({
     capability: 'generated-artifacts',
@@ -571,6 +580,7 @@ function buildControls(
       effective.scopes['generated-artifacts'] ?? ['.agent-governance'],
     evidenceRequirement: evidenceRequirements,
     supportForControl,
+    target,
   }));
   controls.retention.push(makeControl({
     capability: 'provider-retention',
@@ -584,6 +594,7 @@ function buildControls(
       effective.scopes['provider-retention'] ?? ['provider-runtime'],
     evidenceRequirement: evidenceRequirements,
     supportForControl,
+    target,
   }));
   controls.verification.push(makeControl({
     capability: 'verification',
@@ -596,6 +607,7 @@ function buildControls(
     scope: effective.scopes.verification ?? ['all-active-tasks'],
     evidenceRequirement: evidenceRequirements,
     supportForControl,
+    target,
   }));
 
   for (const category of Object.keys(controls)) {
@@ -615,11 +627,12 @@ function manifestId(seed) {
 export function buildPolicyManifest(input, options) {
   assertRiskReady(input.riskProfile);
   if (
-    options?.target !== 'codex'
+    !isRegisteredTarget(options?.target)
     || typeof options?.supportForControl !== 'function'
   ) {
     fail('POLICY_MANIFEST_INVALID');
   }
+  const targetDef = targetDefinition(options.target);
   const governanceRulePath = normalizePortablePath(
     input.governanceRuleRef.path,
   );
@@ -671,17 +684,18 @@ export function buildPolicyManifest(input, options) {
     normalizedInput,
     effective,
     options.supportForControl,
+    options.target,
     evidenceRequirements,
   );
   const flattened = flatControls(controls);
   const unsupportedControls = flattened
-    .filter((control) => control.targetSupport.codex === 'unsupported')
+    .filter((control) => control.targetSupport[options.target] === 'unsupported')
     .map((control) => ({
       controlId: control.controlId,
       capability: control.capability,
-      target: 'codex',
+      target: options.target,
       support: 'unsupported',
-      reasonCode: 'CODEX_CONTROL_NOT_ENFORCEABLE',
+      reasonCode: targetDef.unsupportedReasonCode,
     }));
   const humanApprovalControls = sortedUnique(
     flattened
@@ -689,7 +703,7 @@ export function buildPolicyManifest(input, options) {
         control.mode === 'require-approval'
         || (
           control.mode !== 'deny'
-          && control.targetSupport.codex === 'requires-human-approval'
+          && control.targetSupport[options.target] === 'requires-human-approval'
         )
       ))
       .map((control) => control.controlId),
@@ -742,8 +756,8 @@ export function buildPolicyManifest(input, options) {
     controls,
     targets: [
       {
-        target: 'codex',
-        adapterVersion: '1.0.0',
+        target: options.target,
+        adapterVersion: targetDef.adapterVersion,
         status: 'candidate',
       },
     ],
