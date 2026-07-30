@@ -147,19 +147,18 @@ test('the published enforcement boundary names the schema-reserved level', () =>
   assert.match(boundary, /read-only/u);
 });
 
-// The boundary is the published claim surface, so a target that ships without
-// appearing here publishes a narrower claim than the tool actually makes.
-test('the published enforcement boundary covers every materializable target', () => {
-  const boundary = fs.readFileSync(
-    path.join(ROOT, 'docs/enforcement-boundary.md'),
-    'utf8',
-  );
-  for (const target of MATERIALIZABLE_TARGETS) {
-    const { targetPath } = targetDefinition(target);
-    assert.ok(
-      boundary.includes(targetPath),
-      `docs/enforcement-boundary.md must state what materialize writes into ${targetPath}`,
-    );
+// These two are the published claim surface, so a target that ships without
+// appearing in them publishes a narrower claim than the tool actually makes.
+test('the published claim surface covers every materializable target', () => {
+  for (const relative of ['docs/enforcement-boundary.md', 'README.md']) {
+    const text = fs.readFileSync(path.join(ROOT, relative), 'utf8');
+    for (const target of MATERIALIZABLE_TARGETS) {
+      const { targetPath } = targetDefinition(target);
+      assert.ok(
+        text.includes(targetPath),
+        `${relative} must state what materialize writes into ${targetPath}`,
+      );
+    }
   }
 });
 

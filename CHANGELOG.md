@@ -1,5 +1,18 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — Published Claim Surface Covers Both Targets
+
+- `docs/enforcement-boundary.md` and `README.md` described `materialize` as
+  writing one file, `.codex/config.toml`. Both shipped that claim in the npm
+  package after the Claude target landed, so the published boundary was
+  narrower than the tool. Both now state what each target writes, the two
+  ownership models, the Claude precedence and fail-open hazards, and which
+  controls are not target-materialized per target with the reason.
+- A new governance test derives the covered targets from the target registry,
+  so a future target that ships without a published claim fails CI rather than
+  being caught by reading.
+- No behavior change. Documentation and one test only.
+
 ## 2026-07-31 — Claude Code Target Materialization and Attestation
 
 - `materialize` and `attest` now accept `--target claude`. The target owns

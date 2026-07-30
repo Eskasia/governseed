@@ -276,8 +276,9 @@ my-new-project/
 | `.agent-governance/decisions/DEC-*/` | Content-bound decision, plan, imported result, and separate human confirmation records |
 | `.agent-governance/role-assignments/TASK-*.json` | Deterministic, reason-coded responsibility selections and append-only overrides |
 | `.agent-governance/policies/POL-*.json` | Canonical, content-addressed policy candidate produced from governed structured inputs |
-| `.agent-governance/adapters/codex/POL-*.json` | Thin Codex mapping with unsupported controls and human-review guidance; not runtime configuration |
+| `.agent-governance/adapters/<target>/POL-*.json` | Thin per-target mapping with unsupported controls and human-review guidance; not runtime configuration |
 | `.agent-governance/receipts/COMPILE-*.json` | Receipt-last input/output hashes and transaction outcome; not Attestation |
+| `.agent-governance/receipts/MAT-*.json` | Which keys `materialize` wrote into a target's project-local settings, and their hashes; not proof the runtime read them |
 
 Import persists only `imported`; it never supplies approval. A separate
 project-local declared-human-confirmation record, bound to the exact decision,
@@ -405,8 +406,8 @@ These checks answer different questions and must not be combined into one claim:
 |---|---|---|
 | Project doctor | Required documents, content quality, conditional hints, routing, and traceability | Product correctness or production safety |
 | Fixture checks | Coherent filled examples and stable doctor JSON | External adoption |
-| Policy Compiler | Canonical project-local policy, Codex mapping, and receipt integrity | That Codex loaded or enforced the policy |
-| Target materialization | That the project-local `.codex/config.toml` GovernSeed owns holds the strictest value each written key admits, recorded in a content-addressed receipt | That Codex read the file, that the project is trusted, or that a nearer or higher layer did not override it |
+| Policy Compiler | Canonical project-local policy, per-target mapping, and receipt integrity | That the runtime loaded or enforced the policy |
+| Target materialization | That the keys GovernSeed wrote into the project-local `.codex/config.toml` or `.claude/settings.json` hold the strictest value each admits, recorded in a content-addressed receipt | That the runtime read the file, that the project is trusted, or that a nearer or higher layer did not override it |
 | Project-layer attestation | That the bytes on disk still match the receipt and the receipt still matches the compiled policy | The effective configuration; the level stays `materialized-unverified` because project trust is not observable |
 | Runtime proof | Minimal first-response contract for generated Codex, Claude, and Antigravity entrypoints | Live-model quality or governance effectiveness |
 | Governance-impact evaluator | Deterministic mechanics for comparing the same synthetic task in baseline and governed arms | That governance improves delivery |
@@ -485,10 +486,13 @@ For a new maintainer, read in this order:
 - A compile receipt proves only a complete local transaction that produced a
   policy candidate and an Adapter. It is not Attestation, runtime evidence, or
   proof that Codex enforced a control.
-- `materialize` writes one project-local file, `.codex/config.toml`, and its own
-  receipt. It never writes user-global configuration, managed requirement
-  layers, or any path outside the project root, and it refuses rather than
-  overwrite a file GovernSeed does not own.
+- `materialize` writes one project-local settings file per target —
+  `.codex/config.toml` or `.claude/settings.json` — and its own receipt. It
+  never writes user-global configuration, managed layers,
+  `.claude/settings.local.json`, or any path outside the project root. It
+  refuses rather than overwrite a `.codex/config.toml` GovernSeed does not own,
+  and for `.claude/settings.json`, which teams also hand-edit, ownership is per
+  entry: entries GovernSeed did not write are preserved, never removed.
 - `attest` is read-only and its ceiling is the project layer. It compares bytes
   and hashes; it never reports an effective configuration and never claims
   runtime enforcement.
