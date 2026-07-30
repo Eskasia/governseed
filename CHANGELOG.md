@@ -22,6 +22,12 @@
   carries 94 entries and 857,171 unpacked bytes, down from 282 entries and
   2,374,948 bytes, and no longer ships `tests/`, `experimental/`, `docs/`, or
   `examples/`. The package name and all three bin names are unchanged.
+- Process-tree teardown now classifies its pre-teardown probe: a refused
+  process-group signal (`EPERM`, `ENOSYS`, `ENOTSUP`) is reported as a missing
+  environment capability instead of a cleanup failure. Production keeps the same
+  fail-closed contract — `PROCESS_TREE_UNAVAILABLE` at exit 3 — while the tests
+  that reap a real child skip with the reported errno instead of failing bare in
+  a restricted container or rootless sandbox. No test was removed.
 - Recorded override: this consolidation deliberately changes the CLI dispatch
   layer for `run` and `preflight` — their entry location, Core's usage refusal,
   and the approval-gated workflows' spawn target. The OCI and credential logic

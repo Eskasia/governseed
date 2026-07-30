@@ -95,6 +95,32 @@ function temporaryDirectory(t, prefix = 'runtime-proof-') {
   return directory;
 }
 
+// A restricted container or rootless sandbox can refuse process-group signalling.
+// The shared runner still fails closed there, but it reports a missing capability
+// rather than a cleanup failure, so one real teardown decides whether the tests
+// that reap a real child can run at all; they skip with that reason instead of
+// failing bare.
+async function probeProcessGroupSkip() {
+  if (process.platform === 'win32') return false;
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'runtime-proof-probe-'));
+  try {
+    await runChildSafely(process.execPath, ['--eval', ''], {
+      cwd: ROOT,
+      env: buildMinimalEnv('synthetic', { home: root, tmp: root }),
+    });
+    return false;
+  } catch (error) {
+    if (error?.code === 'PROCESS_TREE_UNAVAILABLE' && error.capabilityUnavailable === true) {
+      return `process-group signalling unavailable in this environment (${error.capabilityReason})`;
+    }
+    return false;
+  } finally {
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+}
+
+const processGroupSkip = await probeProcessGroupSkip();
+
 function copyStarter(t) {
   const sandbox = temporaryDirectory(t, 'runtime-proof-validator-');
   const starter = path.join(sandbox, 'starter');
@@ -270,7 +296,7 @@ function assertNoCanaryInTree(root, canary) {
   visit(root);
 }
 
-test('importing runtime smoke modules has no console or filesystem side effect', async (t) => {
+test('importing runtime smoke modules has no console or filesystem side effect', { skip: processGroupSkip }, async (t) => {
   const before = snapshotDefaultArtifacts();
   const imports = RUNTIMES
     .map((runtime) => `import(${JSON.stringify(pathToFileURL(SCRIPT_PATHS[runtime]).href)})`)
@@ -481,7 +507,7 @@ test('raw stdout and stderr privacy canaries are blocked without reflection or t
   }
 });
 
-test('invalid UTF-8 and combined output overflow fail closed through the shared runner', async (t) => {
+test('invalid UTF-8 and combined output overflow fail closed through the shared runner', { skip: processGroupSkip }, async (t) => {
   if (process.platform === 'win32') return t.skip('executable fixture permissions are POSIX-specific');
   const modules = await loadRuntimeModules();
   const cases = [
