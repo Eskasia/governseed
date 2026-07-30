@@ -495,10 +495,11 @@ every downstream project's shared-language table, and the scope-A precedent
 deliberately avoided `templates/fixed/` for exactly that reason. Creating a root
 `CONTEXT.md` would add a root document, which the plan's non-goals forbid.
 
-This design therefore places the two terms in ADR-005 section 6 and in
-`docs/policy-compiler.md`, and treats ADR-005 as their canonical owner. That is a
-deviation from the plan's wording and needs an explicit ruling before
-implementation. Section 10 records it.
+**Ruled on 2026-07-30:** ADR-005 is the canonical owner of the two terms. They
+are defined in ADR-005 section 6 and used in `docs/policy-compiler.md`.
+`templates/fixed/CONTEXT.md` is not modified, so no GovernSeed-internal
+vocabulary propagates into downstream projects, and no root document is added.
+This is a recorded deviation from the plan's wording, not an unresolved gap.
 
 ### 9.4 Divergence between the matrix and the Adapter
 
@@ -513,24 +514,32 @@ table in section 4 quotes the matrix; `classificationBreakdown` counts the
 Adapter's actual values; and the divergence is reported, not hidden. Section 10
 records it as an open item.
 
-## 10. Open Items Requiring a Ruling
+## 10. Rulings and Remaining Open Items
 
-1. **`CONTEXT.md` does not exist at the repository root.** Recommended: ADR-005
-   owns the two terms, no template change. Alternatives: add rows to
-   `templates/fixed/CONTEXT.md` and accept downstream propagation, or create a
-   root `CONTEXT.md` against the plan's non-goals. Section 9.3.
-2. **The plan's §C3 example contradicts its own §C4 downgrade rule.** This design
-   follows §C4. Section 6.3.
-3. **Matrix and Adapter disagree on the `shell.execution` classification.**
-   Reported, not reconciled. Section 9.4.
-4. **Should docs/enforcement-boundary.md be added to the `package.json` `files`
-   whitelist?** `docs/policy-compiler.md` and the capability matrix are already
-   published, and `attest`'s `source` field points at the enforcement-boundary
-   document, so a consumer of the published package cannot resolve it otherwise.
-   Adding it widens the published surface that scope A just narrowed.
+### 10.1 Ruled on 2026-07-30
+
+1. **Vocabulary owner.** ADR-005 owns `adapter-materialized` and
+   `target-materialized`. `templates/fixed/CONTEXT.md` is unchanged and no root
+   document is added, because this repository's `CONTEXT.md` is a downstream
+   project output rather than a starter-repo file. Section 9.3.
+2. **Published surface.** docs/enforcement-boundary.md is added to the
+   `package.json` `files` whitelist, matching the existing treatment of
+   `docs/policy-compiler.md` and the capability matrix, so a consumer of the
+   published package can resolve the `source` field in `attest` output.
+   Section 12.
+
+### 10.2 Still open for the phase-one review
+
+3. **The plan's §C3 example contradicts its own §C4 downgrade rule.** The example
+   shows `level: "project-layer-observed"` with `trustStateObserved: "unknown"`.
+   This design follows §C4, so the downgrade rule wins and the example is
+   illustrative only. Section 6.3.
+4. **Matrix and Adapter disagree on the `shell.execution` classification.**
+   Reported, not reconciled, because both sources are effectively frozen.
+   Section 9.4.
 5. **`project-layer-observed` is unreachable in this milestone** (BLOCKED-3). The
-   level is still defined and schema-permitted. Confirm that shipping a defined
-   but unreachable level is acceptable, rather than shipping only
+   level stays defined and schema-permitted. Confirm that shipping a defined but
+   currently unreachable level is acceptable, rather than shipping only
    `materialized-unverified`.
 
 ## 11. Test Plan
@@ -569,8 +578,8 @@ Additional negative and property tests:
 Phase two must also update, or `npm run validate` and `npm run check` will fail:
 
 ```text
-package.json          check script entries for the new lib modules;
-                      files whitelist if a new published doc is agreed
+package.json          check script entries for the new lib modules; files
+                      whitelist gains docs/enforcement-boundary.md per 10.1
 scripts/agent-governance.mjs   command dispatch, usage text, option parsing
 scripts/lib/           new codex-target-materializer and attest modules
 schemas/               materialize-receipt and attest-output schemas
