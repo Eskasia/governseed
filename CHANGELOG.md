@@ -1,5 +1,19 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — Validation Distinguishes A Missing Git From An Uncommitted File
+
+- `npm run validate` reported every required artifact as not committed in HEAD
+  when a checkout was present but `git` was not on `PATH` — common in slim CI
+  images. `spawnSync` signals a command that never ran through `error`, or
+  through a null status when a signal killed it, and both were being read as a
+  non-zero exit, which is a verdict about the file. Fixes #18.
+- Both conditions now fail closed once, naming the environment rather than the
+  files. Validation still exits non-zero: a checkout with no usable `git`
+  produces no signal about commit state, and GovernSeed does not pass a check it
+  could not run.
+- No change where `git` works, and none where `.git` is absent, which still
+  skips the check as before.
+
 ## 2026-07-31 — Published Claim Surface Covers Both Targets
 
 - `docs/enforcement-boundary.md` and `README.md` described `materialize` as
