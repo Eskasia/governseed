@@ -98,7 +98,8 @@ canonical one and both spellings resolve to the same document.
   `tools.web_search` — `boolean` or an object with `context_size`,
   `allowed_domains`, `location`. [S1]
 - An organization-managed `requirements.toml` layer exists and can add
-  restrictions that user configuration should not broaden. [S5]
+  restrictions that user configuration should not broaden. [S5, S6] Its locations
+  and precedence are in section 2.2, which cites S6 for the specific paths.
 - `projects.<path>.trust_level` — "Mark a project or worktree as trusted or
   untrusted (`\"trusted\"` | `\"untrusted\"`). Untrusted projects skip
   project-scoped `.codex/` layers, including project-local config, hooks, and
@@ -320,11 +321,28 @@ Totals: four `materializable`, three `deferred`, five `not-applicable`.
 
 ### 4.1 Value derivation, restriction-only
 
-`materialize` emits a key only when the resulting value is at least as
-restrictive as the Codex default. When a policy mode would require a more
-permissive value than the default, GovernSeed writes nothing for that key and
-records the control as unmaterialized with a reason code. It never writes a
-permissive value.
+The invariant is stated against the key's own value space, not against its
+default: **every value `materialize` emits is the most restrictive value that key
+admits.** When a policy mode would require anything looser, GovernSeed writes
+nothing for that key and records the control as unmaterialized with a reason code.
+
+| Key | Emitted value | Why it is the strictest the key admits |
+|---|---|---|
+| `sandbox_mode` | `read-only` or `workspace-write` | the three documented values are `read-only`, `workspace-write`, `danger-full-access` in increasing permissiveness; `danger-full-access` is unreachable by construction [S1] |
+| `sandbox_workspace_write.writable_roots` | `[]` | the key adds writable roots, so the empty array adds none [S1] |
+| `sandbox_workspace_write.network_access` | `false` | boolean whose `true` value allows outbound egress [S1] |
+| `approval_policy` | `untrusted` | of the three scalar values, `untrusted` requires approval for the widest set of operations and `never` for none [S1, S3] |
+
+This formulation replaces an earlier one — "at least as restrictive as the Codex
+default" — which was both weaker and uncited: this document records value enums
+for these keys but no default value for any of them, so the earlier invariant
+rested on a baseline it never established. The strictest-value formulation needs no
+default, and it holds whatever the defaults turn out to be.
+
+`sandbox_mode = "workspace-write"` is the one emitted value that is not the
+absolute minimum of its enum. It is emitted only when the policy permits project
+writes, so `read-only` would contradict the policy rather than restrict it; the
+row below states that condition explicitly.
 
 | Policy state | Emitted | Never emitted |
 |---|---|---|
@@ -344,6 +362,34 @@ enforced by a negative test, not by convention.
 
 The granular `approval_policy` object form is not emitted. Only the scalar forms
 are used, which keeps the TOML emitter to a closed, tiny value set.
+
+#### 4.1.1 A `deny` mapped to `approval_policy` is a gate, not a denial
+
+Row six is the one place where the emitted key does not carry the control's mode.
+`approval_policy = "untrusted"` makes Codex *ask*; a person who approves the prompt
+performs the action. A `deny` control is therefore not denied by this file, and the
+Codex Adapter already says so — `codexSupportForControl` downgrades `deny` on
+`delete`, `publish`, and `shell.execution` to `representable-only`
+(`scripts/lib/codex-policy-adapter.mjs:23-31`), and the Adapter's own guidance says
+"A denied action remains denied and cannot be enabled by approval."
+
+The three-value `materializationStatus` enum cannot express that, and a prose
+qualifier in a design table is not machine-readable. So `materializedControls[]`
+carries a required companion field:
+
+```text
+modeCoverage    enum ["full", "approval-gate-only"]
+```
+
+`approval-gate-only` is required for every control whose only emitted key is
+`approval_policy` while its mode is `deny`. `full` is required everywhere else. A
+receipt that reports a `deny` control as `materialize`-covered without
+`approval-gate-only` fails schema validation, and section 11's
+`deny-is-not-denied` test pins it.
+
+This is the one field that keeps `materializable` from meaning more than it does.
+Without it, a consumer reading the receipt sees a `deny` control marked
+`materializable` and concludes the denial was written into the target.
 
 ### 4.2 Paths never written
 
@@ -395,6 +441,38 @@ writable_roots = []
 The header is a provenance record for a human reader. It is not the ownership
 proof; section 5.2 defines that.
 
+`[sandbox_workspace_write]` is emitted only when `sandbox_mode =
+"workspace-write"`. Under `read-only` the table has no documented effect [S1], and
+emitting a dead table would put bytes in the file that no reviewer can act on. The
+example above shows both keys together for illustration; the two forms are the
+only two the emitter produces, and both are pinned by the `materialize-clean`
+fixture.
+
+**Identity is derived from inputs, not outputs.** `materializeId` appears inside
+the emitted file, so it cannot depend on that file's hash:
+
+```text
+materializeId = "MAT-" + first 12 uppercase hex of
+                sha256Canonical({ policyId, policyHash, target, plannedKeys })
+
+plannedKeys   = the canonical sorted key/value set about to be emitted,
+                before rendering
+```
+
+This is a deliberate deviation from the compile precedent, and the reason is that
+the precedent does not apply. `compileIdFor(policyId, outputHashes)`
+(`scripts/lib/policy-compiler-project.mjs:542-548`) hashes its output artifacts,
+which is sound there because neither the manifest nor the Adapter embeds its own
+`compileId`. The target file does embed its own `materializeId`, so hashing the
+output would make the identity depend on a value the output contains. An earlier
+draft of this section left the digest input undefined and would have been read as
+following the precedent; it is defined here instead.
+
+Nothing is lost by the deviation. The receipt still records
+`targetFiles[].sha256After`, so the emitted bytes remain verifiable exactly, and
+`plannedKeys` is a total function of the compiled policy, so two runs over an
+unchanged policy still produce one identity and one byte sequence.
+
 ### 5.2 Ownership
 
 `.codex/config.toml` is a fixed path, so it cannot be content-addressed the way
@@ -411,6 +489,17 @@ The third row is what makes re-materializing after a policy change possible
 without weakening the second-run-zero-diff guarantee, and the fourth row is what
 protects a user-authored file. There is no merge path and no `--force`.
 
+The third row also states this design's trust boundary, so it is written down
+rather than implied. Ownership recognition trusts the contents of
+`<project>/.agent-governance/receipts/`. Receipts are content-addressed but
+unsigned, so anyone who can write into that directory can craft a receipt
+recording the sha256 of a user-authored `.codex/config.toml` and thereby cause
+`materialize` to replace it. GovernSeed does not defend against that and does not
+claim to: `.agent-governance/` is the evidence root, and an actor who controls the
+evidence root controls every claim this product makes, not just this one. What the
+fourth row protects against is the ordinary case — an unrelated pre-existing file,
+a hand edit, a different tool's output — which is the case that actually occurs.
+
 Reused unchanged from the compile transaction: traversal, absolute-path, symlink
 and hardlink rejection; parent-identity recheck after the final rename;
 same-directory temporary staging; and receipt-last commit. A materialize output
@@ -419,7 +508,7 @@ without its matching receipt is partial output, not a completed materialization.
 `--dry-run` performs every read, validation, mapping, emitter run, and ownership
 check in memory and creates no directory, no temporary file, and no receipt.
 
-### 5.3 Permission-model conflict preflight
+### 5.3 Preflight: permission-model conflict and shadowing
 
 "Permission profiles do not compose with the older sandbox settings. Configure
 either `default_permissions` and `[permissions]`, or `sandbox_mode` /
@@ -432,16 +521,33 @@ loaded config file, you pass `--sandbox`, or the selected config profile sets
 `sandbox_mode`, Codex uses those older sandbox settings instead of
 `default_permissions`." [S5]
 
-So `materialize` preflights before writing anything. It scans the project-tree
-`.codex/config.toml` files that Codex itself would load — from the real project
-root down to the working directory [S2] — for a `default_permissions` assignment
-or any `[permissions` table header. A match is
-`TARGET_SETTINGS_PROFILE_MODEL_CONFLICT`, exit 4, no write.
+So `materialize` preflights before writing anything. One traversal answers two
+questions. It enumerates the project-tree `.codex/config.toml` files that Codex
+itself would load — from the real project root down to the working directory [S2]
+— and fails closed on either of:
 
-The scan is a line-level match for those two forms. It is not a TOML parse, and it
-deliberately errs toward blocking: a commented-out or string-embedded occurrence
-blocks too, because a false block is recoverable and a silently non-composing
-security configuration is not.
+| Condition | Code |
+|---|---|
+| any enumerated file assigns `default_permissions` or opens a `[permissions` table | `TARGET_SETTINGS_PROFILE_MODEL_CONFLICT` |
+| any enumerated file sits deeper than `<project>/.codex/config.toml`, the path `materialize` would write | `TARGET_SETTINGS_SHADOWED` |
+
+Both are exit 4 with no write.
+
+The second check was added after the phase-one self-review. The traversal was
+already being performed for the first check, and the closest-file-wins rule [S2]
+means a deeper `.codex/config.toml` overrides the file `materialize` is about to
+create. Writing an inert file and issuing a receipt for it — leaving the hazard to
+be discovered later by `attest` — is a fail-open at the step that is supposed to
+be the careful one. Detecting it costs nothing beyond a path comparison already in
+hand.
+
+The profile scan is a line-level match for those two forms. It is not a TOML
+parse, and it deliberately errs toward blocking: a commented-out or
+string-embedded occurrence blocks too, because a silently non-composing security
+configuration is not recoverable and a false block is. "Recoverable" means
+something specific, since there is no `--force`: the error names the file and line
+that matched, and the operator removes or relocates that line. A false positive
+therefore costs one edit in a file the operator owns, and it is not a dead end.
 
 Two limits are stated rather than hidden:
 
@@ -467,14 +573,14 @@ uses the older sandbox settings *instead of* `default_permissions`. The profile'
 restrictions stop applying. GovernSeed's restrictive-looking write has widened the
 effective configuration.
 
-This is a widening the restriction-only invariant cannot catch. Decision 3 compares
-each emitted value against the target's documented default *for that key*, and
-every value this design emits passes that comparison. The widening happens one
-level up, by displacing a different permission model, so no per-key check sees it.
-The invariant's scope has to be written down rather than left implied: it
-guarantees that no emitted key is looser than that key's default, and it does not
-guarantee that the effective configuration after materialization is no looser than
-it was before.
+This is a widening the restriction-only invariant cannot catch, and strengthening
+the invariant does not help. Section 4.1 emits the strictest value each key
+admits, which is as strong as a per-key rule can get; the widening happens one
+level up, by displacing a different permission model, so no per-key check sees it
+however tight that check is. The invariant's scope has to be written down rather
+than left implied: it guarantees that no emitted key is looser than any other
+value that key could hold, and it does not guarantee that the effective
+configuration after materialization is no looser than it was before.
 
 Detection is partial, and the partiality is the point:
 
@@ -519,7 +625,8 @@ dryRun                   boolean
 trustStateObserved       enum ["unknown"]
 targetFiles[]            path, sha256Before (null when absent), sha256After
 materializedControls[]   controlId, capability, mode, classification,
-                         materializationStatus, nativeKeys[], emittedValue
+                         materializationStatus, modeCoverage, nativeKeys[],
+                         emittedValue
 unmaterializedControls[] controlId, capability, materializationStatus,
                          reasonCode, source
 ownership                generator "GovernSeed", artifactType
@@ -530,6 +637,10 @@ status                   enum ["target-materialized", "dry-run"]
 `unmaterializedControls` must contain every `not-applicable` and `deferred`
 control. An `unsupported` control is never silently dropped; that is asserted by
 the partial-support fixture.
+
+`modeCoverage` is the `full` / `approval-gate-only` field defined in section
+4.1.1. It is required on every entry, and `approval-gate-only` is mandatory for a
+`deny` control whose only emitted key is `approval_policy`.
 
 `trustStateObserved` is a single-value enum in this schema on purpose. Widening
 it later requires a schema change and therefore a review.
@@ -605,11 +716,18 @@ Semantics: whether GovernSeed has actually observed that the target treats this
 project as trusted, which determines whether the project `.codex/` layer loads at
 all [S2].
 
-Values: `trusted`, `untrusted`, `unknown`. Only `unknown` is reachable in this
-milestone and the receipt schema admits only `unknown`, because BLOCKED-3 found
-no official surface exposing trust to a project-local reader. GovernSeed never
-infers trust from the file's existence, from a successful write, or from the
-absence of an error. There is no flag to assert it.
+Semantic value space: `trusted`, `untrusted`, `unknown`. **Both schemas admit only
+`unknown` in this milestone** — the receipt and the `attest` output alike — because
+BLOCKED-3 found no official surface exposing trust to a project-local reader.
+GovernSeed never infers trust from the file's existence, from a successful write,
+or from the absence of an error. There is no flag to assert it.
+
+An earlier draft narrowed the receipt schema to `["unknown"]` but left the `attest`
+output schema at all three values. That was inconsistent with this design's own
+stated principle — closed enums make a claim unrepresentable rather than
+blacklisted — and it applied the principle to `level` while leaving `level`'s sole
+precondition wide open, in the artifact that actually carries the claim. Widening
+either schema later requires a schema change and therefore a review.
 
 ### 6.3 Levels and the downgrade rule
 
@@ -641,9 +759,12 @@ mistake an unreachable state for the normal outcome.
 
 Two tests enforce the label rather than trusting the prose: one asserts that no
 combination of governed input, target state, flag, or environment variable
-produces `project-layer-observed`, and one asserts that the string appears in
-`attest` output only when `trustStateObserved` is `trusted`, which is currently
-unconstructible.
+produces `project-layer-observed`, and one asserts that a hand-constructed output
+pairing `project-layer-observed` with any `trustStateObserved` value fails schema
+validation — which it must, because the output schema admits only `unknown`
+(section 6.2) and the downgrade rule forbids that pairing. The level stays in the
+enum as ruled; what makes it unreachable is now structural rather than a code
+path.
 
 The plan's §C3 example output shows `level: "project-layer-observed"` together
 with `trustStateObserved: "unknown"`, which its own §C4 downgrade rule forbids.
@@ -657,12 +778,19 @@ Schema `schemas/attest-output.schema.json`, closed, required fields:
 ```text
 schemaVersion         integer, const 1
 level                 enum ["project-layer-observed", "materialized-unverified"]
-trustStateObserved    enum ["trusted", "untrusted", "unknown"]
+trustStateObserved    enum ["unknown"]
 target                enum ["codex"]
 policyId, policyHash, materializeId
-declared              integer, count of policy controls
-materialized          integer
-projectLayerObserved  integer
+declared              integer, count of controls in the compiled policy manifest
+materialized          integer, count of controls the receipt lists in
+                      materializedControls[]; declared - materialized equals the
+                      length of unmaterializedControls[]
+projectLayerObserved  integer, count of materialized controls whose emitted keys
+                      are still byte-identical in the current target file. It is
+                      0 when the file is absent or has drifted, and it equals
+                      materialized when the file matches. It counts bytes
+                      compared, never trust, so it does not license the
+                      project-layer-observed level on its own.
 classificationBreakdown  object keyed by the five matrix classifications,
                       counted from the compiled Adapter (ruling, section 10.1)
 classificationSourceDivergence[]  controlId, adapterValue, matrixValue, note;
@@ -701,8 +829,8 @@ Because sandbox_mode in any loaded config file makes Codex use the sandbox setti
   instead of default_permissions, the sandbox_mode written here can displace a
   stricter permission profile set in the user layer or a managed layer. Neither
   layer is readable from the project, so this file may widen the effective
-  configuration even though every value it contains is at least as restrictive as
-  that key's default. [S5]
+  configuration even though every value it contains is the strictest value that key
+  admits. [S5]
 ```
 
 Baseline `knownLimitations` content:
@@ -712,6 +840,7 @@ Baseline `knownLimitations` content:
 | `POL-SHELL-EXECUTION` | Command rules are experimental and govern commands outside the sandbox; not written. | S4 |
 | `POL-FILESYSTEM-PROJECT-READ` | A read-scope surface exists as `[permissions.<name>.filesystem]`, but it is Beta and mutually exclusive with the sandbox settings written here, so it is out of scope this milestone rather than unavailable. | S5, S6 |
 | `POL-CREDENTIALS` | Project config cannot override provider, auth, or telemetry keys. | S2 |
+| every `deny` control on `delete`, `publish`, or `shell.execution` | Materialized as `approval_policy = "untrusted"`, which prompts rather than denies; a human approval performs the action. Carried per control as `modeCoverage = "approval-gate-only"`. | S1, S3, section 4.1.1 |
 | `POL-EXTERNAL-CONTENT` | Web-search keys exist but the mapping from untrusted-content handling to them is unreviewed. | S1 |
 | all `materializable` controls | For Codex 0.138.0 and later the documentation prefers permission profiles and recommends the sandbox-mode surface only for legacy deployments; this milestone writes the legacy surface by frozen scope, not by platform preference. | S5, S6 |
 | all `materializable` controls | A written project-layer value is reported as ignored on some Codex surfaces. | I30001, I8714 |
@@ -737,10 +866,11 @@ file:
 | a second `.codex/config.toml` exists nearer the working directory | `TARGET_SETTINGS_SHADOWED` |
 | a project-tree config defines `default_permissions` or a `[permissions` table | `TARGET_SETTINGS_PROFILE_MODEL_CONFLICT` |
 
-The last two rows are detectable from the project tree alone. `TARGET_SETTINGS_SHADOWED`
-is a real precedence hazard under S2's closest-file-wins rule, and
-`TARGET_SETTINGS_PROFILE_MODEL_CONFLICT` is the attest-side counterpart of the
-section 5.3 preflight, catching a profile added after materialization.
+The last two rows are detectable from the project tree alone, and both are now
+checked at materialize time as well (section 5.3). Here they catch the same
+conditions arising *after* a successful materialize: a nearer `.codex/config.toml`
+added later under S2's closest-file-wins rule, or a permission profile added
+later.
 
 ## 7. Error Codes
 
@@ -764,7 +894,7 @@ fail-closed safety or ownership, 5 bounded I/O.
 | `MATERIALIZE_OUTSIDE_PROJECT` | materialize | 4 |
 | `MATERIALIZE_PARTIAL_OUTPUT` | materialize, attest | 4 |
 | `TARGET_SETTINGS_DRIFT` | attest | 4 |
-| `TARGET_SETTINGS_SHADOWED` | attest | 4 |
+| `TARGET_SETTINGS_SHADOWED` | materialize (preflight), attest (drift) | 4 |
 
 `CLI_TARGET_UNSUPPORTED` and `CLI_USAGE_ERROR` reuse the codes the existing
 compile usage test already pins, so `--target claude` behaves consistently across
@@ -816,6 +946,41 @@ ban.
 | `docs/superpowers/specs/2026-07-29-decision-role-foundation-design.md`, `docs/superpowers/specs/2026-07-29-risk-to-policy-compiler-design.md`, the 2026-07-29 plans | historical design records | allowlisted as superseded, not rewritten |
 | `docs/adr/003-deliberation-and-role-assignment-model.md` line 48 | Evidence-Graph node creation, a third meaning | allowlisted, out of scope |
 | `scripts/governance-impact-eval.mjs` (`materializePinnedEntries`, `materializeMirroredDirectory`) and `tests/governance-impact/runner.test.mjs` | copying pinned files into a workspace, a fourth meaning | allowlisted, unrelated to governance claims |
+| identifiers introduced by this milestone, listed in full below | machine names, not governance claims | allowlisted by exact string |
+
+The last row was added after the phase-one self-review, which found that fixture
+11 as first written could not pass this design's own implementation: every new
+identifier contains `materializ` and none of them is `adapter-materialized` or
+`target-materialized`, so the check would have gone red the moment phase two
+landed. The distinction the check actually needs is **prose versus identifier** —
+ambiguity in a sentence is the harm; a field name is not a claim.
+
+So the check scans prose and skips exact matches of this closed list:
+
+```text
+materialize                        command name
+materializationStatus              receipt and attest field
+materializedControls               receipt field
+unmaterializedControls             receipt field
+materializeId                      identity field
+materializedAt                     receipt timestamp field
+materialized                       attest count field
+materialized-unverified            level value
+target-materialized                receipt status value
+MATERIALIZE_RECEIPT_MISSING        error codes, all of which begin MATERIALIZE_
+MATERIALIZE_RECEIPT_INVALID
+MATERIALIZE_WOULD_WIDEN
+MATERIALIZE_PATH_BLOCKED
+MATERIALIZE_TARGET_PATH_PROTECTED
+MATERIALIZE_OUTSIDE_PROJECT
+MATERIALIZE_PARTIAL_OUTPUT
+materialize-receipt.schema.json    schema filename
+MAT-                               artifact identity prefix
+```
+
+The list is closed, not a pattern. A future identifier must be added to it
+deliberately, which is the point: adding a name is cheap, and being forced to
+notice you are adding one is the check's whole value.
 
 ### 9.3 There is no root `CONTEXT.md` (ruled)
 
@@ -927,9 +1092,36 @@ constitute a behaviour change outside this milestone's scope.
    directory is permitted is NOT STATED, so neither outcome is assumed.
    Sections 2.1, 2.4, 5.5, 6.4, 7, 11.
 
+### 10.2.1 Fixed by the phase-one self-review on 2026-07-30
+
+Nine defects were found by reviewing this document against the repository rather
+than against the reviews. Three would have blocked implementation outright.
+
+| # | Defect | Fix |
+|---|---|---|
+| 9 | `materializeId` was embedded in the emitted file while its digest input was left undefined; read against the `compileIdFor` precedent it was circular | identity defined as input-only, with the deviation and its reason recorded. Section 5.1 |
+| 10 | fixture 11 could not pass this design's own implementation — every new identifier contains `materializ` and none was allowlisted | prose/identifier distinction plus a closed identifier list. Section 9.2 |
+| 11 | the restriction-only invariant was defined against Codex defaults that this document never records or cites | restated as "the strictest value the key admits", which needs no default and holds regardless of them. Section 4.1 |
+| 12 | `trustStateObserved` was narrowed to `["unknown"]` in the receipt schema but left at three values in the `attest` output — the artifact that carries the claim | both schemas narrowed; `project-layer-observed` is now structurally unreachable rather than code-guarded. Sections 6.2, 6.3 |
+| 13 | a `deny` control materialized as `approval_policy = "untrusted"` was reported as `materializable` with the "approval gate only" qualifier living only in a prose table cell | required `modeCoverage` field, a `knownLimitations` row, and the `deny-is-not-denied` test. Sections 4.1.1, 5.4, 6.4 |
+| 14 | shadowing was detectable by a traversal materialize already performs, but was only reported by `attest`, so materialize could write an inert file and issue a receipt for it | both preflight checks share one traversal; `TARGET_SETTINGS_SHADOWED` is now a materialize failure too. Sections 5.3, 6.5, 7 |
+| 15 | ownership recognition trusts any receipt in `.agent-governance/receipts/`, which are unsigned | stated as the design's trust boundary rather than left implied. Section 5.2 |
+| 16 | `materialized` and `projectLayerObserved` counts were undefined while `declared` was defined | all three defined, including why `projectLayerObserved` counts bytes and never licenses the level. Section 6.4 |
+| 17 | `[sandbox_workspace_write]` appeared under `sandbox_mode = "read-only"` in the example, where it has no documented effect, and no emission rule was stated | the table is emitted only under `workspace-write`; both forms byte-pinned. Section 5.1 |
+
 ### 10.3 Still open for the phase-one review
 
-9. **The plan's §C3 example contradicts its own §C4 downgrade rule.** The example
+9. **The plan's fixture 7 conflicts with the shipped package surface, and this
+   design widens the gap.** The plan requires a `package-surface` fixture
+   asserting that `npm pack` excludes `tests/`, `experimental/`, `docs/`, and
+   `examples/`. The current `package.json` `files` whitelist deliberately ships
+   `tests/policy-compiler/fixtures/`, `tests/policy-compiler/fixture-contracts.test.mjs`,
+   and four `docs/` paths, and ruling 2 above adds a fifth. Either the fixture
+   means "nothing outside the whitelist leaks" and the plan's wording needs
+   correcting, or ruling 2 has to be withdrawn. This design does not adjudicate a
+   plan requirement; fixture 7 is scope A and unwritten, so nothing here is
+   blocked on the answer.
+10. **The plan's §C3 example contradicts its own §C4 downgrade rule.** The example
    shows `level: "project-layer-observed"` with `trustStateObserved: "unknown"`.
    This design follows §C4, so the downgrade rule wins and the example is
    illustrative only. Section 6.3.
@@ -937,8 +1129,14 @@ constitute a behaviour change outside this milestone's scope.
 ## 11. Test Plan
 
 Failing tests first, red evidence captured before any implementation, per the
-plan's ordering. Fixtures 1-5 and 8-11 below map to the plan's numbered list;
-fixtures 6-7 belong to scope A and are already merged.
+plan's ordering. Fixtures 1-5 and 8-11 below map to the plan's numbered list.
+
+The plan's fixtures 6 and 7 belong to scope A. Fixture 6 (`core-boundary`) is
+merged as `tests/governance/core-release-boundary.test.mjs`. **Fixture 7
+(`package-surface`) is not merged**: no `npm pack` assertion exists anywhere in
+`tests/` or CI. An earlier draft of this section claimed both were merged. Section
+10.3 records the plan conflict that has to be settled before fixture 7 can be
+written at all.
 
 | # | Fixture | Asserts |
 |---|---|---|
@@ -972,6 +1170,12 @@ Additional negative and property tests:
 | model-override-caveat | `precedenceCaveat` contains the entry stating that the written `sandbox_mode` can displace a stricter `default_permissions` profile in an unreadable layer, and `knownLimitations` carries its `materializable` counterpart; removing either fails the test |
 | target-path-protected | with `<project>/.codex` made unwritable (`chmod 0o500`), materialize exits 4 with `MATERIALIZE_TARGET_PATH_PROTECTED`, writes no config bytes, and writes no receipt; POSIX-only, skipped on Windows and when running as root, and the skip is reported rather than silent |
 | protected-path-caveat | `knownLimitations` carries the `.codex`-recursively-read-only entry, and no help text, README line, or output string describes materialize as agent-self-bootstrappable |
+| deny-is-not-denied | a `deny` control on `delete`, `publish`, or `shell.execution` is recorded with `modeCoverage = "approval-gate-only"`; a receipt that omits the field or claims `full` fails schema validation; the matching `knownLimitations` row is present |
+| identity-not-circular | `materializeId` is reproducible from the compiled policy alone, before the target file exists; recomputing it from the emitted bytes is not part of any code path; two runs over an unchanged policy yield one identity |
+| shadowed-blocks-materialize | a deeper `.codex/config.toml` blocks materialize with `TARGET_SETTINGS_SHADOWED`, exit 4, no write and no receipt — not merely reported later by attest |
+| strictest-value | every value the emitter can produce is the strictest its key admits; a mutation test that loosens any single emitted value fails |
+| trust-enum-narrowed | both schemas reject `trusted` and `untrusted` for `trustStateObserved`, and an attest output pairing `project-layer-observed` with any admissible value fails validation |
+| workspace-write-table-only | `[sandbox_workspace_write]` is absent under `sandbox_mode = "read-only"` and present under `workspace-write`; both forms are byte-pinned |
 
 ## 12. Implementation Registration
 
@@ -982,7 +1186,9 @@ package.json          check script entries for the new lib modules; files
                       whitelist gains docs/enforcement-boundary.md per 10.1
 scripts/agent-governance.mjs   command dispatch, usage text, option parsing
 scripts/lib/           new codex-target-materializer and attest modules
-schemas/               materialize-receipt and attest-output schemas
+schemas/               materialize-receipt and attest-output schemas, both with
+                      trustStateObserved narrowed to ["unknown"] and the receipt
+                      carrying the required modeCoverage field
 scripts/validate-starter.mjs   required-file lists for the new schemas and docs
 docs/policy-compiler.md        non-claims section and the superseded four levels
 docs/enforcement-boundary.md   what restriction-only does not guarantee (5.3.1),
