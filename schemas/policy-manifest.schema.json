@@ -375,11 +375,14 @@
       ]
     },
     "targetSupport": {
+      "description": "The support map of the one target this manifest was compiled for. Exactly one key, and it must be a registered target.",
       "type": "object",
-      "required": [
-        "codex"
-      ],
+      "minProperties": 1,
+      "maxProperties": 1,
       "properties": {
+        "claude": {
+          "$ref": "#/$defs/support"
+        },
         "codex": {
           "$ref": "#/$defs/support"
         }
@@ -501,7 +504,10 @@
       ],
       "properties": {
         "target": {
-          "const": "codex"
+          "enum": [
+            "claude",
+            "codex"
+          ]
         },
         "adapterVersion": {
           "$ref": "#/$defs/version"
@@ -532,7 +538,10 @@
           "pattern": "^[a-z][a-z0-9.-]*$"
         },
         "target": {
-          "const": "codex"
+          "enum": [
+            "claude",
+            "codex"
+          ]
         },
         "support": {
           "const": "unsupported"

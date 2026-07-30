@@ -10,6 +10,10 @@ import {
   validateArtifact,
 } from './governance-artifacts.mjs';
 import { preparePolicyCompile } from './policy-compiler-project.mjs';
+import {
+  REGISTERED_TARGETS,
+  targetDefinition,
+} from './target-registry.mjs';
 
 const FATAL_CODES = new Set([
   'COMPILE_PATH_BLOCKED',
@@ -19,8 +23,10 @@ const FATAL_CODES = new Set([
   'SYMLINK_BLOCKED',
 ]);
 const STABLE_CODES = new Set([
-  'CODEX_ADAPTER_INVALID',
-  'CODEX_ADAPTER_OWNER_CONFLICT',
+  ...REGISTERED_TARGETS.flatMap((name) => [
+    targetDefinition(name).adapterInvalidCode,
+    targetDefinition(name).adapterOwnerConflictCode,
+  ]),
   'COMPILE_PARTIAL_OUTPUT',
   'COMPILE_PATH_BLOCKED',
   'COMPILE_RECEIPT_INVALID',
@@ -210,15 +216,15 @@ function addCapabilityWarnings(manifests, adapters, findings) {
       'the target cannot enforce every canonical policy control',
     ));
   }
-  if ([...adapters.values()].some((adapter) => (
-    adapter.mappedControls.some(
+  for (const adapter of adapters.values()) {
+    if (!adapter.mappedControls.some(
       (control) => control.support !== 'enforceable',
-    )
-  ))) {
+    )) continue;
+    const definition = targetDefinition(adapter.target);
     findings.push(finding(
-      'CODEX_CONTROL_NOT_ENFORCEABLE',
+      definition.unsupportedReasonCode,
       'governance-file',
-      'one or more Codex mappings are guidance rather than enforcement',
+      `one or more ${definition.name} mappings are guidance rather than enforcement`,
     ));
   }
 }
@@ -265,13 +271,13 @@ function addContextualArtifactFindings(
     if (
       manifest
       && !validateArtifact(
-        'codex-policy-adapter.schema.json',
+        targetDefinition(adapter.target).adapterSchema,
         adapter,
         { manifest },
       ).valid
     ) {
       findings.push(finding(
-        'CODEX_ADAPTER_INVALID',
+        targetDefinition(adapter.target).adapterInvalidCode,
         'governance-file',
         'Codex adapter does not match its canonical policy manifest',
       ));
@@ -351,11 +357,14 @@ export function evaluatePolicyCompilerGovernance(projectDir) {
     '.agent-governance/policies',
     findings,
   );
-  const adapterFiles = listJsonFiles(
+  // One scan per registered target: an adapter directory that exists for a
+  // target this build does not know about is not silently skipped, because
+  // listJsonFiles only reports directories it was asked to look at.
+  const adapterFiles = REGISTERED_TARGETS.flatMap((name) => listJsonFiles(
     projectDir,
-    '.agent-governance/adapters/codex',
+    `.agent-governance/adapters/${name}`,
     findings,
-  );
+  ).map((relative) => ({ relative, definition: targetDefinition(name) })));
   const receiptFiles = listJsonFiles(
     projectDir,
     '.agent-governance/receipts',
@@ -392,21 +401,21 @@ export function evaluatePolicyCompilerGovernance(projectDir) {
     }
     manifests.set(relative, value);
   }
-  for (const relative of adapterFiles) {
+  for (const { relative, definition } of adapterFiles) {
     const value = readArtifact(
       projectDir,
       relative,
-      'codex-policy-adapter.schema.json',
-      'CODEX_ADAPTER_INVALID',
+      definition.adapterSchema,
+      definition.adapterInvalidCode,
       findings,
       byteHashes,
     );
     if (!value) continue;
-    if (!ownedBy(value, 'codex-policy-adapter')) {
+    if (!ownedBy(value, definition.adapterArtifactType)) {
       findings.push(finding(
-        'CODEX_ADAPTER_OWNER_CONFLICT',
+        definition.adapterOwnerConflictCode,
         'governance-file',
-        'Codex adapter is not owned by GovernSeed',
+        `${definition.name} adapter is not owned by GovernSeed`,
       ));
       continue;
     }

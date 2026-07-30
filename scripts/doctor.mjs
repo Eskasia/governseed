@@ -12,6 +12,10 @@ import { evaluateDecisionRoleGovernance } from './lib/decision-role-doctor.mjs';
 import {
   evaluatePolicyCompilerGovernance,
 } from './lib/policy-compiler-doctor.mjs';
+import {
+  REGISTERED_TARGETS,
+  targetDefinition,
+} from './lib/target-registry.mjs';
 
 const STARTER_ROOT = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const PROFILES_DIR = path.join(STARTER_ROOT, 'profiles');
@@ -396,7 +400,9 @@ function hasFatalPrivacyFinding(result) {
 
 function strictBlockingWarnings(result) {
   const advisoryCodes = new Set([
-    'CODEX_CONTROL_NOT_ENFORCEABLE',
+    ...REGISTERED_TARGETS.map(
+      (name) => targetDefinition(name).unsupportedReasonCode,
+    ),
     'POLICY_UNSUPPORTED_CONTROL',
   ]);
   return result.warnings.filter((warning) => {

@@ -104,7 +104,7 @@ test('content-addressed identities still resolve to the same artifacts', (t) => 
   );
 });
 
-test('the materialized codex config is byte-identical to the pinned baseline', (t) => {
+test('the target-materialized codex config is byte-identical to the pinned baseline', (t) => {
   const { project } = materializeBaseFixture(t);
   assert.equal(
     sha256(readArtifact(project, GOLDEN.targetConfigPath)),

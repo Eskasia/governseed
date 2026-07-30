@@ -37,7 +37,10 @@
       "$ref": "#/$defs/hashReferences"
     },
     "target": {
-      "const": "codex"
+      "enum": [
+        "claude",
+        "codex"
+      ]
     },
     "dryRun": {
       "type": "boolean"
@@ -166,7 +169,10 @@
           "pattern": "^[a-z][a-z0-9.-]*$"
         },
         "target": {
-          "const": "codex"
+          "enum": [
+            "claude",
+            "codex"
+          ]
         },
         "support": {
           "const": "unsupported"

@@ -19,10 +19,37 @@ const CODEX = Object.freeze({
   // is part of the compiled artifact, and the codex bytes must not change.
   unsupportedReasonCode: 'CODEX_CONTROL_NOT_ENFORCEABLE',
   adapterSchema: 'codex-policy-adapter.schema.json',
+  adapterArtifactType: 'codex-policy-adapter',
+  // Reason codes are an observable reporting surface, so each target names its
+  // own rather than sharing a generic one. The codex codes predate the registry
+  // and keep their published spelling.
+  adapterInvalidCode: 'CODEX_ADAPTER_INVALID',
+  adapterOwnerConflictCode: 'CODEX_ADAPTER_OWNER_CONFLICT',
   supportsMaterialization: true,
 });
 
-const TARGETS = Object.freeze({ codex: CODEX });
+const CLAUDE = Object.freeze({
+  name: 'claude',
+  adapterVersion: '1.0.0',
+  unsupportedReasonCode: 'CLAUDE_CONTROL_NOT_ENFORCEABLE',
+  adapterSchema: 'claude-policy-adapter.schema.json',
+  adapterArtifactType: 'claude-policy-adapter',
+  adapterInvalidCode: 'CLAUDE_ADAPTER_INVALID',
+  adapterOwnerConflictCode: 'CLAUDE_ADAPTER_OWNER_CONFLICT',
+  supportsMaterialization: false,
+});
+
+const TARGETS = Object.freeze({ claude: CLAUDE, codex: CODEX });
+
+/**
+ * Adapter output is partitioned by target so two targets compiled in the same
+ * project never contend for one path. Derived here rather than written at each
+ * call site, because the compile receipt, the adapter's own generatedFiles, and
+ * the doctor's scan all have to agree on it.
+ */
+export function adapterPathFor(target, policyId) {
+  return `.agent-governance/adapters/${target}/${policyId}.json`;
+}
 
 export const REGISTERED_TARGETS = Object.freeze(Object.keys(TARGETS).sort());
 

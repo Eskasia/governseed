@@ -710,7 +710,9 @@ test('unsupported target and malformed option use stable usage contracts', (t) =
       'compile',
       state.project,
       '--target',
-      'claude',
+      // Not a registered target. claude used to serve this role and no longer
+      // can, because it is now registered for compile.
+      'gemini',
       '--json',
     ]),
     2,

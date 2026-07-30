@@ -36,6 +36,7 @@ import {
   REGISTERED_TARGETS,
   isRegisteredTarget,
   supportsMaterialization,
+  targetDefinition,
 } from './lib/target-registry.mjs';
 
 const EXIT = Object.freeze({
@@ -62,7 +63,9 @@ const SECURITY_CODES = new Set([
   'DELIBERATION_VERSION_MISMATCH',
   'GOVERNANCE_PACK_INVALID',
   'INVALID_STATUS_TRANSITION',
-  'CODEX_ADAPTER_OWNER_CONFLICT',
+  ...REGISTERED_TARGETS.map(
+    (name) => targetDefinition(name).adapterOwnerConflictCode,
+  ),
   'COMPILE_PARTIAL_OUTPUT',
   'COMPILE_PATH_BLOCKED',
   'MATERIALIZE_OUTSIDE_PROJECT',
@@ -1066,7 +1069,9 @@ function compilePolicy(command) {
       );
     }
     const invalidCodes = new Set([
-      'CODEX_ADAPTER_INVALID',
+      ...REGISTERED_TARGETS.map(
+        (name) => targetDefinition(name).adapterInvalidCode,
+      ),
       'COMPILE_RECEIPT_INVALID',
       'DUPLICATE_JSON_KEY',
       'FILE_TOO_LARGE',

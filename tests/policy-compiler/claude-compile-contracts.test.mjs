@@ -7,8 +7,13 @@ import {
   makeProject,
   parseSingleJson,
   readJson,
+  ROOT,
   runCli,
 } from './helpers.mjs';
+import {
+  REGISTERED_TARGETS,
+  targetDefinition,
+} from '../../scripts/lib/target-registry.mjs';
 
 /**
  * The claude target compiles before it materializes. Registration and
@@ -16,9 +21,12 @@ import {
  * can land in this state, and these contracts pin that state: compile produces
  * a claude adapter, and materialize refuses rather than writing codex output
  * under a claude flag.
+ *
+ * The policy identity is not pinned here. A manifest records the support map of
+ * the target it was compiled for, so two targets over the same governed inputs
+ * are two different documents with two different content-addressed ids. Reading
+ * the id back from the directory is the assertion that stays true.
  */
-const POLICY_ID = 'POL-7C0E73297E0E';
-
 function claudeArgs(name, project, ...extra) {
   return [name, project, '--target', 'claude', ...extra, '--json'];
 }
@@ -29,6 +37,20 @@ function compileForClaude(t) {
   return { state, result };
 }
 
+function soleAdapter(project, target) {
+  const directory = path.join(project, '.agent-governance/adapters', target);
+  assert.ok(
+    fs.existsSync(directory),
+    `compile must create .agent-governance/adapters/${target}`,
+  );
+  const entries = fs.readdirSync(directory).sort();
+  assert.equal(entries.length, 1, `expected one ${target} adapter`);
+  return {
+    policyId: entries[0].replace(/\.json$/u, ''),
+    value: readJson(path.join(directory, entries[0])),
+  };
+}
+
 test('compile accepts the claude target', (t) => {
   const { result } = compileForClaude(t);
   const output = parseSingleJson(result, 0);
@@ -37,34 +59,27 @@ test('compile accepts the claude target', (t) => {
 
 test('the claude adapter lands in its own target directory', (t) => {
   const { state } = compileForClaude(t);
-  const adapterPath = path.join(
-    state.project,
-    '.agent-governance/adapters/claude',
-    `${POLICY_ID}.json`,
-  );
-  assert.ok(
-    fs.existsSync(adapterPath),
+  assert.equal(
+    fs.existsSync(path.join(state.project, '.agent-governance/adapters/codex')),
+    false,
     'a claude compile must not write into the codex adapter directory',
   );
-  const adapter = readJson(adapterPath);
+  const { policyId, value: adapter } = soleAdapter(state.project, 'claude');
   assert.equal(adapter.target, 'claude');
+  assert.equal(adapter.policyId, policyId);
   assert.equal(adapter.ownership.artifactType, 'claude-policy-adapter');
   assert.deepEqual(
     adapter.generatedFiles.sort(),
     [
-      `.agent-governance/adapters/claude/${POLICY_ID}.json`,
-      `.agent-governance/policies/${POLICY_ID}.json`,
+      `.agent-governance/adapters/claude/${policyId}.json`,
+      `.agent-governance/policies/${policyId}.json`,
     ],
   );
 });
 
 test('the claude adapter reports root-write and network as unsupported', (t) => {
   const { state } = compileForClaude(t);
-  const adapter = readJson(path.join(
-    state.project,
-    '.agent-governance/adapters/claude',
-    `${POLICY_ID}.json`,
-  ));
+  const { value: adapter } = soleAdapter(state.project, 'claude');
   const unsupported = new Map(
     (adapter.unsupportedControls ?? []).map((entry) => [entry.capability, entry]),
   );
@@ -85,10 +100,49 @@ test('compiling for claude does not disturb the codex adapter directory', (t) =>
   }
   const adapters = path.join(state.project, '.agent-governance/adapters');
   assert.deepEqual(fs.readdirSync(adapters).sort(), ['claude', 'codex']);
-  for (const target of ['claude', 'codex']) {
-    assert.deepEqual(
-      fs.readdirSync(path.join(adapters, target)).sort(),
-      [`${POLICY_ID}.json`],
+  const claude = soleAdapter(state.project, 'claude');
+  const codex = soleAdapter(state.project, 'codex');
+  assert.notEqual(
+    claude.policyId,
+    codex.policyId,
+    'a manifest carries its target support map, so the two ids must differ',
+  );
+  assert.deepEqual(
+    fs.readdirSync(path.join(state.project, '.agent-governance/policies')).sort(),
+    [`${claude.policyId}.json`, `${codex.policyId}.json`].sort(),
+  );
+});
+
+test('the shared schemas admit every registered target', () => {
+  const shared = {
+    'policy-manifest.schema.json': [
+      (schema) => Object.keys(schema.$defs.targetSupport.properties),
+      (schema) => schema.$defs.target.properties.target.enum,
+      (schema) => schema.$defs.unsupportedControl.properties.target.enum,
+    ],
+    'compile-receipt.schema.json': [
+      (schema) => schema.properties.target.enum,
+      (schema) => schema.$defs.unsupportedControl.properties.target.enum,
+    ],
+  };
+  for (const [name, readers] of Object.entries(shared)) {
+    const schema = readJson(path.join(ROOT, 'schemas', name));
+    for (const read of readers) {
+      assert.deepEqual(
+        [...read(schema)].sort(),
+        [...REGISTERED_TARGETS].sort(),
+        `${name} drifted from the target registry`,
+      );
+    }
+  }
+  for (const target of REGISTERED_TARGETS) {
+    assert.ok(
+      fs.existsSync(path.join(
+        ROOT,
+        'schemas',
+        targetDefinition(target).adapterSchema,
+      )),
+      `${target} names an adapter schema that does not exist`,
     );
   }
 });

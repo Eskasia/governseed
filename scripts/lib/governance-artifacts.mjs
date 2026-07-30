@@ -6,6 +6,10 @@ import {
   BUILTIN_CATALOG,
   selectResponsibilities,
 } from './decision-role-core.mjs';
+import {
+  adapterPathFor,
+  targetDefinition,
+} from './target-registry.mjs';
 
 const MAX_BYTES = 1024 * 1024;
 const MAX_DEPTH = 64;
@@ -25,6 +29,7 @@ const SCHEMA_NAMES = new Set([
   'deliberation-result.schema.json',
   'policy-manifest.schema.json',
   'codex-policy-adapter.schema.json',
+  'claude-policy-adapter.schema.json',
   'compile-receipt.schema.json',
   'materialize-receipt.schema.json',
   'attest-output.schema.json',
@@ -1160,6 +1165,10 @@ function sameCanonicalSet(left, right) {
 }
 
 function validatePolicyManifestSemantic(value, errors) {
+  // A manifest is compiled for exactly one target and records it in targets[0];
+  // targetSupport is keyed by that same name. Reading it here keeps the
+  // expectations below derived from the artifact rather than from a literal.
+  const manifestTarget = value?.targets?.[0]?.target;
   addDuplicateError(errors, value?.inputHashes, 'path', '$.inputHashes');
   for (const [index, input] of (value?.inputHashes ?? []).entries()) {
     if (
@@ -1270,7 +1279,7 @@ function validatePolicyManifestSemantic(value, errors) {
     if (
       !control
       || control.capability !== unsupported.capability
-      || control.targetSupport?.codex !== 'unsupported'
+      || control.targetSupport?.[manifestTarget] !== 'unsupported'
     ) {
       addSchemaError(
         errors,
@@ -1280,13 +1289,13 @@ function validatePolicyManifestSemantic(value, errors) {
     }
   }
   const expectedUnsupported = controls
-    .filter((control) => control.targetSupport?.codex === 'unsupported')
+    .filter((control) => control.targetSupport?.[manifestTarget] === 'unsupported')
     .map((control) => ({
       controlId: control.controlId,
       capability: control.capability,
-      target: 'codex',
+      target: manifestTarget,
       support: 'unsupported',
-      reasonCode: 'CODEX_CONTROL_NOT_ENFORCEABLE',
+      reasonCode: targetDefinition(manifestTarget)?.unsupportedReasonCode,
     }));
   if (!sameCanonicalSet(value?.unsupportedControls, expectedUnsupported)) {
     addSchemaError(
@@ -1314,7 +1323,7 @@ function validatePolicyManifestSemantic(value, errors) {
       control.mode === 'require-approval'
       || (
         control.mode !== 'deny'
-        && control.targetSupport?.codex === 'requires-human-approval'
+        && control.targetSupport?.[manifestTarget] === 'requires-human-approval'
       )
     ))
     .map((control) => control.controlId);
@@ -1336,7 +1345,7 @@ function validatePolicyManifestSemantic(value, errors) {
   }
 }
 
-function validateCodexAdapterSemantic(value, context, errors) {
+function validateTargetAdapterSemantic(value, context, errors) {
   const mapped = value?.mappedControls ?? [];
   const unsupported = value?.unsupportedControls ?? [];
   addDuplicateError(errors, mapped, 'controlId', '$.mappedControls');
@@ -1365,7 +1374,7 @@ function validateCodexAdapterSemantic(value, context, errors) {
   }
   if (typeof value?.policyId === 'string') {
     const expected = [
-      `.agent-governance/adapters/codex/${value.policyId}.json`,
+      adapterPathFor(value.target, value.policyId),
       `.agent-governance/policies/${value.policyId}.json`,
     ].sort();
     const actual = [...(value.generatedFiles ?? [])].sort();
@@ -1386,15 +1395,15 @@ function validateCodexAdapterSemantic(value, context, errors) {
       .filter(Array.isArray)
       .flat();
     const expectedMapped = controls
-      .filter((control) => control.targetSupport?.codex !== 'unsupported')
+      .filter((control) => control.targetSupport?.[value.target] !== 'unsupported')
       .map((control) => ({
         controlId: control.controlId,
         capability: control.capability,
         mode: control.mode,
-        support: control.targetSupport.codex,
-        representation: control.targetSupport.codex === 'enforceable'
+        support: control.targetSupport[value.target],
+        representation: control.targetSupport[value.target] === 'enforceable'
           ? 'compiler-owned-artifact'
-          : control.targetSupport.codex === 'requires-human-approval'
+          : control.targetSupport[value.target] === 'requires-human-approval'
             ? 'human-approval-guidance'
             : 'guidance',
       }));
@@ -1432,7 +1441,7 @@ function validateCompileReceiptSemantic(value, context, errors) {
     && typeof value?.compileId === 'string'
   ) {
     const expectedStates = [
-      `.agent-governance/adapters/codex/${value.policyId}.json`,
+      adapterPathFor(value.target, value.policyId),
       `.agent-governance/policies/${value.policyId}.json`,
       `.agent-governance/receipts/${value.compileId}.json`,
     ].sort();
@@ -1448,7 +1457,7 @@ function validateCompileReceiptSemantic(value, context, errors) {
   }
   if (typeof value?.policyId === 'string') {
     const expected = [
-      `.agent-governance/adapters/codex/${value.policyId}.json`,
+      adapterPathFor(value.target, value.policyId),
       `.agent-governance/policies/${value.policyId}.json`,
     ].sort();
     const actual = (value.outputHashes ?? [])
@@ -1485,7 +1494,7 @@ function validateCompileReceiptSemantic(value, context, errors) {
   if (manifest && adapter) {
     const expectedOutputHashes = [
       {
-        path: `.agent-governance/adapters/codex/${manifest.policyId}.json`,
+        path: adapterPathFor(value.target, manifest.policyId),
         sha256: sha256Bytes(canonicalJsonBytes(adapter)),
       },
       {
@@ -1499,10 +1508,10 @@ function validateCompileReceiptSemantic(value, context, errors) {
         : []),
       ...(Object.values(manifest.controls).flat().some(
         (control) => !['enforceable', 'unsupported'].includes(
-          control.targetSupport.codex,
+          control.targetSupport[value.target],
         ),
       )
-        ? ['CODEX_CONTROL_NOT_ENFORCEABLE']
+        ? [targetDefinition(value.target)?.unsupportedReasonCode]
         : []),
     ];
     if (
@@ -2184,8 +2193,11 @@ function validateSemantic(schemaName, value, context, errors) {
   if (schemaName === 'policy-manifest.schema.json') {
     validatePolicyManifestSemantic(value, errors);
   }
-  if (schemaName === 'codex-policy-adapter.schema.json') {
-    validateCodexAdapterSemantic(value, context, errors);
+  if (
+    schemaName === 'codex-policy-adapter.schema.json'
+    || schemaName === 'claude-policy-adapter.schema.json'
+  ) {
+    validateTargetAdapterSemantic(value, context, errors);
   }
   if (schemaName === 'compile-receipt.schema.json') {
     validateCompileReceiptSemantic(value, context, errors);
