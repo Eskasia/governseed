@@ -7,6 +7,10 @@ The governance-impact evaluator is a local paired A/B harness for measuring deli
 
 Runtime proof is a separate entrypoint-contract smoke test. Neither runtime proof nor offline evaluator controls prove that governance improves real delivery.
 
+## Where each surface lives
+
+Core ships `scripts/governance-impact-eval.mjs`: the offline controls, the paired-scenario engine, and the `validate`, `replay`, `aggregate`, and `gate` subcommands. The live paired evaluator — `run` and `preflight`, with OCI containment and the credential proxy — is not part of the Core release unit and lives at `experimental/governance-impact/eval.mjs`. Core answers `run` and `preflight` with an exit 2 `EXPERIMENTAL_ENTRY_REQUIRED` usage error naming that entry, and never imports it.
+
 ## Evidence Levels
 
 | Surface | What it can establish | What it cannot establish |
@@ -64,7 +68,7 @@ node scripts/governance-impact-eval.mjs replay
   --run <paired-run.json>
   --output <scored-result.json>
 
-GOVERNANCE_IMPACT_REAL=1 node scripts/governance-impact-eval.mjs preflight
+GOVERNANCE_IMPACT_REAL=1 node experimental/governance-impact/eval.mjs preflight
   --model <exact-model-id>
   --runtime-image <registry/repository@sha256:digest>
   --codex-version <exact-single-line-version>
@@ -72,7 +76,7 @@ GOVERNANCE_IMPACT_REAL=1 node scripts/governance-impact-eval.mjs preflight
   --timeout-ms <1..600000>
   --output <preflight-receipt.json>
 
-GOVERNANCE_IMPACT_REAL=1 node scripts/governance-impact-eval.mjs run
+GOVERNANCE_IMPACT_REAL=1 node experimental/governance-impact/eval.mjs run
   --scenario <scenario-directory>
   --manifest <manifest.json>
   --policy <policy.json>
@@ -129,7 +133,7 @@ The preflight and real workflows are intentionally separate manual actions. The 
 Equivalent local commands on an explicitly approved disposable Linux host are:
 
 ```bash
-GOVERNANCE_IMPACT_REAL=1 node scripts/governance-impact-eval.mjs preflight \
+GOVERNANCE_IMPACT_REAL=1 node experimental/governance-impact/eval.mjs preflight \
   --model "$MODEL" \
   --runtime-image "$RUNTIME_IMAGE" \
   --codex-version "$CODEX_VERSION" \
@@ -141,7 +145,7 @@ GOVERNANCE_IMPACT_REAL=1 node scripts/governance-impact-eval.mjs preflight \
 # and synthetic scenario before authorizing credential access.
 
 GOVERNANCE_IMPACT_REAL=1 OPENAI_API_KEY="$OPENAI_API_KEY" \
-  node scripts/governance-impact-eval.mjs run \
+  node experimental/governance-impact/eval.mjs run \
   --scenario "$SCENARIO" \
   --manifest "$MANIFEST" \
   --policy "$POLICY" \
@@ -225,7 +229,7 @@ Real `run` requires a valid manifest-hash pin. `aggregate` additionally requires
 Real evaluation is opt-in only:
 
 ```bash
-GOVERNANCE_IMPACT_REAL=1 node scripts/governance-impact-eval.mjs run ...
+GOVERNANCE_IMPACT_REAL=1 node experimental/governance-impact/eval.mjs run ...
 ```
 
 Unset, `0`, `true`, or any value other than exact `1` returns `REAL_MODE_REQUIRED` before the runtime handler is called. A missing executable returns `RUNTIME_MISSING` with exit 4; the evaluator never substitutes mock output.
@@ -252,7 +256,7 @@ Host process-group handling is not sufficient to open the Codex gate. Scheme A u
 - `executionBoundaryId` hashes the observed image digest, exact Codex version and binary hash, and canonical containment, network, and proxy policy hashes; the receipt, v2 manifest, fresh preflight, and both arms must use one value;
 - macOS, Windows, Claude, Antigravity, and the legacy host Codex adapter remain fail-closed.
 
-Docker `NetworkMode=none` gives the container only its loopback device. Scheme A does not bind-mount the host Unix-domain socket into the container. The approved host must invoke the evaluator with a non-root UID and non-root primary GID; relay attachment fails closed for UID 0 or GID 0. After the container init PID is known, the host starts a narrowly scoped `sudo -n nsenter --net=/proc/<init-pid>/ns/net --setgid=<host-gid> --setuid=<host-uid> -- <node> scripts/governance-impact-uds-relay.mjs` process. It enters only the container network namespace, drops back to the invoking host identity before executing the relay, and listens on `127.0.0.1:43127` while retaining the host mount namespace so it can connect to the caller-owned ephemeral UDS. Relay secrets and configuration are not inherited through `sudo` environment preservation: the parent sends one bounded closed configuration line over the relay's private stdin, and the remaining pipe lifetime is the relay lifeline; EOF initiates shutdown. Relay readiness is required before the PID-1 lifeline is released.
+Docker `NetworkMode=none` gives the container only its loopback device. Scheme A does not bind-mount the host Unix-domain socket into the container. The approved host must invoke the evaluator with a non-root UID and non-root primary GID; relay attachment fails closed for UID 0 or GID 0. After the container init PID is known, the host starts a narrowly scoped `sudo -n nsenter --net=/proc/<init-pid>/ns/net --setgid=<host-gid> --setuid=<host-uid> -- <node> experimental/governance-impact/uds-relay.mjs` process. It enters only the container network namespace, drops back to the invoking host identity before executing the relay, and listens on `127.0.0.1:43127` while retaining the host mount namespace so it can connect to the caller-owned ephemeral UDS. Relay secrets and configuration are not inherited through `sudo` environment preservation: the parent sends one bounded closed configuration line over the relay's private stdin, and the remaining pipe lifetime is the relay lifeline; EOF initiates shutdown. Relay readiness is required before the PID-1 lifeline is released.
 
 The host proxy permits up to 32 attempt-bound `POST /v1/responses` requests, with at most one active at a time, under an exact bearer, attempt ID, model, upstream, 1 MiB request cap, 4 MiB response cap, and one attempt deadline. Each request must set `store: false` and `stream: true`; `background` must be absent or `false`; `previous_response_id`, `conversation`, `prompt`, nested item/file/container references, and remote input URLs are forbidden; client identifiers are stripped; and tools are limited to client-executed `function`, `custom`, `local_shell`, `apply_patch`, and `tool_search`. `tool_search` descriptors and replayed calls must explicitly declare client execution; server-side hosted tools are rejected.
 

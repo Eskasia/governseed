@@ -60,6 +60,26 @@ function safeChild(mode, args = [], options = {}) {
   );
 }
 
+// A restricted container or rootless sandbox can refuse process-group signalling.
+// The adapter still fails closed there, but it reports a missing capability rather
+// than a cleanup failure, so one real teardown decides whether this environment can
+// run the child-teardown assertions at all. Every test that reaps a real child
+// carries this reason and skips instead of failing bare.
+async function probeProcessGroupSkip() {
+  if (process.platform === 'win32') return false;
+  try {
+    await safeChild('nonzero', [0]);
+    return false;
+  } catch (error) {
+    if (error?.code === 'PROCESS_TREE_UNAVAILABLE' && error.capabilityUnavailable === true) {
+      return `process-group signalling unavailable in this environment (${error.capabilityReason})`;
+    }
+    return false;
+  }
+}
+
+const processGroupSkip = await probeProcessGroupSkip();
+
 test('runtime support matrix refuses every unsafe real launch', () => {
   assert.deepEqual(runtimeCapabilities('codex', 'linux'), {
     available: true,
@@ -310,28 +330,28 @@ test('runChildSafely always launches executable plus argv with shell false', asy
 });
 
 for (const total of [65_535, 65_536]) {
-  test(`combined child output accepts ${total} bytes`, async () => {
+  test(`combined child output accepts ${total} bytes`, { skip: processGroupSkip }, async () => {
     const result = await safeChild('combined', [Math.floor(total / 2), Math.ceil(total / 2)]);
     assert.equal(result.status, 'completed');
     assert.equal(Buffer.byteLength(result.stdout) + Buffer.byteLength(result.stderr), total);
   });
 }
 
-test('combined child output rejects the 65,537th byte before decode', async () => {
+test('combined child output rejects the 65,537th byte before decode', { skip: processGroupSkip }, async () => {
   await assert.rejects(
     safeChild('combined', [32_768, 32_769]),
     (error) => error.code === 'OUTPUT_LIMIT_EXCEEDED' && error.exitCode === 3,
   );
 });
 
-test('thousands of small chunks cannot evade the aggregate output cap', async () => {
+test('thousands of small chunks cannot evade the aggregate output cap', { skip: processGroupSkip }, async () => {
   await assert.rejects(
     safeChild('combined', [65_000, 1_000]),
     (error) => error.code === 'OUTPUT_LIMIT_EXCEEDED',
   );
 });
 
-test('malformed UTF-8 is fatal and raw bytes are not reflected', async () => {
+test('malformed UTF-8 is fatal and raw bytes are not reflected', { skip: processGroupSkip }, async () => {
   await assert.rejects(
     safeChild('malformed-utf8'),
     (error) =>
@@ -340,20 +360,20 @@ test('malformed UTF-8 is fatal and raw bytes are not reflected', async () => {
   );
 });
 
-test('non-zero child status remains safe evidence', async () => {
+test('non-zero child status remains safe evidence', { skip: processGroupSkip }, async () => {
   const result = await safeChild('nonzero', [9]);
   assert.equal(result.status, 'failed');
   assert.equal(result.errorCode, 'CHILD_EXIT_NONZERO');
   assert.equal(result.exitCode, 9);
 });
 
-test('timeout terminates and reaps the child as evidence', async () => {
+test('timeout terminates and reaps the child as evidence', { skip: processGroupSkip }, async () => {
   const result = await safeChild('sleep', [2_000], { timeoutMs: 30 });
   assert.equal(result.status, 'timeout');
   assert.equal(result.errorCode, 'CHILD_TIMEOUT');
 });
 
-test('privacy canary blocks output without reflecting the canary', async () => {
+test('privacy canary blocks output without reflecting the canary', { skip: processGroupSkip }, async () => {
   const canary = `task5-secret-${Date.now()}`;
   await assert.rejects(
     safeChild('canary', [canary, canary], {
@@ -373,7 +393,7 @@ test('privacy canary blocks output without reflecting the canary', async () => {
   );
 });
 
-test('production privacy scanner maps child canaries to post-launch exit 3', async () => {
+test('production privacy scanner maps child canaries to post-launch exit 3', { skip: processGroupSkip }, async () => {
   await assert.rejects(
     safeChild('canary', ['safe@example.com'], { privacyScanner: scanPrivacyBuffer }),
     (error) => error.code === 'PRIVACY_OUTPUT_BLOCKED' && error.exitCode === 3,
@@ -381,7 +401,7 @@ test('production privacy scanner maps child canaries to post-launch exit 3', asy
 });
 
 test('POSIX timeout reaps descendants before returning', {
-  skip: process.platform === 'win32',
+  skip: process.platform === 'win32' || processGroupSkip,
 }, async (t) => {
   const root = tempDirectory(t);
   const sentinel = path.join(root, 'late-sentinel');
@@ -399,7 +419,7 @@ for (const [label, exitCode, status] of [
   ['failed', 7, 'failed'],
 ]) {
   test(`POSIX ${label} leader exit reaps its surviving process group before return`, {
-    skip: process.platform === 'win32',
+    skip: process.platform === 'win32' || processGroupSkip,
   }, async (t) => {
     const root = tempDirectory(t);
     const sentinel = path.join(root, `${label}-late-sentinel`);
@@ -415,7 +435,7 @@ for (const [label, exitCode, status] of [
 }
 
 test('Codex capability stays closed because a POSIX setsid descendant escapes process-group proof', {
-  skip: process.platform === 'win32',
+  skip: process.platform === 'win32' || processGroupSkip,
 }, async (t) => {
   assert.equal(runtimeCapabilities('codex', process.platform).processTree, false);
   const root = tempDirectory(t);
@@ -441,6 +461,47 @@ test('Codex capability stays closed because a POSIX setsid descendant escapes pr
   await new Promise((resolve) => setTimeout(resolve, 350));
   // Retained threat-model reproducer: this is not live-readiness evidence.
   assert.equal(fs.existsSync(sentinel), true);
+});
+
+test('a refused process-group probe stays fail-closed and reports a missing capability', {
+  skip: process.platform === 'win32',
+}, async () => {
+  await assert.rejects(
+    safeChild('sleep', [200], {
+      timeoutMs: 20,
+      killGraceMs: 20,
+      killImpl: () => {
+        const error = new Error('operation not permitted');
+        error.code = 'EPERM';
+        throw error;
+      },
+    }),
+    (error) =>
+      error.code === 'PROCESS_TREE_UNAVAILABLE' &&
+      error.exitCode === 3 &&
+      error.capabilityUnavailable === true &&
+      error.capabilityReason === 'EPERM',
+  );
+});
+
+test('a probe that fails for any other reason stays an unqualified cleanup failure', {
+  skip: process.platform === 'win32',
+}, async () => {
+  await assert.rejects(
+    safeChild('sleep', [200], {
+      timeoutMs: 20,
+      killGraceMs: 20,
+      killImpl: () => {
+        const error = new Error('invalid argument');
+        error.code = 'EINVAL';
+        throw error;
+      },
+    }),
+    (error) =>
+      error.code === 'PROCESS_TREE_UNAVAILABLE' &&
+      error.exitCode === 3 &&
+      error.capabilityUnavailable !== true,
+  );
 });
 
 test('exact JSON parser rejects duplicate keys and trailing content', () => {
@@ -830,7 +891,7 @@ function oracleFixture(t) {
   return { root, workspace, entrypoint, result, scenario };
 }
 
-test('oracle executes a pinned entrypoint despite a transient source swap', async (t) => {
+test('oracle executes a pinned entrypoint despite a transient source swap', { skip: processGroupSkip }, async (t) => {
   const fixture = oracleFixture(t);
   const marker = path.join(fixture.root, 'attacker-marker');
   const backup = `${fixture.entrypoint}.original`;
@@ -860,7 +921,7 @@ test('oracle executes a pinned entrypoint despite a transient source swap', asyn
   assert.equal(fs.existsSync(marker), false);
 });
 
-test('pinned oracle preserves scenario-relative access to the verified seed', async (t) => {
+test('pinned oracle preserves scenario-relative access to the verified seed', { skip: processGroupSkip }, async (t) => {
   const fixture = oracleFixture(t);
   const seedPath = path.join(fixture.root, 'seed', 'value.txt');
   const seedBackup = path.join(fixture.root, 'seed.original');

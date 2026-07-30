@@ -1,0 +1,20 @@
+name: Experimental Governance Impact
+
+# The experimental containment surface is not part of the Core release unit and
+# is not a required check for Core pull requests.
+on:
+  pull_request:
+    paths:
+      - 'experimental/**'
+      - '.github/workflows/experimental-governance-impact.yml'
+  workflow_dispatch:
+
+jobs:
+  experimental:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm run ci:experimental

@@ -9,10 +9,10 @@ import {
   CREDENTIAL_PROXY_PATH,
   createHostCredentialProxy,
   describeCredentialProxyPolicy,
-} from './governance-impact-credential-proxy.mjs';
+} from './credential-proxy.mjs';
 import {
   OCI_PROXY_BASE_URL,
-} from './governance-impact-oci-supervisor.mjs';
+} from './oci-supervisor.mjs';
 
 const UPSTREAM = 'https://api.openai.com/v1/responses';
 const MAX_REQUEST_BYTES = 1_048_576;
@@ -30,6 +30,7 @@ const RELAY_READY_TIMEOUT_MS = 5_000;
 const RELAY_SHUTDOWN_TIMEOUT_MS = 1_000;
 const REPOSITORY_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
+  '..',
   '..',
   '..',
 );
@@ -186,7 +187,7 @@ export function createOciCredentialProxyFacade(options = {}) {
   const getUpstreamKey = options.getUpstreamKey;
   const nodeExecutable = options.nodeExecutable ?? process.execPath;
   const relayScriptPath = options.relayScriptPath
-    ?? 'scripts/governance-impact-uds-relay.mjs';
+    ?? 'experimental/governance-impact/uds-relay.mjs';
   const repositoryRoot = options.repositoryRoot ?? REPOSITORY_ROOT;
   const readyTimeoutMs = options.readyTimeoutMs ?? RELAY_READY_TIMEOUT_MS;
   const shutdownTimeoutMs = options.shutdownTimeoutMs ?? RELAY_SHUTDOWN_TIMEOUT_MS;
@@ -206,7 +207,7 @@ export function createOciCredentialProxyFacade(options = {}) {
     || !nonNegativeInteger(ownerGid)
     || !closedToken(nodeExecutable)
     || !path.isAbsolute(nodeExecutable)
-    || relayScriptPath !== 'scripts/governance-impact-uds-relay.mjs'
+    || relayScriptPath !== 'experimental/governance-impact/uds-relay.mjs'
     || !path.isAbsolute(repositoryRoot)
     || !positiveInteger(readyTimeoutMs)
     || !positiveInteger(shutdownTimeoutMs)

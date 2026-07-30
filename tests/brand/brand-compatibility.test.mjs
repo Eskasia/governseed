@@ -236,6 +236,7 @@ test('every retained legacy brand token has an explicit compatibility class', ()
     'README.md': 1,
     'THIRD_PARTY_NOTICES.md': 1,
     'docs/migrations/governseed-brand-transition.md': 3,
+    'docs/superpowers/plans/2026-07-30-core-boundary-consolidation-plan.md': 1,
     'docs/superpowers/specs/2026-07-13-governance-evidence-overhaul-design.md': 1,
     'docs/superpowers/specs/2026-07-29-decision-role-foundation-design.md': 1,
     'examples/template-adoption/base-minimal/.agent-governance.json': 1,

@@ -4,7 +4,7 @@ import path from 'node:path';
 import test from 'node:test';
 import { fileURLToPath } from 'node:url';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const WORKFLOW_PATH = path.join(
   ROOT,
   '.github/workflows/governance-impact-real.yml',
@@ -207,7 +207,7 @@ test('job checks out source, uses the declared Node runtime, and validates a dig
     text.includes('docker pull "$RUNTIME_IMAGE"')
   ));
   const evaluatorIndex = steps.findIndex(({ text }) => (
-    text.includes('scripts/governance-impact-eval.mjs run')
+    text.includes('experimental/governance-impact/eval.mjs run')
   ));
   assert.ok(
     validationIndex < pullIndex && pullIndex < evaluatorIndex,
@@ -228,7 +228,7 @@ test('workflow rejects artifact path metacharacters before evaluation', (t) => {
   );
   const steps = stepBlocks(extractBlock(jobBlock, /^\s*steps:\s*$/u));
   const evaluatorIndex = steps.findIndex(({ text }) => (
-    text.includes('scripts/governance-impact-eval.mjs run')
+    text.includes('experimental/governance-impact/eval.mjs run')
   ));
   const validationIndex = steps.findIndex(({ text }) => (
     text.includes('OUTPUT_PATH: ${{ inputs.output }}')
@@ -255,7 +255,7 @@ test('credential and real-mode opt-in exist only in evaluator step env', (t) => 
   );
   const steps = stepBlocks(extractBlock(jobBlock, /^\s*steps:\s*$/u));
   const evaluatorStep = steps.find(({ text }) => (
-    text.includes('scripts/governance-impact-eval.mjs run')
+    text.includes('experimental/governance-impact/eval.mjs run')
   ));
   assert.ok(evaluatorStep, 'real evaluator step is required');
   const evaluatorEnv = extractBlock(evaluatorStep.text, /^\s*env:\s*$/u);
@@ -286,7 +286,7 @@ test('evaluator passes fixed flags from non-secret step env without credential a
   );
   const evaluatorStep = stepBlocks(
     extractBlock(jobBlock, /^\s*steps:\s*$/u),
-  ).find(({ text }) => text.includes('scripts/governance-impact-eval.mjs run'));
+  ).find(({ text }) => text.includes('experimental/governance-impact/eval.mjs run'));
   assert.ok(evaluatorStep);
 
   const evaluatorEnv = trimmedLines(
@@ -385,35 +385,35 @@ test('artifact upload is success-only, exact-output-only, and followed by cleanu
 });
 
 test('package wires every OCI safety module into static checks without adding live integration to public CI', () => {
-  const check = PACKAGE.scripts?.check ?? '';
+  const check = PACKAGE.scripts?.['check:experimental'] ?? '';
   for (const file of [
-    'scripts/governance-impact-oci-integration.mjs',
-    'scripts/governance-impact-uds-relay.mjs',
-    'scripts/lib/governance-impact-credential-proxy.mjs',
-    'scripts/lib/governance-impact-oci-proxy-facade.mjs',
-    'scripts/lib/governance-impact-oci-supervisor.mjs',
+    'experimental/governance-impact/oci-integration.mjs',
+    'experimental/governance-impact/uds-relay.mjs',
+    'experimental/governance-impact/lib/credential-proxy.mjs',
+    'experimental/governance-impact/lib/oci-proxy-facade.mjs',
+    'experimental/governance-impact/lib/oci-supervisor.mjs',
   ]) {
     assert.ok(check.includes(`node --check ${file}`), `missing static check: ${file}`);
   }
 
-  const unit = PACKAGE.scripts?.['test:governance-impact'] ?? '';
+  const unit = PACKAGE.scripts?.['test:experimental'] ?? '';
   for (const file of [
-    'tests/governance-impact/credential-proxy.test.mjs',
-    'tests/governance-impact/oci-integration.test.mjs',
-    'tests/governance-impact/oci-proxy-facade.test.mjs',
-    'tests/governance-impact/oci-supervisor.test.mjs',
-    'tests/governance-impact/real-workflow.test.mjs',
-    'tests/governance-impact/uds-relay.test.mjs',
+    'experimental/governance-impact/tests/credential-proxy.test.mjs',
+    'experimental/governance-impact/tests/oci-integration.test.mjs',
+    'experimental/governance-impact/tests/oci-proxy-facade.test.mjs',
+    'experimental/governance-impact/tests/oci-supervisor.test.mjs',
+    'experimental/governance-impact/tests/real-workflow.test.mjs',
+    'experimental/governance-impact/tests/uds-relay.test.mjs',
   ]) {
     assert.ok(unit.includes(file), `missing offline unit test: ${file}`);
   }
   assert.equal(
     PACKAGE.scripts?.['test:governance-impact:oci:integration'],
-    'node scripts/governance-impact-oci-integration.mjs',
+    'node experimental/governance-impact/oci-integration.mjs',
   );
   assert.ok(
-    (PACKAGE.scripts?.['test:privacy'] ?? '').includes(
-      'tests/privacy/governance-impact-proxy-negative.test.mjs',
+    (PACKAGE.scripts?.['test:experimental'] ?? '').includes(
+      'experimental/governance-impact/tests/proxy-negative.test.mjs',
     ),
   );
   assert.doesNotMatch(
@@ -493,7 +493,7 @@ test('preflight workflow validates, pulls, proves, and uploads only the exact re
     text.includes('docker pull "$RUNTIME_IMAGE"')
   ));
   const preflightIndex = steps.findIndex(({ text }) => (
-    text.includes('scripts/governance-impact-eval.mjs preflight')
+    text.includes('experimental/governance-impact/eval.mjs preflight')
   ));
   const uploadIndex = steps.findIndex(({ text }) => (
     text.includes('uses: actions/upload-artifact@v4')

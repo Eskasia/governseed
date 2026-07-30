@@ -71,7 +71,7 @@ init host PID is known, the supervisor starts:
 ```text
 sudo -n nsenter --net=/proc/<init-pid>/ns/net \
   --setgid=<host-gid> --setuid=<host-uid> -- \
-  <node> scripts/governance-impact-uds-relay.mjs
+  <node> experimental/governance-impact/uds-relay.mjs
 ```
 
 The approved host must invoke the evaluator as a non-root user whose primary

@@ -225,6 +225,11 @@ export function buildRuntimeCommand(runtime, workspace, taskFile, options = {}) 
   return buildCodexRuntimeCommand(workspace, taskFile, options);
 }
 
+// A restricted container or rootless sandbox can refuse process-group signalling
+// outright. That errno set means the capability is missing, which is a different
+// state from a teardown that was allowed to run and did not finish.
+const PROCESS_GROUP_CAPABILITY_ERRNOS = new Set(['EPERM', 'ENOSYS', 'ENOTSUP']);
+
 function signalProcessGroup(child, signal, platform, killImpl) {
   try {
     if (platform !== 'win32' && Number.isInteger(child.pid) && child.pid > 0) {
@@ -232,11 +237,25 @@ function signalProcessGroup(child, signal, platform, killImpl) {
     } else {
       child.kill(signal);
     }
-    return 'signaled';
+    return { state: 'signaled' };
   } catch (error) {
-    if (error?.code === 'ESRCH') return 'absent';
-    return 'failed';
+    if (error?.code === 'ESRCH') return { state: 'absent' };
+    return {
+      state: 'failed',
+      capability: PROCESS_GROUP_CAPABILITY_ERRNOS.has(error?.code),
+      reason: error?.code,
+    };
   }
+}
+
+// Fails closed with the same code and the same exit status as any other
+// process-tree failure. The marker only lets a caller tell a missing capability
+// apart from a real cleanup failure.
+function failProcessGroupCapability(reason) {
+  const error = new GovernanceImpactError('PROCESS_TREE_UNAVAILABLE');
+  error.capabilityUnavailable = true;
+  error.capabilityReason = reason;
+  throw error;
 }
 
 export async function terminateProcessTree(child, options = {}) {
@@ -252,21 +271,27 @@ export async function terminateProcessTree(child, options = {}) {
   };
   const graceMs = options.killGraceMs ?? 100;
   if (platform !== 'win32') {
+    // The signal-0 probe runs before any teardown, so it is the one place where a
+    // refusal proves the environment lacks the capability rather than that cleanup
+    // failed.
     const probe = signalProcessGroup(child, 0, platform, killImpl);
-    if (probe === 'failed') fail('PROCESS_TREE_UNAVAILABLE');
-    if (probe === 'signaled') {
-      if (signalProcessGroup(child, 'SIGTERM', platform, killImpl) === 'failed') {
+    if (probe.state === 'failed') {
+      if (probe.capability) failProcessGroupCapability(probe.reason);
+      fail('PROCESS_TREE_UNAVAILABLE');
+    }
+    if (probe.state === 'signaled') {
+      if (signalProcessGroup(child, 'SIGTERM', platform, killImpl).state === 'failed') {
         fail('PROCESS_TREE_UNAVAILABLE');
       }
       await new Promise((resolve) => scheduler.setTimeout(resolve, graceMs));
       const afterTerm = signalProcessGroup(child, 0, platform, killImpl);
-      if (afterTerm === 'failed') fail('PROCESS_TREE_UNAVAILABLE');
-      if (afterTerm === 'signaled') {
-        if (signalProcessGroup(child, 'SIGKILL', platform, killImpl) === 'failed') {
+      if (afterTerm.state === 'failed') fail('PROCESS_TREE_UNAVAILABLE');
+      if (afterTerm.state === 'signaled') {
+        if (signalProcessGroup(child, 'SIGKILL', platform, killImpl).state === 'failed') {
           fail('PROCESS_TREE_UNAVAILABLE');
         }
         await new Promise((resolve) => scheduler.setTimeout(resolve, graceMs));
-        if (signalProcessGroup(child, 0, platform, killImpl) !== 'absent') {
+        if (signalProcessGroup(child, 0, platform, killImpl).state !== 'absent') {
           fail('PROCESS_TREE_UNAVAILABLE');
         }
       }

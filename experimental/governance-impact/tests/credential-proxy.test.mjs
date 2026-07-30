@@ -13,7 +13,7 @@ import {
   createHostCredentialProxy,
   describeCredentialProxyPolicy,
   hashCredentialProxyPolicy,
-} from '../../scripts/lib/governance-impact-credential-proxy.mjs';
+} from '../lib/credential-proxy.mjs';
 
 const ATTEMPT_ID = 'attempt-synthetic-001';
 const ATTEMPT_BEARER = 'attempt-bearer-synthetic-001';

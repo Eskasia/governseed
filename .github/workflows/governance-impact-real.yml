@@ -116,7 +116,7 @@ jobs:
           TIMEOUT_MS: ${{ inputs.timeout_ms }}
           TMPDIR: ${{ runner.temp }}
         run: |
-          node scripts/governance-impact-eval.mjs run \
+          node experimental/governance-impact/eval.mjs run \
             --scenario "$SCENARIO" \
             --manifest "$MANIFEST" \
             --policy "$POLICY" \

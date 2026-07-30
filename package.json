@@ -15,16 +15,18 @@
     "node": ">=20"
   },
   "scripts": {
-    "check": "node --check scripts/init.mjs && node --check scripts/doctor.mjs && node --check scripts/agent-governance.mjs && node --check scripts/validate-starter.mjs && node --check scripts/smoke-base.mjs && node --check scripts/smoke-fullstack.mjs && node --check scripts/fixtures-check.mjs && node --check scripts/validate-runtime-proof.mjs && node --check scripts/assert-claude-first-response.mjs && node --check scripts/runtime-smoke-codex.mjs && node --check scripts/runtime-smoke-claude.mjs && node --check scripts/runtime-smoke-antigravity.mjs && node --check scripts/runtime-proof-mock.mjs && node --check scripts/governance-impact-eval.mjs && node --check scripts/governance-impact-oci-integration.mjs && node --check scripts/governance-impact-uds-relay.mjs && node --check scripts/lib/governance-checks.mjs && node --check scripts/lib/governance-artifacts.mjs && node --check scripts/lib/decision-role-core.mjs && node --check scripts/lib/decision-role-doctor.mjs && node --check scripts/lib/policy-compiler-core.mjs && node --check scripts/lib/policy-compiler-project.mjs && node --check scripts/lib/codex-policy-adapter.mjs && node --check scripts/lib/policy-compiler-doctor.mjs && node --check scripts/lib/governance-impact-core.mjs && node --check scripts/lib/governance-impact-adapters.mjs && node --check scripts/lib/governance-impact-credential-proxy.mjs && node --check scripts/lib/governance-impact-oci-proxy-facade.mjs && node --check scripts/lib/governance-impact-oci-supervisor.mjs",
+    "check": "node --check scripts/init.mjs && node --check scripts/doctor.mjs && node --check scripts/agent-governance.mjs && node --check scripts/validate-starter.mjs && node --check scripts/smoke-base.mjs && node --check scripts/smoke-fullstack.mjs && node --check scripts/fixtures-check.mjs && node --check scripts/validate-runtime-proof.mjs && node --check scripts/assert-claude-first-response.mjs && node --check scripts/runtime-smoke-codex.mjs && node --check scripts/runtime-smoke-claude.mjs && node --check scripts/runtime-smoke-antigravity.mjs && node --check scripts/runtime-proof-mock.mjs && node --check scripts/governance-impact-eval.mjs && node --check scripts/lib/governance-checks.mjs && node --check scripts/lib/governance-artifacts.mjs && node --check scripts/lib/decision-role-core.mjs && node --check scripts/lib/decision-role-doctor.mjs && node --check scripts/lib/policy-compiler-core.mjs && node --check scripts/lib/policy-compiler-project.mjs && node --check scripts/lib/codex-policy-adapter.mjs && node --check scripts/lib/policy-compiler-doctor.mjs && node --check scripts/lib/governance-impact-core.mjs && node --check scripts/lib/governance-impact-adapters.mjs",
+    "check:experimental": "node --check experimental/governance-impact/eval.mjs && node --check experimental/governance-impact/oci-integration.mjs && node --check experimental/governance-impact/uds-relay.mjs && node --check experimental/governance-impact/lib/credential-proxy.mjs && node --check experimental/governance-impact/lib/oci-proxy-facade.mjs && node --check experimental/governance-impact/lib/oci-supervisor.mjs",
     "validate": "node scripts/validate-starter.mjs .",
     "validate:runtime-proof": "node scripts/validate-runtime-proof.mjs .",
-    "test:governance": "node --test tests/governance/doctor-governance.test.mjs tests/governance/rule-lifecycle.test.mjs tests/governance/traceability.test.mjs",
+    "test:governance": "node --test tests/governance/doctor-governance.test.mjs tests/governance/rule-lifecycle.test.mjs tests/governance/traceability.test.mjs tests/governance/core-release-boundary.test.mjs",
     "test:brand": "node --test tests/brand/brand-compatibility.test.mjs",
     "test:decision-role": "node --test tests/decision-role/artifact-safety.test.mjs tests/decision-role/schema-contracts.test.mjs tests/decision-role/cli-contracts.test.mjs tests/decision-role/doctor-contracts.test.mjs",
     "test:policy-compiler": "node --test tests/policy-compiler/artifact-safety.test.mjs tests/policy-compiler/cli-contracts.test.mjs tests/policy-compiler/core.test.mjs tests/policy-compiler/doctor-contracts.test.mjs tests/policy-compiler/fixture-contracts.test.mjs tests/policy-compiler/schema-contracts.test.mjs",
-    "test:governance-impact": "node --test tests/governance-impact/scorer.test.mjs tests/governance-impact/scenario-schema.test.mjs tests/governance-impact/cli.test.mjs tests/governance-impact/runner.test.mjs tests/governance-impact/credential-proxy.test.mjs tests/governance-impact/oci-integration.test.mjs tests/governance-impact/oci-proxy-facade.test.mjs tests/governance-impact/oci-supervisor.test.mjs tests/governance-impact/real-workflow.test.mjs tests/governance-impact/uds-relay.test.mjs",
-    "test:governance-impact:oci:integration": "node scripts/governance-impact-oci-integration.mjs",
-    "test:privacy": "node --test tests/privacy/doctor-negative.test.mjs tests/privacy/eval-negative.test.mjs tests/privacy/runtime-proof-negative.test.mjs tests/privacy/governance-impact-proxy-negative.test.mjs",
+    "test:governance-impact": "node --test tests/governance-impact/scorer.test.mjs tests/governance-impact/scenario-schema.test.mjs tests/governance-impact/cli.test.mjs tests/governance-impact/runner.test.mjs",
+    "test:experimental": "node --test experimental/governance-impact/tests/cli.test.mjs experimental/governance-impact/tests/credential-proxy.test.mjs experimental/governance-impact/tests/oci-integration.test.mjs experimental/governance-impact/tests/oci-proxy-facade.test.mjs experimental/governance-impact/tests/oci-supervisor.test.mjs experimental/governance-impact/tests/proxy-negative.test.mjs experimental/governance-impact/tests/real-workflow.test.mjs experimental/governance-impact/tests/uds-relay.test.mjs",
+    "test:governance-impact:oci:integration": "node experimental/governance-impact/oci-integration.mjs",
+    "test:privacy": "node --test tests/privacy/doctor-negative.test.mjs tests/privacy/eval-negative.test.mjs tests/privacy/runtime-proof-negative.test.mjs",
     "validate:governance-impact": "node --test tests/governance-impact/scenario-schema.test.mjs",
     "eval:governance": "node scripts/governance-impact-eval.mjs",
     "smoke:base": "node scripts/smoke-base.mjs",
@@ -35,11 +37,33 @@
     "runtime:proof:antigravity": "node scripts/runtime-smoke-antigravity.mjs",
     "runtime:proof": "npm run validate:runtime-proof && npm run runtime:proof:codex && npm run runtime:proof:claude && npm run runtime:proof:antigravity",
     "runtime:proof:mock": "npm run validate:runtime-proof && node scripts/runtime-proof-mock.mjs",
-    "ci": "npm run check && npm run validate && npm run validate:runtime-proof && npm run test:governance && npm run test:brand && npm run test:decision-role && npm run test:policy-compiler && npm run test:governance-impact && npm run test:privacy && npm run validate:governance-impact && npm run eval:governance && npm run runtime:proof:mock && npm run smoke:base && npm run smoke:fullstack && npm run fixtures"
+    "ci": "npm run check && npm run validate && npm run validate:runtime-proof && npm run test:governance && npm run test:brand && npm run test:decision-role && npm run test:policy-compiler && npm run test:governance-impact && npm run test:privacy && npm run validate:governance-impact && npm run eval:governance && npm run runtime:proof:mock && npm run smoke:base && npm run smoke:fullstack && npm run fixtures",
+    "ci:experimental": "npm run check:experimental && npm run test:experimental"
   },
   "bin": {
     "agent-governance": "./scripts/agent-governance.mjs",
     "agent-governance-init": "./scripts/init.mjs",
     "agent-governance-doctor": "./scripts/doctor.mjs"
-  }
+  },
+  "files": [
+    "scripts/",
+    "schemas/",
+    "profiles/",
+    "templates/",
+    "startup/",
+    "workflows/",
+    "catalogs/",
+    "prompts/",
+    "docs/migrations/governseed-brand-transition.md",
+    "docs/policy-compiler.md",
+    "docs/research/2026-07-29-codex-policy-capability-matrix.md",
+    "docs/research/2026-07-29-governseed-name-audit.md",
+    "docs/research/evidence/2026-07-29-tmview-governseed-no-results.png",
+    "tests/policy-compiler/fixture-contracts.test.mjs",
+    "tests/policy-compiler/fixtures/",
+    "README.md",
+    "LICENSE",
+    "THIRD_PARTY_NOTICES.md",
+    "CHANGELOG.md"
+  ]
 }

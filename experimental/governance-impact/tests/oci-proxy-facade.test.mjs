@@ -8,10 +8,10 @@ import test from 'node:test';
 
 import {
   createOciCredentialProxyFacade,
-} from '../../scripts/lib/governance-impact-oci-proxy-facade.mjs';
+} from '../lib/oci-proxy-facade.mjs';
 import {
   OCI_PROXY_BASE_URL,
-} from '../../scripts/lib/governance-impact-oci-supervisor.mjs';
+} from '../lib/oci-supervisor.mjs';
 
 const ATTEMPT_ID = 'a'.repeat(64);
 const MODEL = 'gpt-synthetic-fixed';
@@ -314,7 +314,7 @@ test('opaque handle, exact container env, relay argv, and cleanup keep secrets c
     '--setuid=1000',
     '--',
     '/reviewed/node',
-    'scripts/governance-impact-uds-relay.mjs',
+    'experimental/governance-impact/uds-relay.mjs',
   ]);
   assert.equal(spawns[0].options.shell, false);
   assert.deepEqual(Object.keys(spawns[0].options.env).sort(), [

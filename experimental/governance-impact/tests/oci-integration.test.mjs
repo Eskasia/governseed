@@ -10,13 +10,13 @@ import {
   BLOCKED_EXIT_CODE,
   FIXTURE_CODEX_VERSION,
   runOciIntegration,
-} from '../../scripts/governance-impact-oci-integration.mjs';
+} from '../oci-integration.mjs';
 import {
   createDockerCliClient,
   createLinuxCodexOciSupervisor,
   createLinuxProcfsClient,
   createSupervisorFs,
-} from '../../scripts/lib/governance-impact-oci-supervisor.mjs';
+} from '../lib/oci-supervisor.mjs';
 
 const BASE_DIGEST = 'a'.repeat(64);
 const IMAGE_DIGEST = 'b'.repeat(64);

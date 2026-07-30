@@ -11,9 +11,9 @@ import {
   CREDENTIAL_PROXY_ATTEMPT_HEADER,
   CREDENTIAL_PROXY_PATH,
   createHostCredentialProxy,
-} from '../../scripts/lib/governance-impact-credential-proxy.mjs';
+} from '../lib/credential-proxy.mjs';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const MODEL = 'gpt-private-negative';
 const UPSTREAM = 'https://api.example.invalid/v1/responses';
 
@@ -211,7 +211,7 @@ test('cleanup uncertainty does not reflect filesystem errors or claim socket rem
 
 test('credential proxy source has no console logging or secret-bearing public fields', () => {
   const source = fs.readFileSync(
-    path.join(ROOT, 'scripts/lib/governance-impact-credential-proxy.mjs'),
+    path.join(ROOT, 'experimental/governance-impact/lib/credential-proxy.mjs'),
     'utf8',
   );
   assert.doesNotMatch(source, /\bconsole\s*\./u);
