@@ -654,6 +654,7 @@ const requiredRepositoryFiles = [
   'tests/governance/rule-lifecycle.test.mjs',
   'tests/governance/traceability.test.mjs',
   'tests/governance/vocabulary-consistency.test.mjs',
+  'tests/governance/package-surface.test.mjs',
   'tests/decision-role/artifact-safety.test.mjs',
   'tests/decision-role/schema-contracts.test.mjs',
   'tests/decision-role/cli-contracts.test.mjs',

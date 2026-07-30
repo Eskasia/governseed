@@ -299,7 +299,7 @@ agent-governance attest <project> --target codex [--json]
 4. `attest-drift` — materialize 後手動竄改 target 設定 → drift 偵測、exit 非 0。
 5. `attest-level-ceiling` — 嘗試構造 `runtime-evidenced` 輸出 → schema 拒絕。
 6. `core-boundary` — Core `scripts/` 不得 import `experimental/`（靜態檢查）。
-7. `package-surface` — `npm pack` 不含 `tests/`、`experimental/`、`docs/`、`examples/`。
+7. `package-surface` — `npm pack` 的內容不得超出 `package.json` `files` 白名單解析出的集合；白名單外的任何項目即失敗。**（2026-07-30 修訂）** 原措辭為「不含 `tests/`、`experimental/`、`docs/`、`examples/`」，與範圍 A 已落地的白名單直接衝突：白名單刻意出貨 `tests/policy-compiler/fixtures/`、`tests/policy-compiler/fixture-contracts.test.mjs` 與五個 `docs/` 路徑，其中數個由 `tests/brand/brand-compatibility.test.mjs` pin 住。裁決為改寫本行、保留白名單；`experimental/` 與 `examples/` 不在白名單內，故仍受此 fixture 保護。
 8. `compile-still-does-not-write` — **既有的 `tests/policy-compiler/cli-contracts.test.mjs` 中「compile 後 `.codex/config.toml` 不存在」的斷言必須維持原樣且繼續通過。** 本項為迴歸保護，任何對該斷言的修改即驗收失敗。
 9. `trust-unknown-downgrade` — `trustStateObserved` 為 `unknown` 時 attest 等級自動降為 `materialized-unverified`，且無參數可覆寫。
 10. `precedence-caveat-required` — `precedenceCaveat` 為空陣列時 schema 驗證失敗。

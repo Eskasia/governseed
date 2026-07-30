@@ -43,6 +43,11 @@
   JSON exists and its hash matches; `target-materialized` means the native
   project-local setting was written. `tests/governance/vocabulary-consistency.test.mjs`
   fails on the bare term in published prose.
+- Added `tests/governance/package-surface.test.mjs`. It asserts that the tarball
+  ships nothing outside the resolved `files` whitelist, which is stricter than
+  naming directories: it caught npm publishing a parent `README.md` for a
+  whitelist entry nested below it. `experimental/`, `examples/` and `.github/`
+  stay covered because they are not whitelisted.
 - Added `docs/enforcement-boundary.md` and
   `docs/adr/005-target-materialization-and-attestation-boundary.md`; added
   `schemas/materialize-receipt.schema.json` and

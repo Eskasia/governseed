@@ -1111,16 +1111,21 @@ than against the reviews. Three would have blocked implementation outright.
 
 ### 10.3 Still open for the phase-one review
 
-9. **The plan's fixture 7 conflicts with the shipped package surface, and this
-   design widens the gap.** The plan requires a `package-surface` fixture
-   asserting that `npm pack` excludes `tests/`, `experimental/`, `docs/`, and
-   `examples/`. The current `package.json` `files` whitelist deliberately ships
-   `tests/policy-compiler/fixtures/`, `tests/policy-compiler/fixture-contracts.test.mjs`,
-   and four `docs/` paths, and ruling 2 above adds a fifth. Either the fixture
-   means "nothing outside the whitelist leaks" and the plan's wording needs
-   correcting, or ruling 2 has to be withdrawn. This design does not adjudicate a
-   plan requirement; fixture 7 is scope A and unwritten, so nothing here is
-   blocked on the answer.
+9. ~~**The plan's fixture 7 conflicts with the shipped package surface.**~~
+   **Ruled on 2026-07-30: the plan wording is corrected, the whitelist stands.**
+   Fixture 7 now asserts that the tarball ships nothing outside the resolved
+   `files` whitelist, rather than naming directories. `experimental/`,
+   `examples/` and `.github/` are not in the whitelist, so they stay covered;
+   `tests/policy-compiler/fixtures/`, `fixture-contracts.test.mjs` and the five
+   `docs/` paths ship by design, several of them pinned by
+   `tests/brand/brand-compatibility.test.mjs`. Written as
+   `tests/governance/package-surface.test.mjs`.
+
+   Red evidence: adding `examples/template-adoption/base-minimal/` to the
+   whitelist turned two of its three assertions red, and one of them caught a
+   path the whitelist never named — npm also publishes
+   `examples/template-adoption/README.md` for an entry nested below it. That is
+   exactly the silent widening this fixture exists to catch.
 10. **The plan's §C3 example contradicts its own §C4 downgrade rule.** The example
    shows `level: "project-layer-observed"` with `trustStateObserved: "unknown"`.
    This design follows §C4, so the downgrade rule wins and the example is
