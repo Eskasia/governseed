@@ -146,7 +146,7 @@ export function runOciIntegration(options = {}) {
   const stderr = options.stderr ?? process.stderr;
   const nodeExecutable = options.nodeExecutable ?? process.execPath;
   const repoRoot = options.repoRoot
-    ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+    ?? path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..');
   const dockerExecutable = options.dockerExecutable ?? 'docker';
 
   if (env.GOVERNANCE_IMPACT_OCI_INTEGRATION !== '1') {

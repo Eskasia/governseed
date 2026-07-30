@@ -13,7 +13,7 @@ import {
   createSupervisorFs,
   OCI_RUNTIME_PATH,
   OciSupervisorError,
-} from '../../scripts/lib/governance-impact-oci-supervisor.mjs';
+} from '../lib/oci-supervisor.mjs';
 
 const IMAGE_DIGEST = 'a'.repeat(64);
 const IMAGE_REFERENCE = `registry.example/governance/codex@sha256:${IMAGE_DIGEST}`;

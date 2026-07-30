@@ -184,7 +184,7 @@ npm run eval:governance
 Real paired evaluation is a separate, explicit synthetic-only maintainer action:
 
 ```bash
-GOVERNANCE_IMPACT_REAL=1 node scripts/governance-impact-eval.mjs run \
+GOVERNANCE_IMPACT_REAL=1 node experimental/governance-impact/eval.mjs run \
   --scenario tests/governance-impact/scenarios/scope-guard \
   --manifest evidence/manifest.json \
   --policy evidence/policy.json \

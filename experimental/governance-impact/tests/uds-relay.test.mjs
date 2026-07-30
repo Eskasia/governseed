@@ -7,7 +7,7 @@ import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
 
-const RELAY_SCRIPT = path.resolve('scripts/governance-impact-uds-relay.mjs');
+const RELAY_SCRIPT = path.resolve('experimental/governance-impact/uds-relay.mjs');
 const ATTEMPT_ID = 'b'.repeat(64);
 const BEARER = 'relay-attempt-bearer-synthetic';
 

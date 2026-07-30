@@ -94,7 +94,7 @@ jobs:
           TIMEOUT_MS: ${{ inputs.timeout_ms }}
           TMPDIR: ${{ runner.temp }}
         run: |
-          node scripts/governance-impact-eval.mjs preflight \
+          node experimental/governance-impact/eval.mjs preflight \
             --model "$MODEL" \
             --output "$OUTPUT_PATH" \
             --runtime-image "$RUNTIME_IMAGE" \

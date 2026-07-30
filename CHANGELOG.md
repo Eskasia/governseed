@@ -1,5 +1,28 @@
 # GovernSeed Changelog
 
+## 2026-07-30 — Core Boundary Consolidation
+
+- Moved OCI runtime containment, the credential proxy, the loopback relay, the
+  opt-in Docker harness, and the live paired evaluator subcommands `run` and
+  `preflight` into `experimental/governance-impact/`, which is outside the Core
+  release unit.
+- Established a one-way dependency: the experimental entry imports the Core
+  paired-scenario engine, and Core imports nothing under `experimental/`.
+  `tests/governance/core-release-boundary.test.mjs` fails if a Core module
+  imports that surface.
+- Core `scripts/governance-impact-eval.mjs` keeps the offline controls, the
+  engine, and the `validate`, `replay`, `aggregate`, and `gate` subcommands. It
+  now answers `run` and `preflight` with an exit 2
+  `EXPERIMENTAL_ENTRY_REQUIRED` usage error naming the experimental entry, and
+  does not delegate to it.
+- Removed the experimental surface from `npm run ci` and from the Core
+  release-unit validation; added `npm run ci:experimental` and a separate
+  workflow that is not a required check for Core pull requests.
+- Recorded override: this consolidation deliberately changes the CLI dispatch
+  layer for `run` and `preflight` — their entry location, Core's usage refusal,
+  and the approval-gated workflows' spawn target. The OCI and credential logic
+  itself moved unchanged.
+
 ## 2026-07-29 — Risk-to-Policy Compiler for Codex
 
 - Added a dependency-free, deterministic compiler from assessed risk,

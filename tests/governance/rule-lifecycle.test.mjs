@@ -96,7 +96,7 @@ jobs:
   preflight:
     runs-on: ubuntu-latest
     steps:
-      - run: node scripts/governance-impact-eval.mjs preflight
+      - run: node experimental/governance-impact/eval.mjs preflight
         env:
           GOVERNANCE_IMPACT_REAL: "1"
 `;
