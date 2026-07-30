@@ -15,9 +15,9 @@
 
 **Date:** 2026-07-30
 
-**Status:** Planned. 範圍 A 未開始；範圍 B/C/D 待範圍 A 合併後另開 PR。
+**Status:** Implemented and merged. 範圍 A 為 PR #13、範圍 B/C/D 為 PR #14，皆於 2026-07-30 合併；Ubuntu/macOS/Windows hosted verification 全數通過。
 
-**Base:** `main@9559773 (PR #13 merged)` (PR #12 merged)
+**Base:** `main@9559773` (PR #13 merged)
 
 **Implementation branch:** `feature/core-boundary-consolidation`（範圍 A）
 
