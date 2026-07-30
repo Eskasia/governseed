@@ -99,17 +99,57 @@ Bare-name denial and scoped denial are different mechanisms with different
 blast radius. The Adapter must choose one deliberately per control and record
 which it used.
 
-### F4. The shadowing hazard is inverted relative to Codex
+### F4. The shadowing hazard applies to scalar settings, not to permission rules
 
-`.claude/settings.local.json` is gitignored and outranks `.claude/settings.json`.
-A developer can therefore silently outrank the governed file with a file that
-never appears in review. Managed settings outrank everything and cannot be
-overridden.
+`.claude/settings.local.json` is gitignored and outranks `.claude/settings.json`,
+and managed settings outrank everything and cannot be overridden. A developer
+can therefore silently outrank a governed *scalar* setting with a file that
+never appears in review.
 
-For Codex the hazard was displacement inside one file. For Claude Code it is a
-higher-precedence file that GovernSeed may be unable to read. `attest` must
-report both `.claude/settings.local.json` presence and managed-settings
-possibility as caveats, and must not treat their absence as proof.
+Permission rules are the exception, and the distinction is load-bearing:
+
+> Permission rules behave differently because they merge across scopes rather
+> than override.
+>
+> — `settings`
+
+A `deny` or `ask` entry GovernSeed writes into `.claude/settings.json` is
+therefore merged with, not replaced by, the entries in a higher-precedence
+file. Combined with F2 — deny is evaluated first and specificity does not
+reorder the rules — no higher layer can remove or weaken a GovernSeed `deny`
+by adding rules.
+
+`attest` must draw this line rather than issuing one blanket caveat:
+`permissions.deny` and `permissions.ask` entries survive higher layers;
+`defaultMode` and the mode locks do not. Managed-settings possibility remains a
+permanent caveat for the scalar keys, and its absence is never proof.
+
+### F7. An invalid settings file is rejected whole, which fails open
+
+> This tolerance applies only to managed settings. User, project, and local
+> settings files remain strict: a file that fails validation is rejected as a
+> whole and reported.
+>
+> — `settings`
+
+If GovernSeed ever writes an unparseable `.claude/settings.json`, the entire
+project layer is dropped — including `deny` entries the team wrote themselves.
+That is a fail-open outcome and is the most severe failure mode available to
+this target. Any pre-existing file that does not parse must be treated as a
+fail-closed refusal, never overwritten.
+
+### F8. Unknown keys are tolerated, but an in-file marker is still wrong
+
+The `$schema` key is optional and exists for editor autocomplete; the published
+schema "may not include settings added in the most recent CLI releases, so a
+validation warning on a recently documented field does not necessarily mean
+your configuration is invalid" — `settings`.
+
+GovernSeed could therefore add an ownership marker key without breaking Claude
+Code. It should not: a project that references the official schema would show
+the user an editor validation warning on a key GovernSeed invented. The
+content-addressed receipt already records ownership, so no in-file marker is
+needed.
 
 ### F5. Two mode locks are restriction-only and scope-independent
 
