@@ -1,7 +1,7 @@
 # Decision and Role Foundation Implementation Plan
 
 **Date:** 2026-07-29
-**Status:** Approved for execution by the user's Milestone 1 request
+**Status:** Implemented and merged as PR #9 on 2026-07-29
 **Worktree:** isolated worktree on `feature/governance-decision-role-foundation`
 **Branch:** `feature/governance-decision-role-foundation`
 **Base:** `codex/public-promotion-readiness@e458c017468dbf4f9329ea51df4f1f5ad319c6b6`

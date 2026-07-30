@@ -2,7 +2,7 @@
 
 **Date:** 2026-07-30
 
-**Status:** Planned; not started
+**Status:** Implemented and merged as PR #13 on 2026-07-30; Ubuntu/macOS/Windows hosted verification passed
 
 **Base:** `main@7dd7edd3494aec33d0060c0634070887fb20a524` (PR #12 merged)
 
