@@ -19,9 +19,13 @@
   release-unit validation; added `npm run ci:experimental` and a separate
   workflow that is not a required check for Core pull requests.
 - Restricted the published package to a `files` whitelist. The tarball now
-  carries 94 entries and 857,171 unpacked bytes, down from 282 entries and
-  2,374,948 bytes, and no longer ships `tests/`, `experimental/`, `docs/`, or
-  `examples/`. The package name and all three bin names are unchanged.
+  carries 108 entries and 1,083,420 unpacked bytes, down from 282 entries and
+  2,374,948 bytes. It no longer ships `experimental/`, `examples/`, the test
+  suites, or the documentation tree, and it keeps the published governance
+  surfaces that `tests/brand/brand-compatibility.test.mjs` pins: the brand
+  transition notice, the name-audit report and its evidence, the policy-compiler
+  reference and capability matrix, and the policy-compiler fixture contracts.
+  The package name and all three bin names are unchanged.
 - Process-tree teardown now classifies its pre-teardown probe: a refused
   process-group signal (`EPERM`, `ENOSYS`, `ENOTSUP`) is reported as a missing
   environment capability instead of a cleanup failure. Production keeps the same
