@@ -1,5 +1,21 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — Process-Tree Reap Is Polled, Not Decided On One Look
+
+- `terminateProcessTree` sent `SIGKILL`, slept one fixed `killGraceMs`, and
+  reported `PROCESS_TREE_UNAVAILABLE` if the group was still present. SIGKILL
+  cannot be refused, so a group still present at that moment is waiting to be
+  reaped, not resisting — the code reported a scheduling delay with the code
+  that means containment could not be proven. Fixes #24.
+- The reap is now polled to a deadline, so it returns as soon as the group is
+  gone and only a group that outlives the deadline fails. A probe refused by the
+  environment still fails immediately; retrying it would answer nothing.
+- `terminateProcessTree` had no direct unit test — every path ran through real
+  processes, so the reap window was only ever exercised at whatever speed the
+  machine happened to run. Three tests now drive it through an injected
+  `killImpl` and an immediate scheduler, independent of wall-clock timing.
+- The fail-closed contract is unchanged: same code, same exit 3.
+
 ## 2026-07-31 — Validation Distinguishes A Missing Git From An Uncommitted File
 
 - `npm run validate` reported every required artifact as not committed in HEAD
