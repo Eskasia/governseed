@@ -454,6 +454,46 @@ test('requires every present release artifact to match HEAD, not only exist in t
   );
 });
 
+// spawnSync signals an unrunnable executable through error or a null status,
+// never through a non-zero exit. Reading either as a per-file verdict blames
+// the repository for the environment.
+test('a git that cannot run is reported once, never blamed on a file', (t) => {
+  const repo = fs.mkdtempSync(path.join(os.tmpdir(), 'git-unavailable-'));
+  t.after(() => fs.rmSync(repo, { recursive: true, force: true }));
+  const files = ['workflows/one.md', 'workflows/two.md', 'workflows/three.md'];
+  fs.mkdirSync(path.join(repo, 'workflows'), { recursive: true });
+  for (const file of files) fs.writeFileSync(path.join(repo, file), 'synthetic\n');
+  // A checkout is present; only the executable is missing.
+  fs.mkdirSync(path.join(repo, '.git'));
+
+  const notRun = {
+    missing: () => ({
+      error: Object.assign(new Error('spawnSync git ENOENT'), { code: 'ENOENT' }),
+      status: null,
+      stdout: '',
+      stderr: '',
+    }),
+    killed: () => ({ status: null, signal: 'SIGKILL', stdout: '', stderr: '' }),
+  };
+
+  for (const [label, spawn] of Object.entries(notRun)) {
+    for (const errors of [
+      validateRequiredArtifactCommit(repo, files, spawn),
+      validateMandatoryWorkflowTracking(repo, files, spawn),
+    ]) {
+      assert.equal(errors.length, 1, `${label}: one environment error, not one per file`);
+      assert.match(errors[0], /git could not be executed/iu);
+      for (const file of files) {
+        assert.equal(
+          errors[0].includes(file),
+          false,
+          `${label}: ${file} must not be named for an environment failure`,
+        );
+      }
+    }
+  }
+});
+
 test('starter validator keeps the public CI workflow in the committed release unit', (t) => {
   const starter = copyStarter(t);
   runGit(starter, ['init', '--quiet']);
