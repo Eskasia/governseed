@@ -72,6 +72,69 @@ export function governancePath(project, relative) {
   return path.join(project, ...relative.split('/'));
 }
 
+/**
+ * A ceiling is bounded at three layers, so changing one alone is rejected as
+ * privilege expansion rather than recompiled. Tests that need a different
+ * compiled policy change all three together.
+ */
+export function setCeiling(project, capability, mode) {
+  const profilePath = governancePath(
+    project,
+    '.agent-governance/risk-profile.json',
+  );
+  const profile = readJson(profilePath);
+  profile.permissionCeiling[capability] = mode;
+  writeJson(profilePath, profile);
+
+  const assignmentPath = governancePath(
+    project,
+    '.agent-governance/role-assignments/TASK-001.json',
+  );
+  const assignment = readJson(assignmentPath);
+  assignment.permissionCeiling[capability] = mode;
+  for (const role of assignment.selectedRoles ?? []) {
+    role.grantedCapabilityCeiling[capability] = mode;
+  }
+  writeJson(assignmentPath, assignment);
+}
+
+/**
+ * An unrequested capability compiles to deny regardless of its ceiling, so a
+ * test that needs a looser compiled mode must request it at the task and the
+ * role as well as raise the ceiling.
+ */
+export function requestCapability(project, capability) {
+  const profilePath = governancePath(
+    project,
+    '.agent-governance/risk-profile.json',
+  );
+  const profile = readJson(profilePath);
+  for (const task of profile.tasks) {
+    if (!task.requestedCapabilities.includes(capability)) {
+      task.requestedCapabilities = [
+        ...task.requestedCapabilities,
+        capability,
+      ].sort();
+    }
+  }
+  writeJson(profilePath, profile);
+
+  const assignmentPath = governancePath(
+    project,
+    '.agent-governance/role-assignments/TASK-001.json',
+  );
+  const assignment = readJson(assignmentPath);
+  for (const role of assignment.selectedRoles ?? []) {
+    if (!role.requestedCapabilities.includes(capability)) {
+      role.requestedCapabilities = [
+        ...role.requestedCapabilities,
+        capability,
+      ].sort();
+    }
+  }
+  writeJson(assignmentPath, assignment);
+}
+
 export function snapshotFiles(root) {
   const entries = new Map();
   function visit(directory) {

@@ -1,5 +1,58 @@
 # GovernSeed Changelog
 
+## 2026-07-30 — Target Materialization and Project-Layer Attestation
+
+- Added `agent-governance materialize <project> --target codex [--dry-run]`. It
+  writes one project-local file, `.codex/config.toml`, plus a content-addressed
+  `MAT-*` receipt. Every emitted value is the strictest value that key admits; a
+  policy that would require a looser value is refused with
+  `MATERIALIZE_WOULD_WIDEN` rather than written.
+- Added `agent-governance attest <project> --target codex`. It is read-only and
+  compares three things — the compiled policy, the materialize receipt, and the
+  bytes on disk. Its level is capped at `materialized-unverified`;
+  `project-layer-observed` stays in the schema as reserved and is unreachable
+  while `trustStateObserved` admits only `unknown`. No flag and no environment
+  variable raises it. Every output carries the hard-coded claim
+  `PROJECT_LAYER_OBSERVED_NOT_RUNTIME_ENFORCED`.
+- **Public claim change.** The README FAQ previously said `compile` "does not
+  write Codex runtime configuration". That wording was true until this release
+  and is now replaced: `compile` produces a policy candidate and an Adapter,
+  `materialize` writes project-local target settings under an explicit command,
+  and `attest` reads them back. None of the three establishes runtime
+  enforcement. The rewrite lands in the same commit as the implementation.
+- `materialize` is a separate command and is never folded into `compile`. The
+  existing assertion that `.codex/config.toml` does not exist after `compile`
+  is unchanged and still passes.
+- Two preflight conditions fail closed before any write, and `attest` re-checks
+  both: `TARGET_SETTINGS_PROFILE_MODEL_CONFLICT` when a permission profile
+  appears anywhere in the project tree, because profiles and the sandbox
+  settings written here do not compose; and `TARGET_SETTINGS_SHADOWED` when a
+  nearer `.codex/config.toml` would make the written file inert.
+- Recorded a documented hazard rather than hiding it: because Codex uses the
+  sandbox settings instead of `default_permissions` when `sandbox_mode` appears
+  in any loaded config file, a file whose every value is strictest can still
+  displace a stricter permission profile in a layer GovernSeed must not read.
+  This appears in every attestation's `precedenceCaveat`.
+- A `deny` on delete or publish maps to `approval_policy = "untrusted"`, which
+  prompts rather than denies. Those controls carry
+  `modeCoverage: "approval-gate-only"` so an approval gate never reads as full
+  coverage. `modeCoverage` is a receipt field, not a sixth support
+  classification; the five frozen classifications are unchanged and no control
+  was upgraded to `enforceable`.
+- Split the colliding vocabulary. `adapter-materialized` means the Codex Adapter
+  JSON exists and its hash matches; `target-materialized` means the native
+  project-local setting was written. `tests/governance/vocabulary-consistency.test.mjs`
+  fails on the bare term in published prose.
+- Added `tests/governance/package-surface.test.mjs`. It asserts that the tarball
+  ships nothing outside the resolved `files` whitelist, which is stricter than
+  naming directories: it caught npm publishing a parent `README.md` for a
+  whitelist entry nested below it. `experimental/`, `examples/` and `.github/`
+  stay covered because they are not whitelisted.
+- Added `docs/enforcement-boundary.md` and
+  `docs/adr/005-target-materialization-and-attestation-boundary.md`; added
+  `schemas/materialize-receipt.schema.json` and
+  `schemas/attest-output.schema.json`.
+
 ## 2026-07-30 — Core Boundary Consolidation
 
 - Moved OCI runtime containment, the credential proxy, the loopback relay, the

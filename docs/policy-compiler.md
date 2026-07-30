@@ -331,9 +331,18 @@ These statements are not established:
 - A human approved an action.
 - Effective Policy Attestation passed.
 
-Effective Policy Attestation is Phase 3. It will separately distinguish
-`declared`, `materialized`, `observed`, and `runtime-evidenced`; even
-`observed` must not be described as runtime enforcement.
+Two different steps used to share the word. They are now named apart:
+
+- `adapter-materialized` — the Codex Adapter JSON exists in the GovernSeed
+  namespace and its hash matches the receipt. This is what `compile` produces.
+- `target-materialized` — the strictest value each written key admits has been
+  written into the project-local `.codex/config.toml` and recorded in a
+  materialize receipt. This is what `materialize` produces.
+
+Effective Policy Attestation remains later work. `attest` reports the project
+layer only, at level `materialized-unverified`; neither that level nor any
+higher one may be described as runtime enforcement. See
+[`enforcement-boundary.md`](enforcement-boundary.md).
 
 ## Troubleshooting
 

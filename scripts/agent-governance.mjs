@@ -3,7 +3,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import {
   canonicalJson,
+  canonicalJsonBytes,
   readJsonArtifact,
+  sha256Bytes,
   sha256Canonical,
   validateArtifact,
   writeJsonArtifact,
@@ -24,6 +26,11 @@ import {
   commitPolicyCompile,
   preparePolicyCompile,
 } from './lib/policy-compiler-project.mjs';
+import {
+  commitTargetMaterialize,
+  prepareTargetMaterialize,
+} from './lib/codex-target-materializer.mjs';
+import { buildAttestation } from './lib/target-attest.mjs';
 
 const EXIT = Object.freeze({
   OK: 0,
@@ -52,6 +59,15 @@ const SECURITY_CODES = new Set([
   'CODEX_ADAPTER_OWNER_CONFLICT',
   'COMPILE_PARTIAL_OUTPUT',
   'COMPILE_PATH_BLOCKED',
+  'MATERIALIZE_OUTSIDE_PROJECT',
+  'MATERIALIZE_PARTIAL_OUTPUT',
+  'MATERIALIZE_PATH_BLOCKED',
+  'MATERIALIZE_TARGET_PATH_PROTECTED',
+  'MATERIALIZE_WOULD_WIDEN',
+  'TARGET_SETTINGS_DRIFT',
+  'TARGET_SETTINGS_OWNER_CONFLICT',
+  'TARGET_SETTINGS_PROFILE_MODEL_CONFLICT',
+  'TARGET_SETTINGS_SHADOWED',
   'PATH_ESCAPE_BLOCKED',
   'POLICY_CONFLICT',
   'POLICY_OUTPUT_DRIFT',
@@ -73,6 +89,8 @@ const SECURITY_CODES = new Set([
 
 const COMMAND_OPTIONS = Object.freeze({
   compile: new Set(['--target', '--dry-run']),
+  materialize: new Set(['--target', '--dry-run']),
+  attest: new Set(['--target']),
   assess: new Set(['--task']),
   'deliberate.plan': new Set(['--decision']),
   'deliberate.import': new Set(['--file']),
@@ -82,6 +100,8 @@ const COMMAND_OPTIONS = Object.freeze({
 });
 const REQUIRED_OPTIONS = Object.freeze({
   compile: ['--target'],
+  materialize: ['--target'],
+  attest: ['--target'],
   assess: [],
   'deliberate.plan': ['--decision'],
   'deliberate.import': ['--file'],
@@ -98,6 +118,8 @@ function usage() {
   console.log();
   console.log('Commands:');
   console.log('  compile <project> --target codex [--dry-run] [--json]');
+  console.log('  materialize <project> --target codex [--dry-run] [--json]');
+  console.log('  attest <project> --target codex [--json]');
   console.log('  assess');
   console.log('  deliberate plan|import|confirm');
   console.log('  roles assign');
@@ -192,7 +214,7 @@ function parseCommand(argv) {
   const allowedOptions = COMMAND_OPTIONS[name];
   const commandWords = name.includes('.') ? 2 : 1;
   const values = new Map();
-  const booleanOptions = name === 'compile'
+  const booleanOptions = name === 'compile' || name === 'materialize'
     ? new Set(['--dry-run'])
     : new Set();
   let project = null;
@@ -1084,10 +1106,177 @@ function compilePolicy(command) {
   };
 }
 
+const TARGET_INVALID_CODES = new Set([
+  'ATTEST_OUTPUT_INVALID',
+  'MATERIALIZE_RECEIPT_INVALID',
+]);
+const TARGET_NEEDS_INPUT_CODES = new Set([
+  'MATERIALIZE_RECEIPT_MISSING',
+  'POLICY_NOT_COMPILED',
+]);
+
+function targetFailure(error) {
+  if (!error?.code) return error;
+  if (TARGET_NEEDS_INPUT_CODES.has(error.code)) {
+    return new CliFailure(
+      EXIT.NEEDS_INPUT,
+      error.code,
+      'needs-input',
+      error.subject,
+    );
+  }
+  if (TARGET_INVALID_CODES.has(error.code)) {
+    return new CliFailure(EXIT.INVALID, error.code, 'invalid', error.subject);
+  }
+  if (SECURITY_CODES.has(error.code)) {
+    return new CliFailure(EXIT.BLOCKED, error.code, 'blocked', error.subject);
+  }
+  return new CliFailure(EXIT.IO, error.code, 'io-error', error.subject);
+}
+
+/**
+ * Both target commands read an already-compiled policy. They never compile as a
+ * side effect: an uncompiled project is missing input, not a reason to write.
+ */
+function loadCompiledPolicy(command) {
+  if (command.target !== 'codex') {
+    throw new CliFailure(
+      EXIT.USAGE,
+      'CLI_TARGET_UNSUPPORTED',
+      'usage',
+      command.target ?? 'target',
+    );
+  }
+  let prepared;
+  try {
+    prepared = preparePolicyCompile(command.project, {
+      target: command.target,
+      dryRun: true,
+    });
+  } catch (error) {
+    if (!error?.code) throw error;
+    if (error.code === 'POLICY_INPUT_MISSING') {
+      throw new CliFailure(
+        EXIT.NEEDS_INPUT,
+        error.code,
+        'needs-input',
+        error.subject,
+      );
+    }
+    throw targetFailure(error);
+  }
+  const compiled = ['policy', 'adapter'].every((key) => (
+    prepared.states.get(prepared.paths[key]) === 'unchanged'
+  ));
+  if (!compiled) {
+    throw new CliFailure(
+      EXIT.NEEDS_INPUT,
+      'POLICY_NOT_COMPILED',
+      'needs-input',
+      prepared.manifest.policyId,
+    );
+  }
+  return {
+    manifest: prepared.manifest,
+    adapter: prepared.adapter,
+    policyHash: sha256Bytes(canonicalJsonBytes(prepared.manifest)),
+  };
+}
+
+function materializeTarget(command) {
+  const { manifest, policyHash } = loadCompiledPolicy(command);
+  let prepared;
+  try {
+    prepared = prepareTargetMaterialize(command.project, {
+      manifest,
+      policyHash,
+      target: command.target,
+      dryRun: command.dryRun,
+      materializedAt: new Date().toISOString(),
+    });
+  } catch (error) {
+    throw targetFailure(error);
+  }
+  for (const value of [prepared.receipt, prepared.report]) {
+    validateOrThrow(
+      'materialize-receipt.schema.json',
+      value,
+      {},
+      'MATERIALIZE_RECEIPT_INVALID',
+    );
+  }
+  let report = prepared.report;
+  if (!command.dryRun) {
+    try {
+      report = commitTargetMaterialize(command.project, prepared);
+    } catch (error) {
+      throw targetFailure(error);
+    }
+  }
+  return {
+    exitCode: EXIT.OK,
+    output: envelope({
+      ok: true,
+      command: command.name,
+      code: 'OK',
+      status: report.status,
+      artifact: command.dryRun ? null : prepared.paths.receipt,
+      result: report,
+      findings: report.unmaterializedControls.map((entry) => (
+        finding(entry.reasonCode, entry.controlId)
+      )),
+    }),
+  };
+}
+
+function attestTarget(command) {
+  const loaded = loadCompiledPolicy(command);
+  let attestation;
+  try {
+    attestation = buildAttestation(command.project, {
+      manifest: loaded.manifest,
+      adapter: loaded.adapter,
+      policyHash: loaded.policyHash,
+      target: command.target,
+    });
+  } catch (error) {
+    throw targetFailure(error);
+  }
+  if (attestation.drift.length > 0) {
+    throw Object.assign(
+      new CliFailure(
+        EXIT.BLOCKED,
+        'TARGET_SETTINGS_DRIFT',
+        'blocked',
+        attestation.materializeId,
+      ),
+      {
+        extraFindings: attestation.drift.map((entry) => (
+          finding(entry.reason, entry.subject)
+        )),
+      },
+    );
+  }
+  return {
+    exitCode: EXIT.OK,
+    output: envelope({
+      ok: true,
+      command: command.name,
+      code: 'OK',
+      status: 'attested',
+      result: attestation,
+    }),
+  };
+}
+
 function execute(command) {
   switch (command.name) {
     case 'compile':
       return compilePolicy(command);
+    case 'materialize':
+      return materializeTarget(command);
+    case 'attest':
+      return attestTarget(command);
     case 'assess':
       return assess(command);
     case 'deliberate.plan':
@@ -1130,7 +1319,10 @@ try {
     command: command?.name ?? error?.command ?? commandName(argv),
     code: failure.code,
     status: failure.status,
-    findings: [finding(failure.code, failure.subject)],
+    findings: [
+      finding(failure.code, failure.subject),
+      ...(failure.extraFindings ?? []),
+    ],
   });
   const emitted = emit(
     output,
