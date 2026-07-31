@@ -15,7 +15,7 @@
     "node": ">=20"
   },
   "scripts": {
-    "check": "node --check scripts/init.mjs && node --check scripts/doctor.mjs && node --check scripts/agent-governance.mjs && node --check scripts/validate-starter.mjs && node --check scripts/smoke-base.mjs && node --check scripts/smoke-fullstack.mjs && node --check scripts/smoke-antigravity.mjs && node --check scripts/fixtures-check.mjs && node --check scripts/validate-runtime-proof.mjs && node --check scripts/assert-claude-first-response.mjs && node --check scripts/runtime-smoke-codex.mjs && node --check scripts/runtime-smoke-claude.mjs && node --check scripts/runtime-smoke-antigravity.mjs && node --check scripts/runtime-proof-mock.mjs && node --check scripts/governance-impact-eval.mjs && node --check scripts/lib/governance-checks.mjs && node --check scripts/lib/governance-artifacts.mjs && node --check scripts/lib/decision-role-core.mjs && node --check scripts/lib/decision-role-doctor.mjs && node --check scripts/lib/target-registry.mjs && node --check scripts/lib/claude-policy-adapter.mjs && node --check scripts/lib/policy-compiler-core.mjs && node --check scripts/lib/policy-compiler-project.mjs && node --check scripts/lib/codex-policy-adapter.mjs && node --check scripts/lib/claude-target-materializer.mjs && node --check scripts/lib/codex-target-materializer.mjs && node --check scripts/lib/target-attest.mjs && node --check scripts/lib/policy-compiler-doctor.mjs && node --check scripts/lib/governance-impact-core.mjs && node --check scripts/lib/governance-impact-adapters.mjs",
+    "check": "node --check scripts/init.mjs && node --check scripts/doctor.mjs && node --check scripts/agent-governance.mjs && node --check scripts/validate-starter.mjs && node --check scripts/smoke-base.mjs && node --check scripts/smoke-fullstack.mjs && node --check scripts/smoke-antigravity.mjs && node --check scripts/smoke-package.mjs && node --check scripts/fixtures-check.mjs && node --check scripts/validate-runtime-proof.mjs && node --check scripts/assert-claude-first-response.mjs && node --check scripts/runtime-smoke-codex.mjs && node --check scripts/runtime-smoke-claude.mjs && node --check scripts/runtime-smoke-antigravity.mjs && node --check scripts/runtime-proof-mock.mjs && node --check scripts/governance-impact-eval.mjs && node --check scripts/lib/governance-checks.mjs && node --check scripts/lib/governance-artifacts.mjs && node --check scripts/lib/decision-role-core.mjs && node --check scripts/lib/decision-role-doctor.mjs && node --check scripts/lib/target-registry.mjs && node --check scripts/lib/claude-policy-adapter.mjs && node --check scripts/lib/policy-compiler-core.mjs && node --check scripts/lib/policy-compiler-project.mjs && node --check scripts/lib/codex-policy-adapter.mjs && node --check scripts/lib/claude-target-materializer.mjs && node --check scripts/lib/codex-target-materializer.mjs && node --check scripts/lib/target-attest.mjs && node --check scripts/lib/policy-compiler-doctor.mjs && node --check scripts/lib/governance-impact-core.mjs && node --check scripts/lib/governance-impact-adapters.mjs",
     "check:experimental": "node --check experimental/governance-impact/eval.mjs && node --check experimental/governance-impact/oci-integration.mjs && node --check experimental/governance-impact/uds-relay.mjs && node --check experimental/governance-impact/lib/credential-proxy.mjs && node --check experimental/governance-impact/lib/oci-proxy-facade.mjs && node --check experimental/governance-impact/lib/oci-supervisor.mjs",
     "validate": "node scripts/validate-starter.mjs .",
     "validate:runtime-proof": "node scripts/validate-runtime-proof.mjs .",
@@ -32,13 +32,14 @@
     "smoke:base": "node scripts/smoke-base.mjs",
     "smoke:fullstack": "node scripts/smoke-fullstack.mjs",
     "smoke:antigravity": "node scripts/smoke-antigravity.mjs",
+    "smoke:package": "node scripts/smoke-package.mjs",
     "fixtures": "node scripts/fixtures-check.mjs",
     "runtime:proof:codex": "node scripts/runtime-smoke-codex.mjs",
     "runtime:proof:claude": "node scripts/runtime-smoke-claude.mjs",
     "runtime:proof:antigravity": "node scripts/runtime-smoke-antigravity.mjs",
     "runtime:proof": "npm run validate:runtime-proof && npm run runtime:proof:codex && npm run runtime:proof:claude && npm run runtime:proof:antigravity",
     "runtime:proof:mock": "npm run validate:runtime-proof && node scripts/runtime-proof-mock.mjs",
-    "ci": "npm run check && npm run validate && npm run validate:runtime-proof && npm run test:governance && npm run test:brand && npm run test:decision-role && npm run test:policy-compiler && npm run test:governance-impact && npm run test:privacy && npm run validate:governance-impact && npm run eval:governance && npm run runtime:proof:mock && npm run smoke:base && npm run smoke:fullstack && npm run smoke:antigravity && npm run fixtures",
+    "ci": "npm run check && npm run validate && npm run validate:runtime-proof && npm run test:governance && npm run test:brand && npm run test:decision-role && npm run test:policy-compiler && npm run test:governance-impact && npm run test:privacy && npm run validate:governance-impact && npm run eval:governance && npm run runtime:proof:mock && npm run smoke:base && npm run smoke:fullstack && npm run smoke:antigravity && npm run smoke:package && npm run fixtures",
     "ci:experimental": "npm run check:experimental && npm run test:experimental"
   },
   "bin": {
@@ -63,7 +64,10 @@
     "docs/research/2026-07-29-governseed-name-audit.md",
     "docs/research/evidence/2026-07-29-tmview-governseed-no-results.png",
     "tests/policy-compiler/fixture-contracts.test.mjs",
+    "tests/policy-compiler/helpers.mjs",
     "tests/policy-compiler/fixtures/",
+    "tests/policy-compiler/base-project/",
+    "tests/decision-role/fixtures/low-risk-docs-task/",
     "README.md",
     "LICENSE",
     "THIRD_PARTY_NOTICES.md",

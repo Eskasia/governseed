@@ -12,10 +12,11 @@ export const ROOT = path.resolve(
 );
 export const CLI = path.join(ROOT, 'scripts/agent-governance.mjs');
 export const DOCTOR = path.join(ROOT, 'scripts/doctor.mjs');
-export const BASE_FIXTURE = path.join(
-  ROOT,
-  'examples/template-adoption/base-minimal',
-);
+// The package ships this contract test so a consumer can re-run it against
+// their own install, and the release unit keeps examples/ out of the tarball.
+// The test therefore owns its copy of the base project; package-surface pins it
+// to the example so the two cannot drift.
+export const BASE_FIXTURE = path.join(ROOT, 'tests/policy-compiler/base-project');
 export const LOW_RISK_FIXTURE = path.join(
   ROOT,
   'tests/decision-role/fixtures/low-risk-docs-task/.agent-governance',

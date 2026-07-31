@@ -95,6 +95,37 @@ test('the directories kept out of the release unit never ship', () => {
   }
 });
 
+/**
+ * examples/ cannot ship, so the shipped contract test copies its base project
+ * from tests/ instead. Two copies only stay meaningful while they are the same
+ * project: a consumer verifying the contract against a stale shape is verifying
+ * nothing. `expected/` is the example's own doctor snapshot and has no meaning
+ * inside a project under test.
+ */
+test('the shipped base project does not drift from the example it stands in for', () => {
+  const example = path.join(ROOT, 'examples/template-adoption/base-minimal');
+  const shipped = path.join(ROOT, 'tests/policy-compiler/base-project');
+  const entries = fs.readdirSync(example, { withFileTypes: true })
+    .filter((entry) => entry.isFile())
+    .map((entry) => entry.name)
+    .sort();
+  assert.deepEqual(
+    fs.readdirSync(shipped, { withFileTypes: true })
+      .filter((entry) => entry.isFile())
+      .map((entry) => entry.name)
+      .sort(),
+    entries,
+    'the shipped base project must carry the same files as the example',
+  );
+  for (const name of entries) {
+    assert.deepEqual(
+      fs.readFileSync(path.join(shipped, name)),
+      fs.readFileSync(path.join(example, name)),
+      `${name} differs between the example and the shipped base project`,
+    );
+  }
+});
+
 test('the published surface the brand test pins is still shipped', () => {
   const packed = new Set(packedPaths());
   for (const required of [

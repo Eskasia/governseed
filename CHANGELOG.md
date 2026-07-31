@@ -1,5 +1,37 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — The Packaged Artifact Is Verified To Run, Not Just To Contain
+
+- `package.json` `files` ships `tests/policy-compiler/fixture-contracts.test.mjs`
+  so a consumer can re-run the portable contract against their own install, and
+  the brand test asserts that path is in the tarball. Nothing asserted the
+  tarball works. `files` lists paths, so a shipped module that imports an
+  unshipped one packs cleanly and only fails at the consumer's first import.
+- Three of the shipped test's dependencies were missing from `files`. Installing
+  the tarball and running the test failed on `ERR_MODULE_NOT_FOUND` for
+  `./helpers.mjs`, then on `ENOENT` for the base project fixture. All eight
+  fixture cases now pass from a clean install.
+- `tests/policy-compiler/helpers.mjs` and the pack fixture
+  `tests/decision-role/fixtures/low-risk-docs-task/` are now shipped. The base
+  project it copies could not be: `examples/` is kept out of the release unit,
+  and adding it also pulled `examples/template-adoption/README.md` past the
+  whitelist. The test owns `tests/policy-compiler/base-project/` instead, pinned
+  byte-for-byte to the example by a new `package-surface` assertion — two copies
+  are only meaningful while they are the same project.
+- `.agent-governance.json` in that copy carries the legacy generator token like
+  every generated project, so it is registered in the brand inventory. The brand
+  traversal is unchanged.
+- `npm run smoke:package` packs the tarball, installs it into a clean consumer
+  project, and then checks three things against the installed copy: every
+  relative import reachable from the declared `bin` entrypoints and the shipped
+  tests resolves inside the package, every shipped test passes, and all three
+  bins run — `agent-governance --help`, plus an `init` and `doctor` round trip.
+- The import walk is what generalizes. Executing an entrypoint only covers the
+  modules that entrypoint happens to reach, so a lib missing from `files` on an
+  unexercised path would still ship broken.
+- This is not a publish. The package remains unpublished and the package-name
+  decision is unchanged.
+
 ## 2026-07-31 — The Antigravity Runtime Adapter Has A Fixture And A Smoke
 
 - Codex and the all-runtime path had `smoke:base` and `smoke:fullstack`.
