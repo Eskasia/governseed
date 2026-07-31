@@ -9,9 +9,12 @@
 - Every `templates/` document, all seven `examples/template-adoption/`
   fixtures, and the npm-shipped `tests/policy-compiler/base-project/` fixture
   are now English: 59 files, 1136 lines.
+- The guides shipped beside them followed: the three `startup/` intake files
+  and all 14 `workflows/` routing documents. `startup/01-bootstrap-gates.md`
+  holds Q1-Q9 itself, so this is the wording an adopter is interviewed with.
 - `tests/governance/template-language.test.mjs` is the new gate. It fails if
-  any `.md` under those three surfaces contains a CJK character, so the
-  migration cannot silently reflow. It is registered in `test:governance`.
+  any `.md` under those surfaces contains a CJK character, so the migration
+  cannot silently reflow. It is registered in `test:governance`.
 - Readers stay bilingual on purpose. `doctor.mjs` and
   `scripts/lib/governance-checks.mjs` accept both the English and the Chinese
   spelling of every heading and field label, so a project bootstrapped from
@@ -27,6 +30,10 @@
 - `BILINGUAL_HEADINGS` in `tests/governance/doctor-governance.test.mjs` is
   deleted. It existed only to let a Chinese template match an English fixture,
   and both sides are now one language.
+- Two `rule-lifecycle.test.mjs` absence assertions guarded against the Chinese
+  spelling of a copied lifecycle field. Translating the docs would have left
+  them passing against text that can no longer appear, so they now guard the
+  English wording the docs can actually regress into.
 
 ## 2026-07-31 — Source Freshness: Claims With An Expiry Date
 

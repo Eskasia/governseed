@@ -10,12 +10,16 @@ const ROOT = path.resolve(
 );
 
 // The surfaces an adopter reads first: the templates `init` copies into their
-// project, the filled examples they compare against, and the base fixture the
-// npm package ships. Every one of them is English-only.
+// project, the filled examples they compare against, the base fixture the npm
+// package ships, and the guides the package ships alongside them. Every one of
+// them is English-only.
 const SCANNED_DIRECTORIES = [
   'templates',
   'examples/template-adoption',
   'tests/policy-compiler/base-project',
+  'startup',
+  'workflows',
+  'prompts',
 ];
 
 // Han covers the characters that actually appear here; the two ranges add the
