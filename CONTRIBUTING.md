@@ -40,6 +40,19 @@
 - Ensure `node scripts/doctor.mjs --strict <fixture>` passes.
 - Add a note in `examples/template-adoption/README.md`.
 
+## Changing a Capability Matrix
+
+- Every row cites an official page, and every cited page has a pinned
+  load-bearing sentence in `docs/research/source-freshness.lock.json`. Adding or
+  removing a citation without updating the lock fails `npm run ci`.
+- Pin the sentence the classification actually rests on, not the page title.
+  Verify it verbatim on the live page before committing: `npm run verify:sources`.
+- If a page has no fetchable text, record it as `UNVERIFIABLE` with the reason
+  rather than pinning a guess. Never cite a page from memory.
+- A `DRIFTED` result means the sentence is gone upstream. Re-read the page and
+  re-verify every row citing it; do not re-pin a different sentence to make the
+  check pass.
+
 ## Adding Governance-Impact Evidence
 
 - Use only synthetic/public scenario facts; real `run` accepts clean committed synthetic scenarios only.

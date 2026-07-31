@@ -18,6 +18,7 @@
 | `superpowers/plans/2026-07-13-governance-evidence-overhaul.md` | Delivered test-first plan for the governance evidence overhaul |
 | `superpowers/plans/2026-07-26-linux-codex-oci-containment.md` | Delivered test-first plan for Linux Codex OCI containment |
 | `research/2026-07-31-antigravity-policy-capability-matrix.md` | Official Antigravity capability evidence; no row is materializable, so Scope D stays blocked |
+| `research/source-freshness.md` | How the pinned official-documentation sentences behind the matrices are re-verified, and what each status means |
 | `superpowers/specs/2026-07-29-risk-to-policy-compiler-design.md` | Policy Compiler architecture, schemas, transaction, privacy, and testing contract |
 | `superpowers/plans/2026-07-29-risk-to-policy-compiler-plan.md` | Test-first Phase 2 implementation and verification plan |
 | `superpowers/specs/2026-07-29-decision-role-foundation-design.md` | Milestone 1 decision, role, schema, CLI, privacy, migration, testing, and future-roadmap design |

@@ -9,6 +9,7 @@
 - Keep top-level `ANTIGRAVITY.md` limited to a legacy compatibility or migration note.
 - Keep `scripts/init.mjs`, `scripts/doctor.mjs`, and `scripts/validate-starter.mjs` covered by CI smoke checks.
 - Keep examples filled enough to pass strict doctor checks.
+- Keep every capability-matrix citation backed by a pinned official sentence that is re-verified, so the evidence stays live rather than becoming a dated snapshot.
 
 ## Agent Runtime Refinement
 

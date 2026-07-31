@@ -1,5 +1,27 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — Source Freshness: Claims With An Expiry Date
+
+- Every capability-matrix classification rests on what an official page said on
+  a fixed date, and the upstream tools ship weekly. Nothing detected the
+  load-bearing sentence disappearing — the last and largest instance of the
+  claims-more-than-it-verifies defect family this release has been closing.
+- `docs/research/source-freshness.lock.json` pins, for each of the 17 official
+  pages the three matrices cite, the exact sentence its classifications rest
+  on. All 17 were verified verbatim against the live pages at seed time.
+- The offline half runs in `test:governance`: matrix citations and the lock
+  must cover each other bidirectionally, and every lock entry's `matrices`
+  list must actually cite it. A citation added without a pin — or a pin
+  orphaned by an edit — fails `npm run ci` with no network involved.
+- The online half is `npm run verify:sources` (`--strict`, `--json`): each
+  pinned page is re-fetched and reported `FRESH`, `DRIFTED`, `UNREACHABLE`, or
+  `UNVERIFIABLE`. Strict mode fails on drift and coverage gaps, never on
+  unreachability — a network blip is not evidence of drift. A weekly
+  `source-freshness` workflow runs it.
+- `DRIFTED` demands human re-verification of the citing rows; the tool never
+  edits the matrices. The lockfile and both scripts stay out of the npm
+  package — the release unit is unchanged.
+
 ## 2026-07-31 — Milestone 4 Records What It Delivered
 
 - `docs/superpowers/plans/2026-07-31-milestone-4-runtime-materialization-parity-plan.md`
