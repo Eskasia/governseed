@@ -99,6 +99,53 @@ test('a removed section is reported as missing, not as unfilled', () => {
   assert.match(findings[0].message, /kill switch/iu);
 });
 
+// The conditional templates carry two kinds of section: prompts the adopting
+// project fills in, and fixed policy the project inherits verbatim. A filled
+// example that silently drops a fixed-policy section still looks complete,
+// because nothing compared it back to the template it came from.
+const BILINGUAL_HEADINGS = new Map([
+  ['## Agent 目標', '## Agent Goal'],
+  ['## 觸發入口', '## Trigger Entry'],
+]);
+
+function headings(file) {
+  return file.split('\n').filter((line) => line.startsWith('## '));
+}
+
+test('a filled example carries every section of the template it was filled from', () => {
+  const gaps = [];
+  for (const file of CONDITIONAL_DEPTH_FILES) {
+    const filled = path.join(FULLSTACK_FIXTURE, file);
+    if (!fs.existsSync(filled)) continue;
+    const present = new Set(headings(fs.readFileSync(filled, 'utf8')));
+    for (const heading of headings(fs.readFileSync(path.join(ROOT, 'templates/conditional', file), 'utf8'))) {
+      const accepted = [heading, BILINGUAL_HEADINGS.get(heading)].filter(Boolean);
+      if (!accepted.some((candidate) => present.has(candidate))) gaps.push(`${file}: ${heading}`);
+    }
+  }
+  assert.deepEqual(gaps, []);
+});
+
+test('dropping the eval claim boundary is reported as missing', () => {
+  const filled = fs.readFileSync(path.join(FULLSTACK_FIXTURE, 'EVAL_PLAN.md'), 'utf8');
+  const without = filled.replace(/## Evidence \/ Claim Boundary\n[\s\S]*?(?=\n## )/u, '');
+  assert.notEqual(without, filled, 'the fixture section must be there to remove');
+
+  const findings = evaluateConditionalDocumentDepth({ 'EVAL_PLAN.md': without });
+  assert.deepEqual(findings.map((item) => item.code), ['CONDITIONAL_FIELD_MISSING']);
+  assert.match(findings[0].message, /claim boundary/iu);
+});
+
+test('dropping the runtime evidence-persistence rules is reported as missing', () => {
+  const filled = fs.readFileSync(path.join(FULLSTACK_FIXTURE, 'AGENT_RUNTIME.md'), 'utf8');
+  const without = filled.replace(/## Evidence Persistence\n[\s\S]*?(?=\n## )/u, '');
+  assert.notEqual(without, filled, 'the fixture section must be there to remove');
+
+  const findings = evaluateConditionalDocumentDepth({ 'AGENT_RUNTIME.md': without });
+  assert.deepEqual(findings.map((item) => item.code), ['CONDITIONAL_FIELD_MISSING']);
+  assert.match(findings[0].message, /evidence persistence/iu);
+});
+
 test('a table row with an empty governed cell does not count as coverage', () => {
   const filled = fs.readFileSync(path.join(FULLSTACK_FIXTURE, 'AGENT_RUNTIME.md'), 'utf8');
   const emptiedRollback = filled.replace(

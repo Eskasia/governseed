@@ -40,6 +40,15 @@
 - Structured output: answer + citations.
 - Verifier result: golden set report.
 
+## Evidence / Claim Boundary
+
+- Golden-set results claim only that the listed cases behaved as recorded; they do not claim the retriever is correct for questions outside the set.
+- A passing regression gate claims that no tenant leak was observed in the golden set, not that tenant isolation is proven.
+- Real mode is synthetic-only: every stored trace uses seeded synthetic workspaces, never customer documents.
+- Persist only privacy-scanned, normalized closed-schema evidence, and only after cleanup is proven.
+- Scanner unavailability, output-schema failure, or cleanup uncertainty fails closed with a stable code and no artifact.
+- Runtime proof claims only that the generated entrypoint satisfies its minimal first-response contract; it says nothing about answer quality.
+
 ## Cost / Latency
 
 - Track p95 answer time and average token cost.
