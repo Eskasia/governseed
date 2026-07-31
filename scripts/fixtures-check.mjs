@@ -12,8 +12,62 @@ const fixtures = [
   'antigravity-base',
   'base-minimal',
   'fullstack-ai-saas',
+  'launch-one-pager',
   'macos-beta-handoff',
+  'production-agent-triage',
+  'ui-dashboard-redesign',
 ];
+
+// The examples README claims to list every fixture, but nothing compared it
+// back to this array, so `antigravity-base` sat unlisted without failing CI.
+function checkFixtureIndex() {
+  const indexPath = path.join(root, 'examples/template-adoption/README.md');
+  const listed = new Set(
+    [...fs.readFileSync(indexPath, 'utf8').matchAll(/^\| `([a-z0-9-]+)\/` \|/gmu)].map((m) => m[1]),
+  );
+  const missing = fixtures.filter((fixture) => !listed.has(fixture));
+  const extra = [...listed].filter((fixture) => !fixtures.includes(fixture));
+  if (missing.length || extra.length) {
+    throw new Error(
+      `examples/template-adoption/README.md fixture table is out of date`
+      + `${missing.length ? `\n  unlisted: ${missing.join(', ')}` : ''}`
+      + `${extra.length ? `\n  not registered: ${extra.join(', ')}` : ''}`,
+    );
+  }
+}
+
+// A conditional template mixes two kinds of policy. Transferable rules — real
+// mode is synthetic-only, persist only scanned evidence, fail closed — an
+// adopting project inherits and restates in its own terms. Disclosures about
+// GovernSeed's own evaluator are not the adopter's to make: a RAG SaaS does not
+// have a Codex containment status. Copying one verbatim puts a false statement
+// in a document meant to model an honest one.
+const STARTER_ONLY_DISCLOSURES = [
+  'Governance-impact claim boundary',
+  'Current evaluator capability',
+  'Claude is refused while workspace containment is unproven',
+  'Antigravity is unavailable when missing',
+  'detached or re-parented',
+];
+
+function checkStarterOnlyDisclosures() {
+  const found = [];
+  for (const fixture of fixtures) {
+    const dir = path.join(root, 'examples/template-adoption', fixture);
+    for (const entry of fs.readdirSync(dir)) {
+      if (!entry.endsWith('.md')) continue;
+      const content = fs.readFileSync(path.join(dir, entry), 'utf8');
+      for (const phrase of STARTER_ONLY_DISCLOSURES) {
+        if (content.includes(phrase)) found.push(`${fixture}/${entry}: ${phrase}`);
+      }
+    }
+  }
+  if (found.length) {
+    throw new Error(
+      `fixture copies a starter-only disclosure instead of stating its own boundary\n  ${found.join('\n  ')}`,
+    );
+  }
+}
 
 function doctorResult(projectDir, strict = false) {
   return spawnSync(process.execPath, [
@@ -166,6 +220,8 @@ function runMutationChecks() {
 
 try {
   fs.mkdirSync(tmpDir, { recursive: true });
+  checkFixtureIndex();
+  checkStarterOnlyDisclosures();
   for (const fixture of fixtures) {
     const actual = runDoctor(fixture);
     const actualPath = path.join(tmpDir, `${fixture}-doctor.json`);

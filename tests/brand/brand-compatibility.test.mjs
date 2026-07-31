@@ -216,7 +216,10 @@ test('legacy package, generator, schema, and fixture machine identifiers stay st
     'antigravity-base',
     'base-minimal',
     'fullstack-ai-saas',
+    'launch-one-pager',
     'macos-beta-handoff',
+    'production-agent-triage',
+    'ui-dashboard-redesign',
   ]) {
     assert.equal(
       readJson(
@@ -243,7 +246,10 @@ test('every retained legacy brand token has an explicit compatibility class', ()
     'examples/template-adoption/antigravity-base/.agent-governance.json': 1,
     'examples/template-adoption/base-minimal/.agent-governance.json': 1,
     'examples/template-adoption/fullstack-ai-saas/.agent-governance.json': 1,
+    'examples/template-adoption/launch-one-pager/.agent-governance.json': 1,
     'examples/template-adoption/macos-beta-handoff/.agent-governance.json': 1,
+    'examples/template-adoption/production-agent-triage/.agent-governance.json': 1,
+    'examples/template-adoption/ui-dashboard-redesign/.agent-governance.json': 1,
     'package.json': 1,
     'schemas/cli-output.schema.json': 1,
     'schemas/deliberation-plan.schema.json': 1,
