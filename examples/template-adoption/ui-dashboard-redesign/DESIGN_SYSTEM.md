@@ -1,166 +1,166 @@
 # DESIGN_SYSTEM.md
 
-## 產品判斷
+## Product Judgment
 
-- 產品氣質：安靜、密集、可掃視；工具而非展示品
-- 目標用戶：調度員與客服值班人員
-- 核心使用場景：值班尖峰時段連續操作四十分鐘以上
-- 使用設備與壓力：固定工作站雙螢幕，時間壓力高，錯讀成本高
-- 截圖 / 參考來源：既有調度佇列、訂單詳情、異常清單三個畫面的合成截圖樣本
+- Product character: quiet, dense, scannable; a tool rather than a showpiece
+- Target users: dispatchers and on-duty support staff
+- Core usage scenarios: forty minutes or more of continuous operation during a peak shift
+- Devices and usage pressure: fixed dual-monitor workstation, high time pressure, high cost of misreading
+- Screenshots / reference sources: composite screenshot samples of the existing dispatch queue, order detail, and exception list screens
 
-## 視覺語言萃取
+## Visual Language Extraction
 
-| 類別 | 從截圖觀察到的規則 | 適用場景 | 不要怎麼用 | 不一致處 |
+| Category | Rule observed in screenshots | When to use | How not to use | Inconsistencies |
 |---|---|---|---|---|
-| 色彩 | 狀態只用三個色相：中性、警示、危險 | 狀態 Badge 與列背景 | 不用色相表達優先度 | 異常清單的警示是橙色，佇列是黃色 |
-| 字體 | 單一無襯線家族，三個級距 | 全站 | 不引入第二個字體家族 | 訂單詳情用了較大的標題級距 |
-| 間距 | 8px 基準，表格列高 40px | 表格與表單 | 不用 5px、7px 這類非倍數值 | 異常清單列高 36px |
-| 柵格 | 12 欄，桌面兩側 24px 留白 | 頁面外框 | 不做等寬三欄卡片牆 | 訂單詳情未套用外框留白 |
-| 圓角 | 4px 一種 | 按鈕、輸入框、Badge | 不用膠囊形 Badge | 異常清單 Badge 為膠囊形 |
-| 邊框 | 1px 中性色，只用於分隔 | 表格列、面板 | 不用邊框表達狀態 | 佇列以邊框顏色表達異常 |
-| 陰影 | 僅浮層使用，一級 | Drawer、Modal、Toast | 不給靜態卡片加陰影 | 訂單詳情卡片有陰影 |
-| 組件 | 表格列即操作單元，行內操作靠右 | 佇列 | 不把主要操作藏進 kebab 選單 | 異常清單主要操作在 kebab 內 |
-| 互動狀態 | hover 只換背景不換字色 | 所有可點列 | 不用底線表示 hover | 訂單詳情 hover 會換字色 |
-| 圖標 / 插畫 | 只用線性 icon，無插畫 | 操作按鈕 | 不用插畫填空狀態 | 空狀態出現過一次插畫 |
+| Color | Status uses three hues only: neutral, warning, danger | Status badges and row backgrounds | Do not express priority with hue | The exception list warning is orange, the queue is yellow |
+| Typography | One sans-serif family, three sizes | Site-wide | Do not introduce a second family | Order detail uses a larger heading size |
+| Spacing | 8px base unit, 40px table row height | Tables and forms | Do not use off-multiple values like 5px or 7px | The exception list row height is 36px |
+| Grid | 12 columns, 24px gutters on desktop | Page frame | Do not build an equal-width three-column card wall | Order detail does not apply the page gutter |
+| Corner radius | A single 4px value | Buttons, inputs, badges | Do not use pill-shaped badges | Exception list badges are pill-shaped |
+| Border | 1px neutral, separators only | Table rows, panels | Do not express status with a border | The queue expresses exceptions with border color |
+| Shadow | Overlays only, one level | Drawer, Modal, Toast | Do not add shadow to static cards | Order detail cards carry a shadow |
+| Components | The table row is the unit of action, inline actions right-aligned | Queue | Do not hide the primary action in a kebab menu | The exception list primary action is inside a kebab |
+| Interaction states | hover changes background only, never text color | Every clickable row | Do not use an underline for hover | Order detail hover changes text color |
+| Icons / illustration | Line icons only, no illustration | Action buttons | Do not fill empty states with illustration | An illustration appeared once in an empty state |
 
-## 設計原則
+## Design Principles
 
-| 原則 | 適用場景 | 不要怎麼用 |
+| Principle | When to use | How not to use |
 |---|---|---|
-| 同一狀態全站同一組 token | 所有顯示訂單狀態的地方 | 不因畫面不同而換色 |
-| 密度優先於留白 | 佇列與清單 | 不為了呼吸感砍掉可見列數 |
-| 可掃視優先於可閱讀 | 表格欄位 | 不用長句取代短標籤 |
-| 錯誤不遮擋既有資料 | 取單失敗 | 不用全頁 Modal 報錯 |
+| One status uses one token set site-wide | Everywhere an order status is shown | Do not change color per screen |
+| Density over whitespace | Queue and lists | Do not cut visible rows for breathing room |
+| Scannability over readability | Table columns | Do not replace short labels with long sentences |
+| Errors never cover existing data | Claim failure | Do not report errors in a full-page modal |
 
-## 色彩系統
+## Color System
 
-| Token | 值 | 用途 | 適用場景 | 不要怎麼用 |
+| Token | Value | Purpose | When to use | How not to use |
 |---|---|---|---|---|
-| `--color-bg` | `#F7F8FA` | 頁面底色 | 所有頁面外框 | 不當作卡片底色 |
-| `--color-surface` | `#FFFFFF` | 面板與列 hover 底色 | 表格、Drawer | 不當作頁面底色 |
-| `--color-text` | `#16191F` | 主要文字 | 內文與欄位值 | 不用於次要說明 |
-| `--color-muted` | `#5B6472` | 次要文字 | 欄位標籤、時間 | 不用於主要數值 |
-| `--color-border` | `#DDE1E7` | 分隔線 | 表格列、面板邊界 | 不用來表達狀態 |
-| `--color-primary` | `#1F5FD0` | 主要操作與 focus ring | 主按鈕、focus | 不用於狀態 Badge |
-| `--color-success` | `#1E7A4B` | 已完成狀態 | 狀態 Badge | 不用於一般成功提示以外 |
-| `--color-warning` | `#A9640A` | 需注意狀態 | 狀態 Badge、警示條 | 不用橙色另做一套 |
-| `--color-danger` | `#B3261E` | 異常狀態 | 狀態 Badge、錯誤條 | 不用於刪除以外的破壞性暗示 |
+| `--color-bg` | `#F7F8FA` | Page background | Every page frame | Not as a card background |
+| `--color-surface` | `#FFFFFF` | Panel and row hover background | Tables, Drawer | Not as a page background |
+| `--color-text` | `#16191F` | Primary text | Body copy and field values | Not for secondary notes |
+| `--color-muted` | `#5B6472` | Secondary text | Field labels, timestamps | Not for primary values |
+| `--color-border` | `#DDE1E7` | Separators | Table rows, panel edges | Not to express status |
+| `--color-primary` | `#1F5FD0` | Primary action and focus ring | Primary buttons, focus | Not for status badges |
+| `--color-success` | `#1E7A4B` | Completed status | Status badges | Not beyond ordinary success feedback |
+| `--color-warning` | `#A9640A` | Needs-attention status | Status badges, warning bars | Do not add a second orange scale |
+| `--color-danger` | `#B3261E` | Exception status | Status badges, error bars | Not for destructive hints other than delete |
 
-## 字體系統
+## Typography System
 
-| Token | 值 | 用途 | 適用場景 | 不要怎麼用 |
+| Token | Value | Purpose | When to use | How not to use |
 |---|---|---|---|---|
-| `--font-display` | 與 `--font-sans` 同家族，600 字重 | 畫面標題 | 頁首、Drawer 標題 | 不引入第二個家族 |
-| `--font-sans` | 系統無襯線堆疊 | 內文與表格 | 全站預設 | 不用於數值對齊欄 |
-| `--font-mono` | 系統等寬堆疊 | 訂單編號與時間 | 需要對齊的欄位 | 不用於一般內文 |
+| `--font-display` | Same family as `--font-sans`, weight 600 | Screen titles | Page header, Drawer title | Do not introduce a second family |
+| `--font-sans` | System sans-serif stack | Body copy and tables | Site-wide default | Not for numeric alignment columns |
+| `--font-mono` | System monospace stack | Order numbers and timestamps | Columns that must align | Not for ordinary body copy |
 
-## 間距與柵格
+## Spacing And Grid
 
-| Token / Rule | 值 | 適用場景 | 不要怎麼用 |
+| Token / Rule | Value | When to use | How not to use |
 |---|---|---|---|
-| Base unit | 8px | 全站 | 不出現非 4 的倍數 |
-| Page padding | 24px | 桌面頁面外框 | 不隨畫面調整 |
-| Section gap | 24px | 區塊之間 | 不用於表格列間 |
-| Component gap | 8px | 按鈕群、Badge 群 | 不用於區塊之間 |
-| Form gap | 16px | 表單欄位之間 | 不壓到 8px |
-| Modal padding | 24px | Drawer 與 Modal | 不小於 16px |
-| Breakpoints | 768px / 1024px | 響應式切換 | 不新增中間斷點 |
+| Base unit | 8px | Site-wide | No values off a multiple of 4 |
+| Page padding | 24px | Desktop page frame | Do not vary per screen |
+| Section gap | 24px | Between sections | Not between table rows |
+| Component gap | 8px | Button groups, badge groups | Not between sections |
+| Form gap | 16px | Between form fields | Do not compress to 8px |
+| Modal padding | 24px | Drawer and Modal | Never below 16px |
+| Breakpoints | 768px / 1024px | Responsive switching | Do not add an intermediate breakpoint |
 
-## 圓角、邊框、陰影
+## Radius, Border, Shadow
 
-| Token | 值 | 適用場景 | 不要怎麼用 |
+| Token | Value | When to use | How not to use |
 |---|---|---|---|
-| `--radius-sm` | `4px` | 按鈕、輸入框、Badge | 不做膠囊形 |
-| `--radius-md` | `6px` | 面板、Drawer | 不用於行內元件 |
-| `--radius-lg` | `8px` | 全頁 Modal | 不用於表格 |
-| `--shadow-sm` | `0 1px 2px rgba(22, 25, 31, 0.08)` | Toast | 不用於靜態卡片 |
-| `--shadow-md` | `0 8px 24px rgba(22, 25, 31, 0.12)` | Drawer、Modal | 不疊加兩層陰影 |
+| `--radius-sm` | `4px` | Buttons, inputs, badges | Do not make pill shapes |
+| `--radius-md` | `6px` | Panels, Drawer | Not for inline elements |
+| `--radius-lg` | `8px` | Full-page Modal | Not for tables |
+| `--shadow-sm` | `0 1px 2px rgba(22, 25, 31, 0.08)` | Toast | Not for static cards |
+| `--shadow-md` | `0 8px 24px rgba(22, 25, 31, 0.12)` | Drawer, Modal | Do not stack two shadow layers |
 
-## 核心組件規範
+## Core Component Specs
 
-| Component | 結構 | 狀態 | 適用場景 | 不要怎麼用 |
+| Component | Structure | States | When to use | How not to use |
 |---|---|---|---|---|
-| Button | 標籤加選用前置 icon | default / hover / focus / disabled / loading | 主要與次要操作 | 不用純 icon 當主要操作 |
-| Input | 標籤在上、說明在下 | default / focus / error / disabled | 表單與篩選 | 不用 placeholder 取代標籤 |
-| Select | 原生下拉加自訂箭頭 | default / focus / disabled | 篩選與改派 | 不做多層巢狀選單 |
-| Tabs | 底線指示，最多四項 | default / active / focus | 訂單詳情分頁 | 不用 Tabs 承載主導覽 |
-| Sidebar / Navbar | 左側固定導覽，寬 216px | default / active | 全站 | 不做可收合動畫 |
-| Card / Panel | 白底、1px 邊框、無陰影 | default | 訂單詳情區塊 | 不加陰影做層次 |
-| Table / List | 40px 列高，表頭吸頂 | default / hover / selected / empty | 佇列與異常清單 | 不做斑馬紋 |
-| Modal / Drawer | 右側 Drawer 為主，Modal 僅用於確認 | default / loading | 訂單操作 | 不用 Modal 顯示長表單 |
-| Toast / Alert | 右下 Toast，四秒自動關閉 | success / warning / danger | 操作結果 | 不用 Toast 報阻斷性錯誤 |
-| Empty / Error / Loading | 文字加單一行動 | 三種各一 | 所有清單 | 不用插畫或轉圈遮罩 |
+| Button | Label plus optional leading icon | default / hover / focus / disabled / loading | Primary and secondary actions | Do not use an icon-only primary action |
+| Input | Label above, helper text below | default / focus / error / disabled | Forms and filters | Do not replace the label with a placeholder |
+| Select | Native dropdown with a custom arrow | default / focus / disabled | Filtering and reassignment | Do not build nested multi-level menus |
+| Tabs | Underline indicator, at most four items | default / active / focus | Order detail tabs | Do not carry primary navigation in tabs |
+| Sidebar / Navbar | Fixed left navigation, 216px wide | default / active | Site-wide | Do not add a collapse animation |
+| Card / Panel | White background, 1px border, no shadow | default | Order detail sections | Do not use shadow to create depth |
+| Table / List | 40px row height, sticky header | default / hover / selected / empty | Queue and exception list | Do not use zebra striping |
+| Modal / Drawer | Right-side Drawer by default, Modal for confirmation only | default / loading | Order actions | Do not show long forms in a Modal |
+| Toast / Alert | Bottom-right Toast, auto-dismiss after four seconds | success / warning / danger | Action results | Do not report blocking errors in a Toast |
+| Empty / Error / Loading | Text plus a single action | one of each of the three | Every list | Do not use illustration or a spinner overlay |
 
-## 狀態規範
+## State Specs
 
-| State | 視覺規則 | 適用場景 | 不要怎麼用 |
+| State | Visual rule | When to use | How not to use |
 |---|---|---|---|
-| default | `--color-surface` 底、`--color-text` 字 | 所有元件 | 不額外加邊框 |
-| hover | 底色換 `--color-surface`，字色不變 | 可點列與按鈕 | 不換字色或加底線 |
-| active | 底色加深一階 | 按鈕按下 | 不用位移動畫 |
-| focus | 2px `--color-primary` focus ring | 鍵盤導覽 | 不移除 outline |
-| disabled | 不透明度 0.45，游標 not-allowed | 無權限操作 | 不直接隱藏 |
-| loading | 骨架保留欄寬 | 清單與面板 | 不用全頁遮罩 |
-| selected | 左側 3px `--color-primary` 標記 | 批次選取列 | 不用整列變色 |
-| error | 行內錯誤條加重試 | 取單或送出失敗 | 不用 Modal 擋住資料 |
-| success | Toast 提示，不改變列樣式 | 操作成功 | 不長駐綠色底 |
-| empty | 說明目前條件加清除篩選 | 篩選無結果 | 不用插畫 |
+| default | `--color-surface` background, `--color-text` text | Every component | Do not add an extra border |
+| hover | Background switches to `--color-surface`, text color unchanged | Clickable rows and buttons | Do not change text color or add an underline |
+| active | Background one step darker | Button press | Do not use a shift animation |
+| focus | 2px `--color-primary` focus ring | Keyboard navigation | Do not remove the outline |
+| disabled | Opacity 0.45, not-allowed cursor | Unauthorized actions | Do not hide the control outright |
+| loading | Skeleton preserves column widths | Lists and panels | Do not use a full-page overlay |
+| selected | 3px `--color-primary` marker on the left | Bulk-selected rows | Do not recolor the whole row |
+| error | Inline error bar with retry | Claim or submit failure | Do not block data with a Modal |
+| success | Toast feedback, row style unchanged | Successful action | Do not leave a persistent green background |
+| empty | State the current filter plus clear-filter | Filter returns nothing | Do not use illustration |
 
-## 圖標 / 插畫規範
+## Icon / Illustration Specs
 
-- 圖標尺寸：16px 行內，20px 按鈕
-- 線寬：1.5px
-- 填色：不填色，僅描邊，顏色繼承文字色
-- 背景：透明
-- 命名：`icon-<動作或物件>`，全小寫連字號
-- 適用場景：操作按鈕、狀態前置標記
-- 不要怎麼用：不用 icon 單獨表達狀態，不使用插畫
+- Icon size: 16px inline, 20px in buttons
+- Stroke width: 1.5px
+- Fill: no fill, stroke only, color inherits the text color
+- Background: transparent
+- Naming: `icon-<action-or-object>`, all lowercase with hyphens
+- When to use: action buttons, leading status markers
+- How not to use: do not express status with an icon alone, do not use illustration
 
-## 文案語氣規範
+## Copy Tone Specs
 
-| 場景 | 語氣 | 範例 | 不要怎麼寫 |
+| Scenario | Tone | Example | How not to write |
 |---|---|---|---|
-| Button | 動詞開頭，最多四字 | 改派、標記異常 | 「確定要改派嗎」 |
-| Error | 說明發生什麼與下一步 | 取單失敗，請重試 | 「發生未知錯誤」 |
-| Empty state | 說明目前條件 | 目前篩選沒有待處理訂單 | 「這裡空空如也」 |
-| Success | 陳述結果 | 已改派 3 筆 | 「太棒了！」 |
-| Helper text | 說明限制 | 備註最多 200 字 | 「請盡量簡短」 |
+| Button | Verb first, at most four words | Reassign, Flag exception | "Are you sure you want to reassign?" |
+| Error | State what happened and the next step | Claim failed, please retry | "An unknown error occurred" |
+| Empty state | State the current filter | No pending orders match the current filter | "It's empty in here!" |
+| Success | State the result | Reassigned 3 orders | "Awesome!" |
+| Helper text | State the limit | Notes are limited to 200 characters | "Please keep it short" |
 
-## 禁用規則 / 設計紅線
+## Forbidden Rules / Design Red Lines
 
-| 規則 | 原因 | 適用場景 | 不要怎麼用 |
+| Rule | Reason | When to use | How not to use |
 |---|---|---|---|
-| 不得寫入非 token 的顏色、間距、圓角值 | 值一旦散落，畫面會再次分歧 | 所有畫面 | 不以「只有這一處」為由破例 |
-| 同一狀態不得跨畫面換色 | 誤讀成本高 | 狀態 Badge | 不為視覺變化調整狀態色 |
-| 不得用邊框顏色表達狀態 | 既有畫面已因此不一致 | 表格列 | 不以邊框補強 Badge |
-| 錯誤不得遮擋既有資料 | 值班時需要保留上下文 | 取單失敗 | 不用全頁 Modal |
+| Never write a color, spacing, or radius value that is not a token | Once values scatter, the screens diverge again | Every screen | Do not make an exception because "it is only this one place" |
+| One status must not change color across screens | Misreading is expensive | Status badges | Do not adjust a status color for visual variety |
+| Never express status with border color | The existing screens are already inconsistent because of this | Table rows | Do not reinforce a badge with a border |
+| Errors must never cover existing data | On-duty work needs the context kept | Claim failure | Do not use a full-page Modal |
 
 ## Screen Map
 
-| Screen / Tab / Modal | 入口 | 主要操作 | 必備狀態 | 備註 |
+| Screen / Tab / Modal | Entry point | Primary action | Required states | Notes |
 |---|---|---|---|---|
-| 調度佇列 | 側邊導覽 | 篩選、批次改派 | loading / empty / error | 桌面一屏至少 25 列 |
-| 單筆訂單 Drawer | 佇列列點擊 | 改派、標記異常、寫備註 | loading / error | 不用 Modal |
-| 異常清單 | 側邊導覽 | 認領、回填結果 | loading / empty / error | 與佇列共用狀態 token |
-| 確認 Modal | 破壞性操作 | 確認、取消 | loading | 僅用於確認 |
+| Dispatch queue | Side navigation | Filter, bulk reassign | loading / empty / error | At least 25 rows per desktop viewport |
+| Single order Drawer | Click a queue row | Reassign, flag exception, write a note | loading / error | Do not use a Modal |
+| Exception list | Side navigation | Claim, record outcome | loading / empty / error | Shares status tokens with the queue |
+| Confirmation Modal | Destructive actions | Confirm, cancel | loading | Confirmation only |
 
 ## Component Inventory
 
-| Component | 使用畫面 | Token 依賴 | Asset 依賴 | 前端備註 |
+| Component | Screens used on | Token dependencies | Asset dependencies | Frontend notes |
 |---|---|---|---|---|
-| Table | 調度佇列、異常清單 | `--color-border`、`--space-2` | 無 | 表頭吸頂 |
-| Status Badge | 三個畫面 | `--color-success`、`--color-warning`、`--color-danger` | 無 | 狀態對應表在色彩系統 |
-| Drawer | 單筆訂單 | `--shadow-md`、`--radius-md` | 無 | 右側固定寬 480px |
-| Toast | 三個畫面 | `--shadow-sm`、`--radius-sm` | 無 | 四秒自動關閉 |
-| Empty State | 佇列、異常清單 | `--color-muted` | 無 | 純文字，無插畫 |
+| Table | Dispatch queue, exception list | `--color-border`, `--space-2` | None | Sticky header |
+| Status Badge | All three screens | `--color-success`, `--color-warning`, `--color-danger` | None | The status mapping lives in the color system |
+| Drawer | Single order | `--shadow-md`, `--radius-md` | None | Fixed 480px width on the right |
+| Toast | All three screens | `--shadow-sm`, `--radius-sm` | None | Auto-dismiss after four seconds |
+| Empty State | Queue, exception list | `--color-muted` | None | Text only, no illustration |
 
 ## Asset Manifest
 
-| File | 用途 | 尺寸 | 透明背景 | 來源 prompt / 來源 | 使用畫面 |
+| File | Purpose | Size | Transparent background | Source prompt / source | Screens used on |
 |---|---|---|---|---|---|
-| `icon-reassign.svg` | 改派操作 | 20×20 | 是 | 專案內繪製，線寬 1.5px | 調度佇列、單筆訂單 |
-| `icon-flag.svg` | 標記異常 | 20×20 | 是 | 專案內繪製，線寬 1.5px | 單筆訂單 |
-| `icon-claim.svg` | 認領異常 | 20×20 | 是 | 專案內繪製，線寬 1.5px | 異常清單 |
+| `icon-reassign.svg` | Reassign action | 20×20 | yes | Drawn in-project, 1.5px stroke | Dispatch queue, single order |
+| `icon-flag.svg` | Flag exception | 20×20 | yes | Drawn in-project, 1.5px stroke | Single order |
+| `icon-claim.svg` | Claim exception | 20×20 | yes | Drawn in-project, 1.5px stroke | Exception list |
 
 ## Design Tokens
 

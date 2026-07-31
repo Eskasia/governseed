@@ -1,5 +1,33 @@
 # GovernSeed Changelog
 
+## 2026-08-01 — The Shipped Templates Are English
+
+- The README, AGENTS.md, and docs were English, but 13 of the 20 templates an
+  adopter receives from `init` were Chinese. The first thing anyone saw after
+  running the tool was a language they may not read — a first-mile defect that
+  no amount of English positioning compensated for.
+- Every `templates/` document, all seven `examples/template-adoption/`
+  fixtures, and the npm-shipped `tests/policy-compiler/base-project/` fixture
+  are now English: 59 files, 1136 lines.
+- `tests/governance/template-language.test.mjs` is the new gate. It fails if
+  any `.md` under those three surfaces contains a CJK character, so the
+  migration cannot silently reflow. It is registered in `test:governance`.
+- Readers stay bilingual on purpose. `doctor.mjs` and
+  `scripts/lib/governance-checks.mjs` accept both the English and the Chinese
+  spelling of every heading and field label, so a project bootstrapped from
+  0.1.1 keeps reporting the same doctor status after upgrading. Only what the
+  starter *emits* changed.
+- Chinese detection in the governance checks is untouched, because it governs
+  what an adopter writes rather than what the starter ships: the Han-identity
+  PII rule, the masked-excerpt rule, and the Chinese yes/no acceptance all
+  remain, with their coverage in `tests/governance/traceability.test.mjs`.
+- `doctor.mjs` had a latent case-sensitivity bug the migration exposed: the
+  task-verification check tested `includes('verif')`, which the Chinese
+  `驗證` satisfied but `Verification` did not. It is now case-insensitive.
+- `BILINGUAL_HEADINGS` in `tests/governance/doctor-governance.test.mjs` is
+  deleted. It existed only to let a Chinese template match an English fixture,
+  and both sides are now one language.
+
 ## 2026-07-31 — Source Freshness: Claims With An Expiry Date
 
 - Every capability-matrix classification rests on what an official page said on

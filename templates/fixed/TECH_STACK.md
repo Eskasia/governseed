@@ -1,18 +1,18 @@
 # TECH_STACK.md
 
-## 技術路線決策
+## Technology route decision
 
-- 決策模式：
-- 唯一主路線：
-- 選擇理由：
-- 排除路線：
-- 後期風險：
-- 重評估條件：
-- 新技術引入 gate：
-- Decision status：
-- Evidence：
-- Nearest alternative：
-- Review trigger：
+- Decision mode:
+- Primary route:
+- Rationale:
+- Excluded routes:
+- Late-stage risks:
+- Re-evaluation triggers:
+- New technology gate:
+- Decision status:
+- Evidence:
+- Nearest alternative:
+- Review trigger:
 
 ## Runtime
 
@@ -41,7 +41,7 @@
 
 ## Rule
 
-- 沒有某一層時填 `n/a` 並寫原因。
-- 每次引入新框架、SDK、provider、資料庫、queue、agent framework 或 MCP server，都要回到本文件檢查是否符合唯一主路線。
+- When a layer does not apply, fill `n/a` and state why.
+- Every time a new framework, SDK, provider, database, queue, agent framework, or MCP server is introduced, return to this document and check it against the primary route.
 - `Decision status` is `active` or `recheck-required`; `Evidence` contains at least one confirmed `SRC` ID and one active `REQ` revision, and exactly matches `PROJECT_BRIEF.md`.
 - Record the nearest alternative and the event-only review trigger. Do not present an AI-recommended route as a user statement.

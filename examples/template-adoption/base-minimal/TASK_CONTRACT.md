@@ -1,23 +1,23 @@
 # TASK_CONTRACT.md
 
-## 任務總覽
+## Task coverage ledger
 
 | Task ID | Status | Requirement | AC | Verification |
 |---|---|---|---|---|
 | TASK-001 | completed | REQ-001@1 | AC-001 | Run strict doctor against the base fixture. |
 | TASK-002 | completed | REQ-002@1 | AC-002 | Inspect generated scope and run fixture validation. |
 
-## 任務詳情
+## Task details
 
-### 任務：建立 base fixture
+### Task: Build the base fixture
 
-- 輸入：base profile and fixed templates
-- 可用工具：scripts/init.mjs, scripts/doctor.mjs
-- 預期輸出：filled base-minimal fixture
-- 驗證方式：compare doctor JSON with expected output
-- 不做事項：do not add app code
-- 完成標準：fixture status is ready
-- 風險 / 阻塞：profile changes require expected JSON update
+- Input: base profile and fixed templates
+- Available tools: scripts/init.mjs, scripts/doctor.mjs
+- Expected output: filled base-minimal fixture
+- Verification: compare doctor JSON with expected output
+- Out of scope: do not add app code
+- Done criteria: fixture status is ready
+- Risk / blocker: profile changes require expected JSON update
 
 ## Acceptance evidence ledger
 
@@ -26,8 +26,8 @@
 | EVD-001 | AC-001 | REQ-001@1 | command:node scripts/doctor.mjs --strict examples/template-adoption/base-minimal | passing | 2026-07-13 |
 | EVD-002 | AC-002 | REQ-002@1 | command:node scripts/fixtures-check.mjs | passing | 2026-07-13 |
 
-## 驗收總結
+## Acceptance summary
 
-- [x] 所有任務驗證方式已執行
-- [x] 無未記錄的範圍外修改
-- [x] OPEN_LOOPS.md 已更新
+- [x] Every task verification has been run
+- [x] No unrecorded out-of-scope change
+- [x] OPEN_LOOPS.md is up to date

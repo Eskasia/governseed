@@ -678,6 +678,7 @@ const requiredRepositoryFiles = [
   'tests/governance/rule-lifecycle.test.mjs',
   'tests/governance/traceability.test.mjs',
   'tests/governance/vocabulary-consistency.test.mjs',
+  'tests/governance/template-language.test.mjs',
   'tests/governance/package-surface.test.mjs',
   'tests/decision-role/artifact-safety.test.mjs',
   'tests/decision-role/schema-contracts.test.mjs',
@@ -1223,17 +1224,17 @@ requireIncludes(errors, 'templates/runtime/AGENTS.md', [
 ]);
 
 requireIncludes(errors, 'templates/fixed/PROJECT_BRIEF.md', [
-  '## 產品形態決策',
-  '決策模式',
-  '第一版產品形態',
-  'Q1-Q9 依據',
+  '## Product shape decision',
+  'Decision mode',
+  'Product shape',
+  'Q1-Q9 basis',
 ]);
 
 requireIncludes(errors, 'templates/fixed/TECH_STACK.md', [
-  '## 技術路線決策',
-  '決策模式',
-  '唯一主路線',
-  '新技術引入 gate',
+  '## Technology route decision',
+  'Decision mode',
+  'Primary route',
+  'New technology gate',
   '| Frontend |',
   '| Backend |',
   '| Database |',

@@ -1,6 +1,6 @@
 # Templates
 
-這裡只放新專案常用文件骨架。建立專案文件時可以複製，但不要把空模板當成完成狀態。
+These are document skeletons for a new project. Copy them when creating project docs, but never treat an empty template as a finished document.
 
 ## Layout
 

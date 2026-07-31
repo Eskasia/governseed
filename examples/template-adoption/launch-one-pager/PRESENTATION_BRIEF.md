@@ -2,64 +2,64 @@
 
 ## Goal
 
-- 讓一位沒聽過這個工具的技術決策者，在三分鐘內判斷它是否與自己相關，並知道它明確不做什麼。
+- Let a technical decision maker who has never heard of this tool judge within three minutes whether it is relevant to them, and know what it explicitly does not do.
 
 ## Audience
 
-- 潛在採用者的技術決策者，會被轉寄連結、在通勤或會議空檔閱讀。
-- 內部簡報者，需要一份不必臨場補充也講得完的十分鐘版本。
+- Technical decision makers at potential adopters, who receive a forwarded link and read it while commuting or between meetings.
+- Internal presenters, who need a ten-minute version that stands on its own without live elaboration.
 
 ## Delivery Format
 
-- PPTX / Google Slides / HTML deck / PDF / MP4 / static HTML page: 單一自足的 static HTML page 加可列印 PDF；簡報以 Markdown 匯出成 HTML deck，講稿獨立成檔。
+- PPTX / Google Slides / HTML deck / PDF / MP4 / static HTML page: a single self-contained static HTML page plus a printable PDF; the deck is exported from Markdown to an HTML deck, with speaker notes in a separate file.
 
 ## Style
 
-- 直述、無形容詞堆疊；先講邊界再講能力。
-- 不用漸層、不用插畫、不用未經證實的數字。
+- Declarative, no stacked adjectives; state the boundaries before the capabilities.
+- No gradients, no illustration, no unverified numbers.
 
 ## Length
 
-- 一頁式說明：列印為一頁 A4，約 500 字。
-- 簡報：十分鐘，投影片不超過十二張。
+- One-pager: prints to a single A4 page, about 500 words.
+- Deck: ten minutes, no more than twelve slides.
 
 ## Content Sources
 
-- `PROJECT_BRIEF.md`：一句話、使用者、要解決的問題、明確不做。
-- `SPEC.md`：範圍、非目標、驗收標準。
-- `CONTEXT.md`：共用語彙與角色邊界。
-- 每條敘述在下方對照表登記來源；沒有來源的敘述不進入交付物。
+- `PROJECT_BRIEF.md`: one-line summary, users, problem, explicitly out of scope.
+- `SPEC.md`: scope, non-goals, acceptance criteria.
+- `CONTEXT.md`: shared vocabulary and role boundaries.
+- Every statement is registered in the map below with its source; a statement without a source does not enter the deliverable.
 
 ### Claim-to-source Map
 
 | Claim ID | Statement | Source document | Reviewer decision |
 |---|---|---|---|
-| `CLM-501` | 這個工具處理什麼問題 | `PROJECT_BRIEF.md` 要解決的問題 | approved |
-| `CLM-502` | 誰是預期使用者 | `PROJECT_BRIEF.md` 使用者 | approved |
-| `CLM-503` | 明確不做的三件事 | `SPEC.md` 非目標 | approved |
-| `CLM-504` | 驗收標準怎麼判定 | `SPEC.md` 驗收標準 | approved |
-| `CLM-505` | 名詞的定義與容易混淆處 | `CONTEXT.md` 共用語彙 | approved |
+| `CLM-501` | What problem this tool addresses | `PROJECT_BRIEF.md` problem | approved |
+| `CLM-502` | Who the intended users are | `PROJECT_BRIEF.md` users | approved |
+| `CLM-503` | The three things it explicitly does not do | `SPEC.md` non-goals | approved |
+| `CLM-504` | How the acceptance criteria are judged | `SPEC.md` acceptance criteria | approved |
+| `CLM-505` | Term definitions and the easily confused ones | `CONTEXT.md` shared vocabulary | approved |
 
 ## Must Include
 
-- 工具明確不做的事，且放在能力說明之前。
-- 名詞定義，避免讀者用自己的定義套進來。
-- 每張投影片的事實敘述都能在對照表找到。
+- What the tool explicitly does not do, placed before the capability description.
+- Term definitions, so readers do not substitute their own.
+- Every factual statement on every slide traceable to the claim map.
 
 ## Must Not Include
 
-- 採用數字、客戶名稱、成效宣稱，或任何暗示外部採用的措辭。
-- 只存在於交付物、無法指回專案文件的敘述。
-- 外部字體、追蹤腳本或任何網路依賴。
+- Adoption numbers, customer names, outcome claims, or any wording that implies external adoption.
+- Statements that exist only in the deliverable and cannot be traced back to a project document.
+- External fonts, tracking scripts, or any network dependency.
 
 ## Review Method
 
-- 一位未參與專案的內部審閱者只讀一頁式說明，複述工具的邊界；複述錯誤即為缺陷。
-- 逐條核對對照表，任何來源為空的敘述退回。
-- 執行禁用宣稱掃描，命中即阻擋發佈。
+- An internal reviewer who was not on the project reads only the one-pager and restates the tool's boundaries; an incorrect restatement is a defect.
+- Check the claim map row by row; any statement with an empty source is sent back.
+- Run the forbidden-claim scan; a hit blocks publication.
 
 ## Export / Preview Path
 
-- `exports/onepager-<source-commit>.html` 與同名 PDF。
-- `exports/deck-<source-commit>.html` 與 `exports/deck-<source-commit>-notes.md`。
-- 預覽方式：關閉網路後以瀏覽器開啟 HTML，並執行一次列印預覽。
+- `exports/onepager-<source-commit>.html` and the PDF of the same name.
+- `exports/deck-<source-commit>.html` and `exports/deck-<source-commit>-notes.md`.
+- Preview method: open the HTML in a browser with the network disabled, and run one print preview.

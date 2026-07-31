@@ -6,15 +6,15 @@
 
 ## Non-goals
 
-- 不改後端 API 與資料模型。
-- 不做深色模式。
-- 不做行動端佈局以外的觸控手勢。
+- No changes to the backend API or data model.
+- No dark mode.
+- No touch gestures beyond the mobile layout.
 
 ## User flows
 
-1. 調度員開啟佇列，依狀態篩選待處理訂單。
-2. 調度員展開單筆訂單，改派或標記異常。
-3. 客服值班人員從異常清單接手，回填處理結果。
+1. A dispatcher opens the queue and filters pending orders by status.
+2. A dispatcher expands a single order and reassigns it or flags an exception.
+3. On-duty support takes over from the exception list and records the outcome.
 
 ## Requirement revision ledger
 
@@ -34,18 +34,18 @@
 
 ## Edge cases
 
-- 佇列一次回傳超過兩百列時的資料密度。
-- 訂單狀態在使用者停留頁面期間被他人改動。
-- 異常說明文字超過兩行。
+- Data density when the queue returns more than two hundred rows at once.
+- Someone else changes an order status while the user is still on the page.
+- Exception text runs longer than two lines.
 
 ## Failure conditions
 
-- 設計規範只寫在文件、未落到 token，畫面再次分歧。
-- 第三方元件預設樣式覆蓋 token 而無人察覺。
+- The design system is written only in documents and never lands in tokens, so the screens diverge again.
+- Third-party component defaults override the tokens without anyone noticing.
 
 ## Open questions
 
-- 平板橫向是否需要與桌面相同的資料密度。
+- Does tablet landscape need the same data density as desktop?
 
 ## Lineage rules
 

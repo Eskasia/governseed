@@ -1,18 +1,18 @@
 # TECH_STACK.md
 
-## 技術路線決策
+## Technology route decision
 
-- 決策模式：user-declared route
-- 唯一主路線：native macOS app beta package with stable bundle identity
-- 選擇理由：第一版風險是 TCC、簽名與 app path 穩定性，必須用 native macOS release surface 驗證。
-- 排除路線：不採 web app、iOS app、小程序、純 API、Electron，因為它們不能代表目標 TCC 行為，或會引入非必要 runtime。
-- 後期風險：簽名身份、bundle id、build path、macOS 版本差異會讓 tester evidence 失真。
-- 重評估條件：若測試目標改成跨平台 UI 或不再需要 TCC 權限，再重新評估。
-- 新技術引入 gate：新增 packaging、notarization、自動更新或 telemetry 工具前，必須更新 MACOS_RELEASE_CHECKLIST 與 TESTER_HANDOFF。
-- Decision status：active
-- Evidence：SRC-201, SRC-202, REQ-201@1, REQ-202@1
-- Nearest alternative：cross-platform desktop wrapper
-- Review trigger：event-only when native TCC behavior stops being required or cross-platform delivery becomes mandatory
+- Decision mode: user-declared route
+- Primary route: native macOS app beta package with stable bundle identity
+- Rationale: the first-release risk is TCC, signing, and app path stability, which must be verified on the native macOS release surface.
+- Excluded routes: no web app, iOS app, mini program, API-only service, or Electron, because none represents the target TCC behavior or each introduces an unnecessary runtime.
+- Late-stage risks: differences in signing identity, bundle id, build path, and macOS version distort tester evidence.
+- Re-evaluation triggers: re-evaluate if the test target becomes a cross-platform UI or TCC permissions are no longer needed.
+- New technology gate: before adding packaging, notarization, auto-update, or telemetry tooling, update MACOS_RELEASE_CHECKLIST and TESTER_HANDOFF.
+- Decision status: active
+- Evidence: SRC-201, SRC-202, REQ-201@1, REQ-202@1
+- Nearest alternative: cross-platform desktop wrapper
+- Review trigger: event-only when native TCC behavior stops being required or cross-platform delivery becomes mandatory
 
 ## Runtime
 

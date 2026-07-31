@@ -8,29 +8,29 @@
 | TASK-302 | completed | REQ-302@1 | AC-302 | Walk each screen through loading, empty, and error with seeded synthetic data. |
 | TASK-303 | completed | REQ-303@1 | AC-303 | Scan the rebuilt screens for literal color, spacing, and radius values. |
 
-## 任務：從截圖萃取設計規範
+## Task: Extract the design system from screenshots
 
-- 輸入：既有畫面截圖、UI_SPEC、DESIGN_SYSTEM
-- 可用工具：screenshot inspection、contrast checker、token draft file
-- 預期輸出：填好的 DESIGN_SYSTEM，含不一致處與紅線
-- 驗證方式：每條規則指出它來自哪個既有畫面，並標出既有畫面彼此矛盾的地方
-- 不做事項：直接改動既有畫面、引入新元件庫
+- Input: screenshots of the existing screens, UI_SPEC, DESIGN_SYSTEM
+- Available tools: screenshot inspection, contrast checker, token draft file
+- Expected output: a filled DESIGN_SYSTEM including the inconsistencies and the red lines
+- Verification: every rule names the existing screen it came from and flags where the existing screens contradict each other
+- Out of scope: changing the existing screens directly, introducing a new component library
 
-## 任務：重做三個核心畫面
+## Task: Rebuild the three core screens
 
-- 輸入：UI_SPEC、DESIGN_SYSTEM、既有 API 回應樣本
-- 可用工具：專案樣板引擎、token 檔、seeded synthetic fixtures
-- 預期輸出：dispatch queue、single order、exception handling 三個畫面
-- 驗證方式：AC-301 與 AC-303 的 token 檢查，加上三種狀態各自可到達
-- 不做事項：改後端 API、加新業務欄位
+- Input: UI_SPEC, DESIGN_SYSTEM, sample responses from the existing API
+- Available tools: the project template engine, the token file, seeded synthetic fixtures
+- Expected output: the three screens — dispatch queue, single order, exception handling
+- Verification: the token checks for AC-301 and AC-303, plus each of the three states being reachable
+- Out of scope: changing the backend API, adding new business fields
 
-## 任務：設計審查與狀態覆蓋
+## Task: Design review and state coverage
 
-- 輸入：DESIGN_REVIEW、重做後的三個畫面
-- 可用工具：desktop 與 tablet 瀏覽器、鍵盤導覽、synthetic 資料集
-- 預期輸出：填好的 DESIGN_REVIEW，含 side-by-side 差異與結論
-- 驗證方式：狀態覆蓋表每列都有結果，結論欄勾選其一
-- 不做事項：以截圖代替實際操作、用真實訂單資料做審查
+- Input: DESIGN_REVIEW, the three rebuilt screens
+- Available tools: desktop and tablet browsers, keyboard navigation, a synthetic dataset
+- Expected output: a filled DESIGN_REVIEW including the side-by-side differences and the conclusion
+- Verification: every row of the state coverage table has a result, and exactly one conclusion box is checked
+- Out of scope: substituting screenshots for real operation, reviewing with real order data
 
 ## Acceptance evidence ledger
 

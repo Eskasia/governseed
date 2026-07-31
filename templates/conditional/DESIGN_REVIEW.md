@@ -1,32 +1,32 @@
 # DESIGN_REVIEW.md
 
-## 基本資訊
+## Review Info
 
-- 檢查日期：
-- 檢查 URL / 路徑：
-- 檢查者：
-- 對照視覺目標：（截圖 / generated UI / Figma / 無）
+- Review date:
+- Reviewed URL / path:
+- Reviewer:
+- Visual target compared against: (screenshot / generated UI / Figma / none)
 
-## Desktop 檢查
+## Desktop Review
 
-- [ ] 頁面可正常載入
-- [ ] 核心流程可操作（不只是靜態）
-- [ ] console 無 error
-- [ ] 文字無溢出、重疊、遮擋
-- [ ] 間距、對齊符合設計規範
-- 備註：
+- [ ] Page loads correctly
+- [ ] Core flow is operable (not just static)
+- [ ] No console errors
+- [ ] No overflowing, overlapping, or occluded text
+- [ ] Spacing and alignment follow the design system
+- Notes:
 
-## Mobile 檢查
+## Mobile Review
 
-- [ ] 響應式佈局正確
-- [ ] 觸控目標 ≥ 44px
-- [ ] 無水平捲動
-- [ ] 鍵盤彈出不遮擋 input
-- 備註：
+- [ ] Responsive layout is correct
+- [ ] Touch targets ≥ 44px
+- [ ] No horizontal scrolling
+- [ ] Keyboard does not cover the focused input
+- Notes:
 
-## 狀態覆蓋
+## State Coverage
 
-| 狀態 | 已檢查 | 結果 | 備註 |
+| State | Reviewed | Result | Notes |
 |---|---|---|---|
 | loading | [ ] |  |  |
 | empty | [ ] |  |  |
@@ -34,11 +34,11 @@
 | disabled | [ ] |  |  |
 | focus | [ ] |  |  |
 
-## Side-by-side Critique（有視覺目標時）
+## Side-by-side Critique (when a visual target exists)
 
-| 維度 | 差異描述 | 嚴重度 | 狀態 |
+| Dimension | Difference | Severity | Status |
 |---|---|---|---|
-| layout |  | 高 / 中 / 低 | 待修 / 已修 / 保留 |
+| layout |  | high / medium / low | to fix / fixed / accepted |
 | spacing |  |  |  |
 | typography |  |  |  |
 | color |  |  |  |
@@ -46,13 +46,13 @@
 | interaction |  |  |  |
 | data realism |  |  |  |
 
-## 視覺質感判斷
+## Visual Quality Judgment
 
-- 是否仍像 AI 模板：是 / 否
-- 理由：
+- Still looks like an AI template: yes / no
+- Reason:
 
-## 結論
+## Conclusion
 
-- [ ] 可上線
-- [ ] 需要修正（見上方待修項）
-- [ ] 需要重新設計
+- [ ] Ready to ship
+- [ ] Needs fixes (see the to-fix items above)
+- [ ] Needs a redesign

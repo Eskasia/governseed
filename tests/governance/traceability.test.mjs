@@ -763,7 +763,7 @@ test('fails closed when any required lineage ledger is missing or empty', () => 
       name: 'task',
       code: 'TRACE_TASK_COVERAGE_MISSING',
       overrides: {
-        taskContract: fixture('TASK_CONTRACT.md').replace('## 任務總覽', '## Historical tasks'),
+        taskContract: fixture('TASK_CONTRACT.md').replace('## Task coverage ledger', '## Historical tasks'),
       },
     },
     {
@@ -1166,7 +1166,7 @@ test('requires matching route evidence in PROJECT_BRIEF and TECH_STACK', () => {
   const mismatch = evaluateTraceability(...baseInputs({ techStack: mismatchedTechStack }));
   assert.ok(mismatch.some((item) => item.code === 'ROUTE_MODE_CONFLICT'));
 
-  const wrongSection = fixture('PROJECT_BRIEF.md').replace('## 產品形態決策', '## Historical route');
+  const wrongSection = fixture('PROJECT_BRIEF.md').replace('## Product shape decision', '## Historical route');
   const wrongSectionFindings = evaluateTraceability(...baseInputs({ projectBrief: wrongSection }));
   assert.ok(wrongSectionFindings.some((item) => (
     item.code === 'TRACE_SOURCE_MISSING' && item.subject === 'PROJECT_BRIEF.md'
@@ -1329,9 +1329,9 @@ test('withdrawn-only graphs do not excuse missing downstream ledgers', () => {
     )
     .replace('## Acceptance criteria ledger', '## Historical acceptance');
   const taskContract = fixture('TASK_CONTRACT.md')
-    .replace('## 任務總覽', '## Historical tasks')
+    .replace('## Task coverage ledger', '## Historical tasks')
     .replace('## Acceptance evidence ledger', '## Historical evidence');
-  const openLoops = fixture('OPEN_LOOPS.md').replace('## 未決事項', '## Historical loops');
+  const openLoops = fixture('OPEN_LOOPS.md').replace('## Open loops ledger', '## Historical loops');
   const findings = evaluateTraceability(
     withRouteEvidence(fixture('PROJECT_BRIEF.md'), 'SRC-001'),
     spec,

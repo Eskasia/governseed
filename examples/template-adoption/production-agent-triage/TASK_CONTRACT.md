@@ -8,29 +8,29 @@
 | TASK-402 | completed | REQ-402@1 | AC-402 | Replay the golden set with a planted production-writing suggestion and confirm it stops at approval. |
 | TASK-403 | completed | REQ-403@1 | AC-403 | Resolve every cited incident identifier against the synthetic history index. |
 
-## 任務：告警上下文收集
+## Task: Alert context collection
 
-- 輸入：告警事件、服務拓撲、合成歷史事故索引
-- 可用工具：alert reader、topology lookup、history search
-- 預期輸出：受影響服務清單與相關歷史事故引用
-- 驗證方式：每個引用都能解析回索引中的事故編號
-- 不做事項：呼叫任何會改動生產環境的工具
+- Input: the alert event, the service topology, the synthetic historical incident index
+- Available tools: alert reader, topology lookup, history search
+- Expected output: the list of affected services and the related historical incident citations
+- Verification: every citation resolves back to an incident number in the index
+- Out of scope: calling any tool that changes production
 
-## 任務：處置草稿生成
+## Task: Remediation draft generation
 
-- 輸入：收集到的上下文、prompt template、封閉 action schema
-- 可用工具：model provider SDK、structured output validator
-- 預期輸出：含可逆性標記的處置草稿
-- 驗證方式：schema 驗證通過，且每個動作都有可逆性標記
-- 不做事項：讓模型輸出自由格式指令、略過 schema 驗證
+- Input: the collected context, the prompt template, the closed action schema
+- Available tools: model provider SDK, structured output validator
+- Expected output: a remediation draft with reversibility markers
+- Verification: schema validation passes and every action carries a reversibility marker
+- Out of scope: letting the model emit free-form commands, skipping schema validation
 
-## 任務：簽核關卡
+## Task: Approval gate
 
-- 輸入：草稿中被標為改動生產環境的動作
-- 可用工具：approval service、audit log
-- 預期輸出：ask_human 停點與簽核記錄
-- 驗證方式：植入一個生產寫入建議，確認它無法在沒有簽核記錄的情況下執行
-- 不做事項：以逾時當作預設核准
+- Input: the draft actions marked as changing production
+- Available tools: approval service, audit log
+- Expected output: the ask_human stop point and the approval record
+- Verification: inject a production-write suggestion and confirm it cannot run without an approval record
+- Out of scope: treating a timeout as implicit approval
 
 ## Acceptance evidence ledger
 

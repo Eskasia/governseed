@@ -6,15 +6,15 @@
 
 ## Non-goals
 
-- 不做正式上架。
-- 不做新功能。
-- 不做 crash reporter 整合。
+- No public store release.
+- No new features.
+- No crash reporter integration.
 
 ## User flows
 
-1. Tester 下載 app。
-2. Tester 移到指定路徑。
-3. Tester 授權並完成核心操作。
+1. The tester downloads the app.
+2. The tester moves it to the designated path.
+3. The tester grants permissions and completes the core operation.
 
 ## Requirement revision ledger
 
@@ -32,16 +32,16 @@
 
 ## Edge cases
 
-- 舊 bundle id 權限殘留。
-- Tester 從 Downloads 啟動 app。
+- Permissions left over from an old bundle id.
+- The tester launches the app from Downloads.
 
 ## Failure conditions
 
-- 重建後 bundle id 或 signing identity 改變但文件未更新。
+- The bundle id or signing identity changes after a rebuild without the document being updated.
 
 ## Open questions
 
-- 是否需要乾淨使用者帳號驗證。
+- Is verification on a clean user account required?
 
 ## Lineage rules
 

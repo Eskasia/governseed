@@ -2,49 +2,49 @@
 
 ## Register
 
-- 定位：product / app（內部營運工具，不是 marketing 頁面）
-- 使用情境：調度員在固定工作站、雙螢幕、值班尖峰時段同時開三到四個分頁，需要掃視而非閱讀
+- Positioning: product / app (an internal operations tool, not a marketing page)
+- Usage context: dispatchers at a fixed dual-monitor workstation during a peak shift, three to four tabs open at once, scanning rather than reading
 
-## 核心流程
+## Core Flows
 
-| # | 流程名稱 | 起點 | 終點 | 關鍵操作 |
+| # | Flow name | Start | End | Key actions |
 |---|---|---|---|---|
-| 1 | 清佇列 | 開啟調度佇列 | 待處理列數歸零 | 依狀態篩選、批次改派 |
-| 2 | 處理單筆訂單 | 從佇列展開一筆 | 訂單離開待處理狀態 | 改派、標記異常、寫處理備註 |
-| 3 | 異常接手 | 客服開啟異常清單 | 異常關閉並回填結果 | 認領、回填結果、退回調度 |
+| 1 | Clear the queue | Open the dispatch queue | Pending row count reaches zero | Filter by status, bulk reassign |
+| 2 | Handle a single order | Expand one row from the queue | The order leaves the pending state | Reassign, flag exception, write a handling note |
+| 3 | Take over an exception | Support opens the exception list | The exception is closed with an outcome recorded | Claim, record outcome, return to dispatch |
 
-## 核心畫面
+## Core Screens
 
-| 畫面 | 用途 | 主要元件 | 資料密度 | 備註 |
+| Screen | Purpose | Main components | Data density | Notes |
 |---|---|---|---|---|
-| 調度佇列 | 掃視待處理訂單並批次操作 | Table、狀態 Badge、篩選列、批次操作列 | 高 | 桌面一屏至少 25 列 |
-| 單筆訂單 | 檢視與改動一筆訂單 | Panel、Timeline、Form、確認 Modal | 中 | 從佇列以 Drawer 開啟 |
-| 異常處理 | 客服認領與回填 | List、Badge、Textarea、Toast | 中 | 與佇列共用狀態 token |
+| Dispatch queue | Scan pending orders and act in bulk | Table, status badge, filter bar, bulk action bar | high | At least 25 rows per desktop viewport |
+| Single order | Inspect and change one order | Panel, Timeline, Form, confirmation Modal | medium | Opened as a Drawer from the queue |
+| Exception handling | Support claims and records outcomes | List, Badge, Textarea, Toast | medium | Shares status tokens with the queue |
 
-## 狀態覆蓋
+## State Coverage
 
-| 狀態 | 觸發條件 | 視覺表現 | 備註 |
+| State | Trigger | Visual treatment | Notes |
 |---|---|---|---|
-| loading | 首次載入或切換篩選 | 骨架列保留欄寬，不用轉圈 | 避免版面跳動 |
-| empty | 篩選後無結果 | 說明目前篩選條件並提供清除篩選 | 不使用插畫 |
-| error | 取單失敗 | 行內錯誤條加重試按鈕，保留既有列 | 不用 Modal 擋住整頁 |
-| disabled | 無權限的批次操作 | 降低對比並顯示原因 tooltip | 不隱藏按鈕 |
-| focus | 鍵盤導覽 | 2px focus ring，使用 `--color-primary` | 不移除 outline |
-| hover / tap | 指標移入列 | 背景換 `--color-surface`，不改字色 | 觸控裝置不套用 hover |
+| loading | First load or a filter change | Skeleton rows preserve column widths, no spinner | Avoids layout shift |
+| empty | No results after filtering | States the current filter and offers clear-filter | No illustration |
+| error | Claim failure | Inline error bar with a retry button, existing rows kept | Does not block the page with a Modal |
+| disabled | Unauthorized bulk action | Reduced contrast with a reason tooltip | The button is not hidden |
+| focus | Keyboard navigation | 2px focus ring using `--color-primary` | The outline is not removed |
+| hover / tap | Pointer enters a row | Background switches to `--color-surface`, text color unchanged | Hover is not applied on touch devices |
 
-## 響應式
+## Responsive
 
-| Breakpoint | 佈局變化 | 備註 |
+| Breakpoint | Layout change | Notes |
 |---|---|---|
-| mobile (<768px) | 不支援；顯示改用桌面裝置的說明 | 明確不做，見 SPEC 非目標 |
-| tablet (768-1024px) | 佇列改單欄卡片列，批次操作收進動作選單 | 密度取捨仍是 LOOP-301 |
-| desktop (>1024px) | 佇列表格全欄顯示，訂單以右側 Drawer 開啟 | 主要目標裝置 |
+| mobile (<768px) | Unsupported; shows a switch-to-desktop notice | Explicitly out of scope, see the SPEC non-goals |
+| tablet (768-1024px) | The queue becomes single-column card rows, bulk actions collapse into an action menu | The density tradeoff is still LOOP-301 |
+| desktop (>1024px) | Full-column queue table, orders open in a right-side Drawer | The primary target device |
 
-## 設計來源
+## Design Sources
 
-- 參考：既有調度佇列、既有訂單詳情、既有異常清單三個畫面的截圖（合成樣本，非真實訂單）
-- 工具：截圖檢視、對比度檢查、token 草稿檔
+- References: screenshots of the three existing screens — dispatch queue, order detail, exception list (composite samples, not real orders)
+- Tools: screenshot review, contrast checking, a token draft file
 
-## 明確不要
+## Explicitly Unwanted
 
-- 模板味、過度卡片、AI 紫藍漸層、無意義動畫、看不懂的 icon
+- Template feel, excessive cards, AI purple-blue gradients, meaningless animation, unreadable icons

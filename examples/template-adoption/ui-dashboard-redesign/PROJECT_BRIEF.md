@@ -1,23 +1,23 @@
 # PROJECT_BRIEF.md
 
-## 一句話
+## One-line summary
 
-從既有畫面截圖反推設計規範，重做一個內部訂單調度看板的前端。
+Reverse-engineer a design system from screenshots of the existing screens and rebuild the frontend of an internal order dispatch dashboard.
 
-## 使用者
+## Users
 
-- 調度員
-- 客服值班人員
+- Dispatchers
+- On-duty support staff
 
-## 要解決的問題
+## Problem
 
-現有看板由三年間多人各自加頁面而成，同一種狀態在不同頁面用不同顏色與字級表示，調度員在高壓時段會誤讀。
+The current dashboard grew from pages added by many people over three years; the same status is shown with different colors and type sizes on different pages, and dispatchers misread it under pressure.
 
 ## MVP
 
-- 從既有畫面截圖萃取一份可執行的設計規範。
-- 重做調度佇列、單筆訂單、異常處理三個核心畫面。
-- 每個畫面都覆蓋 loading、empty、error 三種狀態。
+- Extract an actionable design system from screenshots of the existing screens.
+- Rebuild the three core screens: dispatch queue, single order, exception handling.
+- Cover the loading, empty, and error states on every screen.
 
 ## Privacy-safe source attestations
 
@@ -26,27 +26,27 @@
 | SRC-301 | synthetic | attestation-only | n/a | no | confirmed | design-owner-role | 2026-07-31 |
 | SRC-302 | synthetic | attestation-only | n/a | no | confirmed | operator-role | 2026-07-31 |
 
-## 產品形態決策
+## Product shape decision
 
-- 決策模式：user-declared route
-- 第一版產品形態：internal operations dashboard, desktop-first web
-- Q1-Q9 依據：使用者是坐在固定工作站、同時開多個分頁的內部員工，需要的是高資料密度與狀態一致性，不是行動端觸控體驗。
-- 為什麼不是網站 / App / 小程序 / 純後端 / 管理系統等其他形態：行動 App 無法承載一屏多列的調度佇列；純後端沒有解決誤讀問題；對外網站不是這批使用者的入口。
-- Decision status：active
-- Evidence：SRC-301, SRC-302, REQ-301@1, REQ-302@1
-- Nearest alternative：keep the existing dashboard and only unify colors
-- Review trigger：event-only when dispatchers start working from mobile devices or the queue moves into an external product
+- Decision mode: user-declared route
+- Product shape: internal operations dashboard, desktop-first web
+- Q1-Q9 basis: the users are internal staff at a fixed workstation with several tabs open at once, who need high data density and status consistency rather than a mobile touch experience.
+- Why not website / app / mini program / backend-only / admin system or another shape: a mobile app cannot carry a many-row dispatch queue in one viewport; a backend-only change does not solve misreading; a public website is not this audience's entry point.
+- Decision status: active
+- Evidence: SRC-301, SRC-302, REQ-301@1, REQ-302@1
+- Nearest alternative: keep the existing dashboard and only unify colors
+- Review trigger: event-only when dispatchers start working from mobile devices or the queue moves into an external product
 
-## 明確不做
+## Explicitly out of scope
 
-- 不做行動端原生 App。
-- 不改後端資料模型與 API。
-- 不做深色模式。
+- No mobile native app.
+- No changes to the backend data model or API.
+- No dark mode.
 
-## 驗收者
+## Acceptance owner
 
-- 調度員以三個核心畫面完成一次完整值班流程。
+- A dispatcher completes a full shift flow using the three core screens.
 
-## 完成標準
+## Done criteria
 
-- 同一種訂單狀態在三個畫面用同一組 token，且 DESIGN_REVIEW 的狀態覆蓋全部檢查過。
+- One order status uses one token set across all three screens, and every row of the DESIGN_REVIEW state coverage has been checked.

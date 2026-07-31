@@ -133,8 +133,8 @@ function runMutationChecks() {
       expectedWarning: '[ROUTE_MODE_CONFLICT] GATE-ROUTE-001: route decision modes do not match',
       mutate(projectDir) {
         mutateFile(projectDir, 'TECH_STACK.md', (content) => content.replace(
-          '決策模式：user-declared route',
-          '決策模式：ai-recommended route',
+          'Decision mode: user-declared route',
+          'Decision mode: ai-recommended route',
         ));
       },
     },
@@ -143,8 +143,8 @@ function runMutationChecks() {
       expectedWarning: '[ROUTE_PLACEHOLDER] PROJECT_BRIEF.md: route decision contains an unfilled field',
       mutate(projectDir) {
         mutateFile(projectDir, 'PROJECT_BRIEF.md', (content) => content.replace(
-          /(^-\s*第一版產品形態[：:].*$)/m,
-          '- 第一版產品形態：TODO',
+          /(^-\s*Product shape[：:].*$)/m,
+          '- Product shape: TODO',
         ));
       },
     },
@@ -160,8 +160,8 @@ function runMutationChecks() {
             );
           }
           return content.replace(
-            '## 技術路線決策',
-            '## 技術路線決策\n\n- Decision status: recheck-required',
+            '## Technology route decision',
+            '## Technology route decision\n\n- Decision status: recheck-required',
           );
         });
       },

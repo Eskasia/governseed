@@ -8,29 +8,29 @@
 | TASK-502 | completed | REQ-502@1 | AC-502 | Run the claim review against the forbidden-claim list. |
 | TASK-503 | completed | REQ-503@1 | AC-503 | Render and print the page with the network disabled. |
 
-## 任務：建立事實對照表
+## Task: Build the claim-to-source map
 
-- 輸入：PROJECT_BRIEF、SPEC、CONTEXT
-- 可用工具：文件檢索、對照表草稿
-- 預期輸出：claim-to-source map，每條敘述對應一份文件
-- 驗證方式：對照表中沒有來源為空的列
-- 不做事項：為了語氣加入無來源的敘述
+- Input: PROJECT_BRIEF, SPEC, CONTEXT
+- Available tools: document search, claim map draft
+- Expected output: a claim-to-source map where every statement maps to one document
+- Verification: no row in the map has an empty source
+- Out of scope: adding sourceless statements for tone
 
-## 任務：一頁式說明
+## Task: One-pager
 
-- 輸入：claim-to-source map、TECH_STACK 的離線限制
-- 可用工具：HTML 編輯、列印預覽、離線渲染檢查
-- 預期輸出：單一自足 HTML 檔與其 PDF
-- 驗證方式：關閉網路後渲染與列印皆正常，且分頁不切斷關鍵段落
-- 不做事項：引入外部字體、追蹤腳本或多頁結構
+- Input: claim-to-source map, the offline constraint in TECH_STACK
+- Available tools: HTML editing, print preview, offline rendering check
+- Expected output: a single self-contained HTML file and its PDF
+- Verification: rendering and printing both work with the network disabled, and page breaks do not cut key sections
+- Out of scope: introducing external fonts, tracking scripts, or a multi-page structure
 
-## 任務：十分鐘簡報
+## Task: Ten-minute deck
 
-- 輸入：claim-to-source map、一頁式說明
-- 可用工具：Markdown 轉投影片匯出、講稿檔
-- 預期輸出：投影片與獨立講稿
-- 驗證方式：講稿與投影片分離，且每張投影片的事實敘述都能在對照表找到
-- 不做事項：把講稿貼進投影片、加入未經證實的採用數字
+- Input: claim-to-source map, the one-pager
+- Available tools: Markdown-to-slides export, a speaker notes file
+- Expected output: slides plus separate speaker notes
+- Verification: notes are separate from the slides, and every factual statement on every slide is in the claim map
+- Out of scope: pasting the notes into the slides, adding unverified adoption numbers
 
 ## Acceptance evidence ledger
 

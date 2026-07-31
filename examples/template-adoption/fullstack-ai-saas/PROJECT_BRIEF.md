@@ -1,23 +1,23 @@
 # PROJECT_BRIEF.md
 
-## 一句話
+## One-line summary
 
-協助小型顧問團隊把客戶文件轉成可追溯的問答工作區。
+Help a small consulting team turn client documents into a traceable question-and-answer workspace.
 
-## 使用者
+## Users
 
-- 顧問團隊 owner
-- 顧問團隊成員
+- Consulting team owner
+- Consulting team members
 
-## 要解決的問題
+## Problem
 
-客戶文件分散在資料夾與郵件中，團隊無法快速確認答案來源。
+Client documents are scattered across folders and email, so the team cannot quickly confirm where an answer came from.
 
 ## MVP
 
-- 上傳一份文件。
-- 對文件提問。
-- 回答必須顯示 citation。
+- Upload a document.
+- Ask questions about the document.
+- Answers must show a citation.
 
 ## Privacy-safe source attestations
 
@@ -26,29 +26,29 @@
 | SRC-101 | synthetic | attestation-only | n/a | no | confirmed | product-owner-role | 2026-07-13 |
 | SRC-102 | synthetic | attestation-only | n/a | no | confirmed | security-reviewer-role | 2026-07-13 |
 
-## 產品形態決策
+## Product shape decision
 
-- 決策模式：ai-recommended route
-- 第一版產品形態：fullstack AI web app
-- Q1-Q9 依據：顧問 owner 需要自己點核心流程、上傳文件、登入後提問並看到 citation；資料、權限、RAG、eval、安全文件都會影響驗收。
-- 為什麼不是網站 / App / 小程序 / 純後端 / 管理系統等其他形態：landing page 不能驗證問答工作區；native app 和小程序會增加平台審核與裝置邊界；純 API 無法讓 owner 直接驗收；管理系統不是第一版核心。
-- 何時重新評估：若核心使用者改成外部系統、需要離線 mobile review、或 preview 驗收改成 API-only，再重新評估。
-- Decision status：active
-- Evidence：SRC-101, SRC-102, REQ-101@1, REQ-102@1
-- Nearest alternative：API-only RAG service
-- Review trigger：event-only when direct browser acceptance changes to system-to-system integration or offline review
+- Decision mode: ai-recommended route
+- Product shape: fullstack AI web app
+- Q1-Q9 basis: the consulting owner needs to click through the core flow themselves — upload a document, log in, ask a question, and see a citation; the data, permission, RAG, eval, and security documents all affect acceptance.
+- Why not website / app / mini program / backend-only / admin system or another shape: a landing page cannot verify the Q&A workspace; a native app or mini program adds platform review and device boundaries; an API-only service does not let the owner accept the work directly; an admin system is not the core of the first release.
+- Re-evaluate when: the core user becomes an external system, offline mobile review is needed, or preview acceptance becomes API-only.
+- Decision status: active
+- Evidence: SRC-101, SRC-102, REQ-101@1, REQ-102@1
+- Nearest alternative: API-only RAG service
+- Review trigger: event-only when direct browser acceptance changes to system-to-system integration or offline review
 
-## 明確不做
+## Explicitly out of scope
 
-- 不做多語翻譯。
-- 不做正式 billing。
-- 不做跨客戶共享文件。
+- No multilingual translation.
+- No production billing.
+- No cross-client document sharing.
 
-## 驗收者
+## Acceptance owner
 
-- 團隊 owner 自己點核心流程。
+- The team owner clicks through the core flow themselves.
 
-## 完成標準
+## Done criteria
 
-- 新 agent 能在 30 秒內理解方向。
-- 問題、使用者、MVP 沒有混在同一句話裡。
+- A new agent understands the direction within 30 seconds.
+- Problem, users, and MVP are not collapsed into one sentence.

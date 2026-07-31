@@ -6,15 +6,15 @@
 
 ## Non-goals
 
-- 不做自動 remediation 執行。
-- 不做事故報告對外發佈。
-- 不做跨組織告警彙整。
+- No automatic remediation execution.
+- No external publication of incident reports.
+- No cross-organization alert aggregation.
 
 ## User flows
 
-1. 告警進入，agent 收集受影響服務與相關歷史事故。
-2. 值班者讀草稿，追問或修改建議。
-3. 需要改動生產環境時，agent 停在 ask_human，由事故指揮簽核。
+1. An alert arrives and the agent collects the affected services and related historical incidents.
+2. The on-call engineer reads the draft and asks follow-up questions or edits the suggestions.
+3. When production must change, the agent stops at ask_human and the incident commander approves.
 
 ## Requirement revision ledger
 
@@ -34,18 +34,18 @@
 
 ## Edge cases
 
-- 告警在草稿生成期間自行恢復。
-- 歷史事故庫沒有相似案例。
-- 事故指揮在簽核逾時前未回應。
+- The alert resolves on its own while the draft is being generated.
+- The historical incident index has no similar case.
+- The incident commander does not respond before the approval timeout.
 
 ## Failure conditions
 
-- 模型輸出的動作被當成已核准動作執行。
-- 草稿引用了不存在的歷史事故，值班者據此誤判。
+- A model-produced action is executed as if it had been approved.
+- The draft cites a historical incident that does not exist and the on-call engineer misjudges based on it.
 
 ## Open questions
 
-- 逾時未簽核時是否應自動升級給第二簽核人。
+- Should an unapproved timeout escalate automatically to a second approver?
 
 ## Lineage rules
 

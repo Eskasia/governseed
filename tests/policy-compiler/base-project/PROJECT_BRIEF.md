@@ -1,23 +1,23 @@
 # PROJECT_BRIEF.md
 
-## 一句話
+## One-line summary
 
-讓一個新專案在開始寫 code 前完成最小 governance bootstrap。
+Let a new project complete a minimal governance bootstrap before any code is written.
 
-## 使用者
+## Users
 
-- 專案維護者
+- Project maintainers
 - Coding agent
 
-## 要解決的問題
+## Problem
 
-空白 prompt 容易讓 agent 在需求、驗證和 open loops 未清楚前直接實作。
+A blank prompt lets an agent start implementing before the requirements, verification, and open loops are clear.
 
 ## MVP
 
-- 產生固定治理文件。
-- 讓 doctor 確認固定文件已填寫。
-- 保留未決事項的明確位置。
+- Generate the fixed governance documents.
+- Let doctor confirm the fixed documents are filled in.
+- Keep an explicit place for open loops.
 
 ## Privacy-safe source attestations
 
@@ -26,28 +26,28 @@
 | SRC-001 | synthetic | attestation-only | n/a | no | confirmed | maintainer-role | 2026-07-13 |
 | SRC-002 | public | public-pointer | https://github.com/Eskasia/governseed | no | confirmed | maintainer-role | 2026-07-13 |
 
-## 產品形態決策
+## Product shape decision
 
-- 決策模式：user-declared route
-- 第一版產品形態：governance CLI / document generator
-- Q1-Q9 依據：使用者與 coding agent 需要在寫 code 前完成文件、驗證與 open loop；不需要使用者介面或應用 runtime。
-- 為什麼不是網站 / App / 小程序 / 純後端 / 管理系統等其他形態：第一版只驗證文件生成與 doctor 訊號，UI、native shell、API service、admin workflow 都會增加不必要 runtime 邊界。
-- 何時重新評估：若需要互動式 onboarding、hosted doctor dashboard、或多使用者管理功能，再評估 web app / management system。
-- Decision status：active
-- Evidence：SRC-001, SRC-002, REQ-001@1, REQ-002@1
-- Nearest alternative：hosted governance dashboard
-- Review trigger：event-only when onboarding becomes interactive or governance state must be shared remotely
+- Decision mode: user-declared route
+- Product shape: governance CLI / document generator
+- Q1-Q9 basis: users and coding agents need documents, verification, and open loops settled before writing code; no user interface or application runtime is required.
+- Why not website / app / mini program / backend-only / admin system or another shape: the first release only verifies document generation and doctor signals; a UI, native shell, API service, or admin workflow each adds an unnecessary runtime boundary.
+- Re-evaluate when: interactive onboarding, a hosted doctor dashboard, or multi-user management is needed; then reconsider a web app / management system.
+- Decision status: active
+- Evidence: SRC-001, SRC-002, REQ-001@1, REQ-002@1
+- Nearest alternative: hosted governance dashboard
+- Review trigger: event-only when onboarding becomes interactive or governance state must be shared remotely
 
-## 明確不做
+## Explicitly out of scope
 
-- 不提供 app runtime。
-- 不提供產品功能範例。
-- 不宣稱外部採用。
+- No app runtime is provided.
+- No product feature examples are provided.
+- No external adoption is claimed.
 
-## 驗收者
+## Acceptance owner
 
 - Repo maintainer runs `node scripts/doctor.mjs --json examples/template-adoption/base-minimal`.
 
-## 完成標準
+## Done criteria
 
 - doctor JSON status is `ready`.

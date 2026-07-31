@@ -1,18 +1,18 @@
 # TECH_STACK.md
 
-## 技術路線決策
+## Technology route decision
 
-- 決策模式：user-declared route
-- 唯一主路線：single static HTML page with a print stylesheet, plus a Markdown-sourced deck
-- 選擇理由：讀者會轉寄連結、離線閱讀、列印成 PDF，因此輸出必須是單一自足檔案，不依賴建置服務或執行環境。
-- 排除路線：不採靜態網站產生器、不採簡報 SaaS、不採 App，因為它們把一份可轉寄的檔案變成一個需要維護的服務。
-- 後期風險：說明與專案文件會隨時間分歧；簡報講稿若混進投影片，會讓事實敘述難以逐條核對。
-- 重評估條件：若一頁式說明不再是入口、改以試用環境為主要行動呼籲，再重新評估。
-- 新技術引入 gate：引入任何建置工具或簡報平台前，必須先確認離線可讀與可列印仍然成立。
-- Decision status：active
-- Evidence：SRC-501, SRC-502, REQ-501@1, REQ-502@1
-- Nearest alternative：static site generator with a slide plugin
-- Review trigger：event-only when a trial environment replaces the one-pager as the entry point
+- Decision mode: user-declared route
+- Primary route: single static HTML page with a print stylesheet, plus a Markdown-sourced deck
+- Rationale: readers forward the link, read offline, and print to PDF, so the output must be a single self-contained file with no build service or runtime dependency.
+- Excluded routes: no static site generator, presentation SaaS, or app, because each turns a forwardable file into a service that must be maintained.
+- Late-stage risks: the one-pager and the project documents drift apart over time; if speaker notes are mixed into the slides, factual statements become hard to check row by row.
+- Re-evaluation triggers: re-evaluate if the one-pager stops being the entry point and a trial environment becomes the primary call to action.
+- New technology gate: before introducing any build tool or presentation platform, confirm that offline readability and printability still hold.
+- Decision status: active
+- Evidence: SRC-501, SRC-502, REQ-501@1, REQ-502@1
+- Nearest alternative: static site generator with a slide plugin
+- Review trigger: event-only when a trial environment replaces the one-pager as the entry point
 
 ## Runtime
 

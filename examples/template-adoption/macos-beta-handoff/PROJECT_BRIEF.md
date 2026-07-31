@@ -1,23 +1,23 @@
 # PROJECT_BRIEF.md
 
-## 一句話
+## One-line summary
 
-讓內測者驗證一個固定簽名與固定路徑的 macOS menu bar app。
+Let beta testers verify a macOS menu bar app with a fixed signature and a fixed path.
 
-## 使用者
+## Users
 
-- 內測者
-- 開發者
+- Beta testers
+- Developers
 
-## 要解決的問題
+## Problem
 
-開發版 app 因 TCC 身分不穩，常出現重建後授權失效。
+Development builds have an unstable TCC identity, so permissions frequently break after a rebuild.
 
 ## MVP
 
-- 提供 DMG 或 app path。
-- 測 Accessibility 與 ScreenCapture 權限。
-- 回報啟動與權限狀態。
+- Provide a DMG or an app path.
+- Test the Accessibility and ScreenCapture permissions.
+- Report launch and permission state.
 
 ## Privacy-safe source attestations
 
@@ -26,28 +26,28 @@
 | SRC-201 | synthetic | attestation-only | n/a | no | confirmed | release-owner-role | 2026-07-13 |
 | SRC-202 | synthetic | attestation-only | n/a | no | confirmed | tester-role | 2026-07-13 |
 
-## 產品形態決策
+## Product shape decision
 
-- 決策模式：user-declared route
-- 第一版產品形態：macOS desktop app beta handoff
-- Q1-Q9 依據：驗收者需要測固定簽名、固定路徑、TCC 權限與啟動狀態；問題本身綁定 macOS permission behavior。
-- 為什麼不是網站 / App / 小程序 / 純後端 / 管理系統等其他形態：web、mobile、小程序、API 都無法驗證 macOS Accessibility、ScreenCapture、bundle id、signing identity。
-- 何時重新評估：若核心驗收不再依賴 macOS TCC 或需要跨平台桌面 shell，再評估 web / Electron / multi-platform app。
-- Decision status：active
-- Evidence：SRC-201, SRC-202, REQ-201@1, REQ-202@1
-- Nearest alternative：cross-platform desktop wrapper
-- Review trigger：event-only when TCC is no longer an acceptance constraint or a cross-platform shell becomes mandatory
+- Decision mode: user-declared route
+- Product shape: macOS desktop app beta handoff
+- Q1-Q9 basis: the acceptance owner must test a fixed signature, a fixed path, TCC permissions, and launch state; the problem itself is bound to macOS permission behavior.
+- Why not website / app / mini program / backend-only / admin system or another shape: web, mobile, mini program, and API surfaces cannot verify macOS Accessibility, ScreenCapture, bundle id, or signing identity.
+- Re-evaluate when: core acceptance no longer depends on macOS TCC, or a cross-platform desktop shell is needed; then reconsider web / Electron / a multi-platform app.
+- Decision status: active
+- Evidence: SRC-201, SRC-202, REQ-201@1, REQ-202@1
+- Nearest alternative: cross-platform desktop wrapper
+- Review trigger: event-only when TCC is no longer an acceptance constraint or a cross-platform shell becomes mandatory
 
-## 明確不做
+## Explicitly out of scope
 
-- 不做 App Store 發佈。
-- 不做自動更新。
-- 不做正式 notarization gate 以外的功能擴張。
+- No App Store release.
+- No auto-update.
+- No feature expansion beyond the formal notarization gate.
 
-## 驗收者
+## Acceptance owner
 
-- 內測者回報 TESTER_HANDOFF 指定流程。
+- Beta testers report against the flow specified in TESTER_HANDOFF.
 
-## 完成標準
+## Done criteria
 
-- 測試者可不用讀開發文件完成測試。
+- A tester can complete the test without reading developer documentation.

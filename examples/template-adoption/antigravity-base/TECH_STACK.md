@@ -1,18 +1,18 @@
 # TECH_STACK.md
 
-## 技術路線決策
+## Technology route decision
 
-- 決策模式：user-declared route
-- 唯一主路線：Node.js CLI and markdown template generator
-- 選擇理由：這個 fixture 要驗證的是產生器輸出與 checked-in 檔案是否一致，Node.js 直接支撐跨平台 CLI、JSON profile 與 fixture smoke，不需要 app runtime。
-- 排除路線：不採 web app、mobile app、backend API、database service，因為 fixture 沒有人機 UI、資料持久化或網路服務需求。
-- 後期風險：若 Antigravity adapter 開始需要互動式安裝或遠端狀態，單檔腳本與 markdown template 可能不足。
-- 重評估條件：需要 hosted dashboard、多使用者狀態、遠端 API、或互動式 wizard 時重新評估。
-- 新技術引入 gate：新增框架、SDK、provider 或資料庫前，必須證明它直接改善 init / doctor / fixture 驗證，且不把 starter 變成 runtime framework。
-- Decision status：active
-- Evidence：SRC-001, SRC-002, REQ-001@1, REQ-003@1
-- Nearest alternative：只在測試中斷言 adapter 字串，不保存 fixture
-- Review trigger：event-only when the Antigravity adapter gains a surface the generator does not own
+- Decision mode: user-declared route
+- Primary route: Node.js CLI and markdown template generator
+- Rationale: this fixture verifies that the generator output matches the checked-in files; Node.js directly supports a cross-platform CLI, JSON profiles, and fixture smoke, with no app runtime needed.
+- Excluded routes: no web app, mobile app, backend API, or database service, because the fixture has no user-facing UI, data persistence, or network service requirement.
+- Late-stage risks: if the Antigravity adapter starts needing interactive installation or remote state, single-file scripts and markdown templates may not be enough.
+- Re-evaluation triggers: re-evaluate when a hosted dashboard, multi-user state, a remote API, or an interactive wizard is needed.
+- New technology gate: before adding a framework, SDK, provider, or database, prove it directly improves init / doctor / fixture validation and does not turn the starter into a runtime framework.
+- Decision status: active
+- Evidence: SRC-001, SRC-002, REQ-001@1, REQ-003@1
+- Nearest alternative: assert the adapter strings in tests only, without keeping a fixture
+- Review trigger: event-only when the Antigravity adapter gains a surface the generator does not own
 
 ## Runtime
 

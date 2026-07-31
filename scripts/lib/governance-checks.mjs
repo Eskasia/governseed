@@ -206,9 +206,10 @@ export const CONDITIONAL_DEPTH_FILES = Object.freeze([
 /**
  * The fields each conditional document must actually cover, not merely mention.
  *
- * A column carries every accepted spelling because the templates label these
- * tables in Chinese and the filled examples label them in English; matching one
- * vocabulary would pass whichever document happened to use the other.
+ * A column carries every accepted spelling. The starter now ships English
+ * templates, but a project bootstrapped from an earlier release labels these
+ * tables in Chinese; matching one vocabulary would fail whichever document
+ * happened to use the other.
  */
 const CONDITIONAL_DEPTH_SPECS = Object.freeze([
   {
@@ -463,7 +464,7 @@ const REQUIREMENT_SECTIONS = ['Requirement revision ledger'];
 const ACCEPTANCE_SECTIONS = ['Acceptance criteria ledger'];
 const TASK_SECTIONS = ['任務總覽', 'Task coverage ledger'];
 const EVIDENCE_SECTIONS = ['Acceptance evidence ledger'];
-const OPEN_LOOP_SECTIONS = ['未決事項'];
+const OPEN_LOOP_SECTIONS = ['未決事項', 'Open loops ledger'];
 
 const SOURCE_ID = /^SRC-\d{3,}$/;
 const REQUIREMENT_REVISION = /^(REQ-\d{3,})@([1-9]\d*)$/;
@@ -665,9 +666,9 @@ function splitReferences(value) {
     .filter(Boolean);
 }
 
-function decisionEvidence(content, sectionTitle) {
+function decisionEvidence(content, sectionTitles) {
   const lines = visibleMarkdownLines(content);
-  const sections = findSections(lines, [sectionTitle]);
+  const sections = findSections(lines, sectionTitles);
   if (sections.length !== 1) return { valid: false, value: '' };
   const [{ start, end }] = sections;
   const values = [];
@@ -1029,8 +1030,8 @@ export function evaluateTraceability(projectBrief, spec, taskContract, openLoops
 
   const routeEvidenceByFile = new Map();
   for (const [content, file, section] of [
-    [projectBrief, 'PROJECT_BRIEF.md', '產品形態決策'],
-    [techStack, 'TECH_STACK.md', '技術路線決策'],
+    [projectBrief, 'PROJECT_BRIEF.md', ['產品形態決策', 'Product shape decision']],
+    [techStack, 'TECH_STACK.md', ['技術路線決策', 'Technology route decision']],
   ]) {
     const evidence = decisionEvidence(content, section);
     const tokens = splitReferences(evidence.value);

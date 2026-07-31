@@ -1,64 +1,64 @@
 # DATA_MODEL.md
 
-## 核心資料物件
+## Core Data Objects
 
-| Entity | 說明 | Owner | 生命週期 | 備註 |
+| Entity | Description | Owner | Lifecycle | Notes |
 |---|---|---|---|---|
 |  |  |  |  |  |
 
-## 關聯
+## Relationships
 
-| 來源 | 目標 | 關係 | 備註 |
+| Source | Target | Relationship | Notes |
 |---|---|---|---|
 |  |  |  |  |
 
 ## Tenant / Multi-tenancy
 
-- tenant 識別方式：
-- tenant 隔離層級：row / schema / database
-- 跨 tenant 查詢：允許 / 禁止
+- Tenant identification:
+- Tenant isolation level: row / schema / database
+- Cross-tenant queries: allowed / forbidden
 
-## 使用者與角色
+## Users And Roles
 
-| Role | 權限 | 建立方式 | 備註 |
+| Role | Permission | Created by | Notes |
 |---|---|---|---|
 |  |  |  |  |
 
 ## Auth
 
-- auth provider：
-- session / token 策略：
-- 密碼 / OAuth / magic link：
+- auth provider:
+- session / token policy:
+- Password / OAuth / magic link:
 
-## 資料表
+## Tables
 
-| Table | 主要欄位 | PK | FK | Index | RLS | 備註 |
+| Table | Key columns | PK | FK | Index | RLS | Notes |
 |---|---|---|---|---|---|---|
 |  |  |  |  |  |  |  |
 
-## RLS（Row Level Security）
+## RLS
 
-| Table | Policy 名稱 | 條件 | 適用角色 | 備註 |
+| Table | Policy name | Condition | Applies to role | Notes |
 |---|---|---|---|---|
 |  |  |  |  |  |
 
 ## Migration
 
-- migration 工具：
-- 命名慣例：
-- rollback 策略：
+- Migration tool:
+- Naming convention:
+- Rollback strategy:
 
 ## Seed / Mock Data
 
-| 場景 | 資料內容 | 用途 | 來源 |
+| Scenario | Data | Purpose | Source |
 |---|---|---|---|
-| 本機開發 |  |  |  |
-| E2E 測試 |  |  |  |
+| Local development |  |  |  |
+| E2E test |  |  |  |
 | Demo |  |  |  |
 
-## 資料保留策略
+## Data Retention
 
-- soft delete / hard delete：
-- 保留天數：
-- 備份頻率：
-- GDPR / 個資刪除：
+- soft delete / hard delete:
+- Retention days:
+- Backup frequency:
+- GDPR / personal-data deletion:

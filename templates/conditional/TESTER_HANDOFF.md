@@ -1,50 +1,50 @@
 # TESTER_HANDOFF.md
 
-## 測試目的
+## Test Purpose
 
 -
 
-## 測試網址或檔案路徑
+## Test URL Or File Path
 
 -
 
-## 測試帳號或測試資料
+## Test Account Or Test Data
 
 -
 
-## 請測的 3 條核心路徑
+## The 3 Core Paths To Test
 
 1.
 2.
 3.
 
-## 不需要測的範圍
+## Out Of Test Scope
 
 -
 
-## 已知限制
+## Known Limitations
 
 -
 
-## 問題回報格式
+## Issue Report Format
 
-- 發生在哪個頁面或步驟：
-- 你原本期待看到什麼：
-- 實際發生什麼：
-- 是否能重複發生：
-- 截圖或錄影：
+- Which page or step it happened on:
+- What you expected to see:
+- What actually happened:
+- Whether it reproduces:
+- Screenshot or recording:
 
-## 截圖或錄影要求
-
--
-
-## 測試截止條件
+## Screenshot Or Recording Requirements
 
 -
 
-## 開發者已驗證
+## Test Cutoff Condition
 
-- 啟動：
-- 核心流程：
-- console / log：
-- 已知錯誤：
+-
+
+## Verified By The Developer
+
+- Launch:
+- Core flow:
+- console / log:
+- Known errors:

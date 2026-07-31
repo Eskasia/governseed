@@ -1,37 +1,37 @@
 # DESIGN_SYSTEM.md
 
-## 產品判斷
+## Product Judgment
 
-- 產品氣質：
-- 目標用戶：
-- 核心使用場景：
-- 使用設備與壓力：
-- 截圖 / 參考來源：
+- Product character:
+- Target users:
+- Core usage scenarios:
+- Devices and usage pressure:
+- Screenshots / reference sources:
 
-## 視覺語言萃取
+## Visual Language Extraction
 
-| 類別 | 從截圖觀察到的規則 | 適用場景 | 不要怎麼用 | 不一致處 |
+| Category | Rule observed in screenshots | When to use | How not to use | Inconsistencies |
 |---|---|---|---|---|
-| 色彩 |  |  |  |  |
-| 字體 |  |  |  |  |
-| 間距 |  |  |  |  |
-| 柵格 |  |  |  |  |
-| 圓角 |  |  |  |  |
-| 邊框 |  |  |  |  |
-| 陰影 |  |  |  |  |
-| 組件 |  |  |  |  |
-| 互動狀態 |  |  |  |  |
-| 圖標 / 插畫 |  |  |  |  |
+| Color |  |  |  |  |
+| Typography |  |  |  |  |
+| Spacing |  |  |  |  |
+| Grid |  |  |  |  |
+| Corner radius |  |  |  |  |
+| Border |  |  |  |  |
+| Shadow |  |  |  |  |
+| Components |  |  |  |  |
+| Interaction states |  |  |  |  |
+| Icons / illustration |  |  |  |  |
 
-## 設計原則
+## Design Principles
 
-| 原則 | 適用場景 | 不要怎麼用 |
+| Principle | When to use | How not to use |
 |---|---|---|
 |  |  |  |
 
-## 色彩系統
+## Color System
 
-| Token | 值 | 用途 | 適用場景 | 不要怎麼用 |
+| Token | Value | Purpose | When to use | How not to use |
 |---|---|---|---|---|
 | `--color-bg` |  |  |  |  |
 | `--color-surface` |  |  |  |  |
@@ -43,17 +43,17 @@
 | `--color-warning` |  |  |  |  |
 | `--color-danger` |  |  |  |  |
 
-## 字體系統
+## Typography System
 
-| Token | 值 | 用途 | 適用場景 | 不要怎麼用 |
+| Token | Value | Purpose | When to use | How not to use |
 |---|---|---|---|---|
 | `--font-display` |  |  |  |  |
 | `--font-sans` |  |  |  |  |
 | `--font-mono` |  |  |  |  |
 
-## 間距與柵格
+## Spacing And Grid
 
-| Token / Rule | 值 | 適用場景 | 不要怎麼用 |
+| Token / Rule | Value | When to use | How not to use |
 |---|---|---|---|
 | Base unit |  |  |  |
 | Page padding |  |  |  |
@@ -63,9 +63,9 @@
 | Modal padding |  |  |  |
 | Breakpoints |  |  |  |
 
-## 圓角、邊框、陰影
+## Radius, Border, Shadow
 
-| Token | 值 | 適用場景 | 不要怎麼用 |
+| Token | Value | When to use | How not to use |
 |---|---|---|---|
 | `--radius-sm` |  |  |  |
 | `--radius-md` |  |  |  |
@@ -73,9 +73,9 @@
 | `--shadow-sm` |  |  |  |
 | `--shadow-md` |  |  |  |
 
-## 核心組件規範
+## Core Component Specs
 
-| Component | 結構 | 狀態 | 適用場景 | 不要怎麼用 |
+| Component | Structure | States | When to use | How not to use |
 |---|---|---|---|---|
 | Button |  |  |  |  |
 | Input |  |  |  |  |
@@ -88,9 +88,9 @@
 | Toast / Alert |  |  |  |  |
 | Empty / Error / Loading |  |  |  |  |
 
-## 狀態規範
+## State Specs
 
-| State | 視覺規則 | 適用場景 | 不要怎麼用 |
+| State | Visual rule | When to use | How not to use |
 |---|---|---|---|
 | default |  |  |  |
 | hover |  |  |  |
@@ -103,19 +103,19 @@
 | success |  |  |  |
 | empty |  |  |  |
 
-## 圖標 / 插畫規範
+## Icon / Illustration Specs
 
-- 圖標尺寸：
-- 線寬：
-- 填色：
-- 背景：
-- 命名：
-- 適用場景：
-- 不要怎麼用：
+- Icon size:
+- Stroke width:
+- Fill:
+- Background:
+- Naming:
+- When to use:
+- How not to use:
 
-## 文案語氣規範
+## Copy Tone Specs
 
-| 場景 | 語氣 | 範例 | 不要怎麼寫 |
+| Scenario | Tone | Example | How not to write |
 |---|---|---|---|
 | Button |  |  |  |
 | Error |  |  |  |
@@ -123,27 +123,27 @@
 | Success |  |  |  |
 | Helper text |  |  |  |
 
-## 禁用規則 / 設計紅線
+## Forbidden Rules / Design Red Lines
 
-| 規則 | 原因 | 適用場景 | 不要怎麼用 |
+| Rule | Reason | When to use | How not to use |
 |---|---|---|---|
 |  |  |  |  |
 
 ## Screen Map
 
-| Screen / Tab / Modal | 入口 | 主要操作 | 必備狀態 | 備註 |
+| Screen / Tab / Modal | Entry point | Primary action | Required states | Notes |
 |---|---|---|---|---|
 |  |  |  |  |  |
 
 ## Component Inventory
 
-| Component | 使用畫面 | Token 依賴 | Asset 依賴 | 前端備註 |
+| Component | Screens used on | Token dependencies | Asset dependencies | Frontend notes |
 |---|---|---|---|---|
 |  |  |  |  |  |
 
 ## Asset Manifest
 
-| File | 用途 | 尺寸 | 透明背景 | 來源 prompt / 來源 | 使用畫面 |
+| File | Purpose | Size | Transparent background | Source prompt / source | Screens used on |
 |---|---|---|---|---|---|
 |  |  |  |  |  |  |
 
