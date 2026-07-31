@@ -213,6 +213,7 @@ test('legacy package, generator, schema, and fixture machine identifiers stay st
   assert.deepEqual(actualSchemaIds, expectedSchemaIds);
 
   for (const fixture of [
+    'antigravity-base',
     'base-minimal',
     'fullstack-ai-saas',
     'macos-beta-handoff',
@@ -239,6 +240,7 @@ test('every retained legacy brand token has an explicit compatibility class', ()
     'docs/superpowers/plans/2026-07-30-core-boundary-consolidation-plan.md': 1,
     'docs/superpowers/specs/2026-07-13-governance-evidence-overhaul-design.md': 1,
     'docs/superpowers/specs/2026-07-29-decision-role-foundation-design.md': 1,
+    'examples/template-adoption/antigravity-base/.agent-governance.json': 1,
     'examples/template-adoption/base-minimal/.agent-governance.json': 1,
     'examples/template-adoption/fullstack-ai-saas/.agent-governance.json': 1,
     'examples/template-adoption/macos-beta-handoff/.agent-governance.json': 1,

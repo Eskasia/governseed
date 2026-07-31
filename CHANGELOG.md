@@ -1,5 +1,26 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — The Antigravity Runtime Adapter Has A Fixture And A Smoke
+
+- Codex and the all-runtime path had `smoke:base` and `smoke:fullstack`.
+  Antigravity had neither a filled fixture nor a generator smoke, so the
+  `.agents/` files `init --agent antigravity` writes had no checked-in
+  counterpart and could drift without any check failing. Closes #6.
+- `examples/template-adoption/antigravity-base/` is a filled project whose
+  `.agents/` tree is byte-for-byte what the generator produces, with a
+  checked-in `expected/doctor.json` at `status: ready`.
+- `npm run smoke:antigravity` runs `init --agent antigravity`, compares the
+  generated `.agents/` file list and every file's bytes against the fixture,
+  asserts `--agent codex` produces no `.agents/` at all, and then runs doctor on
+  the generated project. A fixture that is not what the generator emits is not
+  evidence, so the comparison is byte-exact rather than structural.
+- Three tests pin the runtime contract the adapter is read through: the fixture
+  ships `.agents/AGENTS.md` and at least two skills, every `SKILL.md` opens with
+  a terminated frontmatter block whose `name` equals its directory, and the
+  adapter names `../AGENTS.md` instead of restating a gate lifecycle row.
+  Frontmatter is parsed, not grepped: a `name:` line in the body would otherwise
+  pass a file that has no frontmatter at all.
+
 ## 2026-07-31 — Doctor Checks Conditional Documents Field By Field
 
 - `doctor` checked that `AGENT_RUNTIME.md`, `EVAL_PLAN.md`, and

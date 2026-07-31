@@ -9,6 +9,7 @@ const root = path.dirname(path.dirname(fileURLToPath(import.meta.url)));
 const tmpDir = path.join(root, '.tmp');
 
 const fixtures = [
+  'antigravity-base',
   'base-minimal',
   'fullstack-ai-saas',
   'macos-beta-handoff',
