@@ -30,6 +30,10 @@ function npm(args, cwd) {
       npm_config_audit: 'false',
       npm_config_fund: 'false',
       npm_config_update_notifier: 'false',
+      // `npm publish --dry-run` exports npm_config_dry_run, which children
+      // inherit. This smoke must really pack and really install, or the
+      // rehearsal for a publish silently checks nothing.
+      npm_config_dry_run: 'false',
     },
     shell: false,
   });

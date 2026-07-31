@@ -17,6 +17,11 @@
   gate reports `Required repository artifact does not match committed HEAD` and
   refuses to publish. The defect was that nothing connected the checks to the
   publish; nothing else about the checks changed.
+- Wiring the gate exposed that `npm publish --dry-run` exports
+  `npm_config_dry_run`, which `smoke:package`'s own `npm pack` and `npm install`
+  inherited, so a rehearsed publish packed nothing and the smoke failed on a
+  missing tarball. The smoke now clears that variable for its children, making
+  `npm publish --dry-run` a rehearsal that actually runs the install.
 
 ## 2026-07-31 — The Quick Start Covers The Installed Package, Not Only A Clone
 
