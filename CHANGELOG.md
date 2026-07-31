@@ -1,5 +1,24 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — Inherited Policy Sections Are Checked, Not Only Offered
+
+- A conditional template carries two kinds of section: prompts the adopting
+  project fills in, and fixed policy it inherits verbatim — retention rules,
+  fail-closed conditions, and what the evidence may be claimed to establish.
+  Only the fillable ones were checked.
+- So `examples/template-adoption/fullstack-ai-saas` had dropped `EVAL_PLAN.md`'s
+  `Evidence / Claim Boundary` and `AGENT_RUNTIME.md`'s `Evidence Persistence`
+  and `Stateless Reducer`, and the doctor still reported the project fully
+  filled and ready to proceed. Presence of the document passed for coverage of
+  its policy.
+- The doctor now checks both policy sections as fields, and a section-parity
+  test compares each filled example back to the template it was filled from, so
+  a future drop fails rather than reads as complete. The parity test declares
+  the two bilingual headings the examples legitimately translate; every other
+  heading must match.
+- The example now carries all three sections, written for its own project
+  rather than copied.
+
 ## 2026-07-31 — 0.1.1 Replaces A 0.1.0 Published From The Wrong Tree
 
 - 0.1.0 was published from a working checkout instead of the verified release
