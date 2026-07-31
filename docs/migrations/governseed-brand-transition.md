@@ -42,7 +42,10 @@ brand test until it is reviewed and classified.
 | `examples/template-adoption/antigravity-base/.agent-governance.json` | 1 | legacy machine identifier | Fixture generator value remains compatible. |
 | `examples/template-adoption/base-minimal/.agent-governance.json` | 1 | legacy machine identifier | Fixture generator value remains compatible. |
 | `examples/template-adoption/fullstack-ai-saas/.agent-governance.json` | 1 | legacy machine identifier | Fixture generator value remains compatible. |
+| `examples/template-adoption/launch-one-pager/.agent-governance.json` | 1 | legacy machine identifier | Fixture generator value remains compatible. |
 | `examples/template-adoption/macos-beta-handoff/.agent-governance.json` | 1 | legacy machine identifier | Fixture generator value remains compatible. |
+| `examples/template-adoption/production-agent-triage/.agent-governance.json` | 1 | legacy machine identifier | Fixture generator value remains compatible. |
+| `examples/template-adoption/ui-dashboard-redesign/.agent-governance.json` | 1 | legacy machine identifier | Fixture generator value remains compatible. |
 | `package.json` | 1 | legacy machine identifier | Published package identity is protected in Stage 1. |
 | `schemas/*.schema.json` | 13 | legacy machine identifier | Existing schema `$id` contracts remain stable. |
 | `scripts/init.mjs` | 1 | legacy machine identifier | Generated metadata keeps the compatibility identifier. |
