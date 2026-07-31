@@ -36,8 +36,10 @@ brand test until it is reviewed and classified.
 | `README.md` | 1 | compatibility text | Records the former public name once. |
 | `THIRD_PARTY_NOTICES.md` | 1 | historical record | Attribution wording records the project name at adaptation time. |
 | `docs/migrations/governseed-brand-transition.md` | 3 | compatibility text; legacy machine identifier; completed repository transition | Owns the transition contract and protected identities. |
+| `docs/superpowers/plans/2026-07-30-core-boundary-consolidation-plan.md` | 1 | historical record | Preserves the merged plan's record of the protected package and CLI identifiers. |
 | `docs/superpowers/specs/2026-07-13-governance-evidence-overhaul-design.md` | 1 | historical record | Preserves the approved historical specification. |
 | `docs/superpowers/specs/2026-07-29-decision-role-foundation-design.md` | 1 | historical record | Preserves the approved historical specification. |
+| `examples/template-adoption/antigravity-base/.agent-governance.json` | 1 | legacy machine identifier | Fixture generator value remains compatible. |
 | `examples/template-adoption/base-minimal/.agent-governance.json` | 1 | legacy machine identifier | Fixture generator value remains compatible. |
 | `examples/template-adoption/fullstack-ai-saas/.agent-governance.json` | 1 | legacy machine identifier | Fixture generator value remains compatible. |
 | `examples/template-adoption/macos-beta-handoff/.agent-governance.json` | 1 | legacy machine identifier | Fixture generator value remains compatible. |
@@ -46,6 +48,7 @@ brand test until it is reviewed and classified.
 | `scripts/init.mjs` | 1 | legacy machine identifier | Generated metadata keeps the compatibility identifier. |
 | `scripts/validate-starter.mjs` | 2 | compatibility text; legacy machine identifier | Validator protects the transition statement and generated-project compatibility identifier. |
 | `templates/runtime/README.md` | 1 | compatibility text; legacy machine identifier | Generated projects explain the retained generator identifier. |
+| `tests/policy-compiler/base-project/.agent-governance.json` | 1 | legacy machine identifier | Shipped test fixture keeps the generator value the example it mirrors carries. |
 
 There are no retained occurrences classified as `missed public-brand
 occurrence`.
