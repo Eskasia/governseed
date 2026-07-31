@@ -1,5 +1,30 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — The Packaged Artifact Is Verified To Run, Not Just To Contain
+
+- `package.json` `files` ships `tests/policy-compiler/fixture-contracts.test.mjs`
+  so a consumer can re-run the portable contract against their own install, and
+  the brand test asserts that path is in the tarball. Nothing asserted the
+  tarball works. `files` lists paths, so a shipped module that imports an
+  unshipped one packs cleanly and only fails at the consumer's first import.
+- Three of the shipped test's dependencies were missing from `files`:
+  `tests/policy-compiler/helpers.mjs`, the base project fixture it copies from
+  (`examples/template-adoption/base-minimal/`), and the pack fixture it installs
+  from (`tests/decision-role/fixtures/low-risk-docs-task/`). Installing the
+  tarball and running the shipped test failed on `ERR_MODULE_NOT_FOUND`, then on
+  `ENOENT` for the fixture directory. All eight fixture cases now pass from an
+  install.
+- `npm run smoke:package` packs the tarball, installs it into a clean consumer
+  project, and then checks three things against the installed copy: every
+  relative import reachable from the declared `bin` entrypoints and the shipped
+  tests resolves inside the package, every shipped test passes, and all three
+  bins run — `agent-governance --help`, plus an `init` and `doctor` round trip.
+- The import walk is what generalizes. Executing an entrypoint only covers the
+  modules that entrypoint happens to reach, so a lib missing from `files` on an
+  unexercised path would still ship broken.
+- This is not a publish. The package remains unpublished and the package-name
+  decision is unchanged.
+
 ## 2026-07-31 — The Antigravity Runtime Adapter Has A Fixture And A Smoke
 
 - Codex and the all-runtime path had `smoke:base` and `smoke:fullstack`.
