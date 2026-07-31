@@ -299,6 +299,50 @@ test('every retained legacy brand token has an explicit compatibility class', ()
   }
 });
 
+/**
+ * The transition document states that every retained occurrence is classified in
+ * its table and that this test enforces the counts. Only the literal above was
+ * enforced, so a path could be registered there and never classified — leaving
+ * the document asserting a completeness it no longer had.
+ */
+test('the transition document classifies exactly the occurrences the repository retains', () => {
+  const rows = [...read('docs/migrations/governseed-brand-transition.md')
+    .matchAll(/^\|\s*`([^`]+)`\s*\|\s*(\d+)\s*\|/gmu)]
+    .map((match) => ({ path: match[1], count: Number(match[2]) }));
+  assert.ok(rows.length > 0, 'the transition document must carry a classification table');
+
+  // One row stands for a directory of schema files; every other row is a path.
+  const covers = (row, entry) => (row.includes('*')
+    ? new RegExp(`^${row.replaceAll('.', '\\.').replaceAll('*', '[^/]*')}$`, 'u').test(entry)
+    : row === entry);
+
+  const retained = new Map();
+  for (const absolute of walkTextFiles()) {
+    const matches = fs.readFileSync(absolute, 'utf8').match(new RegExp(LEGACY, 'gu'));
+    if (!matches) continue;
+    retained.set(path.relative(ROOT, absolute).split(path.sep).join('/'), matches.length);
+  }
+
+  const unclassified = [...retained.keys()]
+    .filter((entry) => !rows.some((row) => covers(row.path, entry)))
+    .sort();
+  assert.deepEqual(
+    unclassified,
+    [],
+    `these retained occurrences have no classification row:\n${unclassified.join('\n')}`,
+  );
+
+  for (const row of rows) {
+    const matched = [...retained].filter(([entry]) => covers(row.path, entry));
+    assert.ok(matched.length > 0, `${row.path} is classified but no longer retains the legacy name`);
+    assert.equal(
+      matched.reduce((total, [, count]) => total + count, 0),
+      row.count,
+      `${row.path} is classified with a count the repository no longer has`,
+    );
+  }
+});
+
 test('package dry run contains required governance surfaces and excludes local artifacts', () => {
   const npmExecPath = process.env.npm_execpath;
   assert.ok(
