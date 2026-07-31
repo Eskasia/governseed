@@ -234,7 +234,7 @@ test('legacy package, generator, schema, and fixture machine identifiers stay st
 test('every retained legacy brand token has an explicit compatibility class', () => {
   const expectedCounts = {
     'CHANGELOG.md': 1,
-    'README.md': 1,
+    'README.md': 4,
     'THIRD_PARTY_NOTICES.md': 1,
     'docs/migrations/governseed-brand-transition.md': 3,
     'docs/superpowers/plans/2026-07-30-core-boundary-consolidation-plan.md': 1,

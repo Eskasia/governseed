@@ -90,7 +90,22 @@ The generated `AGENTS.md` is the canonical lifecycle owner for the intent and ro
 - [Node.js](https://nodejs.org/) 20 or newer
 - Git, when cloning the starter or running committed-artifact release checks
 
-The `init` and `doctor` CLIs use Node.js built-ins and do not require `npm install`.
+The `init` and `doctor` CLIs use Node.js built-ins and have no dependencies.
+
+### Two ways to run it
+
+| | `init` | `doctor` |
+|---|---|---|
+| npm | `npx --package=agent-governance-starter agent-governance-init` | `npx --package=agent-governance-starter agent-governance-doctor` |
+| clone | `node governseed/scripts/init.mjs` | `node governseed/scripts/doctor.mjs` |
+
+`npm install -g agent-governance-starter` puts `agent-governance`,
+`agent-governance-init`, and `agent-governance-doctor` on `PATH` directly.
+
+Clone instead of installing when you want the example projects, the full test
+suites, or the capability-matrix research; the package ships the CLIs, the
+templates, the schemas, and the published evidence surfaces, not the whole
+repository. The commands below use the cloned form.
 
 ### Generate a base Codex project
 
