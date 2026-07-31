@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "projectDir": "examples/template-adoption/launch-one-pager",
+  "profile": "base",
+  "status": "ready",
+  "strict": false,
+  "required": [
+    {
+      "file": "README.md",
+      "status": "ok",
+      "trigger": "Every project"
+    },
+    {
+      "file": "PROJECT_BRIEF.md",
+      "status": "ok",
+      "trigger": "Every project"
+    },
+    {
+      "file": "SPEC.md",
+      "status": "ok",
+      "trigger": "Every project"
+    },
+    {
+      "file": "CONTEXT.md",
+      "status": "ok",
+      "trigger": "Every project"
+    },
+    {
+      "file": "TASK_CONTRACT.md",
+      "status": "ok",
+      "trigger": "Every project"
+    },
+    {
+      "file": "OPEN_LOOPS.md",
+      "status": "ok",
+      "trigger": "Every project"
+    },
+    {
+      "file": "AGENTS.md",
+      "status": "ok",
+      "trigger": "Every project"
+    },
+    {
+      "file": "TECH_STACK.md",
+      "status": "ok",
+      "trigger": "Every project"
+    }
+  ],
+  "recommended": [],
+  "conditional": [
+    {
+      "file": "UI_SPEC.md",
+      "present": false,
+      "trigger": "Has UI / website / dashboard / landing page"
+    },
+    {
+      "file": "DESIGN_SYSTEM.md",
+      "present": false,
+      "trigger": "Has screenshots / existing UI to extract design rules from"
+    },
+    {
+      "file": "DESIGN_REVIEW.md",
+      "present": false,
+      "trigger": "Has UI review / beta / launch / visual QA"
+    },
+    {
+      "file": "DATA_MODEL.md",
+      "present": false,
+      "trigger": "Has DB / Auth / tenant / permissions"
+    },
+    {
+      "file": "API_CONTRACT.md",
+      "present": false,
+      "trigger": "Has API routes / server actions / webhooks"
+    },
+    {
+      "file": "ENV_CHECKLIST.md",
+      "present": false,
+      "trigger": "Has deployment / third-party API keys"
+    },
+    {
+      "file": "PRESENTATION_BRIEF.md",
+      "present": true,
+      "trigger": "Has presentation / slide deck / one-pager deliverable"
+    },
+    {
+      "file": "RESEARCH_SYNTHESIS.md",
+      "present": false,
+      "trigger": "Has material evidence conflict / high-impact decision / multiple credible routes, and user confirms synthesis"
+    },
+    {
+      "file": "TESTER_HANDOFF.md",
+      "present": false,
+      "trigger": "Has beta / tester handoff requirement"
+    },
+    {
+      "file": "MACOS_RELEASE_CHECKLIST.md",
+      "present": false,
+      "trigger": "Has macOS app build / TCC / signing"
+    },
+    {
+      "file": "AGENT_RUNTIME.md",
+      "present": false,
+      "trigger": "Has production-facing LLM agent / automation"
+    },
+    {
+      "file": "RAG_DESIGN.md",
+      "present": false,
+      "trigger": "Has retrieval / knowledge base / document Q&A"
+    },
+    {
+      "file": "EVAL_PLAN.md",
+      "present": false,
+      "trigger": "Has LLM/RAG/agent output needing regression testing"
+    },
+    {
+      "file": "AI_SECURITY_REVIEW.md",
+      "present": false,
+      "trigger": "Has prompt injection / tenant data / PII risks"
+    }
+  ],
+  "warnings": [],
+  "missing": [],
+  "unfilled": []
+}

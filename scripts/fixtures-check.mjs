@@ -12,8 +12,29 @@ const fixtures = [
   'antigravity-base',
   'base-minimal',
   'fullstack-ai-saas',
+  'launch-one-pager',
   'macos-beta-handoff',
+  'production-agent-triage',
+  'ui-dashboard-redesign',
 ];
+
+// The examples README claims to list every fixture, but nothing compared it
+// back to this array, so `antigravity-base` sat unlisted without failing CI.
+function checkFixtureIndex() {
+  const indexPath = path.join(root, 'examples/template-adoption/README.md');
+  const listed = new Set(
+    [...fs.readFileSync(indexPath, 'utf8').matchAll(/^\| `([a-z0-9-]+)\/` \|/gmu)].map((m) => m[1]),
+  );
+  const missing = fixtures.filter((fixture) => !listed.has(fixture));
+  const extra = [...listed].filter((fixture) => !fixtures.includes(fixture));
+  if (missing.length || extra.length) {
+    throw new Error(
+      `examples/template-adoption/README.md fixture table is out of date`
+      + `${missing.length ? `\n  unlisted: ${missing.join(', ')}` : ''}`
+      + `${extra.length ? `\n  not registered: ${extra.join(', ')}` : ''}`,
+    );
+  }
+}
 
 function doctorResult(projectDir, strict = false) {
   return spawnSync(process.execPath, [
@@ -166,6 +187,7 @@ function runMutationChecks() {
 
 try {
   fs.mkdirSync(tmpDir, { recursive: true });
+  checkFixtureIndex();
   for (const fixture of fixtures) {
     const actual = runDoctor(fixture);
     const actualPath = path.join(tmpDir, `${fixture}-doctor.json`);

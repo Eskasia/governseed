@@ -18,10 +18,13 @@
 
 ## Examples Expansion
 
-- Add one UI-heavy project fixture.
-- Add one production agent fixture.
-- Add one presentation or one-pager fixture.
+- Done: UI-heavy fixture `examples/template-adoption/ui-dashboard-redesign`.
+- Done: production agent fixture `examples/template-adoption/production-agent-triage`.
+- Done: one-pager fixture `examples/template-adoption/launch-one-pager`.
 - Keep all example data synthetic and privacy-safe.
+- Add a fixture only when it exercises a template combination no existing
+  fixture covers; register it in `scripts/fixtures-check.mjs` and the examples
+  README table.
 
 ## Proposed: Cross-Agent Project Workbench
 
