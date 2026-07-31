@@ -5,10 +5,10 @@
 - The quick start taught `git clone` only, and `init`'s final next step named
   `node governseed/scripts/doctor.mjs`, a path that exists only in a clone.
   Anyone installing the package was told to run something they do not have.
-- Both now give the installed form as well: `npx --package=agent-governance-starter
-  agent-governance-init` and `agent-governance-doctor`, with `npm install -g`
-  noted as the way to put all three bins on `PATH`. Verified against a packed
-  tarball, both through `npx` and through a prefixed global install.
+- Both now give the installed form as well, running `agent-governance-init` and
+  `agent-governance-doctor` through `npx --package`, with a global install noted
+  as the way to put all three bins on `PATH`. Verified against a packed tarball,
+  both through `npx` and through a prefixed global install.
 - The README also states what a clone gives that the package does not: the
   example projects, the full test suites, and the capability-matrix research.
 - Naming the package in install commands adds three occurrences of the legacy
