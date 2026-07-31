@@ -1,0 +1,142 @@
+{
+  "schemaVersion": 1,
+  "verifiedAt": "2026-07-31",
+  "sources": [
+    {
+      "url": "https://antigravity.google/docs/agent-settings",
+      "matrices": [
+        "docs/research/2026-07-31-antigravity-policy-capability-matrix.md"
+      ],
+      "excerpt": "The agent will never auto-execute terminal commands",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://antigravity.google/docs/cli/permissions",
+      "matrices": [
+        "docs/research/2026-07-31-antigravity-policy-capability-matrix.md"
+      ],
+      "excerpt": "strictly evaluated in priority order: Deny > Ask > Allow",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://antigravity.google/docs/cli/settings",
+      "matrices": [
+        "docs/research/2026-07-31-antigravity-policy-capability-matrix.md"
+      ],
+      "excerpt": "~/.gemini/antigravity-cli/settings.json",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://antigravity.google/docs/hooks",
+      "matrices": [
+        "docs/research/2026-07-31-antigravity-policy-capability-matrix.md"
+      ],
+      "excerpt": "Hard blocks execution immediately",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://antigravity.google/docs/ide/allowlist-denylist",
+      "matrices": [
+        "docs/research/2026-07-31-antigravity-policy-capability-matrix.md"
+      ],
+      "excerpt": "the hostname is checked against the server-side denylist via RPC",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://antigravity.google/docs/ide/hooks",
+      "matrices": [
+        "docs/research/2026-07-31-antigravity-policy-capability-matrix.md"
+      ],
+      "excerpt": "Hooks are configured in a hooks.json file located in your customization directory",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://antigravity.google/docs/ide/rules",
+      "matrices": [
+        "docs/research/2026-07-31-antigravity-policy-capability-matrix.md"
+      ],
+      "excerpt": "Rules files are limited to 12,000 characters each",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://antigravity.google/docs/ide/settings",
+      "matrices": [
+        "docs/research/2026-07-31-antigravity-policy-capability-matrix.md"
+      ],
+      "excerpt": "The agent will always prompt for confirmation before executing any terminal command",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/permissions",
+      "matrices": [
+        "docs/research/2026-07-31-claude-code-policy-capability-matrix.md"
+      ],
+      "excerpt": "Rules are evaluated in order: deny, then ask, then allow. The first match in that order determines the outcome",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/security",
+      "matrices": [
+        "docs/research/2026-07-31-claude-code-policy-capability-matrix.md"
+      ],
+      "excerpt": "First-time codebase runs and new MCP servers require trust verification",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://code.claude.com/docs/en/settings",
+      "matrices": [
+        "docs/research/2026-07-31-claude-code-policy-capability-matrix.md"
+      ],
+      "excerpt": "All use the same JSON format and cannot be overridden by user or project settings",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://learn.chatgpt.com/docs/agent-approvals-security.md",
+      "matrices": [
+        "docs/research/2026-07-29-codex-policy-capability-matrix.md"
+      ],
+      "excerpt": "Codex uses an OS-enforced sandbox that limits what it can touch",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://learn.chatgpt.com/docs/agent-configuration/agents-md.md",
+      "matrices": [
+        "docs/research/2026-07-29-codex-policy-capability-matrix.md"
+      ],
+      "excerpt": "Codex builds an instruction chain when it starts",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://learn.chatgpt.com/docs/agent-configuration/rules.md",
+      "matrices": [
+        "docs/research/2026-07-29-codex-policy-capability-matrix.md"
+      ],
+      "excerpt": "Use rules to control which commands Codex can run outside the sandbox.",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://learn.chatgpt.com/docs/config-file/config-advanced.md",
+      "matrices": [
+        "docs/research/2026-07-29-codex-policy-capability-matrix.md"
+      ],
+      "excerpt": "Profiles let you save named configuration layers",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://learn.chatgpt.com/docs/config-file/config-reference.md",
+      "matrices": [
+        "docs/research/2026-07-29-codex-policy-capability-matrix.md"
+      ],
+      "excerpt": "Codex loads project-scoped config files only when you trust the project",
+      "status": "VERIFIED"
+    },
+    {
+      "url": "https://learn.chatgpt.com/docs/permissions.md",
+      "matrices": [
+        "docs/research/2026-07-29-codex-policy-capability-matrix.md"
+      ],
+      "excerpt": "Permission profiles do not compose with the older sandbox settings.",
+      "status": "VERIFIED"
+    }
+  ]
+}
