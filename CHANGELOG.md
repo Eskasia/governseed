@@ -1,5 +1,21 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — The Documentation Map Is Checked Against The Directory It Maps
+
+- A sweep for dead files across all 333 tracked files found none. Every script
+  is wired into `package.json` or another script, no build artifact is tracked,
+  the root is fifteen conventional files, and every document is either required
+  by `scripts/validate-starter.mjs`, referenced by a test, or a deliberate
+  historical record. Nothing was deleted, because nothing was dead.
+- What the sweep did find is that `docs/index.md` had drifted to omitting eight
+  documents — including `adr/001-linux-codex-oci-containment.md` and both name
+  audits, which `scripts/validate-starter.mjs` lists as *required* repository
+  artifacts. The map claimed to cover the documentation and covered
+  three-quarters of it.
+- `npm run validate` now compares `docs/index.md` against every `docs/**/*.md`,
+  so a document added without an index row fails instead of becoming invisible.
+  All eight are now listed.
+
 ## 2026-07-31 — 0.1.1 Replaces A 0.1.0 Published From The Wrong Tree
 
 - 0.1.0 was published from a working checkout instead of the verified release

@@ -781,6 +781,20 @@ for (const dir of ['startup', 'workflows', 'templates', 'scripts', 'docs', 'prom
   if (!exists(dir)) fail(errors, `Missing directory: ${dir}`);
 }
 
+// docs/index.md is the documentation map, but nothing compared it to the
+// directory it maps, so it had drifted to omitting eight documents including
+// four this validator lists as required.
+{
+  const index = readFile('docs/index.md');
+  for (const file of collectFiles('docs', (name) => name.endsWith('.md'))) {
+    const relative = file.split(path.sep).join('/').slice('docs/'.length);
+    if (relative === 'index.md') continue;
+    if (!index.includes(relative)) {
+      fail(errors, `docs/index.md does not list docs/${relative}`);
+    }
+  }
+}
+
 for (const file of [
   'startup/00-agent-start-here.md',
   'startup/01-bootstrap-gates.md',
