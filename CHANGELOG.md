@@ -1,5 +1,26 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — The Core Boundary Plan Records Where Its Packaging Rule Was Superseded
+
+- `docs/superpowers/plans/2026-07-30-core-boundary-consolidation-plan.md` A2
+  accepted "出貨內容不含 `tests/`、`experimental/`、`docs/`、`examples/`" while
+  the package has shipped named `docs/` and `tests/` paths since that same plan
+  was implemented. The document was marked implemented with every checkbox left
+  blank, so nothing recorded which acceptance items held.
+- The supersession happened inside PR #13, not afterwards. `9b38c55` implemented
+  the twelve-entry whitelist literally; `0d3ac5c` in the same PR found it
+  "dropped paths that tests/brand/brand-compatibility.test.mjs requires the
+  published package to carry" and whitelisted them "explicitly instead of the
+  whole docs and tests trees". PR #13 merged with nineteen `files` entries
+  covering the twenty-one published paths the brand test pinned at the time.
+- The acceptance line is annotated `SUPERSEDED` rather than rewritten or
+  checked, and a completion record states both A2 line outcomes: line 136
+  `SUPERSEDED`, line 137 `PASS` — verified by `smoke:package` in PR #28.
+- The current contract is stated once and owned by
+  `tests/governance/package-surface.test.mjs`: `experimental/`, `examples/`, and
+  `.github/` are excluded outright; `docs/` and `tests/` ship only the release
+  dependencies and evidence files named in `package.json` `files`.
+
 ## 2026-07-31 — The Brand Transition Table Is Checked Against The Repository
 
 - `docs/migrations/governseed-brand-transition.md` states that every retained
