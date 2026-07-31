@@ -1,5 +1,24 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — Three Example Fixtures, And The Registration They Exposed
+
+- The roadmap's three remaining example gaps are filled:
+  `ui-dashboard-redesign` (UI_SPEC, DESIGN_SYSTEM, DESIGN_REVIEW),
+  `production-agent-triage` (AGENT_RUNTIME, AI_SECURITY_REVIEW, EVAL_PLAN,
+  ENV_CHECKLIST, RESEARCH_SYNTHESIS), and `launch-one-pager`
+  (PRESENTATION_BRIEF with a claim-to-source map). Each passes strict doctor
+  with zero warnings and carries a generated `expected/doctor.json`.
+- Extending the section-parity test from every fixture to every conditional
+  template found that `macos-beta-handoff/MACOS_RELEASE_CHECKLIST.md` was a flat
+  bullet list: all eight template sections were gone, including the entitlements
+  and TCC tables and the pre-release checklist. It had been passing because
+  nothing compared it back to its template. It now carries the full structure.
+- The examples README claimed to list every fixture and did not — `antigravity-base`
+  was never added. `npm run fixtures` now compares that table against the
+  registered fixture list, so an unlisted fixture fails instead of drifting.
+- Three headings the fullstack example legitimately translates are declared in
+  the parity test rather than treated as drops.
+
 ## 2026-07-31 — Inherited Policy Sections Are Checked, Not Only Offered
 
 - A conditional template carries two kinds of section: prompts the adopting
