@@ -4,7 +4,9 @@
 
 **Baseline:** `main@eee0dc5` (Milestone 3, PR #14)
 
-**Status:** Plan for review. Nothing in this document is implemented.
+**Status:** Scopes A, B, and C are delivered and merged. Scope D is closed
+without code: its entry condition was met and the evidence it produced closes
+the scope rather than opening it. See the delivery record below.
 
 ## Definition
 
@@ -162,6 +164,25 @@ Blocked. Entry condition: an Antigravity capability matrix with official
 sources and its own `BLOCKED` list, in the same shape as the Claude matrix.
 Until then this scope produces no code and no claim.
 
+**Closed 2026-07-31.** The entry condition was met by
+`docs/research/2026-07-31-antigravity-policy-capability-matrix.md`, and the
+matrix's finding closes the scope instead of opening it: **no row is
+materializable**. Antigravity documents a restriction surface comparable to the
+other two targets — `action(target)` with `Deny > Ask > Allow` over
+`read_file`, `write_file`, `command`, `read_url`, `execute_url`, `unsandboxed`,
+and `mcp` — but the only documented file carrying those keys is
+`~/.gemini/antigravity-cli/settings.json`, which is user-global and therefore
+outside what materialization may write. The one project-local restriction point,
+a `hooks.json` `PreToolUse` handler returning `decision: "deny"`, is `BLOCKED`
+on four counts: its workspace path appears only after `e.g.`, its precedence
+against the user-global file is unstated, whether it loads without a user trust
+decision is unstated, and the handler is an executed shell command rather than
+declarative configuration. `.agents/rules` is project-local and documented but
+carries no documented ability to deny an action, so it is `representable-only`
+and stays governance markdown.
+
+Reopening requires new official documentation, not a new plan.
+
 ## Testing And Verification
 
 - Red first: every contract test is written and its failure recorded before the
@@ -188,6 +209,36 @@ Until then this scope produces no code and no claim.
 
 **Decided 2026-07-31: entry-level ownership, recorded in the receipt.** The
 rules are in Scope B.
+
+## Delivery Record
+
+Each acceptance item is recorded against the test that proves it, so the status
+above is checkable rather than asserted.
+
+| Scope | Acceptance item | Proving test |
+|---|---|---|
+| A | Codex policy and adapter bytes unchanged by the generalization | `tests/policy-compiler/codex-output-identity.test.mjs` — `the codex policy artifact is byte-identical to the pinned baseline`, `the codex adapter artifact is byte-identical to the pinned baseline` |
+| A | Per-target registry with path, matrix, materializer, and caveats | `scripts/lib/target-registry.mjs`, registering `codex` and `claude` |
+| B | Double run writes nothing and produces no second receipt | `claude-materialize-contracts.test.mjs` — `a second materialize run writes nothing and produces no second receipt` |
+| B | Dry-run writes nothing | `dry-run performs every check and writes nothing at all` |
+| B | Never writes local, user-global, or managed scope | `materialize writes only the project settings file, never the local or user-global scope`, `an existing settings.local.json is never read as ownership and never written` |
+| B | No `allow`, no `additionalDirectories` | `the emitted settings file is restriction-only and grants nothing` |
+| B | Hand-written `deny` entries preserved | `hand-written deny entries in an existing settings file are all preserved` |
+| B | Scalar conflict fails closed naming both values | `a conflicting scalar fails closed and names both values` |
+| B | Unparseable existing file refused, never replaced | `an unparseable existing settings file is refused, never replaced` |
+| B | Ownership in the receipt, no marker key in the file | `ownership is recorded in the receipt and never as a marker key in the file` |
+| C | Level ceiling cannot be raised | `claude-attest-contracts.test.mjs` — `no argument or environment variable can raise the claude level` |
+| C | Claude-specific precedence caveat | `the claude precedence caveat states the documented layer order` |
+| C | Missing required entry is drift; extra entries are not | `a removed required deny or ask entry is drift`, `extra deny entries are additional restrictions, not drift, and are never removed` |
+| C | Planted `settings.local.json` shadows scalars only | `a planted settings.local.json is reported as shadowing the governed scalars only` |
+| C | Attest is read-only | `attest is read-only: two claude runs leave the project byte-identical` |
+| D | — | No code. See the scope section above. |
+
+Two items in Scope B went beyond the written acceptance list and are recorded
+here so the extra surface is not invisible: `materialize refuses a settings path
+that is a symlink`, and `the network control is deferred with a reason, never
+approximated as a Bash deny` — the latter enforcing the "Explicitly Not In
+Scope" line about `Bash(curl *)`.
 
 The question was whether the Claude materializer owns the whole
 `.claude/settings.json` or something narrower. Whole-file ownership is the Codex

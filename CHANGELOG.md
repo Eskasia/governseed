@@ -22,6 +22,28 @@
   edits the matrices. The lockfile and both scripts stay out of the npm
   package — the release unit is unchanged.
 
+## 2026-07-31 — Milestone 4 Records What It Delivered
+
+- `docs/superpowers/plans/2026-07-31-milestone-4-runtime-materialization-parity-plan.md`
+  still read `Status: Plan for review. Nothing in this document is implemented.`
+  while Scopes A, B, and C had shipped and merged — the Claude target
+  materializer, the target registry, target-parameterized attestation, and
+  three contract test files. An indexed document was stating the opposite of
+  the repository.
+- The status is corrected, and a delivery record maps every acceptance item to
+  the test that proves it, so the claim is checkable rather than asserted. All
+  nineteen cited test names were verified to resolve against the 474 tests in
+  the suite. Two Scope B behaviors that went beyond the written acceptance list
+  are recorded rather than left invisible: the symlink refusal, and the network
+  control being deferred with a reason instead of approximated as a
+  `Bash(curl *)` deny.
+- Scope D is closed rather than pending. Its entry condition — an Antigravity
+  capability matrix with official sources — was met, and the matrix's finding
+  closes the scope: no row is materializable, because the only documented file
+  carrying restriction keys is user-global and the one project-local candidate
+  is BLOCKED on four counts. Reopening requires new official documentation, not
+  a new plan.
+
 ## 2026-07-31 — The Documentation Map Is Checked Against The Directory It Maps
 
 - A sweep for dead files across all 333 tracked files found none. Every script
