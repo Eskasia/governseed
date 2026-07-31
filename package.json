@@ -1,6 +1,6 @@
 {
   "name": "agent-governance-starter",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "GovernSeed \u2014 governance foundations for agent-native projects.",
   "keywords": [
     "governseed",
@@ -40,7 +40,8 @@
     "runtime:proof": "npm run validate:runtime-proof && npm run runtime:proof:codex && npm run runtime:proof:claude && npm run runtime:proof:antigravity",
     "runtime:proof:mock": "npm run validate:runtime-proof && node scripts/runtime-proof-mock.mjs",
     "ci": "npm run check && npm run validate && npm run validate:runtime-proof && npm run test:governance && npm run test:brand && npm run test:decision-role && npm run test:policy-compiler && npm run test:governance-impact && npm run test:privacy && npm run validate:governance-impact && npm run eval:governance && npm run runtime:proof:mock && npm run smoke:base && npm run smoke:fullstack && npm run smoke:antigravity && npm run smoke:package && npm run fixtures",
-    "ci:experimental": "npm run check:experimental && npm run test:experimental"
+    "ci:experimental": "npm run check:experimental && npm run test:experimental",
+    "prepublishOnly": "npm run ci"
   },
   "bin": {
     "agent-governance": "./scripts/agent-governance.mjs",

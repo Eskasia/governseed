@@ -1,5 +1,28 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — 0.1.1 Replaces A 0.1.0 Published From The Wrong Tree
+
+- 0.1.0 was published from a working checkout instead of the verified release
+  commit. That checkout predates the release unit: it carries no `files`
+  whitelist, so npm packed 395 files (2.9 MB unpacked) including a 195-file
+  `.bat-worktrees/` copy of the repository, plus the `tests/`, `examples/`, and
+  `.github/` trees that `tests/governance/package-surface.test.mjs` excludes.
+  It declares two bins, so `compile`, `materialize`, and `attest` were
+  unreachable from an install. The verified tree packs 135 files, 1.3 MB, and
+  three bins. Contents were scanned for credentials; none were present.
+- 0.1.1 ships that verified tree. 0.1.0 is unpublished. The first public
+  version number is therefore 0.1.1.
+- `prepublishOnly` now runs `npm run ci`, which fails when the working tree
+  does not match committed HEAD. Run against the checkout 0.1.0 came from, that
+  gate reports `Required repository artifact does not match committed HEAD` and
+  refuses to publish. The defect was that nothing connected the checks to the
+  publish; nothing else about the checks changed.
+- Wiring the gate exposed that `npm publish --dry-run` exports
+  `npm_config_dry_run`, which `smoke:package`'s own `npm pack` and `npm install`
+  inherited, so a rehearsed publish packed nothing and the smoke failed on a
+  missing tarball. The smoke now clears that variable for its children, making
+  `npm publish --dry-run` a rehearsal that actually runs the install.
+
 ## 2026-07-31 — The Quick Start Covers The Installed Package, Not Only A Clone
 
 - The quick start taught `git clone` only, and `init`'s final next step named
