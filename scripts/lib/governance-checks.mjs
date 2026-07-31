@@ -220,6 +220,9 @@ const CONDITIONAL_DEPTH_SPECS = Object.freeze([
         columns: [['權限', 'permission'], ['副作用', 'side effect'], ['rollback']],
       },
       { field: 'human approval', section: 'Human Approval' },
+      // Inherited policy rather than a project answer, so a filled document
+      // that drops it silently loses the retention and fail-closed rules.
+      { field: 'evidence persistence', section: 'Evidence Persistence' },
     ],
   },
   {
@@ -234,6 +237,7 @@ const CONDITIONAL_DEPTH_SPECS = Object.freeze([
       // What may be observed and retained in production is the monitoring
       // boundary; the claim boundary below it is a separate statement.
       { field: 'monitoring boundary', section: 'Traces' },
+      { field: 'claim boundary', section: 'Evidence / Claim Boundary' },
     ],
   },
   {

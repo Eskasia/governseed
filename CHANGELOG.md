@@ -15,6 +15,53 @@
 - `npm run validate` now compares `docs/index.md` against every `docs/**/*.md`,
   so a document added without an index row fails instead of becoming invisible.
   All eight are now listed.
+## 2026-07-31 — The Antigravity Matrix Exists, And It Keeps Scope D Blocked
+
+- `docs/research/2026-07-31-antigravity-policy-capability-matrix.md` satisfies
+  the entry condition the Claude matrix records for the Antigravity phase: an
+  equivalent matrix with official sources and its own BLOCKED list. Every row
+  cites a page under `https://antigravity.google/docs/`.
+- The finding is that **no row is materializable**, so Scope D produces no code
+  and no claim. Antigravity documents a restriction surface comparable to Codex
+  and Claude Code — the grammar is `action(target)` with `Deny > Ask > Allow`,
+  over `read_file`, `write_file`, `command`, `read_url`, `execute_url`,
+  `unsandboxed`, and `mcp`. What differs is the layer: the only documented file
+  carrying those keys is `~/.gemini/antigravity-cli/settings.json`, which is
+  user-global, and the materialization boundary forbids writing it.
+- The one project-local restriction point is a `hooks.json` `PreToolUse` handler
+  returning `decision: "deny"`. It is blocked on four counts: its workspace path
+  appears only after `e.g.`, its precedence against the user-global file is
+  unstated, whether it loads without a user trust decision is unstated, and the
+  handler is an executed shell command rather than declarative configuration —
+  a larger commitment than a capability matrix can authorize.
+- `.agents/rules` is project-local and documented, but as guidance with no
+  documented ability to deny an action, so it is classified
+  `representable-only` and stays governance markdown rather than becoming a
+  policy target.
+- Seven BLOCKED items are recorded, including that GovernSeed already writes
+  `.agents/AGENTS.md` and `.agents/skills/`, so whether it may also own a policy
+  artifact in that directory is unresolved.
+- The document is not added to `package.json` `files`: nothing shipped
+  references it, and the release unit carries evidence only for what it ships.
+
+## 2026-07-31 — Inherited Policy Sections Are Checked, Not Only Offered
+
+- A conditional template carries two kinds of section: prompts the adopting
+  project fills in, and fixed policy it inherits verbatim — retention rules,
+  fail-closed conditions, and what the evidence may be claimed to establish.
+  Only the fillable ones were checked.
+- So `examples/template-adoption/fullstack-ai-saas` had dropped `EVAL_PLAN.md`'s
+  `Evidence / Claim Boundary` and `AGENT_RUNTIME.md`'s `Evidence Persistence`
+  and `Stateless Reducer`, and the doctor still reported the project fully
+  filled and ready to proceed. Presence of the document passed for coverage of
+  its policy.
+- The doctor now checks both policy sections as fields, and a section-parity
+  test compares each filled example back to the template it was filled from, so
+  a future drop fails rather than reads as complete. The parity test declares
+  the two bilingual headings the examples legitimately translate; every other
+  heading must match.
+- The example now carries all three sections, written for its own project
+  rather than copied.
 
 ## 2026-07-31 — 0.1.1 Replaces A 0.1.0 Published From The Wrong Tree
 
