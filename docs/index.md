@@ -14,6 +14,9 @@
 | `enforcement-boundary.md` | What `materialize` writes, what `attest` observes, and what neither establishes |
 | `research/2026-07-29-codex-policy-capability-matrix.md` | Official Codex capability evidence and honest Adapter classifications |
 | `research/2026-07-31-claude-code-policy-capability-matrix.md` | Official Claude Code capability evidence, structural findings, and BLOCKED items |
+| `superpowers/specs/2026-07-13-governance-evidence-overhaul-design.md` | Delivered design for intent lineage, append-only requirement changes, and the paired impact evaluator |
+| `superpowers/plans/2026-07-13-governance-evidence-overhaul.md` | Delivered test-first plan for the governance evidence overhaul |
+| `superpowers/plans/2026-07-26-linux-codex-oci-containment.md` | Delivered test-first plan for Linux Codex OCI containment |
 | `research/2026-07-31-antigravity-policy-capability-matrix.md` | Official Antigravity capability evidence; no row is materializable, so Scope D stays blocked |
 | `superpowers/specs/2026-07-29-risk-to-policy-compiler-design.md` | Policy Compiler architecture, schemas, transaction, privacy, and testing contract |
 | `superpowers/plans/2026-07-29-risk-to-policy-compiler-plan.md` | Test-first Phase 2 implementation and verification plan |
@@ -21,6 +24,7 @@
 | `superpowers/plans/2026-07-29-decision-role-foundation-plan.md` | Test-first implementation and verification plan |
 | `superpowers/specs/2026-07-30-materialization-attestation-design.md` | Milestone 3 materialization identity, attestation contract, and claim ceiling |
 | `superpowers/plans/2026-07-30-milestone-3-materialization-attestation-plan.md` | Test-first Milestone 3 implementation and verification plan |
+| `superpowers/plans/2026-07-30-core-boundary-consolidation-plan.md` | Delivered plan consolidating the core/adapter boundary and recording retired branch work |
 | `superpowers/plans/2026-07-31-milestone-4-runtime-materialization-parity-plan.md` | Test-first Milestone 4 runtime materialization parity plan |
 | `superpowers/reviews/2026-07-26-governance-evidence-overhaul-audit.md` | Independent review, QA evidence, completion matrix, and release blockers |
 
@@ -81,7 +85,11 @@
 | `../ROADMAP.md` | Public release roadmap |
 | `migrations/governseed-brand-transition.md` | Completed repository rename and preserved package, CLI, schema, generator, and configuration identifiers |
 | `research/source-adoption-matrix.md` | Exact source revisions, licenses, adopted patterns, rejected scope, and attribution decisions |
+| `research/2026-07-29-governseed-name-audit.md` | Preliminary branding screen that cleared the current name; not legal clearance |
+| `research/2026-07-29-charter-name-audit.md` | Preliminary branding screen that rejected the earlier `Charter` name |
+| `research/retired-branches.md` | Historical pointers to unmerged branch work, kept so the ideas stay findable |
 | `adr/000-template.md` | ADR template |
+| `adr/001-linux-codex-oci-containment.md` | Linux Codex OCI containment decision |
 | `adr/002-modular-core-and-adapter-boundary.md` | Modular-monolith core and external translation boundary |
 | `adr/003-deliberation-and-role-assignment-model.md` | Decision-deliberation and responsibility-assignment contracts |
 | `adr/004-risk-to-policy-compiler.md` | Deterministic neutral policy core and Codex project-local Adapter boundary |
