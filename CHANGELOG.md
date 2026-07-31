@@ -35,6 +35,34 @@
   registered fixture list, so an unlisted fixture fails instead of drifting.
 - Three headings the fullstack example legitimately translates are declared in
   the parity test rather than treated as drops.
+## 2026-07-31 — The Antigravity Matrix Exists, And It Keeps Scope D Blocked
+
+- `docs/research/2026-07-31-antigravity-policy-capability-matrix.md` satisfies
+  the entry condition the Claude matrix records for the Antigravity phase: an
+  equivalent matrix with official sources and its own BLOCKED list. Every row
+  cites a page under `https://antigravity.google/docs/`.
+- The finding is that **no row is materializable**, so Scope D produces no code
+  and no claim. Antigravity documents a restriction surface comparable to Codex
+  and Claude Code — the grammar is `action(target)` with `Deny > Ask > Allow`,
+  over `read_file`, `write_file`, `command`, `read_url`, `execute_url`,
+  `unsandboxed`, and `mcp`. What differs is the layer: the only documented file
+  carrying those keys is `~/.gemini/antigravity-cli/settings.json`, which is
+  user-global, and the materialization boundary forbids writing it.
+- The one project-local restriction point is a `hooks.json` `PreToolUse` handler
+  returning `decision: "deny"`. It is blocked on four counts: its workspace path
+  appears only after `e.g.`, its precedence against the user-global file is
+  unstated, whether it loads without a user trust decision is unstated, and the
+  handler is an executed shell command rather than declarative configuration —
+  a larger commitment than a capability matrix can authorize.
+- `.agents/rules` is project-local and documented, but as guidance with no
+  documented ability to deny an action, so it is classified
+  `representable-only` and stays governance markdown rather than becoming a
+  policy target.
+- Seven BLOCKED items are recorded, including that GovernSeed already writes
+  `.agents/AGENTS.md` and `.agents/skills/`, so whether it may also own a policy
+  artifact in that directory is unresolved.
+- The document is not added to `package.json` `files`: nothing shipped
+  references it, and the release unit carries evidence only for what it ships.
 
 ## 2026-07-31 — Inherited Policy Sections Are Checked, Not Only Offered
 
