@@ -103,9 +103,24 @@ test('a removed section is reported as missing, not as unfilled', () => {
 // project fills in, and fixed policy the project inherits verbatim. A filled
 // example that silently drops a fixed-policy section still looks complete,
 // because nothing compared it back to the template it came from.
+// A filled example may translate a template heading; each pair below was
+// checked against both files, so an English section really is the same section.
 const BILINGUAL_HEADINGS = new Map([
   ['## Agent 目標', '## Agent Goal'],
   ['## 觸發入口', '## Trigger Entry'],
+  ['## 概覽', '## Overview'],
+  ['## 權限矩陣', '## Permission Matrix'],
+  ['## 外部 API 依賴', '## External API Dependencies'],
+  ['## 核心資料物件', '## Core Data Objects'],
+  ['## 關聯', '## Relationships'],
+  ['## 使用者與角色', '## Users And Roles'],
+  ['## 資料表', '## Tables'],
+  ['## RLS（Row Level Security）', '## RLS'],
+  ['## 資料保留策略', '## Data Retention'],
+  ['## 環境變數清單', '## Environment Variables'],
+  ['## 機密等級說明', '## Sensitivity Rules'],
+  ['## 不可提交項', '## Do Not Commit'],
+  ['## 部署前確認', '## Pre-deploy Check'],
 ]);
 
 function headings(file) {
@@ -113,17 +128,29 @@ function headings(file) {
 }
 
 test('a filled example carries every section of the template it was filled from', () => {
+  const templateRoot = path.join(ROOT, 'templates/conditional');
+  const conditionals = fs.readdirSync(templateRoot).filter((name) => name.endsWith('.md'));
   const gaps = [];
-  for (const file of CONDITIONAL_DEPTH_FILES) {
-    const filled = path.join(FULLSTACK_FIXTURE, file);
-    if (!fs.existsSync(filled)) continue;
-    const present = new Set(headings(fs.readFileSync(filled, 'utf8')));
-    for (const heading of headings(fs.readFileSync(path.join(ROOT, 'templates/conditional', file), 'utf8'))) {
-      const accepted = [heading, BILINGUAL_HEADINGS.get(heading)].filter(Boolean);
-      if (!accepted.some((candidate) => present.has(candidate))) gaps.push(`${file}: ${heading}`);
+  let compared = 0;
+  for (const fixture of fs.readdirSync(FIXTURE_ROOT, { withFileTypes: true })) {
+    if (!fixture.isDirectory()) continue;
+    for (const file of conditionals) {
+      const filled = path.join(FIXTURE_ROOT, fixture.name, file);
+      if (!fs.existsSync(filled)) continue;
+      compared += 1;
+      const present = new Set(headings(fs.readFileSync(filled, 'utf8')));
+      for (const heading of headings(fs.readFileSync(path.join(templateRoot, file), 'utf8'))) {
+        const accepted = [heading, BILINGUAL_HEADINGS.get(heading)].filter(Boolean);
+        if (!accepted.some((candidate) => present.has(candidate))) {
+          gaps.push(`${fixture.name}/${file}: ${heading}`);
+        }
+      }
     }
   }
   assert.deepEqual(gaps, []);
+  // A comparison count of zero would satisfy the assertion above while checking
+  // nothing, which is the failure this whole test exists to catch.
+  assert.ok(compared >= conditionals.length, `expected every conditional template to be exercised by some fixture, compared ${compared}`);
 });
 
 test('dropping the eval claim boundary is reported as missing', () => {

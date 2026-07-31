@@ -50,10 +50,10 @@
 
 - Retained: normalized closed-schema evidence that passed both the validator and the privacy scanner.
 - Never retained: raw model stdout/stderr, raw tool traces, environment variables, credentials, absolute home paths, and raw diff hunks.
-- Real mode: replay accepts only committed synthetic workspaces, and runtime proof uses generated synthetic fixtures only.
+- Real mode: replay accepts only committed synthetic workspaces, and the smoke run uses generated synthetic fixtures only.
 - Fail closed: when the scanner, output schema, session persistence, or cleanup cannot be proven safe, return a stable code and write no artifact.
 - Cleanup before persist: terminate and reap children, remove the isolated HOME, TMP, and workspace, confirm nothing remains, then write evidence atomically.
-- Claim boundary: runtime proof establishes only the entrypoint first-response contract; delivery impact requires the evaluator's separate evidence gate.
+- Claim boundary: the smoke run establishes only that the answer endpoint responds; whether answers improved requires the golden-set evaluation in `EVAL_PLAN.md`.
 
 ## Tools
 
