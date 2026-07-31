@@ -33,7 +33,7 @@ brand test until it is reviewed and classified.
 | Path | Count | Classification | Reason |
 |---|---:|---|---|
 | `CHANGELOG.md` | 1 | compatibility text | Records the former public name once. |
-| `README.md` | 1 | compatibility text | Records the former public name once. |
+| `README.md` | 4 | compatibility text; legacy machine identifier | Records the former public name once, and names the published package three times in the install commands. |
 | `THIRD_PARTY_NOTICES.md` | 1 | historical record | Attribution wording records the project name at adaptation time. |
 | `docs/migrations/governseed-brand-transition.md` | 3 | compatibility text; legacy machine identifier; completed repository transition | Owns the transition contract and protected identities. |
 | `docs/superpowers/plans/2026-07-30-core-boundary-consolidation-plan.md` | 1 | historical record | Preserves the merged plan's record of the protected package and CLI identifiers. |

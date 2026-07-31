@@ -1,5 +1,21 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — The Quick Start Covers The Installed Package, Not Only A Clone
+
+- The quick start taught `git clone` only, and `init`'s final next step named
+  `node governseed/scripts/doctor.mjs`, a path that exists only in a clone.
+  Anyone installing the package was told to run something they do not have.
+- Both now give the installed form as well: `npx --package=agent-governance-starter
+  agent-governance-init` and `agent-governance-doctor`, with `npm install -g`
+  noted as the way to put all three bins on `PATH`. Verified against a packed
+  tarball, both through `npx` and through a prefixed global install.
+- The README also states what a clone gives that the package does not: the
+  example projects, the full test suites, and the capability-matrix research.
+- Naming the package in install commands adds three occurrences of the legacy
+  identifier to the README, so its brand row moves from `compatibility text` to
+  `compatibility text; legacy machine identifier` with a count of four. The
+  check added earlier today caught the stale count on the first run.
+
 ## 2026-07-31 — The Core Boundary Plan Records Where Its Packaging Rule Was Superseded
 
 - `docs/superpowers/plans/2026-07-30-core-boundary-consolidation-plan.md` A2
