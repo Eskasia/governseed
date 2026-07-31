@@ -1,5 +1,23 @@
 # GovernSeed Changelog
 
+## 2026-07-31 — The Brand Transition Table Is Checked Against The Repository
+
+- `docs/migrations/governseed-brand-transition.md` states that every retained
+  legacy-name occurrence is classified in its table and that
+  `tests/brand/brand-compatibility.test.mjs` enforces the counts. Only the
+  test's own count literal was enforced. A path could be registered there and
+  never classified, leaving the document asserting a completeness it no longer
+  had — which is exactly what had happened to three paths.
+- The table and the repository now check each other in both directions: a
+  retained occurrence with no classification row fails, a row whose count no
+  longer matches fails, and a row that matches nothing fails. The last one
+  catches a classification left behind by a deleted file.
+- Three rows were added:
+  `docs/superpowers/plans/2026-07-30-core-boundary-consolidation-plan.md`,
+  `examples/template-adoption/antigravity-base/.agent-governance.json`, and
+  `tests/policy-compiler/base-project/.agent-governance.json`.
+- The brand traversal is unchanged; the new check reuses it.
+
 ## 2026-07-31 — The Packaged Artifact Is Verified To Run, Not Just To Contain
 
 - `package.json` `files` ships `tests/policy-compiler/fixture-contracts.test.mjs`
