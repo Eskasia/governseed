@@ -7,13 +7,20 @@
   the brand test asserts that path is in the tarball. Nothing asserted the
   tarball works. `files` lists paths, so a shipped module that imports an
   unshipped one packs cleanly and only fails at the consumer's first import.
-- Three of the shipped test's dependencies were missing from `files`:
-  `tests/policy-compiler/helpers.mjs`, the base project fixture it copies from
-  (`examples/template-adoption/base-minimal/`), and the pack fixture it installs
-  from (`tests/decision-role/fixtures/low-risk-docs-task/`). Installing the
-  tarball and running the shipped test failed on `ERR_MODULE_NOT_FOUND`, then on
-  `ENOENT` for the fixture directory. All eight fixture cases now pass from an
-  install.
+- Three of the shipped test's dependencies were missing from `files`. Installing
+  the tarball and running the test failed on `ERR_MODULE_NOT_FOUND` for
+  `./helpers.mjs`, then on `ENOENT` for the base project fixture. All eight
+  fixture cases now pass from a clean install.
+- `tests/policy-compiler/helpers.mjs` and the pack fixture
+  `tests/decision-role/fixtures/low-risk-docs-task/` are now shipped. The base
+  project it copies could not be: `examples/` is kept out of the release unit,
+  and adding it also pulled `examples/template-adoption/README.md` past the
+  whitelist. The test owns `tests/policy-compiler/base-project/` instead, pinned
+  byte-for-byte to the example by a new `package-surface` assertion — two copies
+  are only meaningful while they are the same project.
+- `.agent-governance.json` in that copy carries the legacy generator token like
+  every generated project, so it is registered in the brand inventory. The brand
+  traversal is unchanged.
 - `npm run smoke:package` packs the tarball, installs it into a clean consumer
   project, and then checks three things against the installed copy: every
   relative import reachable from the declared `bin` entrypoints and the shipped
