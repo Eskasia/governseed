@@ -143,6 +143,40 @@ Phase 2 does not import or verify approval evidence. Active publish or delete
 work that requires approval remains a strict doctor failure even after
 compilation.
 
+## Source Freshness
+
+Every capability-matrix classification rests on an official documentation
+sentence pinned in `docs/research/source-freshness.lock.json`. The offline half
+runs inside `npm run test:governance`: matrix citations and the lock must cover
+each other bidirectionally, so a citation added without a pin fails with no
+network involved.
+
+The online half is the only command in this repository that reaches the
+network, and it is never part of `check`, `validate`, or `ci`:
+
+```bash
+npm run verify:sources
+npm run verify:sources -- --strict
+npm run verify:sources -- --json
+```
+
+Each pinned page is re-fetched and reported `FRESH`, `DRIFTED`, `UNREACHABLE`,
+or `UNVERIFIABLE`. Strict mode fails on `DRIFTED` and on coverage gaps, never
+on `UNREACHABLE` — a network failure is not evidence that a source changed.
+
+`DRIFTED` means the sentence a classification rests on is gone upstream. Re-read
+the page, re-verify every matrix row citing it, then re-seed the lock entry. The
+command never edits a matrix.
+
+The weekly workflow is:
+
+```text
+.github/workflows/source-freshness.yml
+```
+
+See `docs/research/source-freshness.md` for the lock format, the four statuses,
+and the re-seed procedure.
+
 ## Init Smoke Checks
 
 ```bash

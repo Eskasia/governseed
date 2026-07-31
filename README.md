@@ -398,8 +398,13 @@ See [`workflows/research-synthesis.md`](workflows/research-synthesis.md) and the
 | Governance-impact harness mechanics | `npm run test:governance-impact` |
 | Privacy-negative paths | `npm run test:privacy` |
 | Complete deterministic local suite | `npm run ci` |
+| Capability-matrix sources still say what they were cited for (network) | `npm run verify:sources` |
 
 Detailed commands and release semantics are in [`VALIDATION.md`](VALIDATION.md).
+
+Every command above is offline except `npm run verify:sources`, which re-fetches
+the official pages the capability matrices cite. It is deliberately outside
+`npm run ci`.
 
 In a Git checkout, release validation requires every release artifact to exist in and match `HEAD`. `npm run validate` and `npm run ci` fail closed on untracked, index-only, staged, or unstaged release-unit drift because that drift is not reviewed release evidence.
 

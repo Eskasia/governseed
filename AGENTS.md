@@ -23,6 +23,7 @@ AGENTS.md is the canonical source of truth for repository rules. Claude and Anti
 | Initialize Codex smoke project | `npm run smoke:base` |
 | Initialize all-runtime smoke project | `npm run smoke:fullstack` |
 | Full local CI | `npm run ci` |
+| Re-check the official sources the capability matrices cite (only networked command) | `npm run verify:sources` |
 | Strict fullstack example doctor | `node scripts/doctor.mjs --strict examples/template-adoption/fullstack-ai-saas` |
 | Strict macOS example doctor | `node scripts/doctor.mjs --strict examples/template-adoption/macos-beta-handoff` |
 
@@ -34,6 +35,7 @@ AGENTS.md is the canonical source of truth for repository rules. Claude and Anti
 - Do not add a root `codex_mvp_prd_pack.md`; PRD/MVP material belongs in templates or workflow docs.
 - When adding a template, update `templates/README.md`, `startup/02-required-project-docs.md` if needed, and `scripts/validate-starter.mjs` if the template becomes required.
 - When adding a runtime adapter, keep AGENTS.md canonical and update `README.md`, `scripts/init.mjs`, and `scripts/validate-starter.mjs`.
+- When a capability matrix gains or drops a cited page, pin or remove its sentence in `docs/research/source-freshness.lock.json`; `npm run ci` fails on either gap.
 
 ## Rule Lifecycle
 
