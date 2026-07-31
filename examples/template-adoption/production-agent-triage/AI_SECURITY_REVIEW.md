@@ -40,10 +40,10 @@
 - HTML: escape alert and incident text before rendering it in the console.
 - Payment / delete / publish: not reachable; the tool set contains no such action.
 - Evidence schema: persist only validator-approved, privacy-scanned, normalized closed-schema evidence.
-- Real-mode data: synthetic-only; never use private, tenant, customer, or production content for governance-impact or runtime-proof execution.
+- Real-mode data: synthetic-only; golden-set replay and smoke runs never use customer incidents, tenant data, or production alert payloads.
 - Privacy scanner: initialization or execution failure must fail closed without hashing or persisting blocked bytes.
 - Cleanup: terminate and reap children, remove isolated temporary state, and prove absence before persistence; uncertainty returns a stable failure code and no artifact.
-- Evaluator capability: Codex real execution remains refused until detached or re-parented descendant containment is proven; Claude and Antigravity remain fail-closed until their containment and non-persistence contracts are proven.
+- Replay capability: a golden-set run is refused unless the seeded workspace is committed and clean, because an uncommitted seed cannot be reproduced from the recorded evidence.
 
 ## Key Lifecycle
 
@@ -63,6 +63,7 @@
 ## Residual Risk
 
 - A stale history index can produce a plausible citation to an incident that no longer resembles the current one; this is tracked as LOOP-402.
-- Runtime-proof claim boundary: entrypoint first-response contract only; not model quality or governance effectiveness.
-- Governance-impact claim boundary: delivery artifacts after completed intake, subject to the separate evidence gate.
-- Current evaluator capability: Claude is refused while workspace containment is unproven; Antigravity is unavailable when missing and otherwise refused until non-persistence and containment are proven.
+- Claim boundary: a green golden set claims only that the listed incidents were triaged as recorded. It does not claim the agent is correct on incident classes absent from the set.
+- Claim boundary: the smoke run claims only that the triage entrypoint answers; it says nothing about routing quality.
+- Injection review covered the incident history and the runbook corpus. Attachments are out of scope this release because they are not yet ingested, so nothing here supports a claim about them.
+- No evidence is retained from a run whose privacy scan did not complete, so an unexplained drop in stored traces means the scanner failed closed, not that triage volume fell.

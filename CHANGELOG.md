@@ -2,6 +2,23 @@
 
 ## 2026-07-31 — Three Example Fixtures, And The Registration They Exposed
 
+- A filled example inherits a conditional template's transferable rules — real
+  mode is synthetic-only, persist only scanned evidence, fail closed — and
+  restates them in its own terms. It does not inherit disclosures about
+  GovernSeed's own evaluator: a support-triage agent has no Codex containment
+  status, so copying one puts a false statement into a document whose whole
+  purpose is to model an honest one.
+- `production-agent-triage/AI_SECURITY_REVIEW.md` had copied five such lines
+  verbatim. They are replaced with boundaries the project can actually hold:
+  what a green golden set does and does not claim, what the injection review
+  covered, and why a drop in stored traces means the scanner failed closed.
+- Both `AGENT_RUNTIME.md` examples also borrowed `runtime proof` and `the
+  evaluator's separate evidence gate`, terms that name starter machinery an
+  adopting project does not have. Both now name their own smoke run and their
+  own golden set.
+- `npm run fixtures` now fails when a fixture contains a starter-only
+  disclosure. Red before the rewrite: five hits, all in one file.
+
 - The roadmap's three remaining example gaps are filled:
   `ui-dashboard-redesign` (UI_SPEC, DESIGN_SYSTEM, DESIGN_REVIEW),
   `production-agent-triage` (AGENT_RUNTIME, AI_SECURITY_REVIEW, EVAL_PLAN,
