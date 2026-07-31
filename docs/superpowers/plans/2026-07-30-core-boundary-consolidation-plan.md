@@ -137,6 +137,32 @@ createLinuxCodexOciSupervisor、OCI_RUNTIME_PATH、createOciCredentialProxyFacad
 - [ ] 三個 bin 入口（`agent-governance`、`agent-governance-init`、`agent-governance-doctor`）在僅有出貨檔案的情況下仍可執行。
 - [ ] 套件與 CLI 的 legacy identifier 不變（`agent-governance-starter` 套件名與既有 bin 名稱保留）。
 
+> **SUPERSEDED — PR #13 將規則改為精確白名單。** 上列第二項要求全面排除 `tests/`
+> 與 `docs/`。PR #13 內的 `9b38c55` 先照字面實作了 12 條 `files` 白名單，同一個
+> PR 的 `0d3ac5c` 隨即發現該白名單「dropped paths that
+> tests/brand/brand-compatibility.test.mjs requires the published package to
+> carry」，改為「Whitelist those paths explicitly instead of the whole docs and
+> tests trees」，合併時 `files` 為 19 條，涵蓋 brand 測試當時釘住的 21 條已發布
+> 路徑。取代發生在 PR #13 實作當下，不是後續 PR。policy compiler、attestation
+> 與 PR #28 只是擴充並強化同一份精確白名單契約。
+
+### 現行契約
+
+| 目錄 | 規則 | 由誰保證 |
+|---|---|---|
+| `experimental/`、`examples/`、`.github/` | 全面禁止出貨 | `tests/governance/package-surface.test.mjs` 的 release-unit 排除清單 |
+| `docs/`、`tests/` | 僅允許 `package.json` `files` 明列的發布依賴與證據檔案 | 同一測試的 whitelist 斷言：任何未被 `files` 覆蓋的出貨項目即失敗 |
+| 其餘出貨目錄 | 以 `files` 為準 | 同上 |
+
+該測試是這條規則的 canonical owner；本計劃只記錄取代事實，不重述規則內容。
+
+### 完成記錄
+
+| 驗收項 | 狀態 | 依據 |
+|---|---|---|
+| 第 136 行（出貨內容不含 `tests/`、`experimental/`、`docs/`、`examples/`） | `SUPERSEDED` | PR #13 的 `0d3ac5c` 將規則改為精確白名單；`experimental/` 與 `examples/` 的全面排除保留至今 |
+| 第 137 行（三個 bin 入口在僅有出貨檔案的情況下仍可執行） | `PASS` | verified by `smoke:package` in PR #28 |
+
 ---
 
 ## A3. 環境能力探測
