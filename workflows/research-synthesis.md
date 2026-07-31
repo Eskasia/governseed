@@ -1,84 +1,84 @@
 # Research Synthesis Workflow
 
-適用：專案出現會實質影響決策的證據衝突、高影響或難回頭的選擇、多條可信路線，或使用者明確要求多視角研究時。
+Applies when: the project hits an evidence conflict that would materially change a decision, a high-impact or hard-to-reverse choice, several credible routes, or the user explicitly asks for multi-perspective research.
 
-不適用：單一穩定事實、低風險可逆選擇、一般摘要、已有明確且充分證據的決策。這是一項條件式治理能力，不是研究 runtime、多代理編排器或發布 gate。
+Does not apply to: a single stable fact, a low-risk reversible choice, an ordinary summary, or a decision that already has clear and sufficient evidence. This is a conditional governance capability, not a research runtime, a multi-agent orchestrator, or a release gate.
 
 ## Trigger
 
-Agent 在 Q1-Q9 已足以表述決策問題後，以及任何重大決策定案前，檢查下列 reason code：
+Once Q1-Q9 is enough to state the decision problem, and again before any major decision is settled, the agent checks these reason codes:
 
-| Reason code | 觸發訊號 |
+| Reason code | Trigger signal |
 |---|---|
-| `explicit-multi-view` | 使用者明確要求比較、批判、辯論或多視角分析 |
-| `evidence-conflict` | 來源對決策相關主張有實質衝突 |
-| `high-impact-decision` | 決策成本高、難回頭或後果重大 |
-| `credible-route-divergence` | 至少兩條可信路線建立在不同假設上 |
-| `cross-domain-gap` | 跨領域或跨時期資訊缺口會改變決策 |
+| `explicit-multi-view` | The user explicitly asks for comparison, critique, debate, or multi-perspective analysis |
+| `evidence-conflict` | Sources materially conflict on a decision-relevant claim |
+| `high-impact-decision` | The decision is costly, hard to reverse, or has major consequences |
+| `credible-route-divergence` | At least two credible routes rest on different assumptions |
+| `cross-domain-gap` | A cross-domain or cross-period information gap would change the decision |
 
-只有訊號會實質改變範圍、驗收、風險、成本或路線時才建議啟動；不要因關鍵字或一般複雜度自動啟動。
+Propose it only when the signal would materially change scope, acceptance, risk, cost, or route; do not start automatically on a keyword or on general complexity.
 
 ## Confirmation
 
-1. 回報偵測到的 reason code、它會影響哪個決策，以及不用此流程的風險。
-2. 一次只問一題：是否建立 `RESEARCH_SYNTHESIS.md`。
-3. 使用者確認後才從 `templates/conditional/RESEARCH_SYNTHESIS.md` 建立專案文件並執行。
-4. 使用者拒絕時不建立空文件；只有該缺口同時影響既有 gate 時，才把未解風險寫入 `OPEN_LOOPS.md`。
+1. Report the detected reason code, which decision it affects, and the risk of skipping this flow.
+2. Ask one question only: whether to create `RESEARCH_SYNTHESIS.md`.
+3. Only after the user confirms, create the project document from `templates/conditional/RESEARCH_SYNTHESIS.md` and run it.
+4. On refusal, do not create an empty document; write the unresolved risk into `OPEN_LOOPS.md` only if the gap also affects an existing gate.
 
-偵測與建議不是核准。不得靜默切換模式，也不得因缺少 `RESEARCH_SYNTHESIS.md` 自行新增全域 hard gate。
+Detection and proposal are not approval. Do not switch modes silently, and do not add a new global hard gate just because `RESEARCH_SYNTHESIS.md` is missing.
 
-`init --all` 可能預先複製空模板；檔案存在不代表已偵測、已確認或已完成。使用者確認前不得填寫或引用它作為決策證據。Doctor 的 `present` 只表示檔案存在；`Activation Record` 沒有唯一且明確的 `User decision: confirmed` 或 `User decision: declined` 時，以 `RESEARCH_CONFIRMATION_MISSING` 警告，strict 檢查必須失敗。只有 `confirmed` 會啟動研究。
+`init --all` may pre-copy an empty template; the file existing does not mean anything was detected, confirmed, or completed. Do not fill it in or cite it as decision evidence before the user confirms. Doctor's `present` only means the file exists; when the `Activation Record` has no single explicit `User decision: confirmed` or `User decision: declined`, warn with `RESEARCH_CONFIRMATION_MISSING`, and the strict check must fail. Only `confirmed` starts the research.
 
 ## Research Contract
 
-- 模式：material-first hybrid。先使用使用者提供的材料；外部研究只補已記錄的重要 gap。
-- 外部來源：優先官方、原始研究與第一手資料；時效性主張記錄查證日期。
-- 隱私：沿用 `PROJECT_BRIEF.md` 的 privacy-safe source attestation，不複製私人內容、敏感 URL、憑證或原始工具 trace。
-- 可追溯性：每個實質 finding 連到 `CLM-*`；每個 claim 連到 `SRC-*`，或明確標成 inference、professional judgment、unknown。
-- 不虛構：找不到證據就保留 gap；不可補造 citation、引文、數字、共識或專家身份。
-- 邊界：五個視角是分析框架，不代表五個真實專家，也不授權額外工具、模型呼叫或子代理。
+- Mode: material-first hybrid. Use the material the user supplied first; external research only fills recorded, material gaps.
+- External sources: prefer official, original research, and first-hand material; record the verification date for any time-sensitive claim.
+- Privacy: follow the privacy-safe source attestation in `PROJECT_BRIEF.md`; do not copy private content, sensitive URLs, credentials, or raw tool traces.
+- Traceability: every substantive finding links to a `CLM-*`; every claim links to an `SRC-*`, or is explicitly marked inference, professional judgment, or unknown.
+- No fabrication: when evidence cannot be found, keep the gap; do not invent citations, quotations, numbers, consensus, or expert identities.
+- Boundaries: the five lenses are an analytical frame, not five real experts, and they do not authorize extra tools, model calls, or subagents.
 
 ## Five-lens Scan
 
-先各自完成五個 lens，再做綜合，避免先有結論後讓每個視角替它背書：
+Complete the five lenses separately before synthesizing, so a conclusion is not reached first and then endorsed by each lens in turn:
 
-1. Practitioner：操作限制、實務回饋、失敗模式、落地成本。
-2. Scholar：定義、理論、研究品質、因果關係、替代解釋。
-3. Skeptic：最強反證、證據缺口、過度主張、失效條件。
-4. Economist：誘因、機會成本、分配效果、市場結構、二階效應。
-5. Historian：路徑依賴、可比先例、時代差異、錯誤類比。
+1. Practitioner: operational constraints, field feedback, failure modes, cost to land.
+2. Scholar: definitions, theory, research quality, causality, alternative explanations.
+3. Skeptic: the strongest counter-evidence, evidence gaps, overreach, failure conditions.
+4. Economist: incentives, opportunity cost, distributional effects, market structure, second-order effects.
+5. Historian: path dependence, comparable precedents, differences in era, false analogies.
 
-每個 lens 必須填：核心立場、最強支持證據、最強反證或異議、隱藏訊號、claim IDs。無法適用時填 `not-applicable` 與理由，不得編造內容湊齊。
+Every lens must fill in: core position, strongest supporting evidence, strongest counter-evidence or objection, hidden signals, claim IDs. Where a lens does not apply, fill `not-applicable` with a reason; do not invent content to fill the slot.
 
 ## Evidence And Contradiction Rules
 
-- Evidence strength 與 confidence 分開評估；來源數量不能自動等於證據品質。
-- 只有直接專案證據或相互印證的高品質 primary sources，且沒有重大未解衝突，才可標為 `strong`。
-- Inference 和 professional judgment 可保留，但必須標示，不能寫成已驗證事實。
-- 觀點衝突不得平均成假共識；逐項記錄雙方 claim、證據、受影響 lens、狀態與下一個可判別證據。
-- 外部 research 只能回填 `GAP-*`，不能擴張原問題或偷偷改寫成功標準。
+- Evidence strength and confidence are assessed separately; a larger number of sources is not automatically better evidence.
+- Mark something `strong` only with direct project evidence, or mutually corroborating high-quality primary sources, and no major unresolved conflict.
+- Inference and professional judgment may stay, but must be labeled; they cannot be written as verified fact.
+- Do not average conflicting views into a false consensus; record each side's claim, evidence, affected lenses, status, and the next distinguishing piece of evidence, item by item.
+- External research may only fill in `GAP-*`; it may not expand the original question or quietly rewrite the success criteria.
 
 ## Layered Output
 
-`RESEARCH_SYNTHESIS.md` 固定分兩層：
+`RESEARCH_SYNTHESIS.md` always has two layers:
 
-1. Executive layer：一句話總結、按 confidence 排序的 findings、建議行動、前沿問題。
-2. Review layer：來源與 claim ledger、五視角掃描、矛盾圖、共識、空白、跨視角關聯、自評。
+1. Executive layer: a one-line summary, findings ordered by confidence, recommended actions, frontier questions.
+2. Review layer: source and claim ledger, five-lens scan, contradiction map, consensus, gaps, cross-lens connections, self-assessment.
 
-建議必須連到 finding，並寫明可逆性、驗證方式與 stop / re-evaluate trigger。研究結論只能提出對 `PROJECT_BRIEF.md`、`SPEC.md`、`TECH_STACK.md` 或 `OPEN_LOOPS.md` 的候選更新；使用者確認前不得改寫既有決策。
+Every recommendation links to a finding and states its reversibility, verification method, and stop / re-evaluate trigger. Research conclusions may only propose candidate updates to `PROJECT_BRIEF.md`, `SPEC.md`, `TECH_STACK.md`, or `OPEN_LOOPS.md`; do not rewrite an existing decision before the user confirms.
 
 ## Self-review
 
-- 逐項找出 finding 的最薄弱證據、最強替代解釋、未解衝突，以及什麼新證據會改變結論。
-- 使用模板內 0-4 分 academic-rigor rubric；評分必須附 evidence 與 required improvement。
-- 不宣稱或模擬 Stanford University 身份、背書或真實教授評審。透明 rubric 取代權威角色扮演。
-- Self-review 只能揭示品質與缺口，不能把自身評分當成 acceptance、release 或 effectiveness evidence。
+- For each finding, identify its weakest evidence, the strongest alternative explanation, the unresolved conflicts, and what new evidence would change the conclusion.
+- Use the 0-4 academic-rigor rubric in the template; every score carries evidence and a required improvement.
+- Do not claim or simulate a Stanford University identity, endorsement, or a review by a real professor. A transparent rubric replaces authority role-play.
+- Self-review can only expose quality and gaps; its own scores are not acceptance, release, or effectiveness evidence.
 
 ## Completion
 
-- 已記錄 reason code 與使用者確認。
-- 五個 lens、claim/source trace、contradiction map、confidence calibration 與 self-review 均完成。
-- 未解 gap 和反證仍可見，沒有假共識或虛構來源。
-- External gap-fill 沒有超出核准範圍。
-- Canonical project documents 只納入使用者確認的候選變更。
-- 這份產物維持 advisory，不取代 `GATE-INTENT-001`、`GATE-ROUTE-001`、測試、驗收或發布證據。
+- The reason code and the user's confirmation are recorded.
+- The five lenses, claim/source trace, contradiction map, confidence calibration, and self-review are all complete.
+- Unresolved gaps and counter-evidence remain visible, with no false consensus or invented sources.
+- External gap-filling stayed within the approved scope.
+- The canonical project documents took in only the candidate changes the user confirmed.
+- This artifact stays advisory; it does not replace `GATE-INTENT-001`, `GATE-ROUTE-001`, tests, acceptance, or release evidence.

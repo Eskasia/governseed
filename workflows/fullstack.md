@@ -1,29 +1,29 @@
 # Fullstack SaaS Workflow
 
-適用：已在 `PROJECT_BRIEF.md` / `TECH_STACK.md` 選定全端 SaaS 或 web app 路線後，才使用 Next.js、TypeScript、Tailwind、shadcn/ui、Supabase、OpenAI API、Playwright、Vercel preview 這類全端專案檢查清單。
+Applies when: `PROJECT_BRIEF.md` / `TECH_STACK.md` has already selected a fullstack SaaS or web app route. Only then use this checklist for projects built on Next.js, TypeScript, Tailwind, shadcn/ui, Supabase, the OpenAI API, Playwright, and Vercel previews.
 
-## 必補文件
+## Documents To Add
 
-- `DATA_MODEL.md`：tenant、user/staff、role、核心資料表、RLS、seed/mock data、資料保留策略。
-- `API_CONTRACT.md`：route/server action/webhook、request、response、error shape、權限、idempotency。
-- `ENV_CHECKLIST.md`：本機、preview、production 需要的 env、金鑰來源、不可提交項、provider setup。
+- `DATA_MODEL.md`: tenant, user/staff, role, core tables, RLS, seed/mock data, data retention policy.
+- `API_CONTRACT.md`: route/server action/webhook, request, response, error shape, permissions, idempotency.
+- `ENV_CHECKLIST.md`: the env vars local, preview, and production need, where the secrets come from, what must not be committed, provider setup.
 
-## 實作順序
+## Implementation Order
 
-1. 先做可本機驗證的薄切片：登入、建立一筆資料、reload 後仍存在。
-2. 再補 API / DB 邊界：schema、RLS、migration、seed、mock adapter。
-3. 再做 UI 狀態：loading、empty、error、disabled、permission denied。
-4. 最後才做外部 provider：正式 OAuth、付款、Email、真實 webhook。
+1. Start with a thin slice that can be verified locally: log in, create one record, reload and it is still there.
+2. Then fill in the API / DB boundary: schema, RLS, migration, seed, mock adapter.
+3. Then do UI states: loading, empty, error, disabled, permission denied.
+4. Only then wire external providers: real OAuth, payments, email, real webhooks.
 
-## 不要一開始就做
+## Do Not Start With
 
-- 不要先做完整 CRM、billing、multi-tenant admin、正式多渠道串接。
-- 不要把 provider setup 當成本機 MVP 的 blocker。
-- 不要在沒有 RLS / 權限文件時直接改資料庫安全規則。
+- Do not build a full CRM, billing, multi-tenant admin, or production multi-channel integration first.
+- Do not treat provider setup as a blocker for the local MVP.
+- Do not change database security rules before the RLS / permission documents exist.
 
-## 驗證
+## Verification
 
-- local smoke：啟動、登入、建立資料、reload、查 DB。
-- e2e smoke：Playwright 跑核心流程。
-- preview smoke：Vercel preview + remote env 檢查。
-- performance smoke：核心頁 p95 目標寫入 SPEC。
+- local smoke: start, log in, create a record, reload, query the DB.
+- e2e smoke: Playwright over the core flow.
+- preview smoke: Vercel preview plus a remote env check.
+- performance smoke: the p95 target for core pages is written into SPEC.

@@ -1,14 +1,14 @@
 # PROJECT_BRIEF.md
 
-## 一句話
+## One-line summary
 
 -
 
-## 使用者
+## Users
 
 -
 
-## 要解決的問題
+## Problem
 
 -
 
@@ -32,28 +32,28 @@
 - Record confirmation with a lowercase `*-role` label and ISO date; pending/rejected rows may leave the date `n/a`. The requirement revision must repeat a confirmed source role exactly. Keep every not-stated item in `OPEN_LOOPS.md`.
 - Product-shape `Evidence` contains at least one confirmed `SRC` and one active `REQ@revision`, and exactly matches the evidence set in `TECH_STACK.md`.
 
-## 產品形態決策
+## Product shape decision
 
-- 決策模式：
-- 第一版產品形態：
-- Q1-Q9 依據：
-- 為什麼不是網站 / App / 小程序 / 純後端 / 管理系統等其他形態：
-- 何時重新評估：
-- Decision status：
-- Evidence：
-- Nearest alternative：
-- Review trigger：
+- Decision mode:
+- Product shape:
+- Q1-Q9 basis:
+- Why not website / app / mini program / backend-only / admin system or another shape:
+- Re-evaluate when:
+- Decision status:
+- Evidence:
+- Nearest alternative:
+- Review trigger:
 
-## 明確不做
-
--
-
-## 驗收者
+## Explicitly out of scope
 
 -
 
-## 完成標準
+## Acceptance owner
 
-- 新 agent 能在 30 秒內理解方向。
-- 問題、使用者、MVP 沒有混在同一句話裡。
-- 第一版產品形態和排除形態已寫清楚。
+-
+
+## Done criteria
+
+- A new agent understands the direction within 30 seconds.
+- Problem, users, and MVP are not collapsed into one sentence.
+- The product shape and the excluded shapes are both written down.

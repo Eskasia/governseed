@@ -1,86 +1,86 @@
 # macOS App Build And Release
 
-適用：SwiftUI、AppKit、Tauri、Electron、menu bar app、需要 Accessibility / Screen Recording / Input Monitoring / Automation 權限的 macOS app。
+Applies to: SwiftUI, AppKit, Tauri, Electron, menu bar apps, and any macOS app needing Accessibility / Screen Recording / Input Monitoring / Automation permissions.
 
-## TCC 權限穩定規則
+## Keeping TCC Permissions Stable
 
-macOS TCC 不只看 app 名稱；會受 bundle id、app 路徑、code signing requirement 影響。開發版最常壞在 ad-hoc signing、DerivedData/build 路徑、重新簽名後舊授權失效。
+macOS TCC does not key on the app name alone; it is affected by the bundle id, the app path, and the code signing requirement. Development builds most often break on ad-hoc signing, DerivedData/build paths, and old grants invalidated by re-signing.
 
-必做：
+Required:
 
-- 固定 bundle id，例如 `com.william.AppName.dev`。
-- 固定開發版 app 路徑，例如 `~/Applications/AppName.app` 或專案固定 `dist/AppName.app`。
-- 不從 Xcode DerivedData、臨時 build 目錄、Downloads 隨機路徑測 TCC。
-- 用固定 Apple Development certificate 簽 `.app`；不要每次 `codesign -s -`。
-- 每次 bundle id、簽名、路徑變更後，先 reset TCC，再重新授權。
+- Fix the bundle id, for example `com.william.AppName.dev`.
+- Fix the development app path, for example `~/Applications/AppName.app` or a fixed `dist/AppName.app` in the project.
+- Do not test TCC from Xcode DerivedData, a temporary build directory, or a random path in Downloads.
+- Sign the `.app` with a fixed Apple Development certificate; do not run `codesign -s -` every time.
+- After every bundle id, signing, or path change, reset TCC and grant permission again.
 
-## 開發版標準命令
+## Standard Commands For Development Builds
 
-確認 bundle id：
+Check the bundle id:
 
 ```bash
 mdls -name kMDItemCFBundleIdentifier ~/Applications/AppName.app
 ```
 
-確認簽名與 Team：
+Check the signature and Team:
 
 ```bash
 codesign -dv --verbose=4 ~/Applications/AppName.app 2>&1 | egrep 'Identifier|TeamIdentifier|Authority'
 codesign --display -r - ~/Applications/AppName.app
 ```
 
-找固定簽名 identity：
+Find a fixed signing identity:
 
 ```bash
 security find-identity -v -p codesigning
 ```
 
-用固定 Apple Development certificate 重簽：
+Re-sign with a fixed Apple Development certificate:
 
 ```bash
 codesign --force --deep --options runtime --sign "Apple Development: <Name> (<TEAMID>)" ~/Applications/AppName.app
 ```
 
-重置 TCC：
+Reset TCC:
 
 ```bash
 tccutil reset Accessibility <bundle-id>
 tccutil reset ScreenCapture <bundle-id>
 ```
 
-授權後完整 quit app 再重開；Screen Recording / ScreenCapture 有時需要登出或重開機才完全刷新。
+After granting, fully quit the app and reopen it; Screen Recording / ScreenCapture sometimes needs a logout or reboot to refresh completely.
 
-## MACOS_RELEASE_CHECKLIST 必填
+## MACOS_RELEASE_CHECKLIST Required Fields
 
-- bundle id：
-- 固定 app 路徑：
-- signing identity：
-- TeamIdentifier：
-- entitlements：
-- sandbox 狀態：
-- 需要的 TCC 權限：Accessibility / ScreenCapture / Input Monitoring / Automation / Apple Events
-- reset TCC 命令：
-- 啟動方式：
-- 驗證步驟：
-- package 方式：zip / dmg / appcast / App Store
-- notarization 狀態：
+- bundle id:
+- Fixed app path:
+- signing identity:
+- TeamIdentifier:
+- entitlements:
+- sandbox status:
+- TCC permissions needed: Accessibility / ScreenCapture / Input Monitoring / Automation / Apple Events
+- reset TCC command:
+- How it launches:
+- Verification steps:
+- Packaging: zip / dmg / appcast / App Store
+- notarization status:
 
-## DMG 與 create-dmg 定位
+## Where DMG And create-dmg Fit
 
-`sindresorhus/create-dmg` 只負責把已 build 好且已簽好的 `.app` 包成 `.dmg`。它不能修 TCC 身分不穩。
+`sindresorhus/create-dmg` only packages an already-built, already-signed `.app` into a `.dmg`. It cannot fix an unstable TCC identity.
 
-正確順序：
+Correct order:
 
-1. 固定 bundle id、路徑、簽名。
-2. reset TCC，重新授權並驗證 app 行為。
-3. archive / export `.app`。
-4. notarize `.app` 或 `.dmg`。
-5. 用 `create-dmg` 包裝發佈。
-6. 在乾淨環境測 Gatekeeper、TCC prompt、第一次啟動。
+1. Fix the bundle id, path, and signature.
+2. Reset TCC, grant permission again, and verify the app's behavior.
+3. archive / export the `.app`.
+4. Notarize the `.app` or `.dmg`.
+5. Package for distribution with `create-dmg`.
+6. Test Gatekeeper, the TCC prompt, and first launch in a clean environment.
 
-## 驗收
+## Acceptance
 
-- 從固定路徑啟動後，Accessibility / ScreenCapture 狀態一致。
-- rebuild 後，只要 bundle id、路徑、signing requirement 未變，TCC 不應反覆失效。
-- 若改簽名或 bundle id，文件中明確要求 reset TCC。
-- 發佈前驗證 codesign、spctl、notarization。
+- Launched from the fixed path, Accessibility / ScreenCapture status is consistent.
+- After a rebuild, as long as the bundle id, path, and signing requirement are unchanged, TCC should not keep breaking.
+- If the signature or bundle id changes, the document explicitly requires a TCC reset.
+- Verify codesign, spctl, and notarization before release.

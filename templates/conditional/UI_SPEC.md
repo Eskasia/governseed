@@ -2,26 +2,26 @@
 
 ## Register
 
-- 定位：brand / marketing 或 product / app
-- 使用情境：誰在什麼設備、什麼壓力下使用
+- Positioning: brand / marketing, or product / app
+- Usage context: who uses it, on what device, under what pressure
 
-## 核心流程
+## Core Flows
 
-| # | 流程名稱 | 起點 | 終點 | 關鍵操作 |
+| # | Flow name | Start | End | Key actions |
 |---|---|---|---|---|
 | 1 |  |  |  |  |
 | 2 |  |  |  |  |
 | 3 |  |  |  |  |
 
-## 核心畫面
+## Core Screens
 
-| 畫面 | 用途 | 主要元件 | 資料密度 | 備註 |
+| Screen | Purpose | Main components | Data density | Notes |
 |---|---|---|---|---|
-|  |  |  | 低 / 中 / 高 |  |
+|  |  |  | low / medium / high |  |
 
-## 狀態覆蓋
+## State Coverage
 
-| 狀態 | 觸發條件 | 視覺表現 | 備註 |
+| State | Trigger | Visual treatment | Notes |
 |---|---|---|---|
 | loading |  |  |  |
 | empty |  |  |  |
@@ -30,19 +30,19 @@
 | focus |  |  |  |
 | hover / tap |  |  |  |
 
-## 響應式
+## Responsive
 
-| Breakpoint | 佈局變化 | 備註 |
+| Breakpoint | Layout change | Notes |
 |---|---|---|
 | mobile (<768px) |  |  |
 | tablet (768-1024px) |  |  |
 | desktop (>1024px) |  |  |
 
-## 設計來源
+## Design Sources
 
-- 參考：
-- 工具：
+- References:
+- Tools:
 
-## 明確不要
+## Explicitly Unwanted
 
-- 模板味、過度卡片、AI 紫藍漸層、無意義動畫、看不懂的 icon
+- Template feel, excessive cards, AI purple-blue gradients, meaningless animation, unreadable icons

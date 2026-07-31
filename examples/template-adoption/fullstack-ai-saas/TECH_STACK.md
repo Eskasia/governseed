@@ -1,18 +1,18 @@
 # TECH_STACK.md
 
-## 技術路線決策
+## Technology route decision
 
-- 決策模式：ai-recommended route
-- 唯一主路線：TypeScript fullstack AI web app on Next.js, Supabase Postgres, and Vercel preview
-- 選擇理由：前後端共享 TypeScript 型別，web preview 讓 owner 可直接驗收，Supabase RLS 適合客戶文件權限，Vercel preview 支撐快速迭代。
-- 排除路線：不採 native app、小程序、純 API、desktop app，因為第一版需要可分享 web preview、上傳文件、登入、資料表與 citation UI。
-- 後期風險：RAG 成本、tenant 權限、citation 正確性、provider API 行為變化會影響維護。
-- 重評估條件：需要離線、原生檔案權限、API-only 客戶整合、或資料量超出 Supabase preview 能力時重新評估。
-- 新技術引入 gate：新增 AI SDK、vector DB、reranker、queue 或 auth provider 前，必須更新 TECH_STACK、RAG_DESIGN、EVAL_PLAN 或 AI_SECURITY_REVIEW。
-- Decision status：active
-- Evidence：SRC-101, SRC-102, REQ-101@1, REQ-102@1
-- Nearest alternative：separate API-only RAG service
-- Review trigger：event-only when acceptance becomes API-only, offline, or exceeds the selected preview scale
+- Decision mode: ai-recommended route
+- Primary route: TypeScript fullstack AI web app on Next.js, Supabase Postgres, and Vercel preview
+- Rationale: frontend and backend share TypeScript types, a web preview lets the owner accept the work directly, Supabase RLS fits client-document permissions, and Vercel previews support fast iteration.
+- Excluded routes: no native app, mini program, API-only service, or desktop app, because the first release needs a shareable web preview, document upload, login, tables, and a citation UI.
+- Late-stage risks: RAG cost, tenant permissions, citation correctness, and provider API behavior changes all affect maintenance.
+- Re-evaluation triggers: re-evaluate when offline use, native file permissions, API-only client integration, or a data volume beyond Supabase preview capacity is needed.
+- New technology gate: before adding an AI SDK, vector DB, reranker, queue, or auth provider, update TECH_STACK, RAG_DESIGN, EVAL_PLAN, or AI_SECURITY_REVIEW.
+- Decision status: active
+- Evidence: SRC-101, SRC-102, REQ-101@1, REQ-102@1
+- Nearest alternative: separate API-only RAG service
+- Review trigger: event-only when acceptance becomes API-only, offline, or exceeds the selected preview scale
 
 ## Runtime
 

@@ -1,64 +1,64 @@
 # 01 Bootstrap Gates
 
-## 主流程
+## Main Flow
 
-新專案固定走：
+Every new project follows the same sequence:
 
-1. 規格：Q1-Q9、追問、PROJECT_BRIEF、SPEC、CONTEXT
-2. 條件研究：偵測到重大研究訊號時提出 `RESEARCH_SYNTHESIS.md` 建議，使用者確認後才執行
-3. 路線：產品形態 / 技術路線 gate、TECH_STACK、必要 ADR
-4. 設計：TASK_CONTRACT、AGENTS、必要條件文件
-5. 條件文件：UI、全端、環境、API、資料模型、Agent runtime
-6. 計畫：5-10 步，每步有驗證
-7. 實作：一次只做一個步驟
-8. 驗證：測試、Browser/Chrome、Playwright、DB、部署檢查
-9. 收尾：handoff、neat-freak、repomix、gstack-style checklist
+1. Spec: Q1-Q9, follow-up questions, PROJECT_BRIEF, SPEC, CONTEXT
+2. Conditional research: when a material research signal appears, propose `RESEARCH_SYNTHESIS.md` and run it only after the user confirms
+3. Route: the product shape / technology route gate, TECH_STACK, any required ADR
+4. Design: TASK_CONTRACT, AGENTS, any required conditional documents
+5. Conditional documents: UI, fullstack, environment, API, data model, agent runtime
+6. Plan: 5-10 steps, each with a verification
+7. Implementation: one step at a time
+8. Verification: tests, Browser/Chrome, Playwright, DB, deployment checks
+9. Wrap-up: handoff, neat-freak, repomix, a gstack-style checklist
 
 ## Q1-Q9
 
-Q1-Q9 的意義是確認需求、限制、驗收、部署與技術偏好，支撐後續產品形態與技術路線決策；不是要求使用者一開始就懂技術。
+Q1-Q9 exist to establish the requirements, constraints, acceptance, deployment, and technology preferences that the later product-shape and technology-route decisions rest on. They do not require the user to understand the technology up front.
 
-Q1. 這個東西要解決誰的什麼問題？一句話，不能有「和」。  
-Q2. 第一版成功的樣子是什麼？用可以觀察到的行為描述。  
-Q3. 哪些情況出現，就代表做錯了？  
-Q4. 第一版明確不做哪些事？至少三個。  
-Q5. 有沒有不能動的現有系統、框架、或 API？  
-Q6. 誰來驗收、怎麼驗？自己點、跑測試、給別人用。  
-Q7. 要部署在哪裡？本機、preview、正式上線。  
-Q8. 有沒有已經決定要用的技術或工具？  
-Q9. 對效能或規模有沒有硬性要求？
+Q1. Whose problem does this solve, and what problem? One sentence, no "and".  
+Q2. What does success look like for the first release? Describe it as observable behavior.  
+Q3. What would tell you this was built wrong?  
+Q4. What is explicitly out of scope for the first release? At least three things.  
+Q5. Is there an existing system, framework, or API that cannot be changed?  
+Q6. Who accepts the work, and how? Clicking through it, running tests, handing it to someone else.  
+Q7. Where does it deploy? Local, preview, production.  
+Q8. Is there a technology or tool already decided on?  
+Q9. Are there hard performance or scale requirements?
 
-### 條件研究候選偵測
+### Conditional Research Candidate Detection
 
-這不是 Q10。Q1-Q9 已足以表述決策問題後，若出現會實質影響範圍、驗收、風險、成本或路線的證據衝突、高影響或難回頭決策、多條可信路線，或使用者明確要求多視角研究，先讀 `workflows/research-synthesis.md`。
+This is not a Q10. Once Q1-Q9 is enough to state the decision problem, read `workflows/research-synthesis.md` first if there is an evidence conflict, a high-impact or hard-to-reverse decision, several credible routes that would materially change scope, acceptance, risk, cost, or route — or if the user explicitly asks for multi-perspective research.
 
-- Agent 只回報 trigger reason code、受影響決策與不執行的風險。
-- 一次只問一題：是否建立 `RESEARCH_SYNTHESIS.md`。
-- 使用者確認後才執行；拒絕時不建立空文件。
-- 偵測、建議或文件存在本身都不是新的 hard gate。
-- `--all` 預放的空模板不算確認；`Activation Record` 必須明確記錄 `User decision: confirmed` 或 `User decision: declined`，只有前者會啟動研究。
+- The agent reports only the trigger reason code, the affected decision, and the risk of not running it.
+- Ask one question only: whether to create `RESEARCH_SYNTHESIS.md`.
+- Run it only after the user confirms; on refusal, do not create an empty document.
+- Neither the detection, the proposal, nor the document's existence is a new hard gate.
+- An empty template pre-placed by `--all` does not count as confirmation; the `Activation Record` must record `User decision: confirmed` or `User decision: declined` explicitly, and only the former starts the research.
 
-## 產品形態 / 技術路線 Gate
+## Product Shape / Technology Route Gate
 
-Generated `AGENTS.md` 唯一定義 `GATE-INTENT-001` 與 `GATE-ROUTE-001` 的 owner、status、evidence、event-only review trigger 與 fallback；本文件只說明 bootstrap 方法。Q1-Q9 後先讀 `workflows/product-shape-tech-route.md`，並在文件中選定一條路線：
+The generated `AGENTS.md` is the only place that defines the owner, status, evidence, event-only review trigger, and fallback for `GATE-INTENT-001` and `GATE-ROUTE-001`; this document only describes the bootstrap method. After Q1-Q9, read `workflows/product-shape-tech-route.md` and record one route in the documents:
 
-- `user-declared route`：使用者已指定產品形態或技術棧；agent 檢查它是否和 Q1-Q9 衝突，補齊缺漏層與風險。
-- `ai-recommended route`：使用者不知道技術路線；agent 根據 Q1-Q9 推薦唯一第一版產品形態與唯一主技術路線。
+- `user-declared route`: the user has specified the product shape or technology stack; the agent checks it against Q1-Q9 and fills in the missing layers and risks.
+- `ai-recommended route`: the user does not know the technology route; the agent recommends one first-release product shape and one primary technology route from Q1-Q9.
 
-完成標準：
+Done criteria:
 
-- `PROJECT_BRIEF.md` 已寫清楚產品形態決策、決策模式、Q1-Q9 依據、排除的其他形態。
-- `TECH_STACK.md` 已寫清楚唯一主路線、前端、後端、資料庫、主要框架 / SDK、部署方式；沒有某層時填 `n/a` 並說明。
-- `TECH_STACK.md` 已寫清楚不用哪些技術路線、後期風險、重評估條件、新技術引入 gate。
-- 高成本或難回頭的路線選擇已寫入 `docs/adr/*.md`；無法定案的路線問題已寫入 `OPEN_LOOPS.md`，並回到 `AGENTS.md` 套用 `GATE-ROUTE-001`。
+- `PROJECT_BRIEF.md` states the product shape decision, the decision mode, the Q1-Q9 basis, and the shapes that were excluded.
+- `TECH_STACK.md` states the primary route, frontend, backend, database, main framework / SDK, and deployment; where a layer does not apply, fill `n/a` and say why.
+- `TECH_STACK.md` states which technology routes were rejected, the late-stage risks, the re-evaluation triggers, and the new technology gate.
+- An expensive or hard-to-reverse route choice is written into `docs/adr/*.md`; a route question that cannot be settled goes into `OPEN_LOOPS.md`, then return to `AGENTS.md` and apply `GATE-ROUTE-001`.
 
-## 進下一關條件
+## Conditions To Proceed
 
-- `GATE-INTENT-001` 與 `GATE-ROUTE-001` 已依 generated `AGENTS.md` 評估。
-- SPEC 的驗收標準都是 yes/no。
-- TASK_CONTRACT 每個任務都有驗證方式。
-- OPEN_LOOPS 明確列出尚未決定的事。
-- 若包含 production-facing LLM agent / automation / tool use，`AGENT_RUNTIME.md` 已完成。
-- 若使用者已確認條件研究，`RESEARCH_SYNTHESIS.md` 已完成且受影響的 canonical project decision 仍需使用者確認；若未確認或已拒絕，不要求此文件。
-- 只有提出 durable rule 時，才記錄 selected destination、canonical owner 與 evidence；沒有提案時不執行文件結構分流。
-- 使用者明確說「確認」。
+- `GATE-INTENT-001` and `GATE-ROUTE-001` have been evaluated per the generated `AGENTS.md`.
+- Every acceptance criterion in SPEC is yes/no.
+- Every task in TASK_CONTRACT has a verification method.
+- OPEN_LOOPS explicitly lists what is still undecided.
+- If the project includes a production-facing LLM agent / automation / tool use, `AGENT_RUNTIME.md` is complete.
+- If the user confirmed conditional research, `RESEARCH_SYNTHESIS.md` is complete and the affected canonical project decision still requires user confirmation; if research was not confirmed or was declined, this document is not required.
+- Only when a durable rule is proposed, record the selected destination, canonical owner, and evidence; with no proposal, do not run the document-structure routing.
+- The user explicitly says "confirmed".

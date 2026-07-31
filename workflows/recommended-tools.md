@@ -1,69 +1,69 @@
 # Recommended Tools
 
-推薦的 skill 和工具來源，按觸發條件選用。
+Recommended skills and tool sources, selected by trigger condition.
 
-## 核心 Skill 來源
+## Core Skill Sources
 
-| 來源 Repo | 類別 | 推薦安裝 | 備註 |
+| Source repo | Category | Recommended install | Notes |
 |---|---|---|---|
-| `openai/skills` | 官方 Codex skill | OpenAI docs, Playwright, PDF, Vercel deploy, skill creator, CLI creator | 不需全量安裝 |
-| `mattpocock/skills` | 工程 workflow | grill-with-docs, tdd, diagnose, prototype, zoom-out, handoff, neat-freak | 依需求選裝 |
-| `trailofbits/skills` | 安全審查 | audit prep, differential review, semgrep, codeql, supply chain | 安全需求時安裝 |
-| `Leonxlnx/taste-skill` | UI/UX 審美 | design-taste-frontend, image-to-code, redesign | 依 UI 方向選 variant |
-| `voidful/academic-skills` | 論文研究 | academic-research | 學術任務時安裝 |
-| `op7418/guizang-ppt-skill` | 簡報 | guizang-ppt-skill | HTML 網頁簡報用 |
-| `tw93/Kami` | 文件排版 | kami | one-pager, resume, portfolio, landing page |
+| `openai/skills` | Official Codex skills | OpenAI docs, Playwright, PDF, Vercel deploy, skill creator, CLI creator | No need to install everything |
+| `mattpocock/skills` | Engineering workflow | grill-with-docs, tdd, diagnose, prototype, zoom-out, handoff, neat-freak | Install as needed |
+| `trailofbits/skills` | Security review | audit prep, differential review, semgrep, codeql, supply chain | Install when there is a security need |
+| `Leonxlnx/taste-skill` | UI/UX taste | design-taste-frontend, image-to-code, redesign | Pick the variant that matches the UI direction |
+| `voidful/academic-skills` | Academic research | academic-research | Install for academic tasks |
+| `op7418/guizang-ppt-skill` | Presentations | guizang-ppt-skill | For HTML web decks |
+| `tw93/Kami` | Document layout | kami | one-pager, resume, portfolio, landing page |
 
-## UI / 前端補強
+## UI / Frontend Reinforcement
 
-| Repo | 觸發條件 | 用途 |
+| Repo | Trigger | Use |
 |---|---|---|
-| `nextlevelbuilder/ui-ux-pro-max-skill` | 需要 UI 設計系統方向 | 設計系統生成 |
-| `pbakaus/impeccable` | 上線前 UI 驗收 | audit / polish |
-| `nexu-io/open-design` | 方向不確定需要原型 | disposable prototype |
-| `VoltAgent/awesome-design-md` | 需要 DESIGN.md 或品牌設計語言 | 設計文件參考 |
-| `DavidHDev/react-bits` | 需要高質感 React 元件 | 動畫 / 展示參考 |
-| `uiverse-io/galaxy` | 需要 CSS/Tailwind 小元件 | UI 靈感 |
-| `itshover/itshover` | 需要 animated icons | hover/tap micro-interaction |
-| `shadcn-ui/ui` | 需要可維護 app 元件 | 依 UI_SPEC 客製 |
+| `nextlevelbuilder/ui-ux-pro-max-skill` | A design-system direction is needed | Design system generation |
+| `pbakaus/impeccable` | UI acceptance before launch | audit / polish |
+| `nexu-io/open-design` | Direction is uncertain, a prototype is needed | Disposable prototype |
+| `VoltAgent/awesome-design-md` | A DESIGN.md or brand design language is needed | Design document reference |
+| `DavidHDev/react-bits` | High-quality React components are needed | Animation / showcase reference |
+| `uiverse-io/galaxy` | Small CSS/Tailwind components are needed | UI inspiration |
+| `itshover/itshover` | Animated icons are needed | hover/tap micro-interaction |
+| `shadcn-ui/ui` | Maintainable app components are needed | Customize per UI_SPEC |
 
-## 工程 / 知識管理
+## Engineering / Knowledge Management
 
-| Repo | 觸發條件 | 用途 |
+| Repo | Trigger | Use |
 |---|---|---|
-| `colbymchenry/codegraph` | 大 repo 需要結構理解 | symbol / call graph 查詢 |
-| `rtk-ai/rtk` | 常見 CLI 輸出過大、token 壓力高 | `rtk ls/read/grep/git diff/test/lint/tsc/playwright` 壓縮輸出；Codex 內採手動前綴 |
-| `sdyckjq-lab/llm-wiki-skill` | 需要沉澱跨專案知識 | 流程、錯誤模式、驗證命令 |
-| `docling-project/docling` | 需要文件轉 Markdown/JSON | PDF / Office 轉換 |
-| `opendatalab/MinerU` | 複雜 PDF / Office 解析 | 結構化文件抽取 |
-| `addyosmani/agent-skills` | 工程品質 skill 參考 | 不直接安裝，作為設計參考 |
+| `colbymchenry/codegraph` | A large repo needs structural understanding | symbol / call graph queries |
+| `rtk-ai/rtk` | Common CLI output is too large, token pressure is high | `rtk ls/read/grep/git diff/test/lint/tsc/playwright` compresses output; inside Codex use a manual prefix |
+| `sdyckjq-lab/llm-wiki-skill` | Cross-project knowledge needs to accumulate | Processes, failure modes, verification commands |
+| `docling-project/docling` | Documents need converting to Markdown/JSON | PDF / Office conversion |
+| `opendatalab/MinerU` | Complex PDF / Office parsing | Structured document extraction |
+| `addyosmani/agent-skills` | Engineering-quality skill reference | Not installed directly; used as a design reference |
 
-## 架構 / AI 系統參考
+## Architecture / AI System Reference
 
-| Repo | 觸發條件 | 用途 |
+| Repo | Trigger | Use |
 |---|---|---|
-| `humanlayer/12-factor-agents` | production agent 設計 | 已整理到 `workflows/production-agent.md` |
-| `ombharatiya/ai-system-design-guide` | AI 系統設計 | 已整理到 `workflows/ai-system-design.md` |
-| `microsoft/ai-agents-for-beginners` | 學習 agent 架構 | 教學參考，不直接進流程 |
-| `emcie-co/parlant` | 客服 AI / 受控回覆 | 架構參考 |
-| `ashishps1/awesome-system-design-resources` | 系統架構設計 | ADR 前置參考 |
+| `humanlayer/12-factor-agents` | Production agent design | Already distilled into `workflows/production-agent.md` |
+| `ombharatiya/ai-system-design-guide` | AI system design | Already distilled into `workflows/ai-system-design.md` |
+| `microsoft/ai-agents-for-beginners` | Learning agent architecture | Teaching reference, not part of the flow |
+| `emcie-co/parlant` | Customer-support AI / controlled responses | Architecture reference |
+| `ashishps1/awesome-system-design-resources` | System architecture design | Pre-ADR reference |
 
-## 安全
+## Security
 
-| Repo | 觸發條件 | 用途 |
+| Repo | Trigger | Use |
 |---|---|---|
-| `projectdiscovery/nuclei` | 上線前 security smoke | 只用在自有 URL |
+| `projectdiscovery/nuclei` | Security smoke before launch | Only against URLs you own |
 
-## 專業領域
+## Specialist Domains
 
-| Repo | 觸發條件 | 用途 |
+| Repo | Trigger | Use |
 |---|---|---|
-| `aklofas/kicad-happy` | EDA / PCB / KiCad 任務 | 完整 12 個 electronics skills |
+| `aklofas/kicad-happy` | EDA / PCB / KiCad work | The full set of 12 electronics skills |
 
-## 安裝原則
+## Installation Principles
 
-- 不全量安裝任何 skill 合集；依任務需求選裝。
-- 專業領域 skill 平常不觸發，只在對應任務才啟用。
-- 版本、價格、模型排行等資訊必須現查，不依賴文件中的靜態數值。
-- context/token 壓力緩解工具（如 `mksglu/context-mode`）先以實驗方式使用，見 `docs/experiments/context-mode.md`。
-- RTK 是 CLI 工具，不當成 Codex skill 全量安裝；除非要開發 RTK 本身，否則不安裝它 repo 內的 Rust/TDD/PR triage skills。
+- Do not bulk-install any skill collection; install per task need.
+- Specialist-domain skills stay dormant and activate only for the matching task.
+- Versions, prices, model rankings, and similar figures must be looked up live, never taken from static values in a document.
+- Context/token relief tools such as `mksglu/context-mode` are used experimentally first; see `docs/experiments/context-mode.md`.
+- RTK is a CLI tool, not a Codex skill to bulk-install; unless you are developing RTK itself, do not install the Rust/TDD/PR-triage skills inside its repo.

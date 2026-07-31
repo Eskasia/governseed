@@ -171,13 +171,14 @@ function hasContent(relativePath) {
       const emptyCells = cells.filter((c) => c.trim() === '');
       if (emptyCells.length >= cells.length - 1 && cells.length > 1) return false;
     }
-    if (/^\|.*\|$/.test(t) && /^\|\s*(檔案|#|Token|File|Method|Entity|Role|Table|Component|State|場景|規則|Screen|原則|Purpose)\s*\|/.test(t)) return false;
+    if (/^\|.*\|$/.test(t) && /^\|\s*(檔案|#|Token|File|Method|Entity|Role|Table|Component|State|場景|Scenario|規則|Rule|Screen|原則|Principle|Purpose)\s*\|/.test(t)) return false;
     if (t.startsWith('```')) return false;
     if (t === '- ' || t === '-' || t.endsWith('：') || /^-\s+[^:：]+[：:]\s*$/.test(t)) return false;
     return true;
   });
   if (relativePath === 'TASK_CONTRACT.md') {
-    return /任務[:：]\s*(?!<任務名稱>)[^\n]+/.test(content);
+    return /任務[:：]\s*(?!<任務名稱>)[^\n]+/.test(content)
+      || /Task[:：]\s*(?!<task name>)[^\n]+/.test(content);
   }
 
   if (relativePath === 'OPEN_LOOPS.md') {
@@ -187,30 +188,37 @@ function hasContent(relativePath) {
   return filledLines.length > 5;
 }
 
+// The starter ships English documents. The Chinese spelling of each heading and
+// label stays accepted so a project bootstrapped from an earlier release keeps
+// reporting the same doctor status after upgrading.
 function hasRouteMode(content) {
-  return /^-\s*決策模式[：:]\s*(user-declared route|ai-recommended route)\s*$/im.test(content);
+  return /^-\s*(?:決策模式|Decision mode)[：:]\s*(user-declared route|ai-recommended route)\s*$/im.test(content);
 }
 
-function hasFilledLine(content, label) {
-  return new RegExp(`^-\\s*${label}[：:]\\s*\\S.+$`, 'im').test(content);
+function hasFilledLine(content, ...labels) {
+  return labels.some((label) => new RegExp(`^-\\s*${label}[：:]\\s*\\S.+$`, 'im').test(content));
+}
+
+function hasAnyHeading(content, ...headings) {
+  return headings.some((heading) => content.includes(heading));
 }
 
 function hasProductShapeDecision() {
   if (!exists('PROJECT_BRIEF.md')) return false;
   const content = readFile('PROJECT_BRIEF.md');
-  return content.includes('## 產品形態決策')
+  return hasAnyHeading(content, '## 產品形態決策', '## Product shape decision')
     && hasRouteMode(content)
-    && hasFilledLine(content, '第一版產品形態')
-    && hasFilledLine(content, 'Q1-Q9 依據');
+    && hasFilledLine(content, '第一版產品形態', 'Product shape')
+    && hasFilledLine(content, 'Q1-Q9 依據', 'Q1-Q9 basis');
 }
 
 function hasTechnologyRouteDecision() {
   if (!exists('TECH_STACK.md')) return false;
   const content = readFile('TECH_STACK.md');
-  return content.includes('## 技術路線決策')
+  return hasAnyHeading(content, '## 技術路線決策', '## Technology route decision')
     && hasRouteMode(content)
-    && hasFilledLine(content, '唯一主路線')
-    && hasFilledLine(content, '選擇理由')
+    && hasFilledLine(content, '唯一主路線', 'Primary route')
+    && hasFilledLine(content, '選擇理由', 'Rationale')
     && content.includes('| Frontend |')
     && content.includes('| Backend |')
     && content.includes('| Database |')
@@ -311,7 +319,7 @@ function buildResult(profile) {
 
   if (exists('TASK_CONTRACT.md')) {
     const tc = readFile('TASK_CONTRACT.md');
-    if (!tc.includes('驗證') && !tc.includes('verif') && !tc.includes('test')) {
+    if (!tc.includes('驗證') && !/verif|test/i.test(tc)) {
       warnings.push(formatGovernanceFinding({
         code: 'TASK_VERIFICATION_MISSING',
         subject: 'TASK_CONTRACT.md',

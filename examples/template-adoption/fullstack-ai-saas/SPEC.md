@@ -2,20 +2,20 @@
 
 ## Scope
 
-- 建立一個 tenant-aware RAG preview。
-- 支援文件上傳、提問、citation 顯示。
+- Build a tenant-aware RAG preview.
+- Support document upload, questions, and citation display.
 
 ## Non-goals
 
-- 不做 production billing。
-- 不做外部 OAuth。
-- 不做批次資料遷移。
+- No production billing.
+- No external OAuth.
+- No bulk data migration.
 
 ## User flows
 
-1. Owner 建立 workspace。
-2. Member 上傳文件。
-3. Member 提問並查看引用來源。
+1. The owner creates a workspace.
+2. A member uploads a document.
+3. A member asks a question and inspects the cited source.
 
 ## Requirement revision ledger
 
@@ -33,18 +33,18 @@
 
 ## Edge cases
 
-- 空文件。
-- 沒有檢索結果。
-- 使用者跨 tenant 存取文件。
+- An empty document.
+- No retrieval results.
+- A user accesses a document across tenants.
 
 ## Failure conditions
 
-- 回答沒有 citation。
-- retrieval 前沒有套用 tenant filter。
+- An answer has no citation.
+- The tenant filter is not applied before retrieval.
 
 ## Open questions
 
-- 第一版是否需要 PDF OCR。
+- Does the first release need PDF OCR?
 
 ## Lineage rules
 

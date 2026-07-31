@@ -1,15 +1,15 @@
 # API_CONTRACT.md
 
-## 概覽
+## Overview
 
-- API 風格：REST / GraphQL / tRPC / Server Actions
-- base URL：
-- 版本策略：
-- auth 方式：
+- API style: REST / GraphQL / tRPC / Server Actions
+- base URL:
+- Versioning policy:
+- auth method:
 
 ## Routes / Actions
 
-| Method | Path / Action | 用途 | Auth | Request Body | Response | Error Shape | Idempotent | 備註 |
+| Method | Path / Action | Purpose | Auth | Request Body | Response | Error Shape | Idempotent | Notes |
 |---|---|---|---|---|---|---|---|---|
 |  |  |  |  |  |  |  |  |  |
 
@@ -27,30 +27,30 @@
 
 ## Webhook
 
-| Event | Payload | 驗證方式 | Retry | 備註 |
+| Event | Payload | Verification | Retry | Notes |
 |---|---|---|---|---|
 |  |  |  |  |  |
 
 ## Rate Limiting
 
-- 限制方式：
-- 限額：
-- 超限回應：
+- Limiting method:
+- Quota:
+- Over-limit response:
 
 ## Pagination
 
-- 方式：cursor / offset
-- 預設 page size：
-- 最大 page size：
+- Method: cursor / offset
+- Default page size:
+- Max page size:
 
-## 權限矩陣
+## Permission Matrix
 
-| Route / Action | anonymous | user | admin | service | 備註 |
+| Route / Action | anonymous | user | admin | service | Notes |
 |---|---|---|---|---|---|
 |  |  |  |  |  |  |
 
-## 外部 API 依賴
+## External API Dependencies
 
-| Provider | 用途 | Auth | Rate Limit | Fallback | 備註 |
+| Provider | Purpose | Auth | Rate Limit | Fallback | Notes |
 |---|---|---|---|---|---|
 |  |  |  |  |  |  |

@@ -1,18 +1,18 @@
 # TECH_STACK.md
 
-## 技術路線決策
+## Technology route decision
 
-- 決策模式：user-declared route
-- 唯一主路線：program-controlled agent loop with a model confined to structured output
-- 選擇理由：事故現場的風險是模型自行決定動作，因此流程順序、工具呼叫與簽核關卡都由程式掌控，模型只負責在封閉 schema 內產生建議。
-- 排除路線：不採自主 agent framework、不採模型直接呼叫 shell、不採多 agent 協商，因為它們都把動作決定權移出程式碼。
-- 後期風險：告警來源格式變動會讓上下文收集失準；歷史事故庫過期會產生看似合理但錯誤的比對。
-- 重評估條件：若量測到草稿的誤建議率低於既定門檻且事故指揮同意，再評估放寬部分可逆動作。
-- 新技術引入 gate：引入任何可寫入生產環境的工具前，必須先在 AI_SECURITY_REVIEW 記錄權限、副作用、簽核與回滾。
-- Decision status：active
-- Evidence：SRC-401, SRC-402, SRC-403, REQ-401@1, REQ-402@1
-- Nearest alternative：autonomous agent framework with post-hoc audit
-- Review trigger：event-only when the measured false-suggestion rate supports widening the action boundary
+- Decision mode: user-declared route
+- Primary route: program-controlled agent loop with a model confined to structured output
+- Rationale: the incident-response risk is the model deciding actions on its own, so flow order, tool calls, and approval gates are program-controlled and the model only produces suggestions inside a closed schema.
+- Excluded routes: no autonomous agent framework, no direct model shell access, no multi-agent negotiation, because each moves the action decision out of the code.
+- Late-stage risks: a change in alert source format degrades context collection; a stale historical incident index produces plausible but wrong matches.
+- Re-evaluation triggers: re-evaluate loosening some reversible actions once the measured wrong-suggestion rate of drafts is below the agreed threshold and the incident commander agrees.
+- New technology gate: before introducing any tool that can write to production, record its permission, side effects, approval, and rollback in AI_SECURITY_REVIEW.
+- Decision status: active
+- Evidence: SRC-401, SRC-402, SRC-403, REQ-401@1, REQ-402@1
+- Nearest alternative: autonomous agent framework with post-hoc audit
+- Review trigger: event-only when the measured false-suggestion rate supports widening the action boundary
 
 ## Runtime
 

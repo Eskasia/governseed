@@ -1,45 +1,45 @@
 # Agent File Structure Routing
 
-用途：判斷一個新規則、新經驗、新流程應該寫到哪裡，避免把所有東西塞進 `AGENTS.md` 或聊天紀錄。
+Purpose: decide where a new rule, lesson, or process belongs, so that everything does not end up in `AGENTS.md` or in the chat log.
 
-## 六層分流
+## Six Layers
 
-| 層級 | 寫入位置 | 放什麼 | 不放什麼 |
+| Layer | Destination | What goes in | What does not |
 |---|---|---|---|
-| 事實層 | `LLMwiki` / 專案 docs | 來源、決策、錯誤模式、驗證命令、專案脈絡 | 個人口吻偏好、一次性操作 |
-| 記憶層 | `AGENTS.md` | 穩定偏好、專案規則、禁止事項、常用命令、測試規範 | 長篇教學、原始文章、低頻技巧 |
-| 知識層 | `Skills/` | 每週會重複的流程、提示、腳本、模板、可匹配觸發條件 | 單次專案規格、未驗證想法 |
-| 護欄層 | `Hooks/` | 可機械攔截的風險：危險命令、格式檢查、提交前檢查、通知、清理 | 需要人判斷的產品決策 |
-| 委派層 | `Subagents/` | 需要獨立上下文的角色：reviewer、test-runner、安全審查、文件整理 | 主流程控制權、共用檔案 owner |
-| 分發層 | `Plugins/` | 要跨團隊一致安裝的技能、規則、子代理、工具包 | 個人實驗、尚未穩定的 workflow |
+| Facts | `LLMwiki` / project docs | Sources, decisions, failure modes, verification commands, project context | Personal tone preferences, one-off operations |
+| Memory | `AGENTS.md` | Stable preferences, project rules, prohibitions, common commands, test conventions | Long tutorials, source articles, low-frequency tricks |
+| Knowledge | `Skills/` | Weekly-recurring processes, prompts, scripts, templates, matchable trigger conditions | One-off project specs, unverified ideas |
+| Guardrails | `Hooks/` | Risks a machine can intercept: dangerous commands, format checks, pre-commit checks, notifications, cleanup | Product decisions that need human judgment |
+| Delegation | `Subagents/` | Roles that need their own context: reviewer, test-runner, security review, document tidying | Control of the main flow, ownership of shared files |
+| Distribution | `Plugins/` | Skills, rules, subagents, and toolkits that must install consistently across a team | Personal experiments, workflows that are not yet stable |
 
-## Durable rule 提案分流
+## Routing A Durable Rule Proposal
 
-只有工作產生「應長期保留的新規則、偏好或重複流程」提案時才執行分流；一般 phase 或里程碑收尾不強制跑此 ceremony。提案時依序問：
+Run this routing only when the work produces a proposal for a new rule, preference, or recurring process worth keeping long-term; ordinary phase or milestone wrap-up does not require the ceremony. When proposing, ask in order:
 
-1. 這次產生的新知識是「事實」還是「偏好」？
-2. 下次是否會重複使用？
-3. 是否能用腳本或 hook 自動檢查？
-4. 是否需要獨立角色處理？
-5. 是否值得跨專案或團隊同步？
+1. Is the new knowledge a fact or a preference?
+2. Will it be reused next time?
+3. Can a script or hook check it automatically?
+4. Does it need a separate role to handle it?
+5. Is it worth syncing across projects or teams?
 
-## 寫入規則
+## Writing Rules
 
-- 事實與來源：寫進 `LLMwiki` 或專案 docs。
-- 穩定偏好與專案規則：寫進 `AGENTS.md`。
-- 重複流程：抽成 `Skills/`，先本地使用，穩定後再考慮分發。
-- 可機械攔截的錯誤：放進 `Hooks/`，不要靠口頭提醒。
-- 需要隔離上下文的工作：建立 `Subagents/`，但主代理保留整合與驗收。
-- 團隊要一致使用時：才升級成 `Plugins/`。
+- Facts and sources: write them into `LLMwiki` or the project docs.
+- Stable preferences and project rules: write them into `AGENTS.md`.
+- Recurring processes: extract a `Skills/` entry, use it locally first, and only consider distribution once it is stable.
+- Mistakes a machine can intercept: put them in `Hooks/`, not in verbal reminders.
+- Work that needs an isolated context: create a `Subagents/` role, but the main agent keeps integration and acceptance.
+- Only promote to `Plugins/` when a team must use it consistently.
 
-## 不升級原則
+## When Not To Promote
 
-- 做過一次不代表要變 skill。
-- 被提醒一次不代表要寫進 `AGENTS.md`。
-- 還需要人判斷的事情不要做成 hook。
-- 還沒在 2 個以上專案證明有用，不要做成 plugin。
-- 能用一段專案 docs 解決，就不要新開一套工具。
+- Doing something once does not make it a skill.
+- Being reminded once does not make it an `AGENTS.md` rule.
+- Something that still needs human judgment does not become a hook.
+- Something not yet proven useful in 2 or more projects does not become a plugin.
+- If a section of project docs solves it, do not start a new toolchain.
 
-## 最小紀錄
+## Minimum Record
 
-只有 durable rule 提案被採用時，記錄選定目的地、canonical owner 與採用證據；沒有提案時不需要逐一回報七個目的地。
+Only when a durable rule proposal is adopted, record the selected destination, the canonical owner, and the adoption evidence; with no proposal, there is no need to report on all seven destinations one by one.

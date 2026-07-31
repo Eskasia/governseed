@@ -1,88 +1,88 @@
 # UI UX Workflow
 
-## 四層 UI 工具選擇
+## Four Layers Of UI Tool Choice
 
-| 情況 | 用什麼 | 產出 |
+| Situation | Use | Output |
 |---|---|---|
-| 方向不確定，需要先看畫面感 | Open Design | disposable prototype / HTML demo |
-| UI 方向、互動流程、狀態模型或資料模型還不確定 | `prototype` | 可丟棄互動原型、UI variants 或 terminal state-model demo |
-| 要定產品類型、設計系統、配色、字體、版面 | `ui-ux-pro-max` | UI_SPEC 的 design direction |
-| 有截圖、generated UI 或現有 App，要反推可交付設計規範、設計圖、素材或可互動初稿 | `workflows/design-system-from-screenshots.md` + `ui-ux-pro-max` | DESIGN_SYSTEM、screen map、assets manifest、side-by-side critique |
-| 畫面能跑但像 AI 模板、太普通 | `design-taste-frontend` | anti-slop 改版方向 |
-| 已決定視覺方向，需要更強前端審美規則 | Taste Skill variants | 高質感 UI 語言、動效、密度與版面約束 |
-| 要上線或給人試用前 | `impeccable audit/polish` | DESIGN_REVIEW |
+| Direction is uncertain, need to see the look first | Open Design | disposable prototype / HTML demo |
+| UI direction, interaction flow, state model, or data model is still uncertain | `prototype` | A throwaway interactive prototype, UI variants, or a terminal state-model demo |
+| Need to settle the product type, design system, palette, typography, layout | `ui-ux-pro-max` | The design direction in UI_SPEC |
+| There are screenshots, generated UI, or an existing app, and a deliverable design system, mockups, assets, or an interactive draft must be derived from it | `workflows/design-system-from-screenshots.md` + `ui-ux-pro-max` | DESIGN_SYSTEM, screen map, assets manifest, side-by-side critique |
+| The screens run but look like an AI template, too plain | `design-taste-frontend` | An anti-slop redesign direction |
+| The visual direction is set and stronger frontend taste rules are needed | Taste Skill variants | High-quality UI language, motion, density, and layout constraints |
+| Before launch or before letting people try it | `impeccable audit/polish` | DESIGN_REVIEW |
 
-## UI_SPEC 必填
+## UI_SPEC Required Fields
 
-- register：brand/marketing 或 product/app。
-- 使用情境：誰在什麼設備、什麼壓力下使用。
-- 主流程：最多 3 條核心路徑。
-- 核心畫面：頁面、主要元件、資料密度。
-- 狀態：loading、empty、error、disabled、focus、hover/tap。
-- 響應式：mobile、tablet、desktop。
-- 設計來源：Open Design、awesome-design-md、shadcn/ui、React Bits、Uiverse、Its Hover。
-- 明確不要：模板味、過度卡片、AI 紫藍漸層、無意義動畫、看不懂的 icon。
+- register: brand/marketing or product/app.
+- Usage context: who uses it, on what device, under what pressure.
+- Main flows: at most 3 core paths.
+- Core screens: pages, main components, data density.
+- States: loading, empty, error, disabled, focus, hover/tap.
+- Responsive: mobile, tablet, desktop.
+- Design sources: Open Design, awesome-design-md, shadcn/ui, React Bits, Uiverse, Its Hover.
+- Explicitly unwanted: template feel, excessive cards, AI purple-blue gradients, meaningless animation, unreadable icons.
 
-## AI 前端 App Building Loop
+## AI Frontend App Building Loop
 
-- 若只是要探索方向，先做 `prototype`；選定方向後再回到正式 repo 實作，不把原型當 production code。
-- 只要任務是 website、dashboard、prototype、互動工具、mobile/native app 初稿，先建立視覺目標：screenshot、wireframe、generated UI 或明確 design spec。
-- Codex 實作時要把視覺目標當規格，不只是靈感；必要時補查真實資料來源或標明 demo data。
-- 完成後用 Browser/Chrome 截圖，和原始視覺目標做 side-by-side critique。
-- 差異要分成 layout、spacing、typography、color、assets、interaction、data realism，再逐項修正。
-- 不要只交付靜態仿圖；至少完成核心流程中的可操作狀態。
+- If the goal is only to explore a direction, build a `prototype` first; once a direction is chosen, return to the real repo to implement it and do not treat the prototype as production code.
+- Whenever the task is a website, dashboard, prototype, interactive tool, or a first draft of a mobile/native app, establish a visual target first: a screenshot, wireframe, generated UI, or an explicit design spec.
+- When Codex implements, treat the visual target as a specification, not just inspiration; where needed, look up a real data source or label the data as demo data.
+- When done, take Browser/Chrome screenshots and do a side-by-side critique against the original visual target.
+- Sort the differences into layout, spacing, typography, color, assets, interaction, and data realism, then fix them one by one.
+- Do not deliver only a static mockup; at minimum, the operable states of the core flow must work.
 
-## Taste Skill 分流
+## Taste Skill Routing
 
-| 情況 | 使用 |
+| Situation | Use |
 |---|---|
-| 一般前端 anti-slop、版面/字體/間距/動效補強 | `design-taste-frontend` |
-| Codex / GPT 任務需要更強 layout variance、GSAP、動效與審美約束 | `gpt-taste` |
-| 已有截圖或生成圖，要走 image -> analyze -> code | `image-to-code` |
-| 既有專案要先 audit 再重設 layout、spacing、hierarchy、styling | `redesign-existing-projects` |
-| 已確定高端、安靜、premium 方向 | `high-end-visual-design` |
-| 已確定 editorial / Notion / Linear 式簡潔產品方向 | `minimalist-ui` |
-| 已確定 Swiss / industrial / brutalist 方向 | `industrial-brutalist-ui` |
-| 只需要生成設計參考圖，不要代碼 | `imagegen-frontend-web`、`imagegen-frontend-mobile`、`brandkit` |
+| General frontend anti-slop; layout / typography / spacing / motion reinforcement | `design-taste-frontend` |
+| A Codex / GPT task needing stronger layout variance, GSAP, motion, and taste constraints | `gpt-taste` |
+| There is a screenshot or generated image, going image -> analyze -> code | `image-to-code` |
+| An existing project needs an audit first, then a rework of layout, spacing, hierarchy, styling | `redesign-existing-projects` |
+| A high-end, quiet, premium direction is already settled | `high-end-visual-design` |
+| An editorial / Notion / Linear style clean product direction is already settled | `minimalist-ui` |
+| A Swiss / industrial / brutalist direction is already settled | `industrial-brutalist-ui` |
+| Only reference images are needed, no code | `imagegen-frontend-web`, `imagegen-frontend-mobile`, `brandkit` |
 
-使用規則：
+Usage rules:
 
-- 不同 taste variants 不能同時全開；先用 `UI_SPEC.md` 或 `DESIGN_SYSTEM.md` 決定一個主方向。
-- image generation skills 只產生參考圖；實作仍要回到 Codex + Browser side-by-side critique。
-- `full-output-enforcement` 只在 agent 反覆輸出半成品或 placeholder 時使用，不是一般 UI 預設。
+- Do not enable multiple taste variants at once; use `UI_SPEC.md` or `DESIGN_SYSTEM.md` to settle one main direction first.
+- Image generation skills only produce reference images; implementation still returns to Codex + a Browser side-by-side critique.
+- `full-output-enforcement` is only for when an agent keeps emitting half-finished output or placeholders; it is not the UI default.
 
-## 截圖反推 Design System
+## Deriving A Design System From Screenshots
 
-- 只要使用者提供 App 截圖、generated UI、現有 UI 或競品畫面，並要求設計規範、設計圖、design tokens、icon、背景素材或前端初稿，就讀 `workflows/design-system-from-screenshots.md`。
-- 先產出 `DESIGN_SYSTEM.md`，不要直接重畫 UI。
-- 規範必須從截圖歸納具體規則，並指出不一致處；每條規範都要寫「適用場景」和「不要怎麼用」。
-- 設計圖要覆蓋每個 tab、彈窗、核心狀態；素材要保存到 `assets/` 或專案既有靜態資源目錄，並建立 manifest。
+- Whenever the user supplies app screenshots, generated UI, an existing UI, or competitor screens and asks for a design system, mockups, design tokens, icons, background assets, or a frontend draft, read `workflows/design-system-from-screenshots.md`.
+- Produce `DESIGN_SYSTEM.md` first; do not redraw the UI straight away.
+- The system must derive concrete rules from the screenshots and point out inconsistencies; every rule states when it applies and how not to use it.
+- Mockups must cover every tab, modal, and core state; assets go into `assets/` or the project's existing static asset directory, with a manifest.
 
-## GitHub starred UI 補強
+## GitHub Starred UI Reinforcement
 
-- `Leonxlnx/taste-skill`：前端 anti-slop、image-to-code、redesign、品牌/網頁/行動參考圖技能集合；按上方分流選單一 variant。
-- `VoltAgent/awesome-design-md`：拿來建立 `DESIGN.md` 或設計語言參考。
-- `DavidHDev/react-bits`：landing page、展示頁、互動效果參考。
-- `uiverse-io/galaxy`：CSS/Tailwind 小元件參考。
-- `itshover/itshover`：animated icon / micro-interaction 參考；適合 Next.js、shadcn、React UI，需要有意圖的 hover/tap icon 動效時用。
-- `shadcn-ui/ui`：正式 app 元件基礎，但必須依 UI_SPEC 客製，不直接套預設。
+- `Leonxlnx/taste-skill`: a collection of frontend anti-slop, image-to-code, redesign, and brand/web/mobile reference-image skills; pick a single variant using the routing above.
+- `VoltAgent/awesome-design-md`: use it to build a `DESIGN.md` or a design language reference.
+- `DavidHDev/react-bits`: reference for landing pages, showcase pages, interactive effects.
+- `uiverse-io/galaxy`: reference for small CSS/Tailwind components.
+- `itshover/itshover`: animated icon / micro-interaction reference; suits Next.js, shadcn, React UI when hover/tap icon motion needs to be intentional.
+- `shadcn-ui/ui`: the base for real app components, but customize per UI_SPEC rather than applying defaults.
 
-## Its Hover 使用規則
+## Its Hover Usage Rules
 
-- 官網：https://www.itshover.com
-- GitHub：https://github.com/itshover/itshover
-- shadcn registry 安裝格式：`npx shadcn@latest add https://itshover.com/r/[icon-name].json`
-- 手動安裝需要 `motion`：`npm install motion`
-- 只用在 icon 動效能幫助辨識狀態或操作意圖時；不要為了裝飾把每個 icon 都做動畫。
-- 使用前先檢查專案是否已使用 shadcn/ui、Tailwind、React/Next.js，以及是否接受 `motion/react` 依賴。
-- 實作後檢查 keyboard focus、reduced motion、mobile tap feedback；不能只有 hover 才看得懂。
+- Site: https://www.itshover.com
+- GitHub: https://github.com/itshover/itshover
+- shadcn registry install format: `npx shadcn@latest add https://itshover.com/r/[icon-name].json`
+- Manual installation needs `motion`: `npm install motion`
+- Use it only where icon motion helps identify a state or an intended action; do not animate every icon for decoration.
+- Before using, check whether the project already uses shadcn/ui, Tailwind, React/Next.js, and whether a `motion/react` dependency is acceptable.
+- After implementing, check keyboard focus, reduced motion, and mobile tap feedback; it must not only be understandable on hover.
 
-## DESIGN_REVIEW 必填
+## DESIGN_REVIEW Required Fields
 
-- Chrome desktop/mobile 已檢查。
-- console error 已檢查。
-- 核心流程已點完。
-- loading/empty/error/disabled/focus 已覆蓋。
-- 文字沒有溢出、重疊、被遮擋。
-- 視覺是否仍像 AI 模板：是/否，理由。
-- 若有原始截圖或 generated UI，已完成 side-by-side critique，並記錄設計差異。
+- Chrome desktop/mobile checked.
+- Console errors checked.
+- Core flow clicked through.
+- loading/empty/error/disabled/focus covered.
+- No text overflow, overlap, or obstruction.
+- Does the visual still look like an AI template: yes/no, with a reason.
+- If there was an original screenshot or generated UI, the side-by-side critique is done and the design differences are recorded.

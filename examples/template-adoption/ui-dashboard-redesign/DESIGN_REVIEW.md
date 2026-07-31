@@ -1,58 +1,58 @@
 # DESIGN_REVIEW.md
 
-## 基本資訊
+## Review Info
 
-- 檢查日期：2026-07-31
-- 檢查 URL / 路徑：本機 `npm run dev` 的 `/queue`、`/orders/SYN-0042`、`/exceptions`
-- 檢查者：design-owner-role、operator-role
-- 對照視覺目標：既有三個畫面的合成截圖樣本
+- Review date: 2026-07-31
+- Reviewed URL / path: local `npm run dev` at `/queue`, `/orders/SYN-0042`, `/exceptions`
+- Reviewer: design-owner-role, operator-role
+- Visual target compared against: composite screenshot samples of the three existing screens
 
-## Desktop 檢查
+## Desktop Review
 
-- [x] 頁面可正常載入
-- [x] 核心流程可操作（不只是靜態）
-- [x] console 無 error
-- [x] 文字無溢出、重疊、遮擋
-- [x] 間距、對齊符合設計規範
-- 備註：以 seeded synthetic 兩百列資料集操作，佇列一屏可見 26 列，符合 UI_SPEC 的密度目標。
+- [x] Page loads correctly
+- [x] Core flow is operable (not just static)
+- [x] No console errors
+- [x] No overflowing, overlapping, or occluded text
+- [x] Spacing and alignment follow the design system
+- Notes: exercised with a seeded synthetic two-hundred-row dataset; 26 rows are visible per viewport in the queue, meeting the density target in UI_SPEC.
 
-## Mobile 檢查
+## Mobile Review
 
-- [x] 響應式佈局正確
-- [x] 觸控目標 ≥ 44px
-- [x] 無水平捲動
-- [x] 鍵盤彈出不遮擋 input
-- 備註：<768px 依 SPEC 非目標，僅顯示改用桌面裝置的說明頁；檢查在 1024px 平板寬度完成，動作選單觸控目標為 44px。
+- [x] Responsive layout is correct
+- [x] Touch targets ≥ 44px
+- [x] No horizontal scrolling
+- [x] Keyboard does not cover the focused input
+- Notes: below 768px is a non-goal per SPEC and only shows a switch-to-desktop notice; the review was done at 1024px tablet width, where action-menu touch targets are 44px.
 
-## 狀態覆蓋
+## State Coverage
 
-| 狀態 | 已檢查 | 結果 | 備註 |
+| State | Reviewed | Result | Notes |
 |---|---|---|---|
-| loading | [x] | pass | 骨架保留欄寬，切換篩選時無版面跳動 |
-| empty | [x] | pass | 顯示目前篩選條件與清除篩選，無插畫 |
-| error | [x] | pass | 行內錯誤條保留既有列，重試可用 |
-| disabled | [x] | pass | 無權限的批次改派降低對比並顯示原因 |
-| focus | [x] | pass | 鍵盤可走完佇列到 Drawer，focus ring 2px 未被移除 |
+| loading | [x] | pass | Skeleton preserves column widths, no layout shift when switching filters |
+| empty | [x] | pass | Shows the current filter and a clear-filter action, no illustration |
+| error | [x] | pass | Inline error bar keeps the existing rows, retry works |
+| disabled | [x] | pass | Unauthorized bulk reassign drops contrast and states the reason |
+| focus | [x] | pass | Keyboard reaches the Drawer from the queue, the 2px focus ring is not removed |
 
-## Side-by-side Critique（有視覺目標時）
+## Side-by-side Critique (when a visual target exists)
 
-| 維度 | 差異描述 | 嚴重度 | 狀態 |
+| Dimension | Difference | Severity | Status |
 |---|---|---|---|
-| layout | 新版佇列外框留白 24px，舊版訂單詳情無外框留白 | 中 | 已修 |
-| spacing | 舊版異常清單列高 36px，新版統一 40px | 中 | 已修 |
-| typography | 舊版訂單詳情標題級距較大，新版收斂為三個級距 | 低 | 已修 |
-| color | 舊版警示在兩個畫面分別是橙色與黃色，新版統一 `--color-warning` | 高 | 已修 |
-| assets | 舊版空狀態有插畫，新版移除 | 低 | 已修 |
-| interaction | 舊版訂單詳情 hover 換字色，新版只換底色 | 中 | 已修 |
-| data realism | 審查資料為 seeded synthetic 訂單，非生產記錄 | 低 | 保留 |
+| layout | The new queue has a 24px page gutter; the old order detail had none | medium | fixed |
+| spacing | The old exception list used 36px rows; the new one is a uniform 40px | medium | fixed |
+| typography | The old order detail used a larger heading size; the new one collapses to three sizes | low | fixed |
+| color | The old warning was orange on one screen and yellow on another; the new one is a single `--color-warning` | high | fixed |
+| assets | The old empty state had an illustration; the new one removes it | low | fixed |
+| interaction | The old order detail changed text color on hover; the new one changes only the background | medium | fixed |
+| data realism | The reviewed data is seeded synthetic orders, not production records | low | accepted |
 
-## 視覺質感判斷
+## Visual Quality Judgment
 
-- 是否仍像 AI 模板：否
-- 理由：沒有等寬卡片牆、沒有漸層、沒有插畫；密度與欄位取捨來自既有畫面的實際使用，狀態色收斂到三個色相且每個都對應一個可判讀的處置動作。
+- Still looks like an AI template: no
+- Reason: no equal-width card wall, no gradients, no illustration; the density and column choices come from how the existing screens are actually used, and the status colors collapse to three hues that each map to one legible follow-up action.
 
-## 結論
+## Conclusion
 
-- [x] 可上線
-- [ ] 需要修正（見上方待修項）
-- [ ] 需要重新設計
+- [x] Ready to ship
+- [ ] Needs fixes (see the to-fix items above)
+- [ ] Needs a redesign

@@ -1,11 +1,11 @@
 # OPEN_LOOPS.md
 
-## 未決事項
+## Open loops ledger
 
 | Status | Loop ID | Basis | Question / Risk | Impact | Owner | Next Step | Due | Resolution source |
 |---|---|---|---|---|---|---|---|---|
-| open | LOOP-101 | not-stated | Preview login 是否用 magic link? | high | product-owner-role | 選擇 auth 方案。 | before implementation | n/a |
-| open | LOOP-102 | not-stated | Golden set 是否包含中英雙語文件? | medium | eval-owner-role | 補 synthetic fixture。 | before RAG smoke | n/a |
+| open | LOOP-101 | not-stated | Should preview login use a magic link? | high | product-owner-role | Choose the auth approach. | before implementation | n/a |
+| open | LOOP-102 | not-stated | Should the golden set include bilingual documents? | medium | eval-owner-role | Add a synthetic fixture. | before RAG smoke | n/a |
 | closed | LOOP-103 | not-stated | Can example evidence contain customer data? | high | security-reviewer-role | Keep all workspace evidence synthetic. | resolved | SRC-102 |
 
 ## Rules

@@ -1,25 +1,25 @@
 # MACOS_RELEASE_CHECKLIST.md
 
-## App 識別
+## App Identity
 
-- App 名稱：
-- Bundle ID：
-- 固定 App 路徑：
-- Signing identity：
-- TeamIdentifier：
+- App name:
+- Bundle ID:
+- Fixed app path:
+- Signing identity:
+- TeamIdentifier:
 
 ## Entitlements
 
-| Entitlement | 需要 | 備註 |
+| Entitlement | Required | Notes |
 |---|---|---|
 | com.apple.security.app-sandbox |  |  |
 | com.apple.security.automation.apple-events |  |  |
 | com.apple.security.device.audio-input |  |  |
 | com.apple.security.device.camera |  |  |
 
-## TCC 權限
+## TCC Permissions
 
-| 權限 | 需要 | Reset 命令 | 驗證方式 | 備註 |
+| Permission | Required | Reset command | Verification | Notes |
 |---|---|---|---|---|
 | Accessibility | [ ] | `tccutil reset Accessibility <bundle-id>` |  |  |
 | ScreenCapture | [ ] | `tccutil reset ScreenCapture <bundle-id>` |  |  |
@@ -27,43 +27,43 @@
 | Automation | [ ] |  |  |  |
 | Apple Events | [ ] |  |  |  |
 
-## Sandbox 狀態
+## Sandbox Status
 
-- sandbox 啟用：是 / 否
-- 需要的 sandbox exception：
+- Sandbox enabled: yes / no
+- Required sandbox exceptions:
 
 ## Build & Sign
 
-- [ ] Bundle ID 已固定，不隨 build 變動
-- [ ] App 從固定路徑啟動（非 DerivedData / Downloads）
-- [ ] 使用固定 Apple Development certificate 簽名
-- [ ] `codesign -dv --verbose=4` 驗證通過
-- [ ] `codesign --display -r -` 顯示正確 requirement
+- [ ] Bundle ID is fixed and does not change between builds
+- [ ] App launches from a fixed path (not DerivedData / Downloads)
+- [ ] Signed with a fixed Apple Development certificate
+- [ ] `codesign -dv --verbose=4` passes
+- [ ] `codesign --display -r -` shows the correct requirement
 
-## 驗證命令
+## Verification Commands
 
 ```bash
-# 確認 bundle id
+# confirm bundle id
 mdls -name kMDItemCFBundleIdentifier ~/Applications/<AppName>.app
 
-# 確認簽名
+# confirm signature
 codesign -dv --verbose=4 ~/Applications/<AppName>.app 2>&1 | egrep 'Identifier|TeamIdentifier|Authority'
 
-# 確認 Gatekeeper
+# confirm Gatekeeper
 spctl -a -vvv ~/Applications/<AppName>.app
 ```
 
 ## Package & Distribution
 
-- Package 方式：zip / dmg / App Store
-- Notarization 狀態：未提交 / 進行中 / 通過 / 失敗
-- DMG 工具：`sindresorhus/create-dmg` 或其他
+- Packaging method: zip / dmg / App Store
+- Notarization status: not submitted / in progress / passed / failed
+- DMG tool: `sindresorhus/create-dmg` or another
 
-## 發佈前 Checklist
+## Pre-release Checklist
 
-- [ ] TCC 權限在 reset 後重新授權仍正常
-- [ ] Rebuild 後 TCC 不反覆失效
-- [ ] Notarization 通過（若需要）
-- [ ] 乾淨環境測試 Gatekeeper prompt
-- [ ] 第一次啟動行為正確
-- [ ] 已知限制已記錄
+- [ ] TCC permissions still work after a reset and re-grant
+- [ ] TCC does not repeatedly invalidate after a rebuild
+- [ ] Notarization passed (when required)
+- [ ] Gatekeeper prompt tested in a clean environment
+- [ ] First-launch behavior is correct
+- [ ] Known limitations are recorded

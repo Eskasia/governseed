@@ -1,6 +1,6 @@
 # OPEN_LOOPS.md
 
-## 未決事項
+## Open loops ledger
 
 | Status | Loop ID | Basis | Question / Risk | Impact | Owner | Next Step | Due | Resolution source |
 |---|---|---|---|---|---|---|---|---|

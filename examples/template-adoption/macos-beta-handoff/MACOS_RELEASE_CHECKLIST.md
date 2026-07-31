@@ -1,69 +1,69 @@
 # MACOS_RELEASE_CHECKLIST.md
 
-## App 識別
+## App Identity
 
-- App 名稱：ExampleMenuBar
-- Bundle ID：com.example.menubar.beta
-- 固定 App 路徑：`/Applications/ExampleMenuBar.app`
-- Signing identity：Apple Development（beta 通道），Developer ID Application（外部 beta 通道）
-- TeamIdentifier：`EXMPL12345`（synthetic，實際值以 codesign 輸出為準）
+- App name: ExampleMenuBar
+- Bundle ID: com.example.menubar.beta
+- Fixed app path: `/Applications/ExampleMenuBar.app`
+- Signing identity: Apple Development (beta channel), Developer ID Application (external beta channel)
+- TeamIdentifier: `EXMPL12345` (synthetic; the codesign output is authoritative for the real value)
 
 ## Entitlements
 
-| Entitlement | 需要 | 備註 |
+| Entitlement | Required | Notes |
 |---|---|---|
-| com.apple.security.app-sandbox | 否 | menu bar app 需要 Accessibility，sandbox 下無法取得 |
-| com.apple.security.automation.apple-events | 否 | 本版不驅動其他 app |
-| com.apple.security.device.audio-input | 否 | 無錄音功能 |
-| com.apple.security.device.camera | 否 | 無攝影功能 |
+| com.apple.security.app-sandbox | no | The menu bar app needs Accessibility, which is unavailable under sandbox |
+| com.apple.security.automation.apple-events | no | This release does not drive other apps |
+| com.apple.security.device.audio-input | no | No audio recording feature |
+| com.apple.security.device.camera | no | No camera feature |
 
-## TCC 權限
+## TCC Permissions
 
-| 權限 | 需要 | Reset 命令 | 驗證方式 | 備註 |
+| Permission | Required | Reset command | Verification | Notes |
 |---|---|---|---|---|
-| Accessibility | [x] | `tccutil reset Accessibility com.example.menubar.beta` | reset 後重新授權，觀察全域快捷鍵是否恢復 | 全域快捷鍵所需 |
-| ScreenCapture | [x] | `tccutil reset ScreenCapture com.example.menubar.beta` | reset 後重新授權，觸發一次截圖 | 視窗截圖所需 |
-| Input Monitoring | [ ] | `tccutil reset ListenEvent com.example.menubar.beta` | 不適用 | 本版不攔截鍵盤事件 |
-| Automation | [ ] | `tccutil reset AppleEvents com.example.menubar.beta` | 不適用 | 本版不驅動其他 app |
-| Apple Events | [ ] | `tccutil reset AppleEvents com.example.menubar.beta` | 不適用 | 同上 |
+| Accessibility | [x] | `tccutil reset Accessibility com.example.menubar.beta` | Re-grant after reset and check that the global hotkey recovers | Required for the global hotkey |
+| ScreenCapture | [x] | `tccutil reset ScreenCapture com.example.menubar.beta` | Re-grant after reset and take one screenshot | Required for window capture |
+| Input Monitoring | [ ] | `tccutil reset ListenEvent com.example.menubar.beta` | not applicable | This release does not intercept keyboard events |
+| Automation | [ ] | `tccutil reset AppleEvents com.example.menubar.beta` | not applicable | This release does not drive other apps |
+| Apple Events | [ ] | `tccutil reset AppleEvents com.example.menubar.beta` | not applicable | Same as above |
 
-## Sandbox 狀態
+## Sandbox Status
 
-- sandbox 啟用：否
-- 需要的 sandbox exception：不適用；未啟用 sandbox 的理由記錄在 `SPEC.md` 非目標
+- Sandbox enabled: no
+- Required sandbox exceptions: not applicable; the reason sandbox is off is recorded in the `SPEC.md` non-goals
 
 ## Build & Sign
 
-- [x] Bundle ID 已固定，不隨 build 變動
-- [x] App 從固定路徑啟動（非 DerivedData / Downloads）
-- [x] 使用固定 Apple Development certificate 簽名
-- [x] `codesign -dv --verbose=4` 驗證通過
-- [x] `codesign --display -r -` 顯示正確 requirement
+- [x] Bundle ID is fixed and does not change between builds
+- [x] App launches from a fixed path (not DerivedData / Downloads)
+- [x] Signed with a fixed Apple Development certificate
+- [x] `codesign -dv --verbose=4` passes
+- [x] `codesign --display -r -` shows the correct requirement
 
-## 驗證命令
+## Verification Commands
 
 ```bash
-# 確認 bundle id
+# confirm bundle id
 mdls -name kMDItemCFBundleIdentifier /Applications/ExampleMenuBar.app
 
-# 確認簽名
+# confirm signature
 codesign -dv --verbose=4 /Applications/ExampleMenuBar.app 2>&1 | egrep 'Identifier|TeamIdentifier|Authority'
 
-# 確認 Gatekeeper
+# confirm Gatekeeper
 spctl -a -vvv /Applications/ExampleMenuBar.app
 ```
 
 ## Package & Distribution
 
-- Package 方式：dmg
-- Notarization 狀態：進行中（beta 狀態已記錄於 `OPEN_LOOPS.md`）
-- DMG 工具：`sindresorhus/create-dmg`，僅在 app 已簽名後執行
+- Packaging method: dmg
+- Notarization status: in progress (the beta status is recorded in `OPEN_LOOPS.md`)
+- DMG tool: `sindresorhus/create-dmg`, run only after the app is signed
 
-## 發佈前 Checklist
+## Pre-release Checklist
 
-- [x] TCC 權限在 reset 後重新授權仍正常
-- [x] Rebuild 後 TCC 不反覆失效
-- [ ] Notarization 通過（若需要）
-- [x] 乾淨環境測試 Gatekeeper prompt
-- [x] 第一次啟動行為正確
-- [x] 已知限制已記錄：beta 通道限定，未上架 App Store
+- [x] TCC permissions still work after a reset and re-grant
+- [x] TCC does not repeatedly invalidate after a rebuild
+- [ ] Notarization passed (when required)
+- [x] Gatekeeper prompt tested in a clean environment
+- [x] First-launch behavior is correct
+- [x] Known limitations are recorded: beta channel only, not published to the App Store

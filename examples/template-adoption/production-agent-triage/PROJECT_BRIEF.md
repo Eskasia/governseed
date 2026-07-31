@@ -1,23 +1,23 @@
 # PROJECT_BRIEF.md
 
-## 一句話
+## One-line summary
 
-值班事故分流 agent 讀取告警、寫出第一份處置草稿，任何改動生產環境的動作都要人簽核。
+An on-call incident triage agent reads alerts and writes the first remediation draft; any action that changes production requires human approval.
 
-## 使用者
+## Users
 
-- 值班工程師
-- 事故指揮
+- On-call engineers
+- Incident commanders
 
-## 要解決的問題
+## Problem
 
-夜間告警的前十五分鐘幾乎都花在收集上下文與比對過去事故，值班者在疲勞狀態下容易漏掉已知的重複故障。
+The first fifteen minutes of a night-time alert go almost entirely to collecting context and comparing past incidents, and a tired on-call engineer easily misses a known recurring failure.
 
 ## MVP
 
-- 收到告警後產生一份含相關歷史事故與受影響服務的處置草稿。
-- 草稿裡的每個建議動作都標明可逆性。
-- 任何寫入生產環境的動作停在 ask_human，不自動執行。
+- On receiving an alert, produce a remediation draft including related historical incidents and affected services.
+- Every suggested action in the draft states its reversibility.
+- Any action that writes to production stops at ask_human and never runs automatically.
 
 ## Privacy-safe source attestations
 
@@ -27,27 +27,27 @@
 | SRC-402 | synthetic | attestation-only | n/a | no | confirmed | security-reviewer-role | 2026-07-31 |
 | SRC-403 | synthetic | attestation-only | n/a | no | confirmed | release-owner-role | 2026-07-31 |
 
-## 產品形態決策
+## Product shape decision
 
-- 決策模式：user-declared route
-- 第一版產品形態：production-facing assistive agent with mandatory human approval
-- Q1-Q9 依據：使用者是在事故當下的值班者，需要的是縮短收集上下文的時間，不是替他做決定；錯誤處置的成本遠高於慢十分鐘。
-- 為什麼不是網站 / App / 小程序 / 純後端 / 管理系統等其他形態：儀表板不能主動整理上下文；純後端沒有對話介面可供值班者追問；管理系統的操作節奏不符合事故現場。
-- Decision status：active
-- Evidence：SRC-401, SRC-402, SRC-403, REQ-401@1, REQ-402@1
-- Nearest alternative：a fully autonomous remediation agent
-- Review trigger：event-only when a full quarter of drafts has been reviewed and the false-suggestion rate is measured
+- Decision mode: user-declared route
+- Product shape: production-facing assistive agent with mandatory human approval
+- Q1-Q9 basis: the user is an on-call engineer in the middle of an incident who needs the context-collection time shortened, not the decision made for them; a wrong remediation costs far more than being ten minutes slower.
+- Why not website / app / mini program / backend-only / admin system or another shape: a dashboard cannot assemble context on its own; a backend-only service offers no conversational surface for follow-up questions; an admin system's pace does not match an active incident.
+- Decision status: active
+- Evidence: SRC-401, SRC-402, SRC-403, REQ-401@1, REQ-402@1
+- Nearest alternative: a fully autonomous remediation agent
+- Review trigger: event-only when a full quarter of drafts has been reviewed and the false-suggestion rate is measured
 
-## 明確不做
+## Explicitly out of scope
 
-- 不做自動執行 remediation。
-- 不做跨組織的告警彙整。
-- 不做事故報告的對外發佈。
+- No automatic remediation execution.
+- No cross-organization alert aggregation.
+- No external publication of incident reports.
 
-## 驗收者
+## Acceptance owner
 
-- 值班工程師在一次演練事故中使用草稿完成分流。
+- An on-call engineer completes triage using the draft during one drill incident.
 
-## 完成標準
+## Done criteria
 
-- 草稿中所有改動生產環境的建議都停在 ask_human，且 golden set 沒有出現未經簽核的執行。
+- Every production-changing suggestion in the draft stops at ask_human, and the golden set contains no unapproved execution.
