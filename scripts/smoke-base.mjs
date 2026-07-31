@@ -31,9 +31,9 @@ if (!startHere.includes(`RESEARCH_SYNTHESIS.md: ${researchTrigger}`)) {
   console.error('smoke:base failed: START_HERE.md does not include the research-synthesis conditional hint.');
   process.exit(1);
 }
-if (!startHere.includes('### 條件研究候選偵測')
-  || !startHere.includes('這不是 Q10')
-  || !startHere.includes('是否建立 `RESEARCH_SYNTHESIS.md`')) {
+if (!startHere.includes('### Conditional Research Candidate Detection')
+  || !startHere.includes('This is not a Q10')
+  || !startHere.includes('whether to create `RESEARCH_SYNTHESIS.md`')) {
   console.error('smoke:base failed: START_HERE.md does not include the user-confirmed research-synthesis intake contract.');
   process.exit(1);
 }

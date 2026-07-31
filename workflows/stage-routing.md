@@ -1,61 +1,61 @@
 # Stage Routing
 
-用途：使用者不是說「開新專案」，而是用自然語言描述目前階段、交付對象或想要的產出時，讓 agent 立刻知道要讀哪些文件、產出什麼、停止在哪裡。
+Purpose: when the user is not saying "start a new project" but describing, in their own words, the stage they are at, who they are delivering to, or what they want produced, this file tells the agent immediately which documents to read, what to produce, and where to stop.
 
-## 使用規則
+## Usage Rules
 
-- 先判斷使用者描述的是哪個階段，不要直接開始寫 code。
-- 讀本檔後，只加讀該階段需要的最小文件。
-- 產出必須是可 review 的檔案、URL、測試命令或明確清單。
-- 若缺少必要資訊，每次只問一個會影響交付的問題。
+- First identify which stage the user is describing; do not start writing code.
+- After reading this file, add only the minimum documents that stage needs.
+- The output must be a reviewable file, URL, test command, or explicit list.
+- When information is missing, ask one question at a time, and only about something that affects the delivery.
 
-## 階段分流表
+## Stage Routing Table
 
-| 使用者描述 | 立即讀取 | 主要產出 | 停止條件 |
+| The user says | Read immediately | Main output | Stop condition |
 |---|---|---|---|
-| 我要給測試者、讓人試用、內測包、beta 測試 | `workflows/validation-release.md`、`templates/conditional/TESTER_HANDOFF.md`；有 UI 再讀 `workflows/ui-ux.md` | `TESTER_HANDOFF.md`、測試路徑、已知限制、回報格式 | 測試者拿到文件後能自己操作並回報問題 |
-| 我要上 preview、給別人開連結看 | `workflows/validation-release.md`；有 web/DB 再讀 `workflows/fullstack.md` | preview URL、env 檢查、smoke test 結果 | preview 可開且核心流程可操作 |
-| 我要正式上線、release、發佈 | `workflows/validation-release.md`；依專案類型讀 UI/fullstack/macOS/agent 文件 | release checklist、驗證結果、rollback 或已知限制 | 上線條件與阻塞項清楚 |
-| 我要做 UI 檢查、畫面 polish、給人看畫面 | `workflows/ui-ux.md`、`workflows/validation-release.md` | `DESIGN_REVIEW.md`、desktop/mobile 檢查、console 結果 | 核心畫面、狀態、文字溢出已檢查 |
-| 我要先做 prototype、試幾種方向、驗證狀態模型、看看互動順不順 | `workflows/ui-ux.md`、`workflows/validation-release.md` | disposable prototype、UI variants、state-model demo、採用/放棄判斷 | 已選定方向或明確放棄，且不把 prototype 當 production code |
-| 我有 App 截圖，要整理設計規範、生成設計圖、產出 icon 或背景素材 | `workflows/ui-ux.md`、`workflows/design-system-from-screenshots.md` | `DESIGN_SYSTEM.md`、screen map、design tokens、`assets/ASSET_MANIFEST.md` | 規範可追溯截圖、設計圖覆蓋 tabs/彈窗/狀態、素材命名清楚 |
-| 我要做資料庫/API/Auth/權限確認 | `workflows/fullstack.md`、`startup/02-required-project-docs.md` | `DATA_MODEL.md`、`API_CONTRACT.md`、RLS/權限風險 | 資料邊界和驗證方式清楚 |
-| 我要做 agent、自動化、human approval、背景任務 | `workflows/production-agent.md`、`workflows/validation-release.md` | `AGENT_RUNTIME.md`、tool 權限、副作用、approval gate | state、event、tool、verifier 已定義 |
-| 我要比較多種觀點、處理衝突證據、研究重大選擇或找出跨視角盲點 | `workflows/research-synthesis.md`、`templates/conditional/RESEARCH_SYNTHESIS.md` | trigger 建議與使用者確認；確認後產出 `RESEARCH_SYNTHESIS.md` | 證據、矛盾、信心、隱藏關聯與決策建議均可追溯 |
-| 我要打包 macOS app、處理權限、DMG、notarization | `workflows/macos-build-release.md`、`workflows/validation-release.md` | `MACOS_RELEASE_CHECKLIST.md`、簽名/TCC/包裝驗證 | 固定 bundle id、路徑、簽名與驗證結果清楚 |
-| 我要做簡報、PPT、提案、發表頁、一頁紙、白皮書、履歷、作品集、landing page | `workflows/presentation.md` | `PRESENTATION_BRIEF.md`、deck / PDF / HTML 路徑或預覽 URL | 重點、來源、格式、字體與版面符合使用場景 |
-| 我要收尾、交接、下次接續 | `workflows/agent-file-structure.md`、`workflows/validation-release.md` | handoff、open loops、文件結構分流 | 下一個 agent 能接手且知道不能做什麼 |
+| I want to give this to testers, let people try it, an internal build, a beta test | `workflows/validation-release.md`, `templates/conditional/TESTER_HANDOFF.md`; if there is UI, also `workflows/ui-ux.md` | `TESTER_HANDOFF.md`, test paths, known limitations, reporting format | A tester who has the document can operate it and report issues alone |
+| I want a preview, a link someone else can open | `workflows/validation-release.md`; if there is web/DB, also `workflows/fullstack.md` | Preview URL, env check, smoke test results | The preview opens and the core flow works |
+| I want to go live, release, ship | `workflows/validation-release.md`; plus the UI/fullstack/macOS/agent documents that match the project type | Release checklist, verification results, rollback or known limitations | The launch conditions and blockers are clear |
+| I want a UI check, screen polish, something to show people | `workflows/ui-ux.md`, `workflows/validation-release.md` | `DESIGN_REVIEW.md`, desktop/mobile checks, console results | The core screens, states, and text overflow have been checked |
+| I want a prototype first, try a few directions, validate the state model, see whether the interaction flows | `workflows/ui-ux.md`, `workflows/validation-release.md` | Disposable prototype, UI variants, state-model demo, an adopt/discard decision | A direction is chosen or explicitly dropped, and the prototype is not treated as production code |
+| I have app screenshots and want a design system, design mockups, icons, or background assets | `workflows/ui-ux.md`, `workflows/design-system-from-screenshots.md` | `DESIGN_SYSTEM.md`, screen map, design tokens, `assets/ASSET_MANIFEST.md` | The system traces back to the screenshots, the mockups cover tabs/modals/states, and asset naming is clear |
+| I want to confirm the database / API / auth / permissions | `workflows/fullstack.md`, `startup/02-required-project-docs.md` | `DATA_MODEL.md`, `API_CONTRACT.md`, RLS / permission risks | The data boundary and verification method are clear |
+| I want to build an agent, automation, human approval, background tasks | `workflows/production-agent.md`, `workflows/validation-release.md` | `AGENT_RUNTIME.md`, tool permissions, side effects, approval gate | State, events, tools, and verifiers are defined |
+| I want to compare several viewpoints, resolve conflicting evidence, research a major choice, or find cross-perspective blind spots | `workflows/research-synthesis.md`, `templates/conditional/RESEARCH_SYNTHESIS.md` | A trigger proposal plus user confirmation; after confirmation, `RESEARCH_SYNTHESIS.md` | Evidence, contradictions, confidence, hidden connections, and the decision recommendation are all traceable |
+| I want to package a macOS app, handle permissions, DMG, notarization | `workflows/macos-build-release.md`, `workflows/validation-release.md` | `MACOS_RELEASE_CHECKLIST.md`, signing / TCC / packaging verification | The bundle id, paths, signing, and verification results are fixed and clear |
+| I want a presentation, PPT, proposal, launch page, one-pager, white paper, resume, portfolio, landing page | `workflows/presentation.md` | `PRESENTATION_BRIEF.md`, deck / PDF / HTML path or preview URL | The message, sources, format, fonts, and layout match how it will be used |
+| I want to wrap up, hand off, pick this up next time | `workflows/agent-file-structure.md`, `workflows/validation-release.md` | Handoff, open loops, document-structure routing | The next agent can take over and knows what not to do |
 
-## 給測試者交付流程
+## Delivering To Testers
 
-觸發詞：測試者、試用、內測、beta、QA、請朋友測、給人操作、測試文件、回報問題。
+Trigger words: tester, try it out, internal build, beta, QA, ask a friend to test, let someone use it, test document, report issues.
 
-最小流程：
+Minimum flow:
 
-1. 確認測試對象與測試環境：本機、preview、TestFlight、DMG、帳號、測試資料。
-2. 跑最小驗證：啟動、核心流程、console/log、已知錯誤。
-3. 產出 `TESTER_HANDOFF.md`，內容必須讓測試者不用讀開發文件也能開始。
+1. Confirm who is testing and in what environment: local, preview, TestFlight, DMG, accounts, test data.
+2. Run the minimum verification: startup, core flow, console/log, known errors.
+3. Produce `TESTER_HANDOFF.md`; its contents must let a tester start without reading any development docs.
 
-`TESTER_HANDOFF.md` 必填：
+`TESTER_HANDOFF.md` required fields:
 
-- 測試目的：
-- 測試網址或檔案路徑：
-- 測試帳號或測試資料：
-- 請測的 3 條核心路徑：
-- 不需要測的範圍：
-- 已知限制：
-- 問題回報格式：
-- 截圖或錄影要求：
-- 測試截止條件：
-- 開發者已驗證：
+- Test purpose:
+- Test URL or file path:
+- Test account or test data:
+- The 3 core paths to test:
+- Out of scope for testing:
+- Known limitations:
+- Issue reporting format:
+- Screenshot or recording requirements:
+- Test cutoff condition:
+- Verified by the developer:
 
-## 回報格式
+## Report Format
 
 ```md
-階段分流：
-- 判斷階段：
-- 已讀取：
-- 需要產出：
-- 缺少資訊：
-- 下一步：
+Stage routing:
+- Stage identified:
+- Read:
+- Output needed:
+- Missing information:
+- Next step:
 ```

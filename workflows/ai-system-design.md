@@ -1,76 +1,76 @@
 # AI System Design Workflow
 
-適用：RAG、知識庫問答、AI agent、MCP、eval pipeline、多租戶 AI SaaS、文件智能、coding agent、tool-use agent，或任何 AI 功能要進入 production / preview / 客戶試用。
+Applies to: RAG, knowledge-base Q&A, AI agents, MCP, eval pipelines, multi-tenant AI SaaS, document intelligence, coding agents, tool-use agents, or any AI feature heading into production / preview / a customer trial.
 
-不適用：單次摘要、單次分類、內部手動研究、一次性 prompt 草稿；這些用 `TASK_CONTRACT.md` 和普通 smoke 即可。
+Does not apply to: a one-shot summary, a one-shot classification, internal manual research, or a throwaway prompt draft; `TASK_CONTRACT.md` plus an ordinary smoke check is enough for those.
 
-## 使用原則
+## How To Use This
 
-這份文件來自 LLMwiki 對 `ombharatiya/ai-system-design-guide` 的整理。它是 checklist，不是固定流程；模型價格、benchmark、provider 能力、API 行為和工具版本必須現查。
+This document is LLMwiki's distillation of `ombharatiya/ai-system-design-guide`. It is a checklist, not a fixed process; model prices, benchmarks, provider capabilities, API behavior, and tool versions must be looked up live.
 
-## 開工前分流
+## Routing Before Starting
 
-| 類型 | 必讀文件 | 必補產物 |
+| Type | Must read | Must produce |
 |---|---|---|
-| RAG / 知識庫問答 | `startup/02-required-project-docs.md`、本文件 | `RAG_DESIGN.md`、`EVAL_PLAN.md` |
-| Agent / MCP / tool-use | `workflows/production-agent.md`、本文件 | `AGENT_RUNTIME.md`、`EVAL_PLAN.md`、必要時 `AI_SECURITY_REVIEW.md` |
-| 多租戶 AI SaaS | `workflows/fullstack.md`、本文件 | `DATA_MODEL.md`、`API_CONTRACT.md`、`AI_SECURITY_REVIEW.md` |
-| 文件智能 / OCR / extraction | 本文件、必要時 `workflows/fullstack.md` | `EVAL_PLAN.md`、資料 schema、抽取錯誤樣本 |
-| AI 上線 / preview | `workflows/validation-release.md`、本文件 | `EVAL_PLAN.md`、rollback / kill switch 記錄 |
+| RAG / knowledge-base Q&A | `startup/02-required-project-docs.md`, this document | `RAG_DESIGN.md`, `EVAL_PLAN.md` |
+| Agent / MCP / tool-use | `workflows/production-agent.md`, this document | `AGENT_RUNTIME.md`, `EVAL_PLAN.md`, and `AI_SECURITY_REVIEW.md` if needed |
+| Multi-tenant AI SaaS | `workflows/fullstack.md`, this document | `DATA_MODEL.md`, `API_CONTRACT.md`, `AI_SECURITY_REVIEW.md` |
+| Document intelligence / OCR / extraction | This document, and `workflows/fullstack.md` if needed | `EVAL_PLAN.md`, the data schema, extraction error samples |
+| AI going live / preview | `workflows/validation-release.md`, this document | `EVAL_PLAN.md`, a rollback / kill switch record |
 
 ## RAG Gate
 
-- Ingestion：來源、格式、更新頻率、失敗重試、去重方式。
-- Chunking：切分規則、metadata、parent-child 或章節關係。
-- Retrieval：vector / keyword / hybrid、rerank、top-k、citation anchor。
-- Permission：tenant、role、document ACL 必須在 retrieval 前過濾。
-- Answering：引用來源、不可回答條件、低信心 fallback。
-- Evaluation：retrieval recall、faithfulness、answer relevance、citation correctness。
-- Monitoring：查詢樣本、missed retrieval、幻覺、成本、延遲、資料漂移。
+- Ingestion: sources, formats, update frequency, failure retries, deduplication.
+- Chunking: split rules, metadata, parent-child or section relationships.
+- Retrieval: vector / keyword / hybrid, rerank, top-k, citation anchors.
+- Permission: tenant, role, and document ACL must be filtered before retrieval.
+- Answering: cited sources, unanswerable conditions, low-confidence fallback.
+- Evaluation: retrieval recall, faithfulness, answer relevance, citation correctness.
+- Monitoring: query samples, missed retrieval, hallucination, cost, latency, data drift.
 
 ## Agent / MCP Gate
 
-- State：working / episodic / semantic memory 的儲存位置、TTL、provenance、衝突處理。
-- Tools：schema、最小權限、副作用、idempotency、rollback、timeout。
-- MCP：只當 agent-to-tool 邊界；不要把 agent-to-agent 協調混在同一層。
-- Human approval：付款、刪除、權限、外部發布、資料遷移、客戶可見行為必須問人。
-- Sandbox：shell、browser、filesystem、network、credential access 都要有邊界。
-- Audit：只追蹤核准的 prompt-template version、stable tool / decision / check ID、相對路徑與 aggregate metadata；不保存原始輸入輸出。
-- Kill switch：能停用背景 loop、外部 action、危險 tool。
+- State: where working / episodic / semantic memory is stored, plus TTL, provenance, and conflict handling.
+- Tools: schema, least privilege, side effects, idempotency, rollback, timeout.
+- MCP: treat it only as the agent-to-tool boundary; do not mix agent-to-agent coordination into the same layer.
+- Human approval: payments, deletion, permissions, external publishing, data migration, and customer-visible behavior must ask a person.
+- Sandbox: shell, browser, filesystem, network, and credential access all need boundaries.
+- Audit: track only the approved prompt-template version, stable tool / decision / check IDs, relative paths, and aggregate metadata; do not keep raw inputs or outputs.
+- Kill switch: able to stop background loops, external actions, and dangerous tools.
 
 ## Eval / Observability Gate
 
-- Golden set：至少覆蓋 happy path、權限錯誤、資料缺失、模糊需求、惡意輸入。
-- Error taxonomy：把失敗分成 retrieval、reasoning、tool、permission、format、latency、cost。
-- Traces：保留核准的 prompt-template version 與 privacy-safe trace metadata；不得保存 private prompt、masked excerpt、raw model stdout/stderr、raw tool trace、environment variables、absolute home path 或 raw diff hunk。
-- LLM-as-judge：只當輔助評估；要有人工抽查或 deterministic metric 校準。
-- Regression gate：每次改 prompt、retriever、tool schema、model、chunking 都要跑。
-- Online monitoring：quality、cost、latency、fallback、rate limit、user correction。
-- Evidence persistence：先做 closed-schema validation 與 fail-closed privacy scan，cleanup 證明完成後才保存 normalized evidence；scanner 或 cleanup 不確定時只回 stable code，不留 artifact。
-- Real mode：governance-impact 只接受乾淨、已 commit 的 synthetic scenario；runtime proof 只接受生成的 synthetic fixture。
-- Claim boundary：runtime proof 只驗證 entrypoint first-response contract；governance-impact evaluator 評估 intake 完成後的 delivery artifact，不宣稱測到 Q1-Q9 interview quality。
-- Runtime capability：Codex governance-impact real adapter 因 detached / re-parented descendant containment 未證明而回 `SESSION_SAFETY_UNAVAILABLE`；Claude 因 workspace containment 未證明而拒絕；Antigravity 缺 binary 時 unavailable，日後有 binary 仍須先證明 non-persistence 與 containment。
+- Golden set: covers at least the happy path, permission errors, missing data, ambiguous requests, and malicious input.
+- Error taxonomy: classify failures as retrieval, reasoning, tool, permission, format, latency, or cost.
+- Traces: keep the approved prompt-template version and privacy-safe trace metadata; never keep private prompts, masked excerpts, raw model stdout/stderr, raw tool traces, environment variables, absolute home paths, or raw diff hunks.
+- LLM-as-judge: only as a supporting evaluation; calibrate it with a manual sample or a deterministic metric.
+- Regression gate: run it on every change to a prompt, retriever, tool schema, model, or chunking.
+- Online monitoring: quality, cost, latency, fallback, rate limit, user corrections.
+- Evidence persistence: run closed-schema validation and a fail-closed privacy scan first; store normalized evidence only after cleanup is proven complete. When the scanner or cleanup is uncertain, return a stable code only and leave no artifact.
+- Real mode: governance-impact accepts only clean, committed synthetic scenarios; runtime proof accepts only generated synthetic fixtures.
+- Claim boundary: runtime proof only verifies the entrypoint first-response contract; the governance-impact evaluator assesses the delivery artifact after intake is complete, and does not claim to measure Q1-Q9 interview quality.
+- Runtime capability: the Codex governance-impact real adapter returns `SESSION_SAFETY_UNAVAILABLE` because detached / re-parented descendant containment is unproven; Claude is refused because workspace containment is unproven; Antigravity is unavailable when the binary is missing, and even once a binary exists it must still prove non-persistence and containment first.
 
 ## Security Gate
 
-- Prompt injection：外部內容不能覆蓋 system / developer / tool policy。
-- Data leakage：PII、tenant data、secret、internal notes 不得進不必要的 context。
-- Output handling：LLM output 不得直接執行 shell、SQL、HTML、payment、delete。
-- Access control：先驗證使用者和資料權限，再 retrieval / tool call。
-- Key lifecycle：API key、OAuth token、webhook secret 有 owner、rotation、revocation。
-- Compliance：醫療、金融、法務、人事、兒童資料等高風險領域要人工審查。
+- Prompt injection: external content must not override the system / developer / tool policy.
+- Data leakage: PII, tenant data, secrets, and internal notes must not enter context unnecessarily.
+- Output handling: LLM output must never directly execute shell, SQL, HTML, payment, or delete.
+- Access control: verify the user's and the data's permissions before retrieval or a tool call.
+- Key lifecycle: API keys, OAuth tokens, and webhook secrets have an owner, rotation, and revocation.
+- Compliance: high-risk domains such as healthcare, finance, legal, HR, and children's data need human review.
 
 ## MLOps / Release Gate
 
-- Provider：primary、fallback、rate limit、timeout、budget alert。
-- Cost：prompt caching、semantic cache、max token、batching 或降級策略。
-- Deployment：canary、shadow、manual rollback、feature flag。
-- Failure recovery：retry、circuit breaker、graceful degradation、manual escalation。
-- Documentation：把實際選擇回寫到 `AGENT_RUNTIME.md`、`RAG_DESIGN.md`、`EVAL_PLAN.md` 或 `AI_SECURITY_REVIEW.md`。
+- Provider: primary, fallback, rate limit, timeout, budget alert.
+- Cost: prompt caching, semantic cache, max tokens, batching, or a degradation strategy.
+- Deployment: canary, shadow, manual rollback, feature flag.
+- Failure recovery: retry, circuit breaker, graceful degradation, manual escalation.
+- Documentation: write the actual choices back into `AGENT_RUNTIME.md`, `RAG_DESIGN.md`, `EVAL_PLAN.md`, or `AI_SECURITY_REVIEW.md`.
 
-## 不進 Runtime 的內容
+## What Does Not Enter The Runtime
 
-- 具名模型排行、價格、benchmark、版本結論。
-- 單篇文章的工具偏好。
-- 未驗證的 agent framework 宣稱。
-- 未通過 smoke / held-out task 的新規則。
+- Named model rankings, prices, benchmarks, or version conclusions.
+- One article's tool preferences.
+- Unverified agent framework claims.
+- A new rule that has not passed a smoke or held-out task.

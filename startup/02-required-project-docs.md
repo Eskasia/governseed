@@ -1,50 +1,50 @@
 # 02 Required Project Docs
 
-## 固定文件
+## Fixed Documents
 
-| 檔案 | 目的 | 完成標準 |
+| File | Purpose | Done criteria |
 |---|---|---|
-| `README.md` | 初始化後的專案入口、讀檔順序、doctor 指令 | 新 agent 能先找到 `START_HERE.md` 與 runtime entrypoint |
-| `PROJECT_BRIEF.md` | 專案的一句話、使用者、問題、MVP、產品形態決策 | 能讓新 agent 30 秒理解方向 |
-| `SPEC.md` | 功能範圍、非目標、驗收標準 | 每條驗收可用 yes/no 判斷 |
-| `CONTEXT.md` | shared language、角色、資料物件、易混淆詞 | 名詞不再漂移 |
-| `TASK_CONTRACT.md` | 把 MVP 拆成可執行任務 | 每個任務有輸入、工具、輸出、驗證、不做事項 |
-| `OPEN_LOOPS.md` | 未決問題、風險、待確認項 | 不把未知當已知 |
-| `AGENTS.md` | 專案內 agent 規則 | 明確常用命令、禁止事項、測試規範 |
-| `TECH_STACK.md` | 技術路線、前端、後端、資料庫、框架 / SDK、部署、版本 | 技術選擇可追溯 |
+| `README.md` | The project entry point after initialization, the read order, the doctor command | A new agent finds `START_HERE.md` and the runtime entrypoint first |
+| `PROJECT_BRIEF.md` | The project's one-line summary, users, problem, MVP, and product shape decision | A new agent understands the direction in 30 seconds |
+| `SPEC.md` | Scope, non-goals, acceptance criteria | Every acceptance criterion is judged yes/no |
+| `CONTEXT.md` | Shared language, roles, data objects, easily confused terms | Terms stop drifting |
+| `TASK_CONTRACT.md` | The MVP broken into executable tasks | Every task has an input, tools, an output, a verification, and what is out of scope |
+| `OPEN_LOOPS.md` | Open questions, risks, items awaiting confirmation | The unknown is not treated as known |
+| `AGENTS.md` | Agent rules inside the project | Common commands, prohibitions, and test conventions are explicit |
+| `TECH_STACK.md` | Technology route, frontend, backend, database, framework / SDK, deployment, versions | Technology choices are traceable |
 
-Generated `AGENTS.md` 是 `GATE-INTENT-001` 與 `GATE-ROUTE-001` 的唯一 lifecycle owner；其他固定文件只保存 gate 所需證據或引用 ID。
+The generated `AGENTS.md` is the only lifecycle owner of `GATE-INTENT-001` and `GATE-ROUTE-001`; the other fixed documents only hold the evidence those gates need, or cite the IDs.
 
-## 文件結構分流
+## Document-structure Routing
 
-收尾時判斷新經驗該寫到哪裡，詳見 `workflows/agent-file-structure.md`。
+At wrap-up, decide where a new lesson belongs; see `workflows/agent-file-structure.md`.
 
-## 條件式文件
+## Conditional Documents
 
-| 檔案 | 何時需要 |
+| File | When it is needed |
 |---|---|
-| `UI_SPEC.md` | 有任何 UI、網站、App、後台、dashboard、landing page |
-| `DESIGN_SYSTEM.md` | 有截圖、現有 UI 或競品畫面，要反推設計規範、設計圖、tokens、icon、背景圖素材 |
-| `DESIGN_REVIEW.md` | UI 要給人試用、上線、或需要記錄設計審查 |
-| `DATA_MODEL.md` | 有 DB、Auth、tenant、權限、核心資料物件 |
-| `API_CONTRACT.md` | 前後端資料交換、API route、server action、webhook、adapter |
-| `ENV_CHECKLIST.md` | 要部署、串 OpenAI/Supabase/Stripe/Email/Storage/第三方 API |
-| `RESEARCH_SYNTHESIS.md` | 有決策相關的證據衝突、高影響或難回頭選擇、多條可信路線，且使用者確認進行研究綜合 |
-| `MACOS_RELEASE_CHECKLIST.md` | build / package macOS app，或涉及 TCC 權限、簽名、notarization |
-| `AGENT_RUNTIME.md` | production-facing LLM agent、自動化、多步工具調用、human approval |
-| `RAG_DESIGN.md` | 有 retrieval、知識庫、文件問答、citation、permission-aware search |
-| `EVAL_PLAN.md` | 有 LLM / RAG / agent 產出需要回歸驗證、golden set、LLM-as-judge、online monitoring |
-| `AI_SECURITY_REVIEW.md` | 有 prompt injection、tool use、tenant data、PII、權限、外部 action、HTML / SQL / shell output |
-| `docs/adr/*.md` | 不容易回頭的架構、資料模型、部署、外部服務選擇 |
+| `UI_SPEC.md` | There is any UI, website, app, admin panel, dashboard, or landing page |
+| `DESIGN_SYSTEM.md` | There are screenshots, an existing UI, or competitor screens to reverse-engineer a design system, mockups, tokens, icons, or background assets from |
+| `DESIGN_REVIEW.md` | The UI is going to testers, is launching, or a design review must be recorded |
+| `DATA_MODEL.md` | There is a DB, Auth, tenant, permissions, or core data objects |
+| `API_CONTRACT.md` | There is frontend-backend data exchange, an API route, a server action, a webhook, or an adapter |
+| `ENV_CHECKLIST.md` | Something is being deployed, or integrated with OpenAI/Supabase/Stripe/Email/Storage/a third-party API |
+| `RESEARCH_SYNTHESIS.md` | A decision has conflicting evidence, is high-impact or hard to reverse, or has several credible routes, and the user confirmed the research synthesis |
+| `MACOS_RELEASE_CHECKLIST.md` | Building / packaging a macOS app, or dealing with TCC permissions, signing, or notarization |
+| `AGENT_RUNTIME.md` | A production-facing LLM agent, automation, multi-step tool calls, or human approval |
+| `RAG_DESIGN.md` | There is retrieval, a knowledge base, document Q&A, citation, or permission-aware search |
+| `EVAL_PLAN.md` | LLM / RAG / agent output needs regression verification, a golden set, LLM-as-judge, or online monitoring |
+| `AI_SECURITY_REVIEW.md` | There is prompt injection, tool use, tenant data, PII, permissions, external actions, or HTML / SQL / shell output |
+| `docs/adr/*.md` | A hard-to-reverse choice of architecture, data model, deployment, or external service |
 
-## TASK_CONTRACT 任務格式
+## TASK_CONTRACT Task Format
 
 ```md
-## 任務：<任務名稱>
+## Task: <task name>
 
-- 輸入：
-- 可用工具：
-- 預期輸出：
-- 驗證方式：
-- 不做事項：
+- Input:
+- Available tools:
+- Expected output:
+- Verification:
+- Out of scope:
 ```

@@ -1,93 +1,93 @@
 # Production Agent Workflow
 
-適用：產品裡有 LLM agent、自動化、多步工具調用、human approval、背景任務、Slack/Gmail/webhook 觸發，或任何「AI 會替使用者做事」的功能。
+Applies to: an LLM agent inside a product, automation, multi-step tool calls, human approval, background tasks, Slack/Gmail/webhook triggers, or any feature where the AI acts on the user's behalf.
 
-不適用：單次 AI draft、單次摘要、單次分類、只在本機手動執行的研究輔助；這些先用普通 `TASK_CONTRACT.md` 和測試驗證即可。
+Does not apply to: a one-shot AI draft, summary, or classification, or research assistance run by hand locally; verify those with an ordinary `TASK_CONTRACT.md` and tests first.
 
-若同時涉及 RAG、MCP、long-term memory、eval pipeline、多租戶資料、文件智能或 provider fallback，還要讀 `workflows/ai-system-design.md`。
+If it also involves RAG, MCP, long-term memory, an eval pipeline, multi-tenant data, document intelligence, or provider fallback, read `workflows/ai-system-design.md` as well.
 
-## 核心原則
+## Core Principle
 
-可靠 agent 不是「prompt + 一袋 tools + loop 到完成」。可靠 agent 是可觀測、可暫停、可恢復、可驗證的軟體流程，LLM 只負責需要語言理解或模糊判斷的步驟。
+A reliable agent is not "a prompt plus a bag of tools plus a loop until done". A reliable agent is an observable, pausable, resumable, verifiable software flow in which the LLM handles only the steps that need language understanding or fuzzy judgment.
 
-## 必補文件
+## Documents To Add
 
-做 production-facing agent 時，建立 `AGENT_RUNTIME.md`。
+When building a production-facing agent, create `AGENT_RUNTIME.md`.
 
-必填欄位：
+Required fields:
 
-- Agent 目標：要替誰完成什麼工作。
-- 觸發入口：UI、cron、webhook、Slack、Gmail、CLI、人工手動。
-- State：業務狀態、執行狀態、儲存位置、可否從事件重建。
-- Event：哪些事件會推進 agent。
-- Context window：每次給模型的格式、來源、壓縮方式、不得放入的內容。
-- Prompts：prompt template 儲存位置、核准版本、誰可改；trace 只記 version 與 privacy-safe metadata，不保存 private runtime prompt。
-- Structured outputs：模型只能輸出的 JSON / schema / action 類型。
-- Tools：每個 tool 的權限、副作用、idempotency、rollback。
-- Control flow：哪些流程由程式掌控，哪些交給模型判斷。
-- Human approval：何時必須問人、誰批准、逾時怎麼辦。
-- Launch / pause / resume：如何啟動、暫停、恢復、重試、取消。
-- Error compaction：錯誤如何壓縮後回到 context，不把整段噪音塞回模型。
-- Verifier：測試、eval、benchmark、replay、E2E、人工抽查。
-- Agent boundary：任務是否小而聚焦，預期步數是否控制在 3-10 步。
-- Stateless reducer：能否用 `state + event -> next action` 描述。
-- Audit / observability：stable tool / decision / check ID、aggregate cost / latency、failure code 如何查；不保存 raw tool trace、model stdout/stderr、environment variables 或 raw diff。
-- Kill switch：如何立即停用背景任務、外部 action 或高風險 tool。
+- Agent goal: for whom, and what work it completes.
+- Trigger entry: UI, cron, webhook, Slack, Gmail, CLI, manual.
+- State: business state, execution state, where it is stored, whether it can be rebuilt from events.
+- Event: which events advance the agent.
+- Context window: the format, sources, and compaction for what the model receives each time, plus what must never go in.
+- Prompts: where the prompt template lives, the approved version, who may change it. Traces record only the version and privacy-safe metadata, never the private runtime prompt.
+- Structured outputs: the only JSON / schema / action types the model may emit.
+- Tools: each tool's permissions, side effects, idempotency, rollback.
+- Control flow: which parts the program controls and which are left to the model's judgment.
+- Human approval: when a person must be asked, who approves, what happens on timeout.
+- Launch / pause / resume: how to start, pause, resume, retry, cancel.
+- Error compaction: how an error is compacted before returning to context, instead of pushing a whole block of noise back to the model.
+- Verifier: tests, eval, benchmark, replay, E2E, manual sampling.
+- Agent boundary: whether the task is small and focused, and whether the expected step count stays within 3-10.
+- Stateless reducer: whether it can be described as `state + event -> next action`.
+- Audit / observability: how to look up stable tool / decision / check IDs, aggregate cost / latency, and failure codes; raw tool traces, model stdout/stderr, environment variables, and raw diffs are not stored.
+- Kill switch: how to immediately disable background tasks, external actions, or high-risk tools.
 
 ## 12 Factor Gate
 
-進入實作前逐項回答：
+Answer each before implementation:
 
-| Factor | 檢查問題 |
+| Factor | Check |
 |---|---|
-| Natural language to tool calls | 模型是否只把自然語言轉成結構化 action？ |
-| Own prompts | 核准的 prompt template 與 version 是否在 repo / docs 內可 review，且 private runtime prompt 不落盤？ |
-| Own context window | context 格式是否由我們設計、可測、可壓縮？ |
-| Tools are structured outputs | tool call 是否只是 JSON，副作用由程式控制？ |
-| Unify state | 執行狀態是否盡量和業務狀態合一？ |
-| Launch / pause / resume | 是否能啟動、暫停、恢復、重試、取消？ |
-| Contact humans | 問人是否是一等 tool/action，不是臨時例外？ |
-| Own control flow | 重要流程是否由程式掌控，而不是交給無限 loop？ |
-| Compact errors | 錯誤是否會被整理成短而有用的 context？ |
-| Small focused agents | agent 是否小而聚焦，避免巨大通用任務？ |
-| Trigger anywhere | 是否定義使用者實際入口，而不是只支援 chat？ |
-| Stateless reducer | 是否能用 state + event 推導下一步？ |
+| Natural language to tool calls | Does the model only turn natural language into a structured action? |
+| Own prompts | Are the approved prompt template and version reviewable in the repo / docs, with the private runtime prompt never written to disk? |
+| Own context window | Is the context format ours to design, testable, and compactable? |
+| Tools are structured outputs | Is a tool call just JSON, with side effects controlled by the program? |
+| Unify state | Is execution state kept as close to business state as possible? |
+| Launch / pause / resume | Can it start, pause, resume, retry, and cancel? |
+| Contact humans | Is asking a person a first-class tool/action rather than an ad hoc exception? |
+| Own control flow | Does the program own the important flow instead of handing it to an unbounded loop? |
+| Compact errors | Are errors turned into short, useful context? |
+| Small focused agents | Is the agent small and focused, avoiding a huge general-purpose task? |
+| Trigger anywhere | Are the users' real entry points defined, not just chat? |
+| Stateless reducer | Can the next step be derived from state + event? |
 
 ## Governance Evidence Boundary
 
-- Real mode 是 synthetic-only：governance-impact 只跑乾淨、已 commit 的 synthetic scenario；runtime proof 只跑生成的 synthetic fixture。
-- Raw buffer 只能在 bounded memory 中被掃描與解析；private prompt、masked excerpt、raw stdout/stderr、raw tool trace、environment variable、credential、absolute home path 與 raw diff hunk 都不得持久化。
-- 只在 closed-schema validation、fail-closed privacy scan 與 cleanup proof 全部通過後，原子保存 normalized evidence。
-- Scanner、session persistence、output schema 或 cleanup 無法證明安全時，回傳 stable code 且不產生 artifact，不得降級成較弱模式。
-- Runtime proof 只證明 entrypoint first-response contract；governance-impact evaluator 才評估 intake 後的 delivery artifact，且需通過獨立 evidence gate 才能支撐 effectiveness claim。
-- Codex evaluator real run 因 detached / re-parented descendant containment 未證明而拒絕；Claude 因 workspace containment 未證明而拒絕；Antigravity 缺 binary 時 unavailable，存在 binary 時仍拒絕到 non-persistence 與 containment 都被證明。
+- Real mode is synthetic-only: governance-impact runs only clean, committed synthetic scenarios; runtime proof runs only generated synthetic fixtures.
+- Raw buffers may only be scanned and parsed in bounded memory; private prompts, masked excerpts, raw stdout/stderr, raw tool traces, environment variables, credentials, absolute home paths, and raw diff hunks must never be persisted.
+- Store normalized evidence atomically only after closed-schema validation, the fail-closed privacy scan, and the cleanup proof all pass.
+- When the scanner, session persistence, output schema, or cleanup cannot be proven safe, return a stable code and produce no artifact; do not degrade to a weaker mode.
+- Runtime proof only proves the entrypoint first-response contract; only the governance-impact evaluator assesses the post-intake delivery artifact, and it must pass an independent evidence gate before it can support an effectiveness claim.
+- A Codex evaluator real run is refused because detached / re-parented descendant containment is unproven; Claude is refused because workspace containment is unproven; Antigravity is unavailable when the binary is missing, and even with a binary stays refused until both non-persistence and containment are proven.
 
-## 實作順序
+## Implementation Order
 
-1. 先做 deterministic thin slice：固定輸入、固定 action、固定 verifier。
-2. 再接 structured output：模型只輸出 action，不直接執行副作用。
-3. 再接 tools：每個 tool 寫清權限、副作用、idempotency、rollback。
-4. 再接 state：狀態可查、可重播、可恢復。
-5. 再接 human approval：高風險 action 必須先問人。
-6. 最後才做 automation / background loop。
+1. Start with a deterministic thin slice: fixed input, fixed action, fixed verifier.
+2. Then add structured output: the model only emits an action and never executes a side effect directly.
+3. Then add tools: write out each tool's permissions, side effects, idempotency, and rollback.
+4. Then add state: state is queryable, replayable, recoverable.
+5. Then add human approval: high-risk actions must ask a person first.
+6. Only then build automation / background loops.
 
-## 不要一開始就做
+## Do Not Start With
 
-- 不要先接一大包 tools。
-- 不要把 control flow 交給框架黑盒。
-- 不要讓模型直接做有副作用的操作。
-- 不要把完整 stack trace 原樣塞回 context。
-- 不要在沒有 verifier 時開長任務或背景 automation。
-- 不要把一個 agent 做成所有事情都會的通用角色。
+- Do not wire up a large bag of tools first.
+- Do not hand control flow to a framework black box.
+- Do not let the model perform side-effecting operations directly.
+- Do not push a full stack trace back into context verbatim.
+- Do not start a long task or background automation without a verifier.
+- Do not build one agent into a general-purpose role that does everything.
 
-## 驗收
+## Acceptance
 
-- `AGENT_RUNTIME.md` 已完成。
-- 每個 tool 都有 schema、權限、副作用、idempotency、rollback。
-- 每個高風險 action 都有 human approval。
-- 每個錯誤都有 compact 格式。
-- 至少有一個 replay / eval / E2E / smoke 可以證明 agent 沒跑偏。
-- 可以暫停、恢復、重試或取消。
-- 可以解釋目前 state、下一個 event、下一個 action。
-- Trace 只記核准的 prompt-template version 與 privacy-safe metadata，持久化內容符合 normalized closed-schema。
-- Real-mode synthetic-only、scanner fail-closed、cleanup-before-persist 與 claim boundary 都有可執行 verifier。
+- `AGENT_RUNTIME.md` is complete.
+- Every tool has a schema, permissions, side effects, idempotency, and rollback.
+- Every high-risk action has human approval.
+- Every error has a compact format.
+- There is at least one replay / eval / E2E / smoke that proves the agent has not gone off track.
+- It can pause, resume, retry, or cancel.
+- The current state, the next event, and the next action can all be explained.
+- Traces record only the approved prompt-template version and privacy-safe metadata, and what is persisted conforms to the normalized closed schema.
+- Real-mode synthetic-only, scanner fail-closed, cleanup-before-persist, and the claim boundary each have an executable verifier.

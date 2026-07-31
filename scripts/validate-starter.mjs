@@ -905,11 +905,11 @@ requireIncludes(errors, 'README.md', [
 ]);
 
 requireIncludes(errors, 'startup/01-bootstrap-gates.md', [
-  '產品形態 / 技術路線 Gate',
+  'Product Shape / Technology Route Gate',
   'user-declared route',
   'ai-recommended route',
   'workflows/product-shape-tech-route.md',
-  '條件研究候選偵測',
+  'Conditional Research Candidate Detection',
   'workflows/research-synthesis.md',
   'RESEARCH_SYNTHESIS.md',
 ]);
@@ -920,13 +920,13 @@ requireIncludes(errors, 'workflows/product-shape-tech-route.md', [
   'Q1-Q9',
   'PROJECT_BRIEF.md',
   'TECH_STACK.md',
-  '新技術引入 Gate',
+  'New Technology Gate',
 ]);
 
 requireIncludes(errors, 'workflows/research-synthesis.md', [
   '## Trigger',
   '## Confirmation',
-  '使用者確認後才',
+  'Only after the user confirms',
   'RESEARCH_CONFIRMATION_MISSING',
   'material-first hybrid',
   '## Five-lens Scan',
@@ -934,7 +934,7 @@ requireIncludes(errors, 'workflows/research-synthesis.md', [
   '## Layered Output',
   '## Self-review',
   'RESEARCH_SYNTHESIS.md',
-  '不授權額外工具、模型呼叫或子代理',
+  'do not authorize extra tools, model calls, or subagents',
   'advisory',
   'GATE-INTENT-001',
   'GATE-ROUTE-001',

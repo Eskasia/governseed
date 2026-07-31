@@ -1,42 +1,42 @@
 # 00 Agent Start Here
 
-## 不可跳過的規則
+## Rules That Cannot Be Skipped
 
-- 開工條件只引用 generated `AGENTS.md` 的 `GATE-INTENT-001` 與 `GATE-ROUTE-001`；本文件不重述 owner、status、evidence、review trigger 或 fallback。
-- Q1-Q9 後讀 `workflows/product-shape-tech-route.md` 取得決策方法，再依 `AGENTS.md` 評估兩個 gate。
-- 不准直接把使用者的一句想法變成完整實作。
-- 不准同時啟用所有 skill；只能依風險選工具。
-- 每個任務都要有輸入、可用工具、預期輸出、驗證方式、不做事項。
-- UI、資料模型、部署、權限、金鑰、第三方服務，任何一項不清楚都要先寫入文件或列為 open loop。
-- 不准把所有新規則都塞進 `AGENTS.md`；先依 `workflows/agent-file-structure.md` 判斷該寫入 LLMwiki、AGENTS、Skills、Hooks、Subagents 或 Plugins。
-- 做 production-facing LLM agent、自動化、多步工具調用或 human approval 前，必須先建立 `AGENT_RUNTIME.md`；單次 AI draft / 摘要 / 分類不需要。
-- 做 RAG、AI agent、MCP、eval pipeline、多租戶 AI SaaS、文件智能或 AI 系統設計前，先讀 `workflows/ai-system-design.md`，只採用符合當前專案的 gate。
-- 出現決策相關的證據衝突、高影響或難回頭選擇、多條可信路線，或使用者明確要求多視角研究時，先讀 `workflows/research-synthesis.md`；只提出建議，使用者確認後才建立 `RESEARCH_SYNTHESIS.md`。
-- 使用者描述「目前做到某階段、要交付某對象、要產出某種包」時，先讀 `workflows/stage-routing.md` 做階段分流。
+- The conditions for starting work cite only `GATE-INTENT-001` and `GATE-ROUTE-001` in the generated `AGENTS.md`; this document does not restate their owner, status, evidence, review trigger, or fallback.
+- After Q1-Q9, read `workflows/product-shape-tech-route.md` for the decision method, then evaluate both gates per `AGENTS.md`.
+- Do not turn a one-sentence user idea directly into a full implementation.
+- Do not enable every skill at once; choose tools by risk.
+- Every task has an input, available tools, an expected output, a verification, and what is out of scope.
+- If UI, data model, deployment, permissions, secrets, or third-party services are unclear on any point, write it into a document or record it as an open loop first.
+- Do not push every new rule into `AGENTS.md`; use `workflows/agent-file-structure.md` to decide whether it belongs in LLMwiki, AGENTS, Skills, Hooks, Subagents, or Plugins.
+- Before building a production-facing LLM agent, automation, multi-step tool calls, or human approval, create `AGENT_RUNTIME.md`; a one-shot AI draft / summary / classification does not need it.
+- Before building RAG, an AI agent, MCP, an eval pipeline, multi-tenant AI SaaS, document intelligence, or an AI system design, read `workflows/ai-system-design.md` and adopt only the gates that fit the current project.
+- When a decision has conflicting evidence, is high-impact or hard to reverse, has several credible routes, or the user explicitly asks for multi-perspective research, read `workflows/research-synthesis.md` first; propose only, and create `RESEARCH_SYNTHESIS.md` only after the user confirms.
+- When the user describes "we are at this stage, delivering to this audience, producing this kind of package", read `workflows/stage-routing.md` first and route by stage.
 
-## 開工前回報格式
+## Report Format Before Starting Work
 
-Agent 讀完本資料夾後，先回報：
+After reading this folder, the agent reports first:
 
 ```md
-已讀取：
-- <檔案 1>
-- <檔案 2>
+Read:
+- <file 1>
+- <file 2>
 
-本專案初判需要：
-- 固定文件：
-- 條件式文件：
-- 可能使用的 skill / tool：
-- 可能需要的文件結構分流：
-- 產品形態 / 技術路線模式：user-declared route / ai-recommended route
-- 是否需要 AGENT_RUNTIME.md：
-- 是否需要 RAG_DESIGN.md / EVAL_PLAN.md / AI_SECURITY_REVIEW.md：
-- 目前不能開始寫 code 的原因：
+Initial assessment for this project:
+- Fixed documents:
+- Conditional documents:
+- Skills / tools likely to be used:
+- Document-structure routing that may be needed:
+- Product shape / technology route mode: user-declared route / ai-recommended route
+- Whether AGENT_RUNTIME.md is needed:
+- Whether RAG_DESIGN.md / EVAL_PLAN.md / AI_SECURITY_REVIEW.md are needed:
+- Why code cannot start yet:
 ```
 
-## 問診原則
+## Questioning Principles
 
-- 每次只問一個問題。
-- 問題必須影響 MVP、資料模型、驗收、風險或部署。
-- 使用者回答模糊時，用 yes/no 或二選一追問。
-- 文件完成後，等使用者說「確認」才進入計畫。
+- Ask one question at a time.
+- The question must affect the MVP, data model, acceptance, risk, or deployment.
+- When an answer is vague, follow up with a yes/no or a two-way choice.
+- Once the documents are complete, wait for the user to say "confirmed" before moving to the plan.

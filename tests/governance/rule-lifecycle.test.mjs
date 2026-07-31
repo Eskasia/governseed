@@ -637,8 +637,11 @@ test('product route workflow cites lifecycle fields without copying fallback or 
   );
 
   assert.match(content, /GATE-ROUTE-001.*generated `AGENTS\.md`/i);
-  assert.doesNotMatch(content, /^## 重評估條件$/m);
-  assert.doesNotMatch(content, /只要路線問題是 open，就不得開始實作/);
+  // The workflow may name a lifecycle field but must not restate its value:
+  // `## Re-evaluation Triggers` as a section, or the gate's own fallback wording,
+  // would make this file a second place to keep in sync with the generated ledger.
+  assert.doesNotMatch(content, /^## Re-evaluation Triggers$/mi);
+  assert.doesNotMatch(content, /recheck-required|do not implement/i);
 });
 
 test('bootstrap closeout routes only an actual durable-rule proposal', () => {
@@ -647,8 +650,10 @@ test('bootstrap closeout routes only an actual durable-rule proposal', () => {
     'utf8',
   );
 
-  assert.doesNotMatch(content, /收尾：[^\n]*文件結構分流/);
-  assert.doesNotMatch(content, /收尾時已判斷新經驗該進/);
+  // Document-structure routing is conditional on an actual proposal, so neither
+  // the main flow nor the proceed conditions may list it as a wrap-up step.
+  assert.doesNotMatch(content, /Wrap-up:[^\n]*document-structure routing/i);
+  assert.doesNotMatch(content, /^-\s*(?:At wrap-up|Document-structure routing)\b/mi);
   assert.match(content, /durable rule[^\n]*destination[^\n]*owner[^\n]*evidence/i);
 });
 
