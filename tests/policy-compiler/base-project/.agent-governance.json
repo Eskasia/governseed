@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "generator": "agent-governance-starter",
+  "profile": "base",
+  "agent": "codex",
+  "requiredDocuments": [
+    "README.md",
+    "PROJECT_BRIEF.md",
+    "SPEC.md",
+    "CONTEXT.md",
+    "TASK_CONTRACT.md",
+    "OPEN_LOOPS.md",
+    "AGENTS.md",
+    "TECH_STACK.md"
+  ],
+  "includedDocuments": [
+    "README.md",
+    "PROJECT_BRIEF.md",
+    "SPEC.md",
+    "CONTEXT.md",
+    "TASK_CONTRACT.md",
+    "OPEN_LOOPS.md",
+    "AGENTS.md",
+    "TECH_STACK.md"
+  ]
+}
