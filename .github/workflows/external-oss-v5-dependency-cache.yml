@@ -200,6 +200,18 @@ jobs:
           artifact_root="$RUNNER_TEMP/external-oss-v5-cache-artifacts/$TASK_ID"
           mkdir -p "$work_root" "$sealed_root" "$cache_root" "$artifact_root"
 
+          phase_file="$artifact_root/phase-markers.txt"
+          failure_file="$artifact_root/phase-failure.txt"
+          last_phase="artifact-root-ready"
+          phase_mark() {
+            last_phase="$1"
+            printf '%s\n' "$last_phase" >> "$phase_file"
+          }
+          if test "$TASK_ID" = "TASK-OSS-09"; then
+            trap 'rc=$?; trap - ERR; printf "status=FAILURE\nlastPhase=%s\nexitCode=%s\n" "$last_phase" "$rc" > "$failure_file"; exit "$rc"' ERR
+            phase_mark "before-task-oss-09-seed-reconstruction"
+          fi
+
           git clone --no-checkout --filter=blob:none --no-tags "https://github.com/$repository.git" "$source_root"
           git -C "$source_root" remote set-url --push origin no_push://disabled
           git -C "$source_root" fetch --depth=1 --filter=blob:none --no-tags origin "$upstream_base"
@@ -290,23 +302,47 @@ jobs:
               runtime_uv=""
               ;;
             TASK-OSS-09)
+              phase_mark "before-task-oss-09-runtime-version-checks"
+              {
+                printf 'python_version=%s\n' "$(python --version 2>&1)"
+                printf 'uv_version=%s\n' "$(uv --version)"
+                if python -c 'import importlib.util; raise SystemExit(0 if importlib.util.find_spec("magic") else 1)'; then
+                  printf '%s\n' 'python_magic_package=present'
+                else
+                  printf '%s\n' 'python_magic_package=absent'
+                fi
+                if ldconfig -p 2>/dev/null | grep -q 'libmagic'; then
+                  printf '%s\n' 'libmagic_library=present'
+                else
+                  printf '%s\n' 'libmagic_library=absent'
+                fi
+              } > "$artifact_root/task-oss-09-diagnostics.txt"
               test "$(python --version 2>&1)" = "Python 3.14.6"
               test "$(uv --version)" = "uv 0.11.8"
+              phase_mark "after-task-oss-09-runtime-version-checks"
+              phase_mark "before-task-oss-09-uv-sync"
               (
                 cd "$sealed_root"
                 uv sync --group testing
               )
+              phase_mark "after-task-oss-09-uv-sync"
+              phase_mark "before-task-oss-09-uv-lock-immutability-check"
               test "$(git -C "$sealed_root" status --porcelain -- uv.lock)" = ""
+              phase_mark "after-task-oss-09-uv-lock-immutability-check"
               export PAPERLESS_SECRET_KEY=synthetic-test-only-value
               export PAPERLESS_DISABLE_DBHANDLER=true
               export PAPERLESS_CACHE_BACKEND=django.core.cache.backends.locmem.LocMemCache
               export PAPERLESS_CHANNELS_BACKEND=channels.layers.InMemoryChannelLayer
+              phase_mark "before-task-oss-09-pytest"
               (
                 cd "$sealed_root"
                 python -m pytest -q src/paperless/tests/test_parser_utils.py
               )
+              phase_mark "after-task-oss-09-pytest"
+              phase_mark "before-task-oss-09-cache-root-emission"
               printf '%s\n' .venv > "$cache_roots_file"
               test -x "$sealed_root/.venv/bin/python"
+              phase_mark "after-task-oss-09-cache-root-emission"
               runtime_node=""
               runtime_npm=""
               runtime_pnpm=""
@@ -319,6 +355,7 @@ jobs:
               ;;
           esac
 
+          if test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "before-task-oss-09-cache-root-copy"; fi
           sort -u "$cache_roots_file" -o "$cache_roots_file"
           while IFS= read -r relative_root; do
             test -n "$relative_root"
@@ -327,11 +364,13 @@ jobs:
             cp -a "$sealed_root/$relative_root" "$cache_root/$relative_root"
           done < "$cache_roots_file"
           test -s "$cache_roots_file"
+          if test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "after-task-oss-09-cache-root-copy"; fi
           printf '%s\n' "$actual_commit" > "$artifact_root/sealed-commit.txt"
           printf '%s\n' "$actual_tree" > "$artifact_root/sealed-tree.txt"
           printf '%s\n' "$actual_hash" > "$artifact_root/sealed-tree-sha256.txt"
           printf '%s\n' "$upstream_base" > "$artifact_root/upstream-base.txt"
 
+          if test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "before-task-oss-09-cache-inventory"; fi
           node --input-type=module - "$cache_root" "$artifact_root/cache-files.sha256" <<'NODE'
           import { createHash } from 'node:crypto';
           import { lstatSync, readdirSync, readFileSync, readlinkSync, writeFileSync } from 'node:fs';
@@ -356,14 +395,18 @@ jobs:
           walk(root);
           writeFileSync(output, rows.sort().join('\n') + '\n');
           NODE
+          if test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "after-task-oss-09-cache-inventory"; fi
 
           chmod -R a-w "$cache_root"
+          if test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "before-task-oss-09-cache-archive"; fi
           cache_archive="$artifact_root/cache.tgz"
           tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner \
             --use-compress-program='gzip -n' -cf "$cache_archive" -C "$cache_root" .
           cache_sha=$(sha256sum "$cache_archive" | awk '{print $1}')
           cache_files_sha=$(sha256sum "$artifact_root/cache-files.sha256" | awk '{print $1}')
+          if test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "after-task-oss-09-cache-archive"; fi
 
+          if test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "before-task-oss-09-runtime-image"; fi
           docker pull "$runtime_reference"
           resolved_digest=$(docker image inspect "$runtime_reference" --format '{{index .RepoDigests 0}}')
           test -n "$resolved_digest"
@@ -371,6 +414,7 @@ jobs:
           docker tag "$runtime_reference" "$runtime_tag"
           docker save "$runtime_tag" | gzip -n > "$artifact_root/runtime-image.tgz"
           runtime_image_sha=$(sha256sum "$artifact_root/runtime-image.tgz" | awk '{print $1}')
+          if test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "after-task-oss-09-runtime-image"; fi
           export RUNTIME_NODE="$runtime_node"
           export RUNTIME_NPM="$runtime_npm"
           export RUNTIME_PNPM="$runtime_pnpm"
@@ -382,6 +426,7 @@ jobs:
           export SEED_ARCHIVE_SHA="$seed_archive_sha"
           export RUNTIME_IMAGE_SHA="$runtime_image_sha"
 
+          if test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "before-task-oss-09-manifest"; fi
           node --input-type=module - "$artifact_root/cache-manifest.json" <<'NODE'
           import { createHash } from 'node:crypto';
           import { readFileSync, writeFileSync } from 'node:fs';
@@ -451,6 +496,7 @@ jobs:
             "fallbackDownload": false
           }
           JSON
+          if test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "after-task-oss-09-manifest"; fi
 
       - name: Upload measured dependency cache artifacts
         if: always()

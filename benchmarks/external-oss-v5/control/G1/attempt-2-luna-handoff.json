@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attempt": 2,
+  "status": "READY_FOR_REVIEW",
+  "repository": "Eskasia/governseed",
+  "ref": "main",
+  "mergeHead": "576a513dd2574c7949cfe4cb5aebdb43f770aec1",
+  "runId": 30713763827,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30713763827",
+  "runStatus": "COMPLETED",
+  "runConclusion": "FAILURE",
+  "filesChanged": [
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-2-luna-handoff.json"
+  ],
+  "evidenceHashes": {
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json": "86b4ce64ec740f7aa082fbacbdba48d91d12d4722f47aab6f7be25f596790e84",
+    "benchmarks/external-oss-v5/control/G1/attempt-2-luna-handoff.json": "REPORTED_AT_HANDOFF; self-hash changes if this metadata changes"
+  },
+  "commands": [
+    {"command":"git fetch origin main","result":"PASS"},
+    {"command":"git rev-parse origin/main","result":"PASS; 576a513dd2574c7949cfe4cb5aebdb43f770aec1"},
+    {"command":"git status --short --branch","result":"PASS; existing worktree preserved"},
+    {"command":"gh workflow run .github/workflows/external-oss-v5-dependency-cache.yml --repo Eskasia/governseed --ref main","result":"PASS; exactly one new dispatch, run 30713763827"},
+    {"command":"gh run watch 30713763827 --repo Eskasia/governseed --exit-status","result":"FAILURE; run completed without rerun"},
+    {"command":"gh run view 30713763827 --repo Eskasia/governseed --json ...","result":"PASS; exact head/status/conclusion/jobs captured"},
+    {"command":"gh api repos/Eskasia/governseed/actions/runs/30713763827/artifacts --paginate","result":"PASS; five artifact metadata records captured; content hashes not obtained"},
+    {"command":"gh run view 30713763827 --repo Eskasia/governseed --log-failed","result":"PASS; first failing step TASK-OSS-09 recorded with exit code 1"},
+    {"command":"JSON parse and SHA256 verification","result":"PASS; both new evidence files parse as JSON; dispatch hash is recorded and handoff self-hash is reported externally"}
+  ],
+  "firstFailure": {"taskId":"TASK-OSS-09","step":"Reconstruct seed and prepare public dependency cache","code":"PROCESS_EXIT_1","exitCode":1},
+  "knownLimitations": [
+    "Run 30713763827 failed before all three measured caches could qualify.",
+    "Artifacts are recorded from the GitHub API inventory only; their content hashes and receipt contents were not obtained in this step.",
+    "No cache receipt, offline proof, aggregate result, or READY claim exists; partial dependency artifacts remain NOT_READY.",
+    "No workflow, task facts, seed/oracle, lock, threshold, or prior run evidence was modified."
+  ],
+  "claimBoundary": "This handoff claims only one completed measured dispatch attempt and structured FAILURE evidence. It does not claim any measured dependency cache READY, receipt/archive/offline proof completeness, cache or manifest SHA, runtime qualification, benchmark result, rerun, credentials, Codex, Pilot, or modification of run 30711805623."
+}

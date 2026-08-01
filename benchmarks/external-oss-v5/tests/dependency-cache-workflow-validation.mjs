@@ -73,6 +73,15 @@ const validateWorkflow = (source) => {
   require(prepare.includes('test "$(git -C "$sealed_root" status --porcelain -- pnpm-lock.yaml)" = ""'), 'Immich lockfile is checked');
   require(prepare.includes('test "$(git -C "$sealed_root" status --porcelain -- package-lock.json)" = ""'), 'Uptime lockfile is checked');
   require(prepare.includes('test "$(git -C "$sealed_root" status --porcelain -- uv.lock)" = ""'), 'Paperless lockfile is checked');
+  const task09 = section(prepare, '            TASK-OSS-09)', '            *)');
+  require(task09.includes('phase_mark "before-task-oss-09-runtime-version-checks"'), 'TASK-OSS-09 runtime phase marker present');
+  require(task09.includes('phase_mark "before-task-oss-09-uv-sync"'), 'TASK-OSS-09 uv sync phase marker present');
+  require(task09.includes('phase_mark "before-task-oss-09-uv-lock-immutability-check"'), 'TASK-OSS-09 lockfile phase marker present');
+  require(task09.includes('phase_mark "before-task-oss-09-pytest"'), 'TASK-OSS-09 pytest phase marker present');
+  require(task09.includes('task-oss-09-diagnostics.txt'), 'TASK-OSS-09 diagnostics artifact present');
+  require(task09.includes('libmagic'), 'TASK-OSS-09 libmagic diagnostic present');
+  require(prepare.includes('trap \'rc=$?; trap - ERR;'), 'preparation failure trap records phase and exit code');
+  require(!task09.match(/(?:printenv|\benv\s*>|OPENAI_API_KEY|ANTHROPIC_API_KEY|GITHUB_TOKEN|GH_TOKEN|NPM_TOKEN|PYPI_TOKEN|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY)/u), 'TASK-OSS-09 diagnostics do not dump sensitive environment values');
   require(!prepare.match(/secrets\.|OPENAI_API_KEY\s*:\s*\$\{\{/u), 'preparation does not inject credentials');
 
   require(offline.includes('--network none'), 'offline container uses network none');
@@ -134,6 +143,8 @@ expectRejected('offline install mutation', workflow.replace('          node --in
 expectRejected('Immich preparation install outside sealed_root', workflow.replace('(\n                cd "$sealed_root"\n                pnpm install --frozen-lockfile --ignore-scripts\n                pnpm --filter @immich/sdk run build\n              )', 'pnpm install --frozen-lockfile --ignore-scripts\n              pnpm --filter @immich/sdk run build'));
 expectRejected('Uptime Kuma preparation install outside sealed_root', workflow.replace('(\n                cd "$sealed_root"\n                npm ci --no-audit --no-fund\n              )', 'npm ci --no-audit --no-fund'));
 expectRejected('Paperless preparation install outside sealed_root', workflow.replace('(\n                cd "$sealed_root"\n                uv sync --group testing\n              )', 'uv sync --group testing'));
+expectRejected('missing TASK-OSS-09 runtime phase marker', workflow.replace('phase_mark "before-task-oss-09-runtime-version-checks"', 'phase_mark "missing-runtime-phase-marker"'));
+expectRejected('missing preparation failure trap', workflow.replace("trap 'rc=$?; trap - ERR;", "trap 'rc=$?;"));
 
 const allChecks = [
   ...checks.map(([label]) => label),
