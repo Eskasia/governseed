@@ -1,0 +1,16 @@
+{
+  "runId": 30717085665,
+  "preparationArtifacts": [
+    {"taskId": "TASK-OSS-01", "artifactId": 8823704828, "name": "external-oss-v5-dependency-cache-TASK-OSS-01", "sizeBytes": 788672056, "archiveRetainedOnGithub": true},
+    {"taskId": "TASK-OSS-03", "artifactId": 8823692356, "name": "external-oss-v5-dependency-cache-TASK-OSS-03", "sizeBytes": 503645647, "archiveRetainedOnGithub": true},
+    {"taskId": "TASK-OSS-09", "artifactId": 8823695559, "name": "external-oss-v5-dependency-cache-TASK-OSS-09", "sizeBytes": 622149270, "archiveRetainedOnGithub": true}
+  ],
+  "seedIdentityArtifacts": [
+    {"taskId": "TASK-OSS-01", "artifactId": 8823664622, "filesSha256": {"sealed-commit.txt": "10aeacd3fa75ff53736de82d06eda0612d05685758db24587cf7ce214f9f4", "sealed-tree.txt": "4d4262c59b7605b07469bff8c75ffbc7e3841a3ffebc09a9346968035738fe9e", "sealed-tree-sha256.txt": "4794957eab0d8a04824e9aff176bd008cb021a46f15deed98667f65b164b0630", "upstream-base.txt": "6f3fb032a71c7e44bbe7d71934dfe5295cdb76fce29562387b164a87436462f2"}},
+    {"taskId": "TASK-OSS-03", "artifactId": 8823663600, "filesSha256": {"sealed-commit.txt": "849fe31047244d0ca68ca86f3e45b81355664d153ac81d4dfa35098e8436b712", "sealed-tree.txt": "6285b4f06f53252fdabae2d76a15c3e3b6d63e9050c8347cc778ab020476e3c7", "sealed-tree-sha256.txt": "5ba6019505fd4b180da3cb507bd8bc3a4838fe53e5239065c0cfb852aa0a298e", "upstream-base.txt": "4c938ce6e4ca967fefc20f1e500f08df2b52bd39dd3d0346e80182b02ee78b0a"}},
+    {"taskId": "TASK-OSS-09", "artifactId": 8823664548, "filesSha256": {"sealed-commit.txt": "9f11482e2b656ee9e3baa525b771fc9d3581abdeb3a6c88acd416cb017605de6", "sealed-tree.txt": "111a68911a1fe06011860973a5d0fe57740b4eb8bf9c6164a20b7f278fc3b249", "sealed-tree-sha256.txt": "a883a9129d82a2c8d9a46311da734ffa9faa60b87c168f1ba726ecd3299775e7", "upstream-base.txt": "a197083e592276584b4a9b5d34e543269b3847b00926109adb8f96f5cd0690e7"}}
+  ],
+  "offlineReceiptArtifacts": [],
+  "aggregateQualificationArtifacts": [],
+  "artifactHashBoundary": "Preparation archives remain only in GitHub Actions and were not copied into the repository. No cache-receipt.json was produced/uploaded; therefore no cacheSha256, manifestSha256, or cacheFilesSha256 can honestly be claimed for a qualified receipt."
+}

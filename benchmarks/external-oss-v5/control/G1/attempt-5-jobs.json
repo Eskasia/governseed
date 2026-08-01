@@ -1,0 +1,23 @@
+{
+  "runId": 30717085665,
+  "jobs": [
+    {"id": 91414387311, "name": "Qualify V5 seed identity (TASK-OSS-01)", "conclusion": "success"},
+    {"id": 91414387327, "name": "Qualify V5 seed identity (TASK-OSS-09)", "conclusion": "success"},
+    {"id": 91414387336, "name": "Qualify V5 seed identity (TASK-OSS-03)", "conclusion": "success"},
+    {"id": 91414418075, "name": "Prepare measured dependency cache (TASK-OSS-09)", "conclusion": "success"},
+    {"id": 91414418078, "name": "Prepare measured dependency cache (TASK-OSS-01)", "conclusion": "success"},
+    {"id": 91414418091, "name": "Prepare measured dependency cache (TASK-OSS-03)", "conclusion": "success"},
+    {"id": 91414789819, "name": "Verify dependency cache offline (TASK-OSS-09)", "conclusion": "failure", "failedStep": "Run offline cache and containment verification", "failedStepConclusion": "failure"},
+    {"id": 91414789839, "name": "Verify dependency cache offline (TASK-OSS-01)", "conclusion": "cancelled", "failedStep": "Run offline cache and containment verification", "failedStepConclusion": "cancelled"},
+    {"id": 91414789845, "name": "Verify dependency cache offline (TASK-OSS-03)", "conclusion": "cancelled", "failedStep": "Download prepared dependency cache", "failedStepConclusion": "cancelled"},
+    {"id": 91414906443, "name": "Aggregate V5 dependency cache qualification", "conclusion": "skipped"}
+  ],
+  "firstFailure": {
+    "taskId": "TASK-OSS-09",
+    "jobId": 91414789819,
+    "step": "Run offline cache and containment verification",
+    "exitCode": 1,
+    "diagnostic": "rm: cannot remove '/home/runner/work/_temp/external-oss-v5-offline-negative-cache/TASK-OSS-09/.venv/bin/python': Permission denied",
+    "source": "gh run view 30717085665 --repo Eskasia/governseed --log-failed"
+  }
+}

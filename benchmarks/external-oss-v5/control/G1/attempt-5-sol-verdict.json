@@ -1,0 +1,71 @@
+{
+  "protocolVersion": 1,
+  "agent": "Sol",
+  "role": "independent V5 acceptance layer",
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attempt": 5,
+  "reviewDate": "2026-08-02",
+  "verdict": "HARD_BLOCKED",
+  "evidenceSufficient": true,
+  "g1Qualification": "CANNOT_ADVANCE",
+  "reason": "Run 30717085665 is the sole dispatch at the PR #52 merge head and failed in TASK-OSS-09 offline verification before any cache receipt was generated. The other offline jobs were cancelled, aggregate qualification was skipped, READY count is zero, and attempt 5 exhausted the V5 repair/dispatch ceiling.",
+  "identity": {
+    "repository": "Eskasia/governseed",
+    "pullRequest": 52,
+    "mainMergeCommit": "07a9033eccefcb01314d01b4715269a83b3e20b4",
+    "runId": 30717085665,
+    "runHeadSha": "07a9033eccefcb01314d01b4715269a83b3e20b4",
+    "matchingDispatchCount": 1,
+    "runAttempt": 1
+  },
+  "attempt5Sha256": {
+    "benchmarks/external-oss-v5/control/G1/attempt-5-run.json": "46e3e0b152425b399acb659b1f3b07de97385e600e477ee21f98075d09c5e307",
+    "benchmarks/external-oss-v5/control/G1/attempt-5-jobs.json": "52d6aa793d01aeb73392a757a676dc4be86012926ef832da2eba8f67585ea81e",
+    "benchmarks/external-oss-v5/control/G1/attempt-5-artifacts.json": "3260d34f18c048c1069c4968bd0e1b2566a031dd06f7e96dadb684a231c197f0",
+    "benchmarks/external-oss-v5/control/G1/attempt-5-diagnostics.json": "e619238a30739e2863ae10d615877ea52883136978725cd24c9247eefc8f7926",
+    "benchmarks/external-oss-v5/control/G1/attempt-5-luna-handoff.json": "3c2682d4f686e88cb913dadd0ccae2e420e6bde798b685a79e1cc47db4039feb"
+  },
+  "decisiveFacts": {
+    "runConclusion": "failure",
+    "preparationSuccessCount": 3,
+    "firstFailureJobId": 91414789819,
+    "firstFailureTaskId": "TASK-OSS-09",
+    "firstFailureStep": "Run offline cache and containment verification",
+    "firstFailure": "rm: cannot remove '/home/runner/work/_temp/external-oss-v5-offline-negative-cache/TASK-OSS-09/.venv/bin/python': Permission denied",
+    "offlineReceiptArtifactCount": 0,
+    "aggregateQualificationArtifactCount": 0,
+    "readyCount": 0
+  },
+  "failureObservation": "The run-head workflow makes cache_root read-only before archiving it, then offline verification extracts that archive and uses cp -a for negative_cache, preserving read-only modes. It next attempts to remove TASK-OSS-09's selected required path and receives Permission denied before offline qualification or receipt generation.",
+  "repairCeiling": {
+    "repairCyclesConsumed": 4,
+    "attempt5WasFinalAllowedDispatch": true,
+    "additionalV5RepairAllowed": false,
+    "additionalV5RerunAllowed": false
+  },
+  "criteria": [
+    {
+      "criterion": "Evidence identity, integrity, dispatch uniqueness, jobs, first failure, and zero-READY boundary",
+      "status": "PASS"
+    },
+    {
+      "criterion": "G1 qualification can advance",
+      "status": "FAIL"
+    },
+    {
+      "criterion": "A V5 repair or rerun remains available",
+      "status": "FAIL"
+    }
+  ],
+  "reviewEvidence": {
+    "path": "benchmarks/external-oss-v5/control/G1/attempt-5-sol-review-evidence.json",
+    "sha256": "8605f75950e8fb10f9139e5d7bf195145cdbf874b840169d3353141b91452799"
+  },
+  "futureRemediation": {
+    "scope": "OUT_OF_SCOPE_FUTURE_BENCHMARK_ONLY",
+    "recommendation": "Make the disposable negative_cache writable before deleting the selected required path, then restore read-only permissions before containment verification.",
+    "v5ActionAuthorized": false
+  },
+  "claimBoundary": "This verdict concludes only that attempt-5 evidence is sufficient and V5 G1 is HARD_BLOCKED. It does not claim any G2 activity, credential approval, Codex activity, Pilot activity, additional run, benchmark effect, promotion, task defect, or dependency defect."
+}

@@ -1,0 +1,26 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attempt": 5,
+  "repository": "Eskasia/governseed",
+  "originMain": "07a9033eccefcb01314d01b4715269a83b3e20b4",
+  "dispatch": {
+    "command": "gh workflow run .github/workflows/external-oss-v5-dependency-cache.yml --repo Eskasia/governseed --ref main",
+    "count": 1,
+    "ref": "main",
+    "headSha": "07a9033eccefcb01314d01b4715269a83b3e20b4"
+  },
+  "run": {
+    "id": 30717085665,
+    "runNumber": 6,
+    "event": "workflow_dispatch",
+    "status": "completed",
+    "conclusion": "failure",
+    "createdAt": "2026-08-01T20:29:14Z",
+    "updatedAt": "2026-08-01T20:34:18Z",
+    "url": "https://github.com/Eskasia/governseed/actions/runs/30717085665"
+  },
+  "qualification": "BLOCKED",
+  "aggregateJob": {"id": 91414906443, "conclusion": "skipped"},
+  "claimBoundary": "This attempt records one post-merge G1 dispatch and its failure evidence only. It does not claim measured cache qualification, READY receipts, G2, Pilot, Codex execution, or benchmark effects."
+}

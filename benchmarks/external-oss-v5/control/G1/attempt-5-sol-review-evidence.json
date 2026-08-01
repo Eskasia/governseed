@@ -1,0 +1,459 @@
+{
+  "protocolVersion": 1,
+  "agent": "Sol",
+  "role": "independent V5 acceptance layer",
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attempt": 5,
+  "reviewType": "read-only-final-g1-acceptance-review",
+  "reviewDate": "2026-08-02",
+  "scope": "Final read-only review of attempt 5. Only this review evidence and its paired verdict are written; workflow, tests, task facts, seeds, thresholds, lock material, and prior evidence remain unchanged.",
+  "repositoryIdentity": {
+    "repository": "Eskasia/governseed",
+    "origin": "https://github.com/Eskasia/governseed.git",
+    "pullRequest": 52,
+    "pullRequestState": "closed",
+    "pullRequestMerged": true,
+    "pullRequestBaseRef": "main",
+    "pullRequestHeadSha": "5084e57b9ef33db2a3e03fe3c9eabe63560616c3",
+    "mergeCommitSha": "07a9033eccefcb01314d01b4715269a83b3e20b4",
+    "remoteMainShaAtReview": "07a9033eccefcb01314d01b4715269a83b3e20b4",
+    "runHeadSha": "07a9033eccefcb01314d01b4715269a83b3e20b4",
+    "reviewWorktreeHeadSha": "5084e57b9ef33db2a3e03fe3c9eabe63560616c3",
+    "reviewWorktreeTree": "1b4068f8eda9e37787c201ada8914148a5ecf19b",
+    "runHeadTree": "1b4068f8eda9e37787c201ada8914148a5ecf19b",
+    "treesMatch": true,
+    "result": "PASS",
+    "note": "PR #52 was squash-merged to main as 07a9033eccefcb01314d01b4715269a83b3e20b4. The isolated review worktree remains on the PR head commit, whose complete tree is byte-identical to the merge commit tree; it is not mislabeled as the dispatch head."
+  },
+  "hashVerification": {
+    "algorithm": "SHA-256",
+    "method": "Fresh byte-level shasum -a 256; committed files were read from commit 07a9033eccefcb01314d01b4715269a83b3e20b4 and matched against the worktree copy.",
+    "attempt5Json": [
+      {
+        "path": "benchmarks/external-oss-v5/control/G1/attempt-5-run.json",
+        "sha256": "46e3e0b152425b399acb659b1f3b07de97385e600e477ee21f98075d09c5e307",
+        "bytes": 1030,
+        "jsonValid": true
+      },
+      {
+        "path": "benchmarks/external-oss-v5/control/G1/attempt-5-jobs.json",
+        "sha256": "52d6aa793d01aeb73392a757a676dc4be86012926ef832da2eba8f67585ea81e",
+        "bytes": 1781,
+        "jsonValid": true
+      },
+      {
+        "path": "benchmarks/external-oss-v5/control/G1/attempt-5-artifacts.json",
+        "sha256": "3260d34f18c048c1069c4968bd0e1b2566a031dd06f7e96dadb684a231c197f0",
+        "bytes": 2249,
+        "jsonValid": true
+      },
+      {
+        "path": "benchmarks/external-oss-v5/control/G1/attempt-5-diagnostics.json",
+        "sha256": "e619238a30739e2863ae10d615877ea52883136978725cd24c9247eefc8f7926",
+        "bytes": 1241,
+        "jsonValid": true
+      },
+      {
+        "path": "benchmarks/external-oss-v5/control/G1/attempt-5-luna-handoff.json",
+        "sha256": "3c2682d4f686e88cb913dadd0ccae2e420e6bde798b685a79e1cc47db4039feb",
+        "bytes": 1702,
+        "jsonValid": true
+      }
+    ],
+    "committedMechanicsAndFrozenInputs": [
+      {
+        "path": ".github/workflows/external-oss-v5-dependency-cache.yml",
+        "sha256": "8191426107b555f17a74149ab1c8d846c9595ab96412a9eafba15283551ea81d"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
+        "sha256": "ee7e7d039ca6b042426cbb8a001ef803a0e0b3f2156edc1eae1a8065489134ef"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs",
+        "sha256": "dfdbfea05808267fc35467cff72dc4c853ccf9557f848a2dd019b24e30229c01"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/tests/dependency-cache-receipt-validation.mjs",
+        "sha256": "a72a0cdbdda620c9995b092cd3ee29107ee476c3a42f2e78c56985f0b7c987fa"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/schemas/dependency-cache-receipt.schema.json",
+        "sha256": "71549d05d27a83e002223506db45aa484f1afec10c7692de7b97fd4a489fda2c"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/tasks/TASK-OSS-01/task-facts.json",
+        "sha256": "3627a7aecaa7107a83bbf6552155d26915cfdd0bf985c4eab51ccea34eb6e10f"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/tasks/TASK-OSS-01/task-seed-identity.json",
+        "sha256": "07a38afcdc6cd46b1509df0bccb3d6941f3a95e137aa2de1f6293b3b91d73887"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/tasks/TASK-OSS-03/task-facts.json",
+        "sha256": "a5b132e9d87695e48051151609341b36a7ceb4ec4a17837dbcc80d0b94fa14bc"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/tasks/TASK-OSS-03/task-seed-identity.json",
+        "sha256": "6ca94ddef9e6f2e8a7acaa5da7733aacddd426e6313b4bf800d8cd68a35ead15"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/tasks/TASK-OSS-09/task-facts.json",
+        "sha256": "f2cefb871d1ac87befc9f6baa3f2eb845326e5752cb580dca166bbf5366d6b1e"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/tasks/TASK-OSS-09/task-seed-identity.json",
+        "sha256": "9735771f442b4962b83c8c7323c2707f30e570f27202ac86d4db810876cd98d3"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-01/cache-contract.json",
+        "sha256": "55c86a04f19a5cb2d481379cf79c076cf111fcaf78c6f14be3c26ddc1f6f607d"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-03/cache-contract.json",
+        "sha256": "fb57622c073fb2b09da44318920ba58833dc583d21669e7ef3f678462bafaa61"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-09/cache-contract.json",
+        "sha256": "3d0183bd36b28b1c3a7afed183f2c36f13172499048ec6d98ce2e8b9c316e92e"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/dependency-cache/qualification-status.json",
+        "sha256": "f66d99a529391c41c74c78dfeba9de074a08dd5843d09536e5932b7549b1da51"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/dependency-cache/seed-runtime-qualification.json",
+        "sha256": "754d9ac7ea8038c5439013772955eb5f9152d98054f4cf1c6f93a1726c33a119"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/phase-seed-gate.json",
+        "sha256": "1fb91c3c1e09a7904d007ba7ded142a3ef216c6ae2ae2e7c60142b7d269f86a7"
+      },
+      {
+        "path": "benchmarks/external-oss-v5/tasks/seed-identity-audit.csv",
+        "sha256": "83bf331f9e26832869b8a2225d7aefeea35ec26c368ac6ea6a8b0647bef52145"
+      }
+    ],
+    "repairCeilingEvidence": [
+      {
+        "cycle": 1,
+        "path": "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json",
+        "sha256": "2db65ab24301354d4ff94d6ced60d6d45ac9c16511a96ee18bf82f46eeedde37"
+      },
+      {
+        "cycle": 1,
+        "path": "benchmarks/external-oss-v5/control/G1/repair-sol-review-evidence-final.json",
+        "sha256": "2ae291210ae5c838959a6b8fc6a5ce94e55efc93b38e03073e5b04217dac15f6"
+      },
+      {
+        "cycle": 1,
+        "path": "benchmarks/external-oss-v5/control/G1/repair-sol-verdict-final.json",
+        "sha256": "281a530c5a277fdbd13710c4724c6f69c67f3c43cb0c725a3071f498d31e3ff6"
+      },
+      {
+        "cycle": 2,
+        "path": "benchmarks/external-oss-v5/control/G1/phase-observability-repair-2-luna-handoff.json",
+        "sha256": "03d1aa1575fdeb98487e8ea6fe5c6e7796e5347dc9e589864f84c9d352c34493"
+      },
+      {
+        "cycle": 2,
+        "path": "benchmarks/external-oss-v5/control/G1/phase-observability-repair-2-sol-review-evidence.json",
+        "sha256": "21c83aab1a3c98a18609fe45840a0d892de9387a0547201813f48a06cf53127a"
+      },
+      {
+        "cycle": 2,
+        "path": "benchmarks/external-oss-v5/control/G1/phase-observability-repair-2-sol-verdict.json",
+        "sha256": "17727859aaa70fc02abdd138f03c6359cb3b4f9cef84d59cfe6ce24fddc5a1ef"
+      },
+      {
+        "cycle": 3,
+        "path": "benchmarks/external-oss-v5/control/G1/attempt-3-repair-luna-handoff.json",
+        "sha256": "694fa0f970f3f61035ab522e3a903b51071a653510fd4864ee9e45dc77cf4fa6"
+      },
+      {
+        "cycle": 3,
+        "path": "benchmarks/external-oss-v5/control/G1/attempt-3-repair-sol-review-evidence.json",
+        "sha256": "5c1e81ae8c3e0e4cfe27bed9bbae8bc915f82184bfd0decf9437625ce2c83778"
+      },
+      {
+        "cycle": 3,
+        "path": "benchmarks/external-oss-v5/control/G1/attempt-3-repair-sol-verdict.json",
+        "sha256": "37631bb86f115d0511507b8daa470ef4fb4528d7f73b2d42d6006c6822326f96"
+      },
+      {
+        "cycle": 4,
+        "path": "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json",
+        "sha256": "b812b3aa6beb7707236604aa1bca242314818236126bef8e87176d18a473c9bc"
+      },
+      {
+        "cycle": 4,
+        "path": "benchmarks/external-oss-v5/control/G1/attempt-4-repair-sol-review-evidence.json",
+        "sha256": "783e4a1c921d95fd7f164727a798c598530604e8f7ef466355b6bab7c76a1883"
+      },
+      {
+        "cycle": 4,
+        "path": "benchmarks/external-oss-v5/control/G1/attempt-4-repair-sol-verdict.json",
+        "sha256": "2a25d5b7260355219301e4ee78f0c939f169e5bf2c77ca741f9aa0c8ae2b6a58"
+      }
+    ],
+    "priorDispatchEvidence": [
+      {
+        "attempt": 1,
+        "path": "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json",
+        "sha256": "1a77ff825e984577776d9f663175ba077b4e96fb92f5dc09db655cc3b3fc094e"
+      },
+      {
+        "attempt": 1,
+        "path": "benchmarks/external-oss-v5/control/G1/dispatch-corrected-sol-verdict.json",
+        "sha256": "ac792adc7cfdb30b9b4f92e4f35a4005de2c9dbe0a40624d4f74b818bb73bfcc"
+      },
+      {
+        "attempt": 2,
+        "path": "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json",
+        "sha256": "86b4ce64ec740f7aa082fbacbdba48d91d12d4722f47aab6f7be25f596790e84"
+      },
+      {
+        "attempt": 2,
+        "path": "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2-sol-verdict.json",
+        "sha256": "3f0f1d56381a2a1975a36972989ce303e3879ba1e13590f8e339e67b79861c80"
+      },
+      {
+        "attempt": 3,
+        "path": "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json",
+        "sha256": "0df4a8bf75f7dfb741ccc5558775f8786d5282b31475116febb97af3204dc413"
+      },
+      {
+        "attempt": 3,
+        "path": "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3-sol-verdict.json",
+        "sha256": "9d452351a0e479f9d493c2e912bd8dbcd1a520712b8e0d687e9008a8faa10ce7"
+      },
+      {
+        "attempt": 4,
+        "path": "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json",
+        "sha256": "a9d5a27aacc2b15391487515a0e37fcc45d9818df618a1849f0ad95374858eae"
+      },
+      {
+        "attempt": 4,
+        "path": "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-verdict.json",
+        "sha256": "277e28428a47863dd8185fdfb3b17c07f258f8c56a1663ac5eb6499396dfe3ac"
+      }
+    ],
+    "result": "PASS"
+  },
+  "dispatchVerification": {
+    "workflow": ".github/workflows/external-oss-v5-dependency-cache.yml",
+    "event": "workflow_dispatch",
+    "branch": "main",
+    "expectedHeadSha": "07a9033eccefcb01314d01b4715269a83b3e20b4",
+    "matchingDispatchCount": 1,
+    "runId": 30717085665,
+    "runNumber": 6,
+    "runAttempt": 1,
+    "status": "completed",
+    "conclusion": "failure",
+    "createdAt": "2026-08-01T20:29:14Z",
+    "updatedAt": "2026-08-01T20:34:18Z",
+    "result": "PASS",
+    "note": "Exactly one workflow_dispatch run on main matched the PR #52 merge head, and that run was not rerun."
+  },
+  "jobVerification": {
+    "totalJobs": 10,
+    "seedIdentityJobs": [
+      {
+        "taskId": "TASK-OSS-01",
+        "jobId": 91414387311,
+        "conclusion": "success"
+      },
+      {
+        "taskId": "TASK-OSS-09",
+        "jobId": 91414387327,
+        "conclusion": "success"
+      },
+      {
+        "taskId": "TASK-OSS-03",
+        "jobId": 91414387336,
+        "conclusion": "success"
+      }
+    ],
+    "preparationJobs": [
+      {
+        "taskId": "TASK-OSS-09",
+        "jobId": 91414418075,
+        "conclusion": "success"
+      },
+      {
+        "taskId": "TASK-OSS-01",
+        "jobId": 91414418078,
+        "conclusion": "success"
+      },
+      {
+        "taskId": "TASK-OSS-03",
+        "jobId": 91414418091,
+        "conclusion": "success"
+      }
+    ],
+    "offlineJobs": [
+      {
+        "taskId": "TASK-OSS-09",
+        "jobId": 91414789819,
+        "conclusion": "failure"
+      },
+      {
+        "taskId": "TASK-OSS-01",
+        "jobId": 91414789839,
+        "conclusion": "cancelled"
+      },
+      {
+        "taskId": "TASK-OSS-03",
+        "jobId": 91414789845,
+        "conclusion": "cancelled"
+      }
+    ],
+    "aggregateJob": {
+      "jobId": 91414906443,
+      "conclusion": "skipped"
+    },
+    "firstFailure": {
+      "jobId": 91414789819,
+      "taskId": "TASK-OSS-09",
+      "step": "Run offline cache and containment verification",
+      "exitCode": 1,
+      "timestamp": "2026-08-01T20:33:54.6497014Z",
+      "message": "rm: cannot remove '/home/runner/work/_temp/external-oss-v5-offline-negative-cache/TASK-OSS-09/.venv/bin/python': Permission denied"
+    },
+    "allThreePreparationJobsSucceeded": true,
+    "result": "PASS"
+  },
+  "artifactAndQualificationVerification": {
+    "githubArtifactCount": 6,
+    "seedIdentityArtifacts": 3,
+    "preparationArtifacts": 3,
+    "offlineReceiptArtifacts": 0,
+    "aggregateQualificationArtifacts": 0,
+    "artifactNames": [
+      "external-oss-v5-dependency-cache-TASK-OSS-01",
+      "external-oss-v5-dependency-cache-TASK-OSS-09",
+      "external-oss-v5-dependency-cache-TASK-OSS-03",
+      "external-oss-v5-seed-identity-TASK-OSS-01",
+      "external-oss-v5-seed-identity-TASK-OSS-09",
+      "external-oss-v5-seed-identity-TASK-OSS-03"
+    ],
+    "cacheReceiptsProduced": 0,
+    "offlineQualificationsCompleted": 0,
+    "aggregateQualificationCompleted": false,
+    "readyCount": 0,
+    "g1QualificationCanAdvance": false,
+    "result": "PASS",
+    "note": "Preparation success is not READY qualification. The only failed offline job stopped before cache-receipt.json creation; the other offline jobs were cancelled and aggregate qualification was skipped."
+  },
+  "failureObservation": {
+    "confirmed": true,
+    "runHeadWorkflowSha256": "8191426107b555f17a74149ab1c8d846c9595ab96412a9eafba15283551ea81d",
+    "sourceSequence": [
+      {
+        "line": 401,
+        "observation": "Preparation executes chmod -R a-w on cache_root before creating cache.tgz."
+      },
+      {
+        "lines": "403-405",
+        "observation": "The read-only cache tree is archived."
+      },
+      {
+        "lines": "609-610",
+        "observation": "Offline verification extracts cache.tgz and uses cp -a to create negative_cache, preserving the archived modes."
+      },
+      {
+        "line": 630,
+        "observation": "TASK-OSS-09 sets required_cache_path to .venv/bin/python."
+      },
+      {
+        "line": 639,
+        "observation": "The negative-cache flow attempts rm -rf on that required path."
+      },
+      {
+        "line": 641,
+        "observation": "A later chmod -R a-w appears after the rm and is not reached on this failure path."
+      }
+    ],
+    "observedEffect": "The disposable negative-cache copy inherits read-only directory modes, then rm of the required path fails with Permission denied before positive/negative offline execution or receipt generation.",
+    "taskFactConclusion": "NOT_CLAIMED",
+    "dependencyFactConclusion": "NOT_CLAIMED",
+    "result": "PASS"
+  },
+  "repairCeiling": {
+    "repairCyclesConsumed": 4,
+    "cycleVerdicts": [
+      {
+        "cycle": 1,
+        "verdict": "ACCEPT"
+      },
+      {
+        "cycle": 2,
+        "verdict": "ACCEPT"
+      },
+      {
+        "cycle": 3,
+        "verdict": "ACCEPT"
+      },
+      {
+        "cycle": 4,
+        "verdict": "ACCEPT"
+      }
+    ],
+    "mergeCommitBoundary": "The PR #52 merge commit message records the merged change as the final allowed G1 harness repair before one fresh dispatch.",
+    "attempt5WasFinalAllowedDispatch": true,
+    "additionalV5RepairAllowed": false,
+    "additionalV5RerunAllowed": false,
+    "repairPerformedByThisReview": false,
+    "rerunPerformedByThisReview": false,
+    "result": "PASS"
+  },
+  "criteria": [
+    {
+      "criterion": "PR #52 merge, main head, run head, and isolated worktree identity are distinguished and verified",
+      "status": "PASS"
+    },
+    {
+      "criterion": "All five attempt-5 JSON files parse and have freshly recomputed SHA-256 values",
+      "status": "PASS"
+    },
+    {
+      "criterion": "Relevant committed G1 mechanics, frozen inputs, prior dispatch evidence, and four repair-cycle records match run-head commit bytes",
+      "status": "PASS"
+    },
+    {
+      "criterion": "Exactly one dispatch at the qualifying merge head is run 30717085665 with run_attempt 1",
+      "status": "PASS"
+    },
+    {
+      "criterion": "All three preparation jobs succeeded; TASK-OSS-09 failed first; remaining offline work was cancelled and aggregate was skipped",
+      "status": "PASS"
+    },
+    {
+      "criterion": "No receipt, completed offline qualification, aggregate proof, or READY result exists",
+      "status": "PASS"
+    },
+    {
+      "criterion": "The read-only negative-cache removal failure is supported by run-head source and the failed log",
+      "status": "PASS"
+    },
+    {
+      "criterion": "The V5 four-cycle repair ceiling and final-dispatch boundary are enforced without repair or rerun",
+      "status": "PASS"
+    },
+    {
+      "criterion": "G1 qualification advances",
+      "status": "FAIL"
+    }
+  ],
+  "evidenceSufficient": true,
+  "g1Qualification": "CANNOT_ADVANCE",
+  "acceptanceVerdict": "HARD_BLOCKED",
+  "futureRemediation": {
+    "scope": "OUT_OF_SCOPE_FUTURE_BENCHMARK_ONLY",
+    "recommendation": "In a future benchmark version, make the disposable negative_cache parent chain writable before removing the selected required path, then restore read-only permissions before containment verification.",
+    "v5ActionAuthorized": false
+  },
+  "claimBoundary": "This review accepts the sufficiency of attempt-5 failure evidence and concludes only that V5 G1 is HARD_BLOCKED and cannot advance. It does not claim any G2 activity, credential approval, Codex activity, Pilot activity, additional run, benchmark effect, promotion, task defect, or dependency defect."
+}
