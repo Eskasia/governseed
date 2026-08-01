@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "gate": "G1",
+  "status": "PASS",
+  "checks": {
+    "workflowContract": {
+      "schemaVersion": 1,
+      "status": "PASS",
+      "checks": [
+        "V6 workflow contract",
+        "V6 inherited evidence hashes",
+        "V6 security and negative boundary"
+      ]
+    },
+    "shellContract": {
+      "schemaVersion": 1,
+      "status": "PASS",
+      "shellBlocks": 6,
+      "errors": []
+    },
+    "permissionRegression": {
+      "schemaVersion": 1,
+      "status": "PASS",
+      "codes": [
+        "WORKSPACE_TRAVERSE_DENIED",
+        "HARNESS_EXECUTION_DENIED",
+        "DEPENDENCY_CACHE_INCOMPLETE",
+        "HOME_NOT_WRITABLE",
+        "TMP_NOT_WRITABLE"
+      ],
+      "errors": []
+    },
+    "bashSyntax": "PASS",
+    "freshReproducerByteConsistency": "PASS",
+    "npmRunCheck": "PASS",
+    "npmRunValidate": "PASS",
+    "npmRunTestGovernance": "PASS",
+    "npmRunTestPrivacy": "PASS",
+    "npmRunTestExperimental": "PASS",
+    "npmRunCi": "PASS",
+    "yamlParse": "PASS",
+    "lockfile": "NOT_APPLICABLE_NO_LOCKFILE"
+  },
+  "docker": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+  "runtimeIntegration": "NOT_RUN_LOCALLY",
+  "v5Immutable": "PASS",
+  "claimBoundary": "Local implementation and static/regression evidence only. No Docker runtime, cache readiness, G1 acceptance, credentials, Codex, lock, Pilot, baseline/governed, or scoring claim."
+}

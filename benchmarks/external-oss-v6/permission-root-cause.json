@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "phase": "G0",
+  "status": "READY_FOR_REVIEW",
+  "rootCause": {
+    "classification": "CONFIRMED",
+    "summary": "V5 creates the cache, applies chmod -R a-w to the source cache, copies it with cp -a into negative_cache (preserving non-writable directory modes), then the failing rm -rf runs in the GitHub Actions host runner shell. In the local reproducer that actor is the host UID 501; the selected entry is present but cannot be unlinked because its copied parent directory lacks write permission.",
+    "actorAttribution": {
+      "failingOperation": "rm -rf negative_cache/<required path>",
+      "v5Actor": "GitHub Actions host runner shell, before docker load/create and before --user 65532:65532 is applied",
+      "localReproducerActor": "local host shell, UID 501",
+      "uid65532ContainerExecution": "NOT_APPLICABLE: not executed",
+      "dockerRuntime": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE"
+    },
+    "notCollapsedWith": ["cache unreadability", "missing executable bit", "missing interpreter", "missing working directory", "container mount or rootfs failures"],
+    "operation": ["create/cache", "chmod -R a-w source cache_root", "cp -a source cache_root/. into negative_cache/", "rm -rf negative_cache/<required path>"],
+    "affectedTasks": [
+      {"taskId":"TASK-OSS-01","requiredPath":"node_modules","reproducer":"rm denied; target remained present"},
+      {"taskId":"TASK-OSS-03","requiredPath":"node_modules","reproducer":"rm denied; target remained present"},
+      {"taskId":"TASK-OSS-09","requiredPath":".venv/bin/python","reproducer":"rm denied; target remained present"}
+    ]
+  },
+  "evidence": {
+    "v5WorkflowPath": ".github/workflows/external-oss-v5-dependency-cache.yml",
+    "v5WorkflowLines": [401, 609, 610, 639, 641],
+    "localReproducerPath": "benchmarks/external-oss-v6/minimal-reproducer.sh",
+    "localResultPath": "benchmarks/external-oss-v6/reproducer-result.json",
+    "candidateMatrixPath": "benchmarks/external-oss-v6/permission-matrix.csv"
+  },
+  "docker": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+  "claimBoundary": "G0 local filesystem reproducer confirms the host-side V5 negative-cache deletion root cause. It does not claim UID 65532 container execution, Docker runtime containment, corrected workflow behavior, cache readiness, smoke pass, or Sol acceptance."
+}

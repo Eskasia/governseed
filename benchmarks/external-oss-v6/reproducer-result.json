@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "phase": "G0",
+  "reproducer": "V5 operation order: create/cache; chmod -R a-w source cache; cp -a source cache/. into negative_cache/; rm -rf selected required path",
+  "execution": {
+    "platform": "darwin",
+    "uid": 501,
+    "gid": 20,
+    "supplementaryGroups": [
+      20,
+      12,
+      61,
+      79,
+      80,
+      81,
+      701,
+      33,
+      98,
+      100,
+      204,
+      250,
+      395,
+      398,
+      399,
+      400
+    ],
+    "cwd": "/Users/william/governseed-v6-permission-fix",
+    "shell": "/bin/zsh",
+    "interpreter": "/bin/bash",
+    "docker": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE"
+  },
+  "cases": [
+    {
+      "taskId": "TASK-OSS-01",
+      "requiredPath": "node_modules",
+      "rmExitCode": 1,
+      "targetAfter": "present",
+      "stderr": "permission-denied-or-platform-equivalent",
+      "filesystem": {
+        "taskId": "TASK-OSS-01",
+        "requiredPath": "node_modules",
+        "targetMode": "555",
+        "targetOwnerUid": 501,
+        "targetOwnerGid": 20,
+        "targetKind": "Directory",
+        "parentMode": "555",
+        "parentOwnerUid": 501,
+        "parentOwnerGid": 20
+      }
+    },
+    {
+      "taskId": "TASK-OSS-03",
+      "requiredPath": "node_modules",
+      "rmExitCode": 1,
+      "targetAfter": "present",
+      "stderr": "permission-denied-or-platform-equivalent",
+      "filesystem": {
+        "taskId": "TASK-OSS-03",
+        "requiredPath": "node_modules",
+        "targetMode": "555",
+        "targetOwnerUid": 501,
+        "targetOwnerGid": 20,
+        "targetKind": "Directory",
+        "parentMode": "555",
+        "parentOwnerUid": 501,
+        "parentOwnerGid": 20
+      }
+    },
+    {
+      "taskId": "TASK-OSS-09",
+      "requiredPath": ".venv/bin/python",
+      "rmExitCode": 1,
+      "targetAfter": "present",
+      "stderr": "permission-denied-or-platform-equivalent",
+      "filesystem": {
+        "taskId": "TASK-OSS-09",
+        "requiredPath": ".venv/bin/python",
+        "targetMode": "444",
+        "targetOwnerUid": 501,
+        "targetOwnerGid": 20,
+        "targetKind": "Regular File",
+        "parentMode": "555",
+        "parentOwnerUid": 501,
+        "parentOwnerGid": 20
+      }
+    }
+  ],
+  "interpretation": "A nonzero rm exit with targetAfter=present demonstrates deletion was denied by the read-only copied parent/tree; this is mutation denial, not cache read denial.",
+  "diagnosticSanitization": {
+    "rawStderrStored": false,
+    "secretsStored": false,
+    "archivesStored": false,
+    "virtualenvsStored": false,
+    "externalClonesStored": false
+  }
+}
