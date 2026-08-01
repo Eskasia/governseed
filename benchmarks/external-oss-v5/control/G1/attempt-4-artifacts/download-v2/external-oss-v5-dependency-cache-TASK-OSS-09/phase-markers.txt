@@ -1,0 +1,8 @@
+before-task-oss-09-seed-reconstruction
+before-task-oss-09-runtime-version-checks
+after-task-oss-09-runtime-version-checks
+before-task-oss-09-uv-sync
+after-task-oss-09-uv-sync
+before-task-oss-09-uv-lock-immutability-check
+after-task-oss-09-uv-lock-immutability-check
+before-task-oss-09-pytest

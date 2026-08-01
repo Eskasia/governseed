@@ -1,0 +1,224 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 4,
+  "repairCycleReviewed": 5,
+  "reviewType": "independent-sol-static-repair-review",
+  "reviewedAt": "2026-08-01",
+  "reviewedHead": "3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e",
+  "scope": "Final G1 repair after attempt 4: review only the uncommitted harness change that swaps TASK-OSS-09 pytest from the global runner interpreter to the task-local virtualenv in preparation and offline smoke, plus the static regression coverage for that exact boundary. No rerun, dispatch, commit, push, READY claim, or attempt-4 evidence mutation is in scope.",
+  "repoIdentity": {
+    "worktree": "/Users/william/governseed-v5-g1-cwd-fix",
+    "branch": "benchmark/v5-g1-python-venv",
+    "baseCommit": "3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e",
+    "headCommit": "3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e",
+    "worktreeChangesReviewedUncommitted": true
+  },
+  "exactFilesReviewed": [
+    ".github/workflows/external-oss-v5-dependency-cache.yml",
+    "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
+    "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-09/cache-contract.json",
+    "benchmarks/external-oss-v5/tasks/TASK-OSS-09/task-facts.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-luna-handoff.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-review-evidence.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-verdict.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/run-view.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/jobs.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/artifacts.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/failed.log",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/run.log",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/task-oss-09-diagnostics.txt",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/phase-markers.txt",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/phase-failure.txt",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/cache-roots.txt"
+  ],
+  "attempt4EvidenceHashes": {
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json": "a9d5a27aacc2b15391487515a0e37fcc45d9818df618a1849f0ad95374858eae",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-luna-handoff.json": "4314feec60d6e4efd727ddad74f5dd17fef1916d02e10dd63bfa94cf26d7ae9a",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/run-view.json": "c02ce397852ff6d90d611ab2379c2faefdb3eda219176f4f5a7dd62521c517a3",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/jobs.json": "033b80a9b9c869fed169f63a75602eeddb31bbdf5cfc0cd352e816c0db912051",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/artifacts.json": "62b3846d47b41d74b1be554daee818c3be8722f1a9b67ba86ef9076b90f31278",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/failed.log": "207a13251d8110a5e46a73e53250f998f41a7eb4dc36cfd4a1b51ad735b71d54",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/run.log": "30bc30d6e873a10d5e45332600868d7db401c633a9f5245f03c24477c77e95fc",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/task-oss-09-diagnostics.txt": "ae32c268a5b77cd69d57128d28bc03895da8dd8bd61281520d4824dbe019fb32",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/phase-markers.txt": "59f6a0ec86cb6d55dc1aedf4b4da01fcedf05faf2efd1b7ff25cd077248ed2f3",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/phase-failure.txt": "669bc1c94574c1fdef346e0af0a600ad361f45363e1539fc9ff8dfe4783c9218",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/cache-roots.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "worktreeDelta": {
+    "trackedFilesChangedAgainstBase": [
+      ".github/workflows/external-oss-v5-dependency-cache.yml",
+      "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs"
+    ],
+    "trackedLineDelta": {
+      ".github/workflows/external-oss-v5-dependency-cache.yml": {
+        "added": 2,
+        "removed": 2
+      },
+      "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs": {
+        "added": 6,
+        "removed": 0
+      }
+    },
+    "untrackedRepairArtifact": "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json"
+  },
+  "independentChecks": [
+    {
+      "name": "repair_scope_exact",
+      "result": "PASS",
+      "details": "The tracked repair delta is limited to the workflow interpreter-path swap and the validator additions that cover that same boundary. No task, seed, oracle, contract, lockfile, threshold, network, credential, or READY logic file was modified against base/head 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e.",
+      "evidence": [
+        "git diff --name-only 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e -- . => .github/workflows/external-oss-v5-dependency-cache.yml, benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
+        "git diff --numstat 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e -- .github/workflows/external-oss-v5-dependency-cache.yml benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs => 2/2 and 6/0",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json:13",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json:14",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json:43"
+      ]
+    },
+    {
+      "name": "task_oss_09_preparation_uses_sealed_venv_python",
+      "result": "PASS",
+      "details": "Preparation now executes TASK-OSS-09 pytest through the sealed-root virtualenv interpreter instead of the global runner interpreter.",
+      "evidence": [
+        ".github/workflows/external-oss-v5-dependency-cache.yml:337",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:340",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json:29"
+      ]
+    },
+    {
+      "name": "task_oss_09_offline_smoke_uses_cache_venv_python",
+      "result": "PASS",
+      "details": "Offline smoke now executes the same public pytest through the cached virtualenv interpreter mounted at /cache/.venv/bin/python.",
+      "evidence": [
+        ".github/workflows/external-oss-v5-dependency-cache.yml:672",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:678",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json:30"
+      ]
+    },
+    {
+      "name": "public_test_arguments_unchanged",
+      "result": "PASS",
+      "details": "The contract and task facts still define the public test command as python -m pytest -q src/paperless/tests/test_parser_utils.py. The repair changes only which interpreter binary launches that exact argv.",
+      "evidence": [
+        "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-09/cache-contract.json:20",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-09/task-facts.json:10",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:340",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:678"
+      ]
+    },
+    {
+      "name": "static_regression_rejects_global_python",
+      "result": "PASS",
+      "details": "The validator now asserts both interpreter-path requirements and contains negative mutations that fail if either site regresses to bare global python -m pytest.",
+      "evidence": [
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:81",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:82",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:116",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:117",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:153",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:154"
+      ],
+      "commandResults": [
+        "node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs => {\"status\":\"PASS\",\"checks\":5,\"errors\":[]}",
+        "node --check benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs => PASS"
+      ]
+    },
+    {
+      "name": "network_credential_and_ready_guards_unchanged",
+      "result": "PASS",
+      "details": "The repair leaves the existing no-credential, offline network-none, readonly cache, and READY-only aggregation gates intact, and the validator still asserts those protections.",
+      "evidence": [
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:90",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:92",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:107",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:120",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:126",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:127",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:472",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:474",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:486",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:496",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:787",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:790",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:828",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:841",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:851"
+      ]
+    },
+    {
+      "name": "attempt_4_failure_evidence_preserved_immutable",
+      "result": "PASS",
+      "details": "The attempt-4 failure package remains unchanged in the current repair worktree. The static repair does not edit the dispatch record, Luna handoff, prior Sol review, or downloaded artifacts, and the preserved hashes still match their recorded values.",
+      "evidence": [
+        "git diff --name-only 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e -- benchmarks/external-oss-v5/control/G1/attempt-4-artifacts benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json benchmarks/external-oss-v5/control/G1/attempt-4-luna-handoff.json benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-review-evidence.json benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-verdict.json => <empty>",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json:13",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json:65",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json:81",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-luna-handoff.json:11",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-luna-handoff.json:45",
+        "sha256sum benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json benchmarks/external-oss-v5/control/G1/attempt-4-luna-handoff.json benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/run-view.json benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/jobs.json benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/artifacts.json benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/failed.log benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/run.log benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/task-oss-09-diagnostics.txt benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/phase-markers.txt benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/phase-failure.txt benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/cache-roots.txt"
+      ]
+    },
+    {
+      "name": "static_validators_match_claimed_scope",
+      "result": "PASS",
+      "details": "The repair-scope validators all pass: workflow validator, shell validator, JS syntax check, scoped G1 JSON parse, YAML parse, and git diff --check. npm ci remains honestly blocked by EUSAGE because the repository has no npm lockfile.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json:21",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json:22",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json:23",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json:24",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json:25",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json:26"
+      ],
+      "commandResults": [
+        "node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs => {\"status\":\"PASS\",\"checks\":5,\"errors\":[]}",
+        "node benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs => {\"status\":\"PASS\",\"shellBlocks\":5,\"errors\":[]}",
+        "node --check benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs => PASS",
+        "node --input-type=module <parse benchmarks/external-oss-v5/control/G1/*.json> => PASS before review write: 35 files",
+        "ruby -e 'require \"yaml\"; YAML.load_file(\".github/workflows/external-oss-v5-dependency-cache.yml\"); puts \"YAML_PASS\"' => YAML_PASS",
+        "git diff --check => PASS"
+      ]
+    }
+  ],
+  "blockedChecks": [
+    {
+      "name": "npm_ci_without_lockfile",
+      "result": "BLOCKED",
+      "details": "npm ci fails with EUSAGE because the repository root contains package.json but no package-lock.json or npm-shrinkwrap.json. The repair handoff records that state honestly, and this review does not upgrade it to PASS.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json:26",
+        "package.json:1",
+        "npm ci => npm error code EUSAGE; The `npm ci` command can only install with an existing package-lock.json or npm-shrinkwrap.json"
+      ]
+    }
+  ],
+  "outOfScopeObservedBlockers": [
+    {
+      "name": "repo_wide_benchmark_json_walker",
+      "result": "BLOCKED_UNRELATED_WORKTREE_STATE",
+      "details": "The broad benchmarks/external-oss-v5 JSON walker currently fails because the pre-existing untracked reproduction tree under control/G1/attempt-2-repro contains tsconfig*.json files with comments or other non-JSON syntax. This repair did not touch that tree, and the repair handoff only claimed the narrower G1 control JSON parse.",
+      "evidence": [
+        "node benchmarks/external-oss-v5/tests/schema-validation.mjs => FAIL on benchmarks/external-oss-v5/control/G1/attempt-2-repro/TASK-OSS-09/src-ui/tsconfig.app.json, tsconfig.json, tsconfig.spec.json",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json:24"
+      ]
+    }
+  ],
+  "validated": {
+    "normalPath": "The repaired workflow now points TASK-OSS-09 preparation to $sealed_root/.venv/bin/python and offline smoke to /cache/.venv/bin/python while preserving the existing pytest argv and surrounding phase gates.",
+    "failurePath": "The static validator now rejects reverting either site to bare python -m pytest, and the preserved attempt-4 evidence still shows the original global-interpreter failure before-task-oss-09-pytest with zero READY.",
+    "integrationEdge": "Credential, network, readonly mount, negative-cache, receipt READY, and aggregate READY guards remain unchanged and still covered by the validator."
+  },
+  "nonBlockingObservations": [
+    "attempt-4-repair-luna-handoff.json records the scoped G1 JSON parse as PASS over 34 files; an independent rerun before adding this review found PASS over 35 files because the G1 JSON inventory had already grown. The outcome still matches PASS, so this is evidence-count drift rather than a correctness defect."
+  ],
+  "minimalMitigation": {
+    "recommendedChange": "No additional code change is required beyond the current interpreter-path repair and its paired regression checks.",
+    "expectedRiskReduction": "The repair eliminates the proven harness-only interpreter mismatch from attempt 4 without widening the test contract or any READY, credential, or network boundary."
+  },
+  "verdict": "ACCEPT",
+  "claimBoundary": "This ACCEPT covers only the final static G1 repair candidate in the current uncommitted worktree atop 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e. It accepts the change because the repair is minimal, keeps TASK-OSS-09 public test arguments and benchmark contracts unchanged, adds explicit regression checks against bare global python, preserves all attempt-4 failure evidence by hash, and records npm ci as BLOCKED/EUSAGE due the missing npm lockfile. It does not claim rerun success, cache READY, offline qualification, aggregate qualification, benchmark success, commit, push, dispatch, or repo-wide benchmark JSON cleanliness outside the scoped G1 control JSON parse."
+}

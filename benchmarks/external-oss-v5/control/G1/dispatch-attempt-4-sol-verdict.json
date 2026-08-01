@@ -1,0 +1,105 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 4,
+  "reviewType": "sol-acceptance-layer",
+  "reviewedAt": "2026-08-01",
+  "reviewedHead": "e3981176bd32319cb5463b270924791a7f5a7d34",
+  "verdict": "ACCEPT",
+  "criteria": [
+    {
+      "criterion": "Run identity matches one Saturday, August 1, 2026 measured dispatch on main head 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json:13",
+        "gh run view 30715960590 --repo Eskasia/governseed --json databaseId,workflowName,headSha,headBranch,status,conclusion,createdAt,updatedAt,url,jobs"
+      ]
+    },
+    {
+      "criterion": "Jobs and artifact API digests are independently verified against fresh GitHub responses and downloaded zip archives",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/jobs.json",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/artifacts.json",
+        "gh run view 30715960590 --repo Eskasia/governseed --json jobs",
+        "gh api repos/Eskasia/governseed/actions/runs/30715960590/artifacts?per_page=100",
+        "gh api repos/Eskasia/governseed/actions/artifacts/8823332105/zip",
+        "gh api repos/Eskasia/governseed/actions/artifacts/8823331818/zip",
+        "gh api repos/Eskasia/governseed/actions/artifacts/8823330570/zip"
+      ]
+    },
+    {
+      "criterion": "Seed identities for TASK-OSS-01, TASK-OSS-03, and TASK-OSS-09 match the run-head contracts",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-01/task-seed-identity.json:14",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-03/task-seed-identity.json:14",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-09/task-seed-identity.json:14"
+      ]
+    },
+    {
+      "criterion": "TASK-OSS-09 phase markers prove runtime-version checks and uv sync passed before the pytest boundary failed",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/phase-markers.txt:3",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/phase-markers.txt:5",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/phase-failure.txt:2"
+      ]
+    },
+    {
+      "criterion": "HARNESS_DEFECT is proven because the workflow uses global runner python instead of the sealed .venv interpreter for TASK-OSS-09 pytest",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-review-evidence.json",
+        ".github/workflows/external-oss-v5-dependency-cache.yml@3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e:340",
+        ".github/workflows/external-oss-v5-dependency-cache.yml@3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e:344",
+        "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-09/cache-contract.json:22",
+        "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-09/cache-contract.json:23",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/failed.log:352",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/failed.log:687"
+      ]
+    },
+    {
+      "criterion": "Zero READY boundary is preserved for all three tasks",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json:53",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/cache-roots.txt",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/jobs.json"
+      ]
+    },
+    {
+      "criterion": "Claim boundary remains conservative and makes no unsupported READY, task, or environment claim",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json:70",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-luna-handoff.json:37"
+      ]
+    }
+  ],
+  "independentlyRecomputed": [
+    "git rev-parse HEAD = e3981176bd32319cb5463b270924791a7f5a7d34",
+    "sha256(benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json) = a9d5a27aacc2b15391487515a0e37fcc45d9818df618a1849f0ad95374858eae",
+    "sha256(benchmarks/external-oss-v5/control/G1/attempt-4-luna-handoff.json) = 4314feec60d6e4efd727ddad74f5dd17fef1916d02e10dd63bfa94cf26d7ae9a",
+    "Saved run-view summary fields and fresh gh run view summary fields share sha256 1ac4bd415919c423f074371c6d04819d3bd8ec5ea5511f598c76fe5765528fdf",
+    "Fresh gh artifacts response and saved attempt-4-artifacts/artifacts.json share sha256 62b3846d47b41d74b1be554daee818c3be8722f1a9b67ba86ef9076b90f31278",
+    "Saved dependency zip digests match artifacts API: TASK-OSS-01 4371fb19ddd31028c2b6e4453af0066e9ac8280c703f30197547dfad841c5b37, TASK-OSS-03 5cea3e544e32fd945d4dce3f773bddfdb27f7d96d0911e83ed3196f695ff3cb7, TASK-OSS-09 2563cb8e297207a20a658f7aaf36e2330915110c038575cb3214c8c9bd068a56",
+    "Freshly downloaded seed-identity zip digests match artifacts API: TASK-OSS-09 bba3d0f44530d380e6d3b157cc3902b5b5dcb4983b246aa18f112f0c305d6e4e, TASK-OSS-01 b1cab832bf29e09e3de98e7cb33f10be874fd9042ec46abdcdbc95ccc5ac0603, TASK-OSS-03 06cc06b80629f9d7dffd48d33233105e1981a45df1fac9a6d42a73522ae34e7b",
+    "TASK-OSS-09 diagnostics sha256 = ae32c268a5b77cd69d57128d28bc03895da8dd8bd61281520d4824dbe019fb32; phase-markers sha256 = 59f6a0ec86cb6d55dc1aedf4b4da01fcedf05faf2efd1b7ff25cd077248ed2f3; phase-failure sha256 = 669bc1c94574c1fdef346e0af0a600ad361f45363e1539fc9ff8dfe4783c9218",
+    "TASK-OSS-09 phase markers include after-task-oss-09-runtime-version-checks, after-task-oss-09-uv-sync, and after-task-oss-09-uv-lock-immutability-check, then stop at before-task-oss-09-pytest",
+    "Run-head workflow 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e calls uv sync inside $sealed_root, then invokes python -m pytest, and only after that writes .venv to cache_roots_file and tests $sealed_root/.venv/bin/python",
+    "Failed log records Creating virtual environment at: .venv, Installed 237 packages in 926ms, then /opt/hostedtoolcache/Python/3.14.6/x64/bin/python: No module named pytest"
+  ],
+  "minimalMitigation": [
+    "Run TASK-OSS-09 pytest with the sealed interpreter, for example \"$sealed_root/.venv/bin/python\" -m pytest -q src/paperless/tests/test_parser_utils.py.",
+    "Keep every later READY, cache, runtime-image, offline, and aggregate qualification gate unchanged."
+  ],
+  "claimBoundary": "This ACCEPT covers only attempt-4 evidence for run 30715960590 on main head 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e. It accepts the evidence because the same run proves a harness-only interpreter-selection defect at the TASK-OSS-09 pytest boundary while preserving zero READY. It does not claim cache READY, rerun success, task success, a task defect, an environment defect, or any post-fix outcome."
+}

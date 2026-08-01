@@ -1,0 +1,82 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "gate": "G1",
+  "attempt": 4,
+  "repository": "Eskasia/governseed",
+  "ref": "main",
+  "originMain": "3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e",
+  "workflow": ".github/workflows/external-oss-v5-dependency-cache.yml",
+  "dispatchCommand": "gh workflow run .github/workflows/external-oss-v5-dependency-cache.yml --repo Eskasia/governseed --ref main",
+  "dispatchCount": 1,
+  "runId": 30715960590,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30715960590",
+  "createdAt": "2026-08-01T19:58:57Z",
+  "updatedAt": "2026-08-01T20:00:21Z",
+  "status": "COMPLETED",
+  "conclusion": "FAILURE",
+  "qualification": "BLOCKED",
+  "rerun": "NOT_PERFORMED",
+  "jobs": {
+    "seedIdentity": {
+      "TASK-OSS-01": {"status":"COMPLETED","conclusion":"SUCCESS","jobId":91411442240,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30715960590/job/91411442240"},
+      "TASK-OSS-03": {"status":"COMPLETED","conclusion":"SUCCESS","jobId":91411442244,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30715960590/job/91411442244"},
+      "TASK-OSS-09": {"status":"COMPLETED","conclusion":"SUCCESS","jobId":91411442260,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30715960590/job/91411442260"}
+    },
+    "prepareDependencyCache": {
+      "TASK-OSS-01": {"status":"COMPLETED","conclusion":"CANCELLED","jobId":91411473902,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30715960590/job/91411473902","boundary":"CANCELLED_BY_FAIL_FAST"},
+      "TASK-OSS-03": {"status":"COMPLETED","conclusion":"CANCELLED","jobId":91411473860,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30715960590/job/91411473860","boundary":"CANCELLED_BY_FAIL_FAST"},
+      "TASK-OSS-09": {"status":"COMPLETED","conclusion":"FAILURE","jobId":91411473858,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30715960590/job/91411473858","failedStep":"Reconstruct seed and prepare public dependency cache","failurePhase":"before-task-oss-09-pytest","exitCode":1}
+    },
+    "verifyDependencyCacheOffline": {"status":"COMPLETED","conclusion":"SKIPPED","jobId":91411577860},
+    "aggregateQualification": {"status":"COMPLETED","conclusion":"SKIPPED","jobId":91411577958}
+  },
+  "firstFailure": {
+    "taskId": "TASK-OSS-09",
+    "jobId": 91411473858,
+    "step": "Reconstruct seed and prepare public dependency cache",
+    "phase": "before-task-oss-09-pytest",
+    "exitCode": 1,
+    "logUrl": "https://github.com/Eskasia/governseed/actions/runs/30715960590/job/91411473858",
+    "diagnostics": {"pythonVersion":"Python 3.14.6","uvVersion":"uv 0.11.8 (x86_64-unknown-linux-gnu)","pythonMagicPackage":"absent","libmagicLibrary":"present"},
+    "basis": "The preserved failed log records python: No module named pytest immediately before Process completed with exit code 1; no broader root-cause claim is made."
+  },
+  "phaseEvidence": {
+    "taskId": "TASK-OSS-09",
+    "runtimeVersionCheck": "PASSED; after-task-oss-09-runtime-version-checks is present",
+    "laterPhaseFailure": "PRESERVED; before-task-oss-09-pytest",
+    "phaseFailureFile": "attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/phase-failure.txt",
+    "phaseMarkersFile": "attempt-4-artifacts/download-v2/external-oss-v5-dependency-cache-TASK-OSS-09/phase-markers.txt"
+  },
+  "seedIdentity": {
+    "TASK-OSS-01": {"status":"VERIFIED","sealedSeedCommit":"15ba6bed78feebe392dfbe13cf0be4065b260af7","sealedSeedGitTree":"88516884b2ff20092e8113d3ca73db404c657295","sealedSeedTreeSha256":"3ebafacc713e37ea6939f08b1205198b415c5ae62dcbddb9f11ce4ab732ee70e","upstreamBaseCommit":"834cc54abcc4127ee13a127ade2e2f467d46c063"},
+    "TASK-OSS-03": {"status":"VERIFIED","sealedSeedCommit":"672d8d324fde3a0d874ee752ab8e1ef4751972bb","sealedSeedGitTree":"ac7ff80f13a48e911da363c5a14269b5e9c3111d","sealedSeedTreeSha256":"5fdbf067da484e3778a1345297a33d984779be73c020ded93198a1c84f5a07ca","upstreamBaseCommit":"efa194a6df72572e5245a25794bdad7ad34bea2d"},
+    "TASK-OSS-09": {"status":"VERIFIED","sealedSeedCommit":"17562a35c7b3ebf87e0c960306af6de39c79248b","sealedSeedGitTree":"e555d1a1cdcc53b05f0fa1ecce36c996dd203ac2","sealedSeedTreeSha256":"64d046e9abad54f4f10d2e489d4385e5ca6df1e0d5b8d67ecf48ad560bf4ad42","upstreamBaseCommit":"fb3816486cf9fac6bcc23a82200f632a6f1b6ce8"}
+  },
+  "artifacts": [
+    {"id":8823341968,"name":"external-oss-v5-dependency-cache-TASK-OSS-01","sizeBytes":74740579,"expired":false,"apiDigest":"sha256:4371fb19ddd31028c2b6e4453af0066e9ac8280c703f30197547dfad841c5b37","downloadedZip":"attempt-4-artifacts/zip-archives/8823341968.zip","downloadedZipSha256":"4371fb19ddd31028c2b6e4453af0066e9ac8280c703f30197547dfad841c5b37","apiDigestVerified":true,"contentFiles":["cache-roots.txt","seed-archive.sha256","seed.tgz"],"cachePayloadComplete":false},
+    {"id":8823341770,"name":"external-oss-v5-dependency-cache-TASK-OSS-03","sizeBytes":2054653,"expired":false,"apiDigest":"sha256:5cea3e544e32fd945d4dce3f773bddfdb27f7d96d0911e83ed3196f695ff3cb7","downloadedZip":"attempt-4-artifacts/zip-archives/8823341770.zip","downloadedZipSha256":"5cea3e544e32fd945d4dce3f773bddfdb27f7d96d0911e83ed3196f695ff3cb7","apiDigestVerified":true,"contentFiles":["cache-roots.txt","seed-archive.sha256","seed.tgz"],"cachePayloadComplete":false},
+    {"id":8823338463,"name":"external-oss-v5-dependency-cache-TASK-OSS-09","sizeBytes":50379538,"expired":false,"apiDigest":"sha256:2563cb8e297207a20a658f7aaf36e2330915110c038575cb3214c8c9bd068a56","downloadedZip":"attempt-4-artifacts/zip-archives/8823338463.zip","downloadedZipSha256":"2563cb8e297207a20a658f7aaf36e2330915110c038575cb3214c8c9bd068a56","apiDigestVerified":true,"contentFiles":["cache-roots.txt","phase-failure.txt","phase-markers.txt","seed-archive.sha256","seed.tgz","task-oss-09-diagnostics.txt"],"cachePayloadComplete":false,"seedArchiveSha256":"f9919128991d5b6d0805a0b6b1927950209047185578cad8b6d7026c22e467e8","seedArchiveFileSha256":"f9919128991d5b6d0805a0b6b1927950209047185578cad8b6d7026c22e467e8","diagnosticsSha256":"ae32c268a5b77cd69d57128d28bc03895da8dd8bd61281520d4824dbe019fb32","phaseFailureSha256":"669bc1c94574c1fdef346e0af0a600ad361f45363e1539fc9ff8dfe4783c9218","phaseMarkersSha256":"59f6a0ec86cb6d55dc1aedf4b4da01fcedf05faf2efd1b7ff25cd077248ed2f3"},
+    {"id":8823332105,"name":"external-oss-v5-seed-identity-TASK-OSS-09","sizeBytes":709,"expired":false,"apiDigest":"sha256:bba3d0f44530d380e6d3b157cc3902b5b5dcb4983b246aa18f112f0c305d6e4e"},
+    {"id":8823331818,"name":"external-oss-v5-seed-identity-TASK-OSS-01","sizeBytes":710,"expired":false,"apiDigest":"sha256:b1cab832bf29e09e3de98e7cb33f10be874fd9042ec46abdcdbc95ccc5ac0603"},
+    {"id":8823330570,"name":"external-oss-v5-seed-identity-TASK-OSS-03","sizeBytes":710,"expired":false,"apiDigest":"sha256:06cc06b80629f9d7dffd48d33233105e1981a45df1fac9a6d42a73522ae34e7b"}
+  ],
+  "receiptBoundary": {
+    "readyReceiptCount": 0,
+    "tasks": {"TASK-OSS-01":"NOT_READY","TASK-OSS-03":"NOT_READY","TASK-OSS-09":"NOT_READY"},
+    "missingFromDependencyArtifacts": ["cache.tgz","cache-manifest.json","manifest.sha256","cache-files.sha256","preparation-result.json","runtime-image.tgz","cache-receipt.json"],
+    "offlineProof": "NOT_RUN_SKIPPED",
+    "aggregateQualification": "NOT_RUN_SKIPPED",
+    "measuredCacheStatus": "NOT_READY",
+    "blocked": true
+  },
+  "capturedFiles": {
+    "attempt-4-artifacts/run-view.json":"c02ce397852ff6d90d611ab2379c2faefdb3eda219176f4f5a7dd62521c517a3",
+    "attempt-4-artifacts/jobs.json":"033b80a9b9c869fed169f63a75602eeddb31bbdf5cfc0cd352e816c0db912051",
+    "attempt-4-artifacts/artifacts.json":"62b3846d47b41d74b1be554daee818c3be8722f1a9b67ba86ef9076b90f31278",
+    "attempt-4-artifacts/run.log":"30bc30d6e873a10d5e45332600868d7db401c633a9f5245f03c24477c77e95fc",
+    "attempt-4-artifacts/failed.log":"207a13251d8110a5e46a73e53250f998f41a7eb4dc36cfd4a1b51ad735b71d54"
+  },
+  "claimBoundary": "Exactly one new dispatch occurred at run 30715960590 against origin/main 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e. Seed identity passed for all three tasks and TASK-OSS-09 passed the runtime-version-check phase, but measured preparation later failed before pytest; the other preparation jobs were cancelled, and offline/aggregate jobs were skipped. Zero READY is preserved: no task has complete receipt/manifest/cache archive/runtime image/offline/aggregate evidence. Runs 30711805623, 30713763827, and 30714926737 were not rerun or modified. No credentials, Codex, Pilot, commit, or push is claimed."
+}

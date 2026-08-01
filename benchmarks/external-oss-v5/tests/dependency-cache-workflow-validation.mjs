@@ -78,6 +78,8 @@ const validateWorkflow = (source) => {
   require(task09.includes('phase_mark "before-task-oss-09-uv-sync"'), 'TASK-OSS-09 uv sync phase marker present');
   require(task09.includes('phase_mark "before-task-oss-09-uv-lock-immutability-check"'), 'TASK-OSS-09 lockfile phase marker present');
   require(task09.includes('phase_mark "before-task-oss-09-pytest"'), 'TASK-OSS-09 pytest phase marker present');
+  require(task09.includes('"$sealed_root/.venv/bin/python" -m pytest -q src/paperless/tests/test_parser_utils.py'), 'TASK-OSS-09 preparation uses the sealed-root venv interpreter');
+  require(!/(?:^|\s)python -m pytest -q src\/paperless\/tests\/test_parser_utils\.py/mu.test(task09), 'TASK-OSS-09 preparation rejects the global python interpreter');
   require(task09.includes('task-oss-09-diagnostics.txt'), 'TASK-OSS-09 diagnostics artifact present');
   require(task09.includes('uv_version=$(uv --version)'), 'TASK-OSS-09 captures full uv version output');
   require(task09.includes("awk '{print $1, $2}'"), 'TASK-OSS-09 checks uv version fields tolerantly');
@@ -111,6 +113,8 @@ const validateWorkflow = (source) => {
   require(offline.includes('grep -Fq DEPENDENCY_CACHE_INCOMPLETE'), 'negative cache test requires incomplete marker');
   require(offline.includes('test "$negative_rc" -eq 42'), 'negative cache test requires exit 42');
   require(offline.includes('cache-receipt.json'), 'offline job writes receipt');
+  require(offline.includes('/cache/.venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py'), 'offline TASK-OSS-09 uses the mounted cache venv interpreter');
+  require(!/(?:^|\s)python -m pytest -q src\/paperless\/tests\/test_parser_utils\.py/mu.test(offline), 'offline TASK-OSS-09 rejects the global python interpreter');
   require(!offline.match(/(?:npm|pnpm|uv)\s+(?:install|ci|sync)\b/iu), 'offline job cannot install or update dependencies');
   require(!offline.match(/\b(?:curl|wget)\b/iu), 'offline job cannot download with fallback tools');
   require(!offline.includes('secrets.'), 'offline job has no credential reference');
@@ -146,6 +150,8 @@ expectRejected('offline install mutation', workflow.replace('          node --in
 expectRejected('Immich preparation install outside sealed_root', workflow.replace('(\n                cd "$sealed_root"\n                pnpm install --frozen-lockfile --ignore-scripts\n                pnpm --filter @immich/sdk run build\n              )', 'pnpm install --frozen-lockfile --ignore-scripts\n              pnpm --filter @immich/sdk run build'));
 expectRejected('Uptime Kuma preparation install outside sealed_root', workflow.replace('(\n                cd "$sealed_root"\n                npm ci --no-audit --no-fund\n              )', 'npm ci --no-audit --no-fund'));
 expectRejected('Paperless preparation install outside sealed_root', workflow.replace('(\n                cd "$sealed_root"\n                uv sync --group testing\n              )', 'uv sync --group testing'));
+expectRejected('Paperless preparation pytest uses global python', workflow.replace('"$sealed_root/.venv/bin/python" -m pytest -q src/paperless/tests/test_parser_utils.py', 'python -m pytest -q src/paperless/tests/test_parser_utils.py'));
+expectRejected('Paperless offline pytest uses global python', workflow.replace('/cache/.venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py', 'python -m pytest -q src/paperless/tests/test_parser_utils.py'));
 expectRejected('missing TASK-OSS-09 runtime phase marker', workflow.replace('phase_mark "before-task-oss-09-runtime-version-checks"', 'phase_mark "missing-runtime-phase-marker"'));
 expectRejected('brittle TASK-OSS-09 uv version check', workflow.replace("              test \"$(printf '%s\\n' \"$uv_version\" | awk '{print $1, $2}')\" = \"uv 0.11.8\"", '              test "$(uv --version)" = "uv 0.11.8"'));
 expectRejected('missing preparation failure trap', workflow.replace("trap 'rc=$?; trap - ERR;", "trap 'rc=$?;"));
