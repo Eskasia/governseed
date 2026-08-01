@@ -2,18 +2,19 @@
   "schemaVersion": 1,
   "benchmarkId": "GS-OSS-2026-08-01-V4",
   "evidenceClass": "external-observational",
-  "status": "NOT_RUN",
-  "dependencyCaches": "NOT_RUN",
+  "status": "BLOCKED",
+  "dependencyCaches": "BLOCKED",
   "workflowPath": ".github/workflows/external-oss-v4-dependency-cache.yml",
   "tasks": [
-    {"taskId": "TASK-OSS-01", "repository": "immich-app/immich", "cacheStatus": "NOT_RUN", "cacheReceipt": "NOT_CREATED"},
-    {"taskId": "TASK-OSS-03", "repository": "louislam/uptime-kuma", "cacheStatus": "NOT_RUN", "cacheReceipt": "NOT_CREATED"},
-    {"taskId": "TASK-OSS-09", "repository": "paperless-ngx/paperless-ngx", "cacheStatus": "NOT_RUN", "cacheReceipt": "NOT_CREATED"}
+    {"taskId": "TASK-OSS-01", "repository": "immich-app/immich", "cacheStatus": "CANCELLED_BEFORE_PREPARATION", "cacheReceipt": "NOT_CREATED"},
+    {"taskId": "TASK-OSS-03", "repository": "louislam/uptime-kuma", "cacheStatus": "CANCELLED_BEFORE_PREPARATION", "cacheReceipt": "NOT_CREATED"},
+    {"taskId": "TASK-OSS-09", "repository": "paperless-ngx/paperless-ngx", "cacheStatus": "FAILED_SEED_COMMIT_UNREACHABLE", "cacheReceipt": "NOT_CREATED"}
   ],
   "staticValidation": "PASS_STATIC_ONLY",
   "fullCi": "PASS",
   "localDocker": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+  "dispatch": {"attempt": 1, "runId": 30704989330, "headSha": "08579d4c7fa662b93e9fbcd32cdc76659db82bac", "conclusion": "failure"},
   "offlineSmoke": "NOT_RUN",
   "negativeCacheMissTests": "NOT_RUN",
-  "claimBoundary": "Workflow and static qualification only; no Actions dispatch, cache archive, offline container, public smoke, negative cache-miss, Codex task, Pilot, or READY receipt was produced."
+  "claimBoundary": "The single Actions dispatch failed during TASK-OSS-09 seed preparation because the sealed public seed commit was unreachable; no cache archive, offline container, public smoke, negative cache-miss, Codex task, Pilot, or READY receipt was produced."
 }
