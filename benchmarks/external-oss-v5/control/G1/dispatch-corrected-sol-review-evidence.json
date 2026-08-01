@@ -1,0 +1,102 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 1,
+  "reviewType": "corrected-canonical-dispatch-evidence",
+  "reviewedAt": "2026-08-01",
+  "reviewedHead": "e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2",
+  "scope": "Corrected canonical dispatch evidence only",
+  "repoIdentity": {
+    "worktree": "/Users/william/governseed-v5-g1-cwd-fix",
+    "gitHead": "e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2",
+    "failedRunHead": "188df340b67d70a3fa32d30ce3e1761fcdb1ec7b"
+  },
+  "explicitHashes": {
+    "historicalUnreviewed": {
+      "dispatchAttemptPath": "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json",
+      "dispatchAttemptSha256": "c819703327717d07f410a0cd138135736ec0dfab3e94da4b17cd5dea5703024f",
+      "receiptReviewInputPath": "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json",
+      "receiptReviewInputSha256": "5e42290374d5ed38c1eb17c001b66504484052e14bbd76c4faa00ee547768aef"
+    },
+    "correctedCanonical": {
+      "dispatchAttemptPath": "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json",
+      "dispatchAttemptSha256": "1a77ff825e984577776d9f663175ba077b4e96fb92f5dc09db655cc3b3fc094e",
+      "receiptReviewInputPath": "benchmarks/external-oss-v5/control/G1/receipt-review-input.json",
+      "receiptReviewInputSha256": "6ac2bdb161b59ed440f63c90dcbf58dbe95e76a777d2cbdb1591e9b3d1136903"
+    }
+  },
+  "independentChecks": [
+    {
+      "name": "run_identity",
+      "result": "PASS",
+      "details": "The corrected canonical dispatch evidence still identifies run 30711805623 for the External OSS V5 dependency-cache workflow at failed-run head 188df340b67d70a3fa32d30ce3e1761fcdb1ec7b with overall conclusion FAILURE.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:9",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:11",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:13",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:14"
+      ]
+    },
+    {
+      "name": "observed_failure",
+      "result": "PASS",
+      "details": "The corrected canonical files preserve the same historical failure surface: TASK-OSS-03 failed first, TASK-OSS-01 and TASK-OSS-09 were cancelled by fail-fast, and downstream offline and aggregate steps were skipped.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:17",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:25",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:30",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:21",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:26",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:27",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:31"
+      ]
+    },
+    {
+      "name": "zero_ready_receipts",
+      "result": "PASS",
+      "details": "The corrected canonical receipt still records zero READY receipts, no created receipt files, and no promotion of any partial preparation artifact to READY.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:11",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:14",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:25",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:26",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:27",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:35",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:36"
+      ]
+    },
+    {
+      "name": "harness_defect",
+      "result": "PASS",
+      "details": "The corrected canonical dispatch and receipt now classify the failure as HARNESS_DEFECT and state that preparation commands ran at the GovernSeed checkout root instead of sealed_root.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:25",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:26",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:27",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:26",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:37",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:249",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:275",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:295"
+      ]
+    },
+    {
+      "name": "no_forbidden_scope",
+      "result": "PASS",
+      "details": "The pushed repair scope remains the minimal workflow cwd repair plus G1 evidence files, and the current hash-consistency repair did not add any workflow or static-validation edits in the worktree.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:11",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:12",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:21"
+      ],
+      "localObservations": {
+        "workflowAndValidationDiff": "git diff --name-only -- .github/workflows/external-oss-v5-dependency-cache.yml benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs => no output"
+      }
+    }
+  ],
+  "residualRisk": [
+    "This corrected review accepts evidence integrity only; it does not claim a rerun, a READY cache, or any new workflow execution.",
+    "Historical run 30711805623 remains immutable FAILURE evidence."
+  ],
+  "claimBoundary": "This review covers only the corrected canonical dispatch evidence and its embedded hashes. It preserves the historical failed-run facts, the zero-READY boundary, and the HARNESS_DEFECT classification without reopening workflow execution or broader benchmark claims."
+}

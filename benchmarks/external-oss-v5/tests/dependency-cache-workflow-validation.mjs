@@ -64,8 +64,11 @@ const validateWorkflow = (source) => {
   require(prepare.includes("[taskKey]: false"), 'preparation records hidden source exclusion');
   require(prepare.includes('fallbackDownload: false'), 'preparation disables fallback download');
   require(prepare.includes('pnpm install --frozen-lockfile --ignore-scripts'), 'Immich uses frozen pnpm install');
+  require(/\(\s*cd "\$sealed_root"\s+pnpm install --frozen-lockfile --ignore-scripts\s+pnpm --filter @immich\/sdk run build\s+\)/s.test(prepare), 'Immich preparation install and build run inside sealed_root');
   require(prepare.includes('npm ci --no-audit --no-fund'), 'Uptime Kuma uses npm ci');
+  require(/\(\s*cd "\$sealed_root"\s+npm ci --no-audit --no-fund\s+\)/s.test(prepare), 'Uptime Kuma preparation install runs inside sealed_root');
   require(prepare.includes('uv sync --group testing'), 'Paperless uses uv sync testing group');
+  require(/\(\s*cd "\$sealed_root"\s+uv sync --group testing\s+\)/s.test(prepare), 'Paperless preparation install runs inside sealed_root');
   require(prepare.includes('PAPERLESS_SECRET_KEY=synthetic-test-only-value'), 'Paperless preparation uses synthetic value');
   require(prepare.includes('test "$(git -C "$sealed_root" status --porcelain -- pnpm-lock.yaml)" = ""'), 'Immich lockfile is checked');
   require(prepare.includes('test "$(git -C "$sealed_root" status --porcelain -- package-lock.json)" = ""'), 'Uptime lockfile is checked');
@@ -128,6 +131,9 @@ expectRejected('cache readonly mutation', workflow.replace('--mount "type=bind,s
 expectRejected('missing negative marker mutation', workflow.replace('grep -Fq DEPENDENCY_CACHE_INCOMPLETE', 'grep -Fq MISSING_DEPENDENCY_CACHE_MARKER'));
 expectRejected('missing task matrix entry mutation', workflow.replace('          - task_id: TASK-OSS-09\n', ''));
 expectRejected('offline install mutation', workflow.replace('          node --input-type=module - "$input_root" "$artifact_root/cache-receipt.json" <<\'NODE\'', '          pnpm install\n          node --input-type=module - "$input_root" "$artifact_root/cache-receipt.json" <<\'NODE\''));
+expectRejected('Immich preparation install outside sealed_root', workflow.replace('(\n                cd "$sealed_root"\n                pnpm install --frozen-lockfile --ignore-scripts\n                pnpm --filter @immich/sdk run build\n              )', 'pnpm install --frozen-lockfile --ignore-scripts\n              pnpm --filter @immich/sdk run build'));
+expectRejected('Uptime Kuma preparation install outside sealed_root', workflow.replace('(\n                cd "$sealed_root"\n                npm ci --no-audit --no-fund\n              )', 'npm ci --no-audit --no-fund'));
+expectRejected('Paperless preparation install outside sealed_root', workflow.replace('(\n                cd "$sealed_root"\n                uv sync --group testing\n              )', 'uv sync --group testing'));
 
 const allChecks = [
   ...checks.map(([label]) => label),

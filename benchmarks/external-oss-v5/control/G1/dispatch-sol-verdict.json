@@ -1,0 +1,76 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 1,
+  "verdict": "REJECT",
+  "criteria": [
+    {
+      "criterion": "Dispatch evidence file hashes, repository HEAD, and run identity match the reviewed attempt",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json:9",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json:12",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:6",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:8"
+      ]
+    },
+    {
+      "criterion": "Observed failed-run facts are independently verified",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json:25",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json:33",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:21",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:22",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:23"
+      ]
+    },
+    {
+      "criterion": "The evidence preserves NOT_READY boundaries with zero READY receipts and no false READY cache claim",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:11",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:14",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:35",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:36",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:39"
+      ]
+    },
+    {
+      "criterion": "The structured evidence classifies the defect source correctly",
+      "status": "FAIL",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json:41",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json:42",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json:43",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:26",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:37",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:249",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:272",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:289"
+      ]
+    }
+  ],
+  "independentlyRecomputed": [
+    "sha256(benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json)=c819703327717d07f410a0cd138135736ec0dfab3e94da4b17cd5dea5703024f",
+    "sha256(benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json)=5e42290374d5ed38c1eb17c001b66504484052e14bbd76c4faa00ee547768aef",
+    "git HEAD=188df340b67d70a3fa32d30ce3e1761fcdb1ec7b and origin/main=188df340b67d70a3fa32d30ce3e1761fcdb1ec7b",
+    "GitHub Actions run 30711805623 concluded failure with first failed prepare job TASK-OSS-03 and fail-fast cancellations for TASK-OSS-01 and TASK-OSS-09",
+    "GitHub artifact inventory contains 5 artifacts total, with dependency-cache artifacts only for TASK-OSS-03 and TASK-OSS-09",
+    "TASK-OSS-03 upstream base commit efa194a6df72572e5245a25794bdad7ad34bea2d contains package-lock.json",
+    "The failed TASK-OSS-03 partial seed artifact seed.tgz contains package-lock.json",
+    "The benchmark repo root where the workflow step ran has package.json but no package-lock.json",
+    "The workflow runs pnpm install, npm ci, and uv sync before changing into $sealed_root"
+  ],
+  "remediation": [
+    "Amend the dispatch evidence to classify run 30711805623 as a harness defect, not a task-contract, seed-environment, or infrastructure defect.",
+    "State only what the failed run proves: TASK-OSS-03 npm ci returned EUSAGE, TASK-OSS-01 and TASK-OSS-09 were cancelled by fail-fast, and no READY receipt or READY cache was produced.",
+    "Do not claim that TASK-OSS-03 lacks package-lock.json; both the upstream base commit and the failed run's seed.tgz contain that file.",
+    "Repair the harness by running task install commands inside $sealed_root before any future dispatch. Preserve run 30711805623 as immutable historical evidence and do not change task facts, oracles, thresholds, or the failed run itself."
+  ],
+  "claimBoundary": "This verdict covers only the classification of dispatch attempt 1 at run 30711805623 on head 188df340b67d70a3fa32d30ce3e1761fcdb1ec7b. It accepts the historical failure facts and the absence of READY receipts, but rejects the structured root-cause claim that TASK-OSS-03 failed because the seed lacked a lockfile. No measured cache is qualified READY."
+}

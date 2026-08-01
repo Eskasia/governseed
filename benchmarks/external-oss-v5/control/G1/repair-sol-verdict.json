@@ -1,0 +1,84 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 2,
+  "verdict": "REJECT",
+  "criteria": [
+    {
+      "criterion": "Workflow prepare commands for Immich, Uptime Kuma, and Paperless run inside sealed_root",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/repair-sol-review-evidence.json",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:249",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:275",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:295"
+      ]
+    },
+    {
+      "criterion": "Static positive/negative cwd regression coverage is present and currently passes",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/repair-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:67",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:69",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:71",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:134",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:135",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:136"
+      ]
+    },
+    {
+      "criterion": "Static checks, local validation, and PR checks pass",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/repair-sol-review-evidence.json"
+      ]
+    },
+    {
+      "criterion": "Run 30711805623 failure evidence is preserved with HARNESS_DEFECT classification and no false READY cache claim",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/repair-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:25",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:26",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:39",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:48",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:26",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:35",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:39"
+      ]
+    },
+    {
+      "criterion": "No task facts, oracles, thresholds, lock or credential boundaries, Codex/Pilot boundaries, or workflow/test scope outside the repair surface changed",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/repair-sol-review-evidence.json"
+      ]
+    },
+    {
+      "criterion": "The handoff file records the exact current PR head and current PR check state consistently",
+      "status": "FAIL",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/repair-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:10",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:53"
+      ]
+    }
+  ],
+  "independentlyRecomputed": [
+    "git rev-parse HEAD = e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2",
+    "gh pr view 49 --repo Eskasia/governseed --json headRefOid reports e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2",
+    "harness-repair-1-luna-handoff.json still records headCommit = e5bc2c68b85c62cd6f1887a111d0b65505a8d7",
+    "gh pr view 49 --repo Eskasia/governseed --json statusCheckRollup shows validate checks SUCCESS on ubuntu-latest, macos-latest, and windows-latest on August 1, 2026",
+    "harness-repair-1-luna-handoff.json still says PR checks were IN_PROGRESS",
+    "node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs = PASS",
+    "node benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs = PASS",
+    "Canonical receipt-review-input.json now carries HARNESS_DEFECT while receipt-review-input-unreviewed.json preserves the stale exact bytes"
+  ],
+  "remediation": [
+    "Update benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json so headCommit exactly matches the actual PR head e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2.",
+    "Replace the stale handoff checks text with the current completed PR check state or another exact statement that matches the live PR state on August 1, 2026.",
+    "No workflow, test, dispatch, or receipt evidence change is needed for this review outcome."
+  ],
+  "claimBoundary": "This verdict reviews the current PR #49 state at actual head e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2 plus the uncommitted G1 evidence files. The harness repair and corrected receipt evidence pass, but the handoff metadata remains inconsistent with the actual PR head and check state, so the overall repair evidence is not yet ACCEPT."
+}
