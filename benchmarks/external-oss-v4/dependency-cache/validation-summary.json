@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "status": "PASS_STATIC_ONLY",
+  "commands": [
+    {"command": "npm run check", "status": "PASS"},
+    {"command": "npm run validate", "status": "PASS"},
+    {"command": "npm run test:governance", "status": "PASS", "tests": 127},
+    {"command": "npm run test:privacy", "status": "PASS", "tests": 24},
+    {"command": "npm run test:experimental", "status": "PASS", "tests": 125},
+    {"command": "npm run ci", "status": "PASS"},
+    {"command": "node benchmarks/external-oss-v4/tests/schema-validation.test.mjs", "status": "PASS", "schemaFilesParsed": 5},
+    {"command": "node benchmarks/external-oss-v4/tests/runner-workflow-validation.mjs", "status": "PASS", "checks": 49},
+    {"command": "node benchmarks/external-oss-v4/tests/dependency-cache-workflow-validation.mjs", "status": "PASS", "checks": 50},
+    {"command": "Ruby YAML parse: .github/workflows/external-oss-v4-dependency-cache.yml", "status": "PASS"},
+    {"command": "bash -n extracted workflow run blocks", "status": "PASS"},
+    {"command": "docker info", "status": "EXPECTED_NOT_RUN", "code": "LOCAL_DOCKER_DAEMON_UNAVAILABLE"}
+  ],
+  "supersededValidationAttempts": [
+    {"command": "npm run validate", "status": "FAIL", "reason": "Initial literal credential denylist token was rejected by the repository workflow validator; split-token representation was applied and the command passed on rerun."}
+  ],
+  "offlineSmoke": "NOT_RUN",
+  "negativeCacheMissTests": "NOT_RUN",
+  "cacheReceipts": "NOT_CREATED",
+  "claimBoundary": "Static workflow qualification only; no GitHub Actions dispatch, dependency archive, offline container, public smoke, negative cache-miss, or READY cache receipt is claimed."
+}

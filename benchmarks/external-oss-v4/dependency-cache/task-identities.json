@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "inheritedFromBenchmark": "GS-OSS-2026-08-01-V3",
+  "status": "COMPLETE_FOR_CACHE_WORKFLOW",
+  "tasks": [
+    {
+      "taskId": "TASK-OSS-01",
+      "repository": "immich-app/immich",
+      "repositoryId": "OSS-01",
+      "seedCommit": "0ad23a4f16331512f49c570acc2e9ff8093c8248",
+      "seedTreeSha256": "88c4510ad2c5825cad031671e8188fe8f6164324fd4eccd98f5160fc81a676fa",
+      "publicTestCommand": ["./node_modules/.bin/vitest", "--run", "src/commands/asset.spec.ts"],
+      "workingDirectory": "packages/cli",
+      "dependencyRehearsalCommands": [
+        ["pnpm", "install", "--frozen-lockfile", "--ignore-scripts"],
+        ["pnpm", "--filter", "@immich/sdk", "run", "build"]
+      ],
+      "runtime": {"node": "v26.3.0", "pnpm": "10.6.2"},
+      "allowedPaths": ["packages/cli/**", "packages/sdk/**", "docs/docs/features/command-line-interface.md"],
+      "forbiddenPaths": ["pnpm-lock.yaml", "server/**", "mobile/**", "generated/**", "credentials/**"],
+      "sourceRefs": [
+        {"sourcePath": "benchmarks/external-oss-v3/tasks/TASK-OSS-01/task.json", "sourceSha256": "75e0277ea03599ea4142e48c7ca6b25b04dc319265c9b9d79c4d51639dea3812"},
+        {"sourcePath": "benchmarks/external-oss-v3/tasks/TASK-OSS-01/seed-manifest.json", "sourceSha256": "58aaf1630d0b448d637ad4a2da38c2e28572194b264f108c31af9c9e373ed458"},
+        {"sourcePath": "benchmarks/external-oss-v3/tasks/TASK-OSS-01/dependency-lock.json", "sourceSha256": "fbe357ddde1354e456b5f0c1a0c2c2df4d057a63b656bb496cb697fae17d4929"},
+        {"sourcePath": "benchmarks/external-oss-v3/tasks/TASK-OSS-01/public-test-rehearsal.json", "sourceSha256": "f4dddf5bf8fd74e1e2ef9b7efd27e44f1a35fa6c5212edee17e0ea9f5ec99cba"}
+      ]
+    },
+    {
+      "taskId": "TASK-OSS-03",
+      "repository": "louislam/uptime-kuma",
+      "repositoryId": "OSS-03",
+      "seedCommit": "2ccc49b77ba0c0e9dc159fcce5516efa7c0e7a18",
+      "seedTreeSha256": "5fdbf067da484e3778a1345297a33d984779be73c020ded93198a1c84f5a07ca",
+      "publicTestCommand": ["env", "TEST_BACKEND=1", "node", "--test", "--test-reporter=spec", "test/backend-test/test-status-page.js"],
+      "dependencyRehearsalCommands": [["npm", "ci", "--no-audit", "--no-fund"]],
+      "runtime": {"node": "v26.3.0", "npm": "11.16.0"},
+      "allowedPaths": ["server/model/**", "test/backend-test/**"],
+      "forbiddenPaths": ["package.json", "package-lock.json", "db/**", "src/lang/**", "generated/**", "credentials/**"],
+      "sourceRefs": [
+        {"sourcePath": "benchmarks/external-oss-v3/tasks/TASK-OSS-03/task.json", "sourceSha256": "4a3bc122e913c6d58d102e39a22f5ffa880e4e5fcb0016c0b5b485088f602b71"},
+        {"sourcePath": "benchmarks/external-oss-v3/tasks/TASK-OSS-03/seed-manifest.json", "sourceSha256": "d705d253a74c4a4f0fc7402645cffa14b280bbb921b341c02f9d55b081ed0495"},
+        {"sourcePath": "benchmarks/external-oss-v3/tasks/TASK-OSS-03/dependency-lock.json", "sourceSha256": "91e95a2f84752e6910dc6816bdc1bed87e37773f67e0224c6a549e84f97b4e6b"},
+        {"sourcePath": "benchmarks/external-oss-v3/tasks/TASK-OSS-03/public-test-rehearsal.json", "sourceSha256": "37e7b4e6cfa9279da1cfa35ffe8fb468b9cea1e216fc67c5d53661b1c62d68b2"}
+      ]
+    },
+    {
+      "taskId": "TASK-OSS-09",
+      "repository": "paperless-ngx/paperless-ngx",
+      "repositoryId": "OSS-09",
+      "seedCommit": "5f5ab1beea4feaaecee7131b4b36185f09e2f53c",
+      "seedTreeSha256": "64d046e9abad54f4f10d2e489d4385e5ca6df1e0d5b8d67ecf48ad560bf4ad42",
+      "publicTestCommand": ["python", "-m", "pytest", "-q", "src/paperless/tests/test_parser_utils.py"],
+      "dependencyRehearsalCommands": [["uv", "sync", "--group", "testing"]],
+      "runtime": {"python": "3.14.6", "uv": "0.11.8", "localLibmagic": "5.46", "globalInstall": false},
+      "allowedPaths": ["src/paperless/parsers/**", "src/paperless/tests/**"],
+      "forbiddenPaths": ["uv.lock", "migrations/**", "src-ui/**", "generated/**", "credentials/**"],
+      "sourceRefs": [
+        {"sourcePath": "benchmarks/external-oss-v3/tasks/TASK-OSS-09/task.json", "sourceSha256": "0f38b63036bb76a5515db99128c62f9ef3993b4c0360460decfd1b01c770842e"},
+        {"sourcePath": "benchmarks/external-oss-v3/tasks/TASK-OSS-09/seed-manifest.json", "sourceSha256": "139435af44a8e34a798e736b1ee23f6d520a2b5487c2459d3c95fe5e4fad9c0b"},
+        {"sourcePath": "benchmarks/external-oss-v3/tasks/TASK-OSS-09/dependency-lock.json", "sourceSha256": "af86f59193600b37aeb5c7af5a0fd77e907895a02ec6bbfa7ea152e845e25e59"},
+        {"sourcePath": "benchmarks/external-oss-v3/tasks/TASK-OSS-09/public-test-rehearsal.json", "sourceSha256": "4874299e2190d375a24f2e824ec2c39d4598c96416018d831ef31b9d86c7f8db"}
+      ]
+    }
+  ],
+  "claimBoundary": "Inherited V3 task identity only; no V4 dependency cache or measured test result is claimed."
+}
