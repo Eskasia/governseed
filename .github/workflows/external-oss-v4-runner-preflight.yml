@@ -113,10 +113,41 @@ jobs:
           CONTAINER_CHECK
           chmod 0555 "$harness/container-check.sh"
           container_name="governseed-v4-preflight-${GITHUB_RUN_ID}"
-          container_id=$(docker create --name "$container_name" --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true --user 65532:65532 --pids-limit "$PIDS_LIMIT" --cpus "$CPU_LIMIT" --memory "$MEMORY_LIMIT" --mount "type=bind,src=$workspace,dst=/workspace,rw" --mount "type=bind,src=$cache,dst=/cache,ro" --mount "type=bind,src=$harness,dst=/harness,ro" "ubuntu@${OCI_IMAGE_DIGEST}" /harness/container-check.sh)
+          container_id=$(docker create --name "$container_name" --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true --user 65532:65532 --pids-limit "$PIDS_LIMIT" --cpus "$CPU_LIMIT" --memory "$MEMORY_LIMIT" --mount "type=bind,src=$workspace,dst=/workspace" --mount "type=bind,src=$cache,dst=/cache,readonly" --mount "type=bind,src=$harness,dst=/harness,readonly" "ubuntu@${OCI_IMAGE_DIGEST}" /harness/container-check.sh)
           docker inspect "$container_id" --format '{{json .HostConfig}}' > runner-artifacts/container-host-config.json
           test "$(docker inspect "$container_id" --format '{{.HostConfig.NetworkMode}}')" = none
           test "$(docker inspect "$container_id" --format '{{.Config.User}}')" = '65532:65532'
+          docker inspect "$container_id" \
+            --format '{{json .Mounts}}' \
+            > runner-artifacts/container-mounts.json
+
+          workspace_rw=$(
+            docker inspect "$container_id" \
+              --format '{{range .Mounts}}{{if eq .Destination "/workspace"}}{{.RW}}{{end}}{{end}}'
+          )
+
+          cache_rw=$(
+            docker inspect "$container_id" \
+              --format '{{range .Mounts}}{{if eq .Destination "/cache"}}{{.RW}}{{end}}{{end}}'
+          )
+
+          harness_rw=$(
+            docker inspect "$container_id" \
+              --format '{{range .Mounts}}{{if eq .Destination "/harness"}}{{.RW}}{{end}}{{end}}'
+          )
+
+          test "$workspace_rw" = true
+          test "$cache_rw" = false
+          test "$harness_rw" = false
+
+          for destination in /workspace /cache /harness; do
+            count=$(
+              docker inspect "$container_id" \
+                --format '{{range .Mounts}}{{println .Destination}}{{end}}' |
+                grep -Fxc "$destination"
+            )
+            test "$count" -eq 1
+          done
           # No docker.sock, host home, git credential store, or provider credential mount is allowed.
           docker start "$container_id"
           docker wait "$container_id" > runner-artifacts/container-exit-code.txt
