@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "gate": "G1",
+  "attempt": 2,
+  "repository": "Eskasia/governseed",
+  "ref": "main",
+  "mergeHead": "576a513dd2574c7949cfe4cb5aebdb43f770aec1",
+  "workflow": ".github/workflows/external-oss-v5-dependency-cache.yml",
+  "dispatchCommand": "gh workflow run .github/workflows/external-oss-v5-dependency-cache.yml --repo Eskasia/governseed --ref main",
+  "runId": 30713763827,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30713763827",
+  "createdAt": "2026-08-01T18:59:06Z",
+  "updatedAt": "2026-08-01T19:00:18Z",
+  "status": "COMPLETED",
+  "conclusion": "FAILURE",
+  "qualification": "BLOCKED",
+  "rerun": "NOT_PERFORMED",
+  "jobs": {
+    "seedIdentity": {
+      "TASK-OSS-01": {"status":"COMPLETED","conclusion":"SUCCESS","jobId":91405714591,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30713763827/job/91405714591"},
+      "TASK-OSS-03": {"status":"COMPLETED","conclusion":"SUCCESS","jobId":91405714603,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30713763827/job/91405714603"},
+      "TASK-OSS-09": {"status":"COMPLETED","conclusion":"SUCCESS","jobId":91405714595,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30713763827/job/91405714595"}
+    },
+    "prepareDependencyCache": {
+      "TASK-OSS-09": {"status":"COMPLETED","conclusion":"FAILURE","jobId":91405757242,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30713763827/job/91405757242","failedStep":"Reconstruct seed and prepare public dependency cache","exitCode":1},
+      "TASK-OSS-01": {"status":"COMPLETED","conclusion":"CANCELLED","jobId":91405757251,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30713763827/job/91405757251","boundary":"CANCELLED_BY_FAIL_FAST"},
+      "TASK-OSS-03": {"status":"COMPLETED","conclusion":"CANCELLED","jobId":91405757268,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30713763827/job/91405757268","boundary":"CANCELLED_BY_FAIL_FAST"}
+    },
+    "verifyDependencyCacheOffline": {"status":"COMPLETED","conclusion":"SKIPPED","jobId":91405830949},
+    "aggregateQualification": {"status":"COMPLETED","conclusion":"SKIPPED","jobId":91405831444}
+  },
+  "firstFailure": {
+    "taskId": "TASK-OSS-09",
+    "jobId": 91405757242,
+    "step": "Reconstruct seed and prepare public dependency cache",
+    "command": "The step's compound preparation script; the available failed log exposes no narrower command before exit.",
+    "code": "PROCESS_EXIT_1",
+    "exitCode": 1,
+    "logUrl": "https://github.com/Eskasia/governseed/actions/runs/30713763827/job/91405757242",
+    "classification": "UNCLASSIFIED_RUNTIME_OR_TASK_FAILURE",
+    "basis": "The GitHub failed log records only Process completed with exit code 1 for this first failed step. No unsupported root-cause claim is made from the truncated/public log."
+  },
+  "artifacts": [
+    {"id":8822699552,"name":"external-oss-v5-dependency-cache-TASK-OSS-03","sizeBytes":2054653,"expired":false,"archiveUrl":"https://api.github.com/repos/Eskasia/governseed/actions/artifacts/8822699552/zip","contentHashes":"NOT_OBTAINED"},
+    {"id":8822696701,"name":"external-oss-v5-dependency-cache-TASK-OSS-09","sizeBytes":50378861,"expired":false,"archiveUrl":"https://api.github.com/repos/Eskasia/governseed/actions/artifacts/8822696701/zip","contentHashes":"NOT_OBTAINED"},
+    {"id":8822692649,"name":"external-oss-v5-seed-identity-TASK-OSS-01","sizeBytes":710,"expired":false,"archiveUrl":"https://api.github.com/repos/Eskasia/governseed/actions/artifacts/8822692649/zip","contentHashes":"NOT_OBTAINED"},
+    {"id":8822690882,"name":"external-oss-v5-seed-identity-TASK-OSS-09","sizeBytes":709,"expired":false,"archiveUrl":"https://api.github.com/repos/Eskasia/governseed/actions/artifacts/8822690882/zip","contentHashes":"NOT_OBTAINED"},
+    {"id":8822690617,"name":"external-oss-v5-seed-identity-TASK-OSS-03","sizeBytes":710,"expired":false,"archiveUrl":"https://api.github.com/repos/Eskasia/governseed/actions/artifacts/8822690617/zip","contentHashes":"NOT_OBTAINED"}
+  ],
+  "receiptBoundary": {
+    "readyReceiptCount": 0,
+    "cacheReceipts": "NOT_VERIFIED; no receipt promoted to READY",
+    "cacheArchives": "PARTIAL_ARTIFACTS_ONLY; not independently receipt-verified",
+    "offlineProof": "NOT_RUN_SKIPPED",
+    "aggregateQualification": "NOT_RUN_SKIPPED",
+    "measuredCacheStatus": "NOT_READY"
+  },
+  "claimBoundary": "Exactly one new dispatch occurred at run 30713763827 against main head 576a513dd2574c7949cfe4cb5aebdb43f770aec1. Seed identity passed for all three tasks, but measured preparation failed first at TASK-OSS-09; TASK-OSS-01 and TASK-OSS-03 were cancelled, and offline/aggregate jobs were skipped. No READY receipt, cache qualification, offline proof, cache SHA, manifest SHA, runtime identity qualification, benchmark result, rerun, credentials, Codex, or Pilot is claimed. Run 30711805623 was not rerun or modified."
+}

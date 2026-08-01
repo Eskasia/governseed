@@ -1,0 +1,63 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "reviewType": "phase-observability-repair-2-static-acceptance",
+  "reviewedAt": "2026-08-01",
+  "reviewedHead": "576a513dd2574c7949cfe4cb5aebdb43f770aec1",
+  "verdict": "ACCEPT",
+  "criteria": [
+    {
+      "criterion": "The repair is limited to TASK-OSS-09 preparation observability and adds only non-secret markers, diagnostics, and failure-trap logic",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/phase-observability-repair-2-sol-review-evidence.json",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:203",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:211",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:305",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:77",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:84"
+      ]
+    },
+    {
+      "criterion": "The repair does not change install, test, cache, network, credential, READY, or threshold semantics",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/phase-observability-repair-2-sol-review-evidence.json",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:323",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:336",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:410",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:469",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:483"
+      ]
+    },
+    {
+      "criterion": "A future TASK-OSS-09 failure on the reviewed missing-classification path will record lastPhase and exitCode and upload those markers",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/phase-observability-repair-2-sol-review-evidence.json",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:212",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:501",
+        "benchmarks/external-oss-v5/control/G1/attempt-2-artifacts/job-91405757242.logs:481",
+        "benchmarks/external-oss-v5/control/G1/attempt-2-artifacts/job-91405757242.logs:504",
+        "benchmarks/external-oss-v5/control/G1/attempt-2-artifacts/job-91405757242.logs:520"
+      ]
+    },
+    {
+      "criterion": "The required static validators pass and the full local suite is represented honestly as blocked rather than PASS",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/phase-observability-repair-2-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/phase-observability-repair-2-luna-handoff.json:35",
+        "benchmarks/external-oss-v5/control/G1/phase-observability-repair-2-luna-handoff.json:45"
+      ]
+    }
+  ],
+  "independentlyValidated": [
+    "git rev-parse HEAD = 576a513dd2574c7949cfe4cb5aebdb43f770aec1",
+    "git diff --name-only shows only the workflow and benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs in the tracked diff",
+    "node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs = PASS",
+    "node benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs = PASS",
+    "python3 bounded rerun of npm run ci timed out after 120.0s while still in test:governance"
+  ],
+  "claimBoundary": "This ACCEPT is a static safety/sufficiency acceptance for the phase observability repair only. It does not claim a cache READY result, does not validate the August 1, 2026 attempt 2 run retroactively, and does not approve any workflow dispatch, receipt, offline proof, or aggregate qualification beyond the reviewed static patch."
+}

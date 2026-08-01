@@ -1,0 +1,100 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 2,
+  "reviewType": "sol-acceptance-layer",
+  "reviewedAt": "2026-08-01",
+  "reviewedHead": "225700d2481c57c293eba06c5ba2afac3f1d4dbb",
+  "verdict": "REJECT",
+  "criteria": [
+    {
+      "criterion": "Run identity matches one August 1, 2026 failed measured dispatch at head 576a513dd2574c7949cfe4cb5aebdb43f770aec1",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:9",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:12",
+        "gh run view 30713763827 --repo Eskasia/governseed --json databaseId,headSha,status,conclusion"
+      ]
+    },
+    {
+      "criterion": "Observed failed-run facts are independently verified",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:20",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:34",
+        "gh run view 30713763827 --repo Eskasia/governseed --json jobs",
+        "gh api repos/Eskasia/governseed/actions/jobs/91405757242/logs"
+      ]
+    },
+    {
+      "criterion": "Artifact inventory is real and the partial TASK-OSS-09 artifact preserves the pre-READY boundary",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2-sol-review-evidence.json",
+        "gh api repos/Eskasia/governseed/actions/runs/30713763827/artifacts?per_page=100",
+        "gh api repos/Eskasia/governseed/actions/artifacts/8822696701/zip",
+        "unzip -l /tmp/g1-attempt2-artifact-8822696701.zip"
+      ]
+    },
+    {
+      "criterion": "Zero READY receipts / NOT_READY boundary is preserved",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:52",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:329"
+      ]
+    },
+    {
+      "criterion": "Claim boundary remains conservative and does not over-claim READY or rerun outcomes",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:60",
+        "benchmarks/external-oss-v5/control/G1/attempt-2-luna-handoff.json:40"
+      ]
+    },
+    {
+      "criterion": "Defect source is correctly classified into HARNESS_DEFECT, TASK_DEFECT, ENVIRONMENT_DEFECT, or INFRASTRUCTURE_DEFECT",
+      "status": "FAIL",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:42",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:293",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:299",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:304",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:308",
+        "gh api repos/Eskasia/governseed/actions/jobs/91405757242/logs",
+        "unzip -l /tmp/g1-attempt2-artifact-8822696701.zip"
+      ]
+    },
+    {
+      "criterion": "Review scope stayed inside allowed files and did not reopen workflow execution",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/attempt-2-luna-handoff.json:14",
+        "git status --short --branch"
+      ]
+    }
+  ],
+  "independentlyRecomputed": [
+    "sha256(benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json)=86b4ce64ec740f7aa082fbacbdba48d91d12d4722f47aab6f7be25f596790e84",
+    "sha256(benchmarks/external-oss-v5/control/G1/attempt-2-luna-handoff.json)=fe3ac007960b0a4b2ad6b133a21b0f65023a99a5d7a2aaa1b579cc0ff9bed39d",
+    "git rev-parse HEAD=225700d2481c57c293eba06c5ba2afac3f1d4dbb",
+    "GitHub Actions run 30713763827 headSha=576a513dd2574c7949cfe4cb5aebdb43f770aec1 status=completed conclusion=failure",
+    "GitHub artifact digests: TASK-OSS-03 cache=3cd39754a7996d4fac57018faa4a994ceb7a8b3ce2b6736f3c745872ee5a954b, TASK-OSS-09 cache=526344ec32d3d9ccc5f7b3b08b68769ab25483358ddba9aac424d58afa08afb7, seed-identity TASK-OSS-01=30bc84c718b60e362eb0fae563fe9648c2748c4db2aab1af7eb1b62732137000, seed-identity TASK-OSS-09=3f7244fb7f37a529225382a120ab521d06532abaf119c2f0a00d41c74306085e, seed-identity TASK-OSS-03=39ea09f487f17887ae296aa3fd1f0ab89a017b319fcaf2ed2d0cfa44d2b11815",
+    "sha256(/tmp/g1-attempt2-artifact-8822696701.zip)=526344ec32d3d9ccc5f7b3b08b68769ab25483358ddba9aac424d58afa08afb7",
+    "Downloaded TASK-OSS-09 artifact contains exactly cache-roots.txt, seed-archive.sha256=f9919128991d5b6d0805a0b6b1927950209047185578cad8b6d7026c22e467e8, and seed.tgz",
+    "Workflow lines 237-308 show TASK-OSS-09 only writes .venv to cache-roots.txt after uv sync, uv.lock immutability check, and pytest",
+    "Low-confidence host-side macOS/aarch64 check: uv sync passed with Python 3.14.6 and uv 0.11.8, while pytest failed on missing libmagic; this was not used to classify the GitHub Ubuntu failure"
+  ],
+  "remediation": [
+    "Amend the attempt-2 dispatch evidence to state that current public evidence does not classify the defect source beyond a pre-READY TASK-OSS-09 failure window. Do not present UNCLASSIFIED_RUNTIME_OR_TASK_FAILURE as an accepted terminal classification.",
+    "If a categorical defect label is required, add same-context evidence from the August 1, 2026 GitHub-hosted Ubuntu 24.04 x86_64 runner: full stderr, phase-marker files uploaded before and after uv sync and pytest, or an independently reproduced Linux runner trace with Python 3.14.6 and uv 0.11.8.",
+    "Record the artifact zip digests already available from the GitHub API, and keep the verified TASK-OSS-09 partial artifact member list in the structured evidence instead of leaving all artifact content hashes as NOT_OBTAINED.",
+    "Preserve the zero-READY boundary. Do not claim any READY receipt, cache.tgz, cache-manifest.json, preparation-result.json, runtime-image.tgz, offline proof, aggregate qualification, or benchmark success for run 30713763827."
+  ],
+  "claimBoundary": "This verdict covers only dispatch evidence for run 30713763827 on main head 576a513dd2574c7949cfe4cb5aebdb43f770aec1. It rejects the evidence package because defect-source classification remains unproven, while accepting the historical failed-run identity, artifacts, and zero-READY boundary. It does not claim any measured cache READY."
+}

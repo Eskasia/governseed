@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "repairCycle": 2,
+  "status": "READY_FOR_REVIEW",
+  "repository": "Eskasia/governseed",
+  "branch": "benchmark/v5-g1-phase-observability",
+  "baseCommit": "576a513dd2574c7949cfe4cb5aebdb43f770aec1",
+  "headCommit": "576a513dd2574c7949cfe4cb5aebdb43f770aec1",
+  "filesChanged": [
+    ".github/workflows/external-oss-v5-dependency-cache.yml",
+    "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
+    "benchmarks/external-oss-v5/control/G1/phase-observability-repair-2-luna-handoff.json"
+  ],
+  "preservedEvidence": [
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2-sol-verdict.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2-sol-review-evidence.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-2-artifacts/failed.log",
+    "benchmarks/external-oss-v5/control/G1/attempt-2-artifacts/job-91405757242.logs",
+    "benchmarks/external-oss-v5/control/G1/attempt-2-artifacts/task-oss-09.zip"
+  ],
+  "remediationApplied": [
+    "Added TASK-OSS-09 phase markers before/after runtime checks, uv sync, uv.lock immutability check, pytest, cache-root emission/copy, cache inventory, cache archive, runtime image, and manifest stages.",
+    "Added a TASK-OSS-09 ERR trap that records lastPhase and exitCode under artifact_root on failure.",
+    "Added non-secret diagnostics for Python/uv versions and read-only python-magic/libmagic presence.",
+    "Extended the existing static workflow validation to require phase markers/trap/diagnostics and reject sensitive environment dumping."
+  ],
+  "commands": [
+    {"command":"git fetch origin main && git rev-parse origin/main","result":"PASS; 576a513dd2574c7949cfe4cb5aebdb43f770aec1"},
+    {"command":"git switch -c benchmark/v5-g1-phase-observability origin/main","result":"PASS; HEAD equals origin/main"},
+    {"command":"node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs","result":"PASS; 5 checks"},
+    {"command":"node benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs","result":"PASS; 5 shell blocks"},
+    {"command":"npm run ci","result":"BLOCKED; interrupted after 162.9s because tests/governance/rule-lifecycle.test.mjs remained pending with 99 pass and 1 cancelled; no source failure in the repair files"},
+    {"command":"git diff --check","result":"PASS"},
+    {"command":"git status --short --branch","result":"PASS; repair files remain uncommitted; prior attempt-2 evidence preserved"}
+  ],
+  "dispatchBoundary": {
+    "workflowDispatch": "NOT_PERFORMED",
+    "priorRun30713763827": "PRESERVED_UNCHANGED",
+    "priorSolReview": "PRESERVED_UNCHANGED"
+  },
+  "knownLimitations": [
+    "Full npm run ci did not complete because an existing rule-lifecycle test hung; targeted workflow validators passed.",
+    "No workflow was dispatched, so no behavioral classification or cache qualification is claimed from this repair cycle.",
+    "Diagnostics intentionally omit credentials, secrets, environment dumps, and hidden-oracle data."
+  ],
+  "claimBoundary": "This handoff claims only a static harness observability repair candidate based on origin/main 576a513dd2574c7949cfe4cb5aebdb43f770aec1. It does not claim a rerun, measured dependency cache READY, receipt validity, offline proof, aggregate qualification, benchmark result, credentials, Codex, Pilot, task-fact/oracle changes, or any modification to prior run/Sol evidence."
+}

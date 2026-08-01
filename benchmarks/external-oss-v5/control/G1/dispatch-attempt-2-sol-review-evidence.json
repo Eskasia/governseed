@@ -1,0 +1,132 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 2,
+  "reviewType": "sol-acceptance-layer",
+  "reviewedAt": "2026-08-01",
+  "reviewedHead": "225700d2481c57c293eba06c5ba2afac3f1d4dbb",
+  "scope": "G1 measured dispatch attempt 2 dispatch evidence only; no workflow rerun, no workflow/task/oracle/lock edits, and no READY cache qualification",
+  "repoIdentity": {
+    "worktree": "/Users/william/governseed-v5-g1-cwd-fix",
+    "gitHead": "225700d2481c57c293eba06c5ba2afac3f1d4dbb",
+    "currentStatus": "Only the two Luna attempt-2 evidence files were untracked before this Sol review wrote its own outputs."
+  },
+  "inputEvidence": {
+    "dispatchAttemptPath": "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json",
+    "dispatchAttemptSha256": "86b4ce64ec740f7aa082fbacbdba48d91d12d4722f47aab6f7be25f596790e84",
+    "lunaHandoffPath": "benchmarks/external-oss-v5/control/G1/attempt-2-luna-handoff.json",
+    "lunaHandoffSha256": "fe3ac007960b0a4b2ad6b133a21b0f65023a99a5d7a2aaa1b579cc0ff9bed39d"
+  },
+  "independentChecks": [
+    {
+      "name": "run_identity",
+      "result": "PASS",
+      "details": "GitHub Actions run 30713763827 exists for workflow External OSS V5 dependency cache on main head 576a513dd2574c7949cfe4cb5aebdb43f770aec1. Run status is completed and conclusion is failure.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:9",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:12",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:16",
+        "gh run view 30713763827 --repo Eskasia/governseed --json databaseId,workflowName,headSha,headBranch,status,conclusion,createdAt,updatedAt,url"
+      ]
+    },
+    {
+      "name": "failed_run_facts",
+      "result": "PASS",
+      "details": "All three seed-identity jobs succeeded. The first measured prepare failure is TASK-OSS-09 job 91405757242 at step Reconstruct seed and prepare public dependency cache with exit code 1. TASK-OSS-01 and TASK-OSS-03 were cancelled by fail-fast. Offline verification and aggregate qualification were skipped.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:20",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:34",
+        "gh run view 30713763827 --repo Eskasia/governseed --json jobs",
+        "gh run view 30713763827 --repo Eskasia/governseed --log-failed",
+        "gh api repos/Eskasia/governseed/actions/jobs/91405757242/logs"
+      ]
+    },
+    {
+      "name": "artifacts",
+      "result": "PASS",
+      "details": "There are exactly five artifacts. The public GitHub API exposes zip digests that Luna omitted. The downloaded TASK-OSS-09 artifact zip matches API digest 526344ec32d3d9ccc5f7b3b08b68769ab25483358ddba9aac424d58afa08afb7 and contains only cache-roots.txt, seed-archive.sha256, and seed.tgz.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:45",
+        "gh api repos/Eskasia/governseed/actions/runs/30713763827/artifacts?per_page=100",
+        "gh api repos/Eskasia/governseed/actions/artifacts/8822696701/zip",
+        "sha256(/tmp/g1-attempt2-artifact-8822696701.zip)=526344ec32d3d9ccc5f7b3b08b68769ab25483358ddba9aac424d58afa08afb7",
+        "unzip -l /tmp/g1-attempt2-artifact-8822696701.zip"
+      ],
+      "artifactDigests": {
+        "external-oss-v5-dependency-cache-TASK-OSS-03": "3cd39754a7996d4fac57018faa4a994ceb7a8b3ce2b6736f3c745872ee5a954b",
+        "external-oss-v5-dependency-cache-TASK-OSS-09": "526344ec32d3d9ccc5f7b3b08b68769ab25483358ddba9aac424d58afa08afb7",
+        "external-oss-v5-seed-identity-TASK-OSS-01": "30bc84c718b60e362eb0fae563fe9648c2748c4db2aab1af7eb1b62732137000",
+        "external-oss-v5-seed-identity-TASK-OSS-09": "3f7244fb7f37a529225382a120ab521d06532abaf119c2f0a00d41c74306085e",
+        "external-oss-v5-seed-identity-TASK-OSS-03": "39ea09f487f17887ae296aa3fd1f0ab89a017b319fcaf2ed2d0cfa44d2b11815"
+      }
+    },
+    {
+      "name": "zero_ready_boundary",
+      "result": "PASS",
+      "details": "No READY receipt or READY cache exists. The failed TASK-OSS-09 artifact proves the run reached seed.tgz creation and cache-roots.txt initialization, but it never produced cache.tgz, cache-manifest.json, preparation-result.json, runtime-image.tgz, or any receipt-bearing output. Offline and aggregate jobs were skipped.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:52",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:237",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:241",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:292",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:308",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:329",
+        "unzip -l /tmp/g1-attempt2-artifact-8822696701.zip"
+      ]
+    },
+    {
+      "name": "boundary",
+      "result": "PASS",
+      "details": "The dispatch evidence keeps the claim boundary conservative: it claims one failed dispatch, no rerun, no READY receipt, no offline proof, and no aggregate qualification. That boundary is supported by the independently verified GitHub run state.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:60",
+        "benchmarks/external-oss-v5/control/G1/attempt-2-luna-handoff.json:40",
+        "gh run view 30713763827 --repo Eskasia/governseed --json status,conclusion,jobs",
+        "gh api repos/Eskasia/governseed/actions/runs/30713763827/artifacts?per_page=100"
+      ]
+    },
+    {
+      "name": "defect_classification",
+      "result": "FAIL",
+      "details": "Independent evidence disproves the idea that this acceptance review can stop at Luna's UNCLASSIFIED_RUNTIME_OR_TASK_FAILURE label. Public GitHub evidence narrows the failure window to the TASK-OSS-09 case after seed archive creation and cache-roots initialization but before .venv cache-root emission, which means one of uv sync, the uv.lock immutability check, or pytest failed. That is not enough to distinguish HARNESS_DEFECT, TASK_DEFECT, ENVIRONMENT_DEFECT, or INFRASTRUCTURE_DEFECT for the August 1, 2026 Ubuntu x86_64 runner. A low-confidence host-side macOS/aarch64 check is non-isomorphic: uv sync succeeded locally, while pytest failed locally on missing libmagic, so it cannot establish the Linux runner root cause.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:34",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-2.json:42",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:237",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:241",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:293",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:299",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:304",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:308",
+        "gh api repos/Eskasia/governseed/actions/jobs/91405757242/logs",
+        "unzip -l /tmp/g1-attempt2-artifact-8822696701.zip"
+      ],
+      "classificationMatrix": {
+        "HARNESS_DEFECT": "NOT_PROVEN",
+        "TASK_DEFECT": "NOT_PROVEN",
+        "ENVIRONMENT_DEFECT": "NOT_PROVEN",
+        "INFRASTRUCTURE_DEFECT": "NOT_PROVEN"
+      },
+      "supplementalNonIsomorphicChecks": {
+        "hostSideUvSync": "PASS on macOS/aarch64 with Python 3.14.6 and uv 0.11.8",
+        "hostSidePytest": "FAIL on macOS/aarch64 with ImportError: failed to find libmagic",
+        "useInVerdict": "none; platform mismatch prevents direct classification of the GitHub-hosted Ubuntu failure"
+      }
+    },
+    {
+      "name": "scope",
+      "result": "PASS",
+      "details": "The reviewed attempt stays within allowed dispatch-evidence scope. Luna handoff declares only dispatch-attempt-2.json and attempt-2-luna-handoff.json as changed, and the local worktree showed only those two untracked files before the Sol review added its own two output files.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/attempt-2-luna-handoff.json:14",
+        "git status --short --branch"
+      ]
+    }
+  ],
+  "residualRisk": [
+    "This review does not qualify any measured cache as READY.",
+    "The historical GitHub failure remains valid failed-dispatch evidence only.",
+    "Defect source remains unclassified until same-runner evidence distinguishes uv sync, uv.lock mutation, pytest, or an external service failure."
+  ],
+  "claimBoundary": "This review covers only dispatch evidence for run 30713763827 on main head 576a513dd2574c7949cfe4cb5aebdb43f770aec1. It accepts the failed-run identity, jobs, artifact inventory, and zero-READY boundary, but rejects the sufficiency of the defect classification evidence. It does not claim a READY cache, a rerun, offline proof, aggregate qualification, cache SHA promotion, manifest SHA promotion, runtime qualification, or benchmark success."
+}
