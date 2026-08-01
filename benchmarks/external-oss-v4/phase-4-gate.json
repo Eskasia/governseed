@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "pilotSchema": "PASS",
+  "inheritedEvidence": "PASS",
+  "selectedTasks": 3,
+  "validatedHiddenOracles": 3,
+  "sealedSeeds": 3,
+  "dependencyCaches": "BLOCKED",
+  "runnerPreflight": "BLOCKED",
+  "credentialTransportDesign": "BLOCKED",
+  "benchmarkLock": "DRAFT",
+  "pilotAllowed": false,
+  "blockers": [
+    "RUNNER_PREFLIGHT_NOT_DISPATCHED",
+    "LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+    "V4_DEPENDENCY_CACHE_PREPARATION_NOT_RUN",
+    "CODEX_RUNTIME_IDENTITY_NOT_FROZEN",
+    "PROVIDER_CREDENTIAL_HUMAN_APPROVAL_NOT_PROVIDED",
+    "PILOT_LOCK_INCOMPLETE"
+  ],
+  "claimDisposition": "NOT_EVALUATED",
+  "claimBoundary": "V4 runner qualification is not treatment evaluation. No Codex, baseline, governed, provider, or task run is allowed while pilotAllowed is false."
+}

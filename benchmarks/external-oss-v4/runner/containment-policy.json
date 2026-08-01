@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "policyId": "V4-CONTAINMENT-1",
+  "container": {
+    "platform": "ubuntu-24.04 GitHub-hosted disposable runner",
+    "nonRootUid": 65532,
+    "readOnlyRootFilesystem": true,
+    "capDrop": ["ALL"],
+    "noNewPrivileges": true,
+    "dockerSocketMounted": false,
+    "hostHomeMounted": false,
+    "gitCredentialStoreMounted": false,
+    "allowedMounts": [
+      {"name": "workspace", "mode": "rw", "purpose": "disposable task workspace"},
+      {"name": "dependency-cache", "mode": "ro", "purpose": "frozen task dependency cache"},
+      {"name": "runner-harness", "mode": "ro", "purpose": "runner-owned tests and oracle launcher"}
+    ],
+    "forbiddenMounts": ["host home", "host root", ".git credentials", "docker socket", "provider credential file"]
+  },
+  "filesystemTests": {
+    "workspaceWrite": "must succeed",
+    "outsideWorkspaceWrite": "must fail",
+    "dependencyCacheWrite": "must fail",
+    "artifactPrivacyScan": "denylist and entropy scanner; names only for environment variables"
+  },
+  "processTests": ["foreground child", "background child", "double-fork/detached child", "timeout child"],
+  "resourceLimits": {
+    "cpu": "record actual fixed runner value; no invented 8 CPU claim",
+    "memory": "record actual fixed runner value; no invented 16 GiB claim",
+    "pids": "explicit finite limit required",
+    "timeoutSeconds": 2700
+  },
+  "failClosed": ["unknown identity", "missing boundary proof", "cache mutation", "surviving process", "incomplete cleanup"]
+}

@@ -1,0 +1,210 @@
+name: External OSS V4 runner preflight
+
+on:
+  workflow_dispatch:
+    inputs:
+      oci_image_digest:
+        description: 'Digest-only image identity, for example sha256:<64 lowercase hex characters>'
+        required: true
+        type: string
+      cpu_limit:
+        description: 'Measured container CPU limit; use the fixed runner value'
+        required: true
+        default: '8'
+        type: string
+      memory_limit:
+        description: 'Measured container memory limit; use the fixed runner value'
+        required: true
+        default: '16g'
+        type: string
+      pids_limit:
+        description: 'Finite PID limit'
+        required: true
+        default: '256'
+        type: string
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    # Qualification only: no Codex, provider, baseline, governed, or task execution.
+    name: V4 disposable containment preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout without persisted credentials
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Collect host identity
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p runner-artifacts
+          printf '%s\n' '--- os-release ---' > runner-artifacts/host-identity.txt
+          cat /etc/os-release >> runner-artifacts/host-identity.txt
+          printf '%s\n' '--- kernel ---' >> runner-artifacts/host-identity.txt
+          uname -a >> runner-artifacts/host-identity.txt
+          printf '%s\n' '--- architecture ---' >> runner-artifacts/host-identity.txt
+          uname -m >> runner-artifacts/host-identity.txt
+          printf '%s\n' '--- docker ---' >> runner-artifacts/host-identity.txt
+          docker version >> runner-artifacts/host-identity.txt
+          printf '%s\n' '--- cgroup ---' >> runner-artifacts/host-identity.txt
+          docker info --format 'CgroupVersion={{.CgroupVersion}} NCPU={{.NCPU}} MemTotal={{.MemTotal}}' >> runner-artifacts/host-identity.txt
+          if ! docker info --format '{{.CgroupVersion}}' | grep -Fxq '2'; then
+            echo 'V4_PREFLIGHT_CGROUP_V2_REQUIRED' >&2
+            exit 1
+          fi
+
+      - name: Validate digest-only image input
+        shell: bash
+        env:
+          OCI_IMAGE_DIGEST: ${{ inputs.oci_image_digest }}
+        run: |
+          set -euo pipefail
+          [[ "$OCI_IMAGE_DIGEST" =~ ^sha256:[0-9a-f]{64}$ ]]
+          docker pull "ubuntu@${OCI_IMAGE_DIGEST}"
+          docker image inspect "ubuntu@${OCI_IMAGE_DIGEST}" --format 'resolved={{index .RepoDigests 0}}' | tee runner-artifacts/image-identity.txt
+
+      - name: Run hardened network/filesystem/credential/process checks
+        shell: bash
+        env:
+          OCI_IMAGE_DIGEST: ${{ inputs.oci_image_digest }}
+          CPU_LIMIT: ${{ inputs.cpu_limit }}
+          MEMORY_LIMIT: ${{ inputs.memory_limit }}
+          PIDS_LIMIT: ${{ inputs.pids_limit }}
+        run: |
+          set -euo pipefail
+          workspace="$RUNNER_TEMP/v4-workspace"
+          cache="$RUNNER_TEMP/v4-cache"
+          harness="$RUNNER_TEMP/v4-harness"
+          mkdir -p "$workspace" "$cache" "$harness" runner-artifacts
+          chmod 0777 "$workspace"
+          printf '%s\n' 'synthetic-cache-marker' > "$cache/manifest.txt"
+          chmod -R a-w "$cache"
+          cat > "$harness/container-check.sh" <<'CONTAINER_CHECK'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          result=/workspace/container-result.txt
+          : > "$result"
+          printf '%s\n' "uid=$(id -u)" >> "$result"
+          test "$(id -u)" != 0
+          test "$(awk '/CapEff:/{print $2}' /proc/self/status)" = 0000000000000000
+          test "$(awk '/NoNewPrivs:/{print $2}' /proc/self/status)" = 1
+          env_names=$(env | cut -d= -f1)
+          for denied in "OPENAI""_API_KEY" ANTHROPIC_API_KEY GITHUB_TOKEN GH_TOKEN NPM_TOKEN PYPI_TOKEN AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AZURE_CLIENT_SECRET GOOGLE_APPLICATION_CREDENTIALS; do
+            ! printf '%s\n' "$env_names" | grep -Fxq "$denied"
+          done
+          test "$(getent hosts example.com 2>/dev/null || true)" = ''
+          ! timeout 3 bash -c 'cat < /dev/null > /dev/tcp/example.com/443' 2>/dev/null
+          ! timeout 3 bash -c 'cat < /dev/null > /dev/tcp/1.1.1.1/443' 2>/dev/null
+          ! timeout 3 bash -c 'cat < /dev/null > /dev/tcp/[2606:4700:4700::1111]/443' 2>/dev/null
+          touch /workspace/inside-write
+          ! touch /cache/forbidden-write 2>/dev/null
+          ! touch /etc/forbidden-write 2>/dev/null
+          sleep 1 & foreground=$!
+          sleep 300 & background=$!
+          setsid sleep 300 >/dev/null 2>&1 & detached=$!
+          timeout 1 sleep 5 >/dev/null 2>&1 && exit 64 || true
+          printf '%s\n' "children=$foreground,$background,$detached" >> "$result"
+          printf '%s\n' 'network=none credential_names=clean filesystem=bounded resource_limits=provided' >> "$result"
+          CONTAINER_CHECK
+          chmod 0555 "$harness/container-check.sh"
+          container_name="governseed-v4-preflight-${GITHUB_RUN_ID}"
+          container_id=$(docker create --name "$container_name" --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true --user 65532:65532 --pids-limit "$PIDS_LIMIT" --cpus "$CPU_LIMIT" --memory "$MEMORY_LIMIT" --mount "type=bind,src=$workspace,dst=/workspace,rw" --mount "type=bind,src=$cache,dst=/cache,ro" --mount "type=bind,src=$harness,dst=/harness,ro" "ubuntu@${OCI_IMAGE_DIGEST}" /harness/container-check.sh)
+          docker inspect "$container_id" --format '{{json .HostConfig}}' > runner-artifacts/container-host-config.json
+          test "$(docker inspect "$container_id" --format '{{.HostConfig.NetworkMode}}')" = none
+          test "$(docker inspect "$container_id" --format '{{.Config.User}}')" = '65532:65532'
+          # No docker.sock, host home, git credential store, or provider credential mount is allowed.
+          docker start "$container_id"
+          docker wait "$container_id" > runner-artifacts/container-exit-code.txt
+          docker inspect "$container_id" --format '{{.State.Status}} {{.State.Running}} {{.State.Pid}}' | tee runner-artifacts/container-stop-state.txt
+          test "$(docker inspect "$container_id" --format '{{.State.Status}}')" = exited
+          test "$(docker inspect "$container_id" --format '{{.State.Running}}')" = false
+          test "$(docker inspect "$container_id" --format '{{.State.Pid}}')" = 0
+          if docker top "$container_id" >/dev/null 2>&1; then
+            echo 'V4_PREFLIGHT_LIVE_PROCESS_PROOF_FAILED' >&2
+            exit 1
+          fi
+          cgroup_events=$(find /sys/fs/cgroup -type f \( -path "*/docker-${container_id}.scope/cgroup.events" -o -path "*/${container_id}/cgroup.events" \) -print -quit)
+          test -n "$cgroup_events"
+          grep -Eq '^populated 0$' "$cgroup_events"
+          docker rm "$container_id" > runner-artifacts/container-remove.txt
+          ! docker inspect "$container_id" >/dev/null 2>&1
+          test -f "$workspace/inside-write"
+          test ! -e "$cache/forbidden-write"
+          python3 - "$workspace" "$cache" "$harness" <<'PY'
+          import math, pathlib, re, sys
+          roots = [pathlib.Path(p) for p in sys.argv[1:]]
+          deny = re.compile(r'(BEGIN (?:RSA|OPENSSH|EC|DSA) PRIVATE KEY|gh[pousr]_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|sk-[A-Za-z0-9]{30,}|AKIA[0-9A-Z]{16})')
+          for root in roots:
+              for file in root.rglob('*'):
+                  if not file.is_file() or file.stat().st_size > 10_000_000:
+                      continue
+                  data = file.read_bytes()
+                  if deny.search(data.decode('utf-8', 'ignore')):
+                      raise SystemExit('V4_PREFLIGHT_ARTIFACT_PRIVACY_FAILED')
+                  counts = [data.count(bytes([value])) for value in range(256)]
+                  length = len(data)
+                  entropy = -sum((count / length) * math.log2(count / length) for count in counts if count) if length else 0
+                  if length >= 256 and entropy > 7.95:
+                      raise SystemExit('V4_PREFLIGHT_ENTROPY_SCAN_FAILED')
+          print('artifact_privacy_scan=PASS')
+          PY
+
+      - name: Publish only sanitized preflight receipt
+        if: success()
+        shell: bash
+        env:
+          OCI_IMAGE_DIGEST: ${{ inputs.oci_image_digest }}
+          CPU_LIMIT: ${{ inputs.cpu_limit }}
+          MEMORY_LIMIT: ${{ inputs.memory_limit }}
+          PIDS_LIMIT: ${{ inputs.pids_limit }}
+        run: |
+          set -euo pipefail
+          mkdir -p runner-artifacts
+          docker_version=$(docker version --format '{{.Server.Version}}')
+          cgroup_version=$(docker info --format '{{.CgroupVersion}}')
+          cat > runner-artifacts/preflight-receipt-body.json <<JSON
+          {
+            "schemaVersion": 1,
+            "benchmarkId": "GS-OSS-2026-08-01-V4",
+            "evidenceClass": "external-observational",
+            "status": "READY",
+            "claimDisposition": "NOT_EVALUATED",
+            "runner": {
+              "platform": "github-hosted",
+              "os": "$(. /etc/os-release && printf '%s' "$PRETTY_NAME")",
+              "kernel": "$(uname -sr)",
+              "architecture": "$(uname -m)",
+              "dockerServerVersion": "$docker_version",
+              "cgroupVersion": "$cgroup_version",
+              "cpuLimit": "$CPU_LIMIT",
+              "memoryLimit": "$MEMORY_LIMIT",
+              "pidsLimit": "$PIDS_LIMIT"
+            },
+            "ociImageDigest": "${OCI_IMAGE_DIGEST}",
+            "networkNoneObserved": true,
+            "credentialEnvironmentClean": true,
+            "workspaceBoundaryObserved": true,
+            "dependencyCacheReadOnly": true,
+            "processCleanupObserved": true,
+            "cgroupEmpty": true,
+            "artifactPrivacyScanPass": true,
+            "cleanupComplete": true,
+            "limitations": ["Runner qualification only; no Codex or benchmark task was executed."]
+          }
+          JSON
+          receipt_hash=$(sha256sum runner-artifacts/preflight-receipt-body.json | cut -d' ' -f1)
+          jq --arg receiptSha256 "$receipt_hash" '. + {receiptSha256: $receiptSha256}' runner-artifacts/preflight-receipt-body.json > runner-artifacts/preflight-receipt.json
+          tar -czf "$RUNNER_TEMP/preflight-evidence.tgz" runner-artifacts
+
+      - name: Upload preflight evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v4-runner-preflight-${{ github.run_id }}
+          path: runner-artifacts/
+          if-no-files-found: error

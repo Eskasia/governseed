@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "status": "BLOCKED_NOT_OBSERVED",
+  "runnerQualification": "NOT_RUN_ON_DISPOSABLE_UBUNTU",
+  "localDockerObservation": {
+    "client": "Docker Engine 29.4.2 darwin/arm64",
+    "daemon": "UNAVAILABLE",
+    "errorClass": "DOCKER_DAEMON_UNAVAILABLE"
+  },
+  "requiredProof": [
+    "container state stopped or removed",
+    "PID namespace has no live process",
+    "cgroup populated=0 or cgroup removed",
+    "no matching host PID",
+    "socket/proxy/relay/temp state absent"
+  ],
+  "observed": [],
+  "claimBoundary": "A workflow definition and existing offline tests are not runtime cleanup evidence."
+}

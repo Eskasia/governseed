@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "status": "BLOCKED_PREPARATION_JOB_NOT_RUN",
+  "sourcePolicy": "V3 dependency rehearsal data is inherited only; V4 measured cache identity must be produced by a network-enabled preparation job and then consumed read-only by a measured preflight job.",
+  "tasks": [
+    {"taskId":"TASK-OSS-01","inheritedSource":"benchmarks/external-oss-v3/tasks/TASK-OSS-01/dependency-lock.json","sourceSha256":"fbe357ddde1354e456b5f0c1a0c2c2df4d057a63b656bb496cb697fae17d4929","measuredCacheStatus":"NOT_CREATED"},
+    {"taskId":"TASK-OSS-03","inheritedSource":"benchmarks/external-oss-v3/tasks/TASK-OSS-03/dependency-lock.json","sourceSha256":"91e95a2f84752e6910dc6816bdc1bed87e37773f67e0224c6a549e84f97b4e6b","measuredCacheStatus":"NOT_CREATED"},
+    {"taskId":"TASK-OSS-09","inheritedSource":"benchmarks/external-oss-v3/tasks/TASK-OSS-09/dependency-lock.json","sourceSha256":"af86f59193600b37aeb5c7af5a0fd77e907895a02ec6bbfa7ea152e845e25e59","measuredCacheStatus":"NOT_CREATED"}
+  ],
+  "measuredRules": ["cache miss emits DEPENDENCY_CACHE_INCOMPLETE", "no network fallback", "no dependency install", "cache mount read-only"],
+  "claimBoundary": "No V4 measured cache is claimed."
+}

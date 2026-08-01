@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "status": "PASS_STATIC_ONLY",
+  "command": "node benchmarks/external-oss-v4/tests/runner-workflow-validation.mjs",
+  "testFileSha256": "f61b1e57cafec410bcae94484f3bdd9929b8387f1ba1d4806005b79dafd80bb7",
+  "workflowPath": ".github/workflows/external-oss-v4-runner-preflight.yml",
+  "workflowSha256": "56b19634c8fba729d298028451293560c3f9910c136296e09970f9b05152f2bb",
+  "checks": 18,
+  "yamlParse": "PASS (Ruby Psych)",
+  "failures": [],
+  "runtimeQualification": "NOT_RUN"
+}
