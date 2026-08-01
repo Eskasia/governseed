@@ -1,0 +1,103 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "reviewType": "final-repair-evidence-acceptance",
+  "reviewedAt": "2026-08-01",
+  "worktree": "/Users/william/governseed-v5-g1-cwd-fix",
+  "reviewedHead": "e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2",
+  "scope": "Final repair evidence acceptance only: verify explicit historical/corrected hashes, handoff metadata consistency, and unchanged passing workflow/static validation surfaces.",
+  "jsonParse": {
+    "result": "PASS",
+    "filesChecked": [
+      "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json",
+      "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json",
+      "benchmarks/external-oss-v5/control/G1/dispatch-sol-review-evidence.json",
+      "benchmarks/external-oss-v5/control/G1/dispatch-sol-verdict.json",
+      "benchmarks/external-oss-v5/control/G1/dispatch-corrected-sol-review-evidence.json",
+      "benchmarks/external-oss-v5/control/G1/dispatch-corrected-sol-verdict.json",
+      "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json",
+      "benchmarks/external-oss-v5/control/G1/receipt-review-input.json",
+      "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json",
+      "benchmarks/external-oss-v5/control/G1/repair-sol-review-evidence-final.json",
+      "benchmarks/external-oss-v5/control/G1/repair-sol-verdict-final.json"
+    ]
+  },
+  "explicitHashes": {
+    "historicalUnreviewed": {
+      "dispatchAttemptPath": "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json",
+      "dispatchAttemptSha256": "c819703327717d07f410a0cd138135736ec0dfab3e94da4b17cd5dea5703024f",
+      "receiptReviewInputPath": "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json",
+      "receiptReviewInputSha256": "5e42290374d5ed38c1eb17c001b66504484052e14bbd76c4faa00ee547768aef"
+    },
+    "correctedCanonical": {
+      "dispatchAttemptPath": "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json",
+      "dispatchAttemptSha256": "1a77ff825e984577776d9f663175ba077b4e96fb92f5dc09db655cc3b3fc094e",
+      "receiptReviewInputPath": "benchmarks/external-oss-v5/control/G1/receipt-review-input.json",
+      "receiptReviewInputSha256": "6ac2bdb161b59ed440f63c90dcbf58dbe95e76a777d2cbdb1591e9b3d1136903"
+    }
+  },
+  "localValidation": {
+    "workflowValidation": "node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs => {\"status\":\"PASS\",\"checks\":5,\"errors\":[]}",
+    "shellValidation": "node benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs => {\"status\":\"PASS\",\"shellBlocks\":5,\"errors\":[]}",
+    "workflowAndValidationDiff": "git diff --name-only -- .github/workflows/external-oss-v5-dependency-cache.yml benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs => no output"
+  },
+  "checks": [
+    {
+      "name": "historical_hashes_explicit",
+      "result": "PASS",
+      "details": "The historical REJECT artifacts now point explicitly to dispatch-attempt-1-unreviewed.json and receipt-review-input-unreviewed.json, and they embed the old SHA-256 values for those preserved bytes.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-sol-verdict.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json:41",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:26",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:37"
+      ]
+    },
+    {
+      "name": "corrected_hashes_explicit",
+      "result": "PASS",
+      "details": "The corrected canonical review artifacts explicitly point to dispatch-attempt-1.json and receipt-review-input.json and embed the recomputed current SHA-256 values.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-corrected-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-corrected-sol-verdict.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:25",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:26",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:37"
+      ]
+    },
+    {
+      "name": "handoff_head_and_checks_consistency",
+      "result": "PASS",
+      "details": "The handoff records headCommit e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2, which matches local git HEAD, and it records PR #49 validate checks as COMPLETED/SUCCESS.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:8",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:10",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:52",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:53",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:56"
+      ]
+    },
+    {
+      "name": "workflow_and_static_validation_unchanged",
+      "result": "PASS",
+      "details": "The workflow file and both static validation files have no additional diff in the current worktree during this evidence repair step.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:12",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:14"
+      ]
+    },
+    {
+      "name": "workflow_and_static_validation_passing",
+      "result": "PASS",
+      "details": "Both local static validators pass in the current worktree, matching the handoff's recorded repair surface expectations.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:27",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:28",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:29"
+      ]
+    }
+  ],
+  "verdict": "ACCEPT",
+  "claimBoundary": "This final review accepts only the repaired G1 evidence set: explicit historical and corrected hashes, handoff metadata consistency against local HEAD and the recorded PR #49 check state, and unchanged passing workflow/static validation surfaces. It does not claim any rerun, READY cache, or new workflow execution."
+}

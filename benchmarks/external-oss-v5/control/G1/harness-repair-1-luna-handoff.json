@@ -7,7 +7,7 @@
   "repository": "Eskasia/governseed",
   "branch": "benchmark/v5-g1-cwd-fix",
   "baseCommit": "188df340b67d70a3fa32d30ce3e1761fcdb1ec7b",
-  "headCommit": "efcd6ba546351fff03401e865ad1011e8e254227",
+  "headCommit": "e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2",
   "repairScope": "Minimal workflow cwd repair only; final repair commit is reported with the pushed handoff.",
   "filesChanged": [
     ".github/workflows/external-oss-v5-dependency-cache.yml",
@@ -15,6 +15,7 @@
     "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json",
     "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json",
     "benchmarks/external-oss-v5/control/G1/receipt-review-input.json",
+    "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json",
     "benchmarks/external-oss-v5/control/G1/dispatch-sol-verdict.json",
     "benchmarks/external-oss-v5/control/G1/dispatch-sol-review-evidence.json",
     "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json"
@@ -49,7 +50,11 @@
     "Superseded dispatch-attempt-1 wording is preserved as dispatch-attempt-1-unreviewed.json; dispatch-attempt-1.json is the corrected HARNESS_DEFECT evidence."
   ],
   "prStatus": "PR_CREATED; https://github.com/Eskasia/governseed/pull/49",
-  "checks": "PR checks observed IN_PROGRESS before this handoff correction; final check result is recorded in the completion report",
+  "checks": [
+    {"name": "validate (ubuntu-latest)", "status": "COMPLETED", "conclusion": "SUCCESS", "url": "https://github.com/Eskasia/governseed/actions/runs/30712530068/job/91402399798"},
+    {"name": "validate (macos-latest)", "status": "COMPLETED", "conclusion": "SUCCESS", "url": "https://github.com/Eskasia/governseed/actions/runs/30712530068/job/91402399729"},
+    {"name": "validate (windows-latest)", "status": "COMPLETED", "conclusion": "SUCCESS", "url": "https://github.com/Eskasia/governseed/actions/runs/30712530068/job/91402399811"}
+  ],
   "knownLimitations": [
     "Run 30711805623 remains unchanged historical FAILURE evidence.",
     "No artifacts were downloaded in this repair step and no cache archives or receipts are created.",

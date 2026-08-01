@@ -1,0 +1,156 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 2,
+  "reviewedAt": "2026-08-01",
+  "reviewedHead": "e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2",
+  "baseCommit": "188df340b67d70a3fa32d30ce3e1761fcdb1ec7b",
+  "scope": "PR #49 harness cwd repair plus current uncommitted G1 evidence remediation files",
+  "identity": {
+    "worktree": "/Users/william/governseed-v5-g1-cwd-fix",
+    "branch": "benchmark/v5-g1-cwd-fix",
+    "prNumber": 49,
+    "prUrl": "https://github.com/Eskasia/governseed/pull/49",
+    "gitHead": "e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2",
+    "prHead": "e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2",
+    "handoffHead": "e5bc2c68b85c62cd6f1887a111d0b65505a8d7",
+    "handoffHeadMatchesCurrentHead": false
+  },
+  "artifactHashes": {
+    "dispatch-attempt-1.json": "1a77ff825e984577776d9f663175ba077b4e96fb92f5dc09db655cc3b3fc094e",
+    "receipt-review-input.json": "6ac2bdb161b59ed440f63c90dcbf58dbe95e76a777d2cbdb1591e9b3d1136903",
+    "receipt-review-input-unreviewed.json": "5e42290374d5ed38c1eb17c001b66504484052e14bbd76c4faa00ee547768aef",
+    "harness-repair-1-luna-handoff.json": "2de9574f49b771eb6e7986a523305914f58cba226685e041d28abdb1a997e2c9"
+  },
+  "changedFilesAgainstBaseCommit": [
+    ".github/workflows/external-oss-v5-dependency-cache.yml",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-sol-review-evidence.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-sol-verdict.json",
+    "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json",
+    "benchmarks/external-oss-v5/control/G1/receipt-review-input.json",
+    "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs"
+  ],
+  "independentChecks": [
+    {
+      "name": "workflow_cwd_fix",
+      "result": "PASS",
+      "details": "Each preparation install/build step now runs inside \"$sealed_root\" for TASK-OSS-01, TASK-OSS-03, and TASK-OSS-09.",
+      "evidence": [
+        ".github/workflows/external-oss-v5-dependency-cache.yml:249",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:275",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:295"
+      ]
+    },
+    {
+      "name": "static_cwd_regression_coverage",
+      "result": "PASS",
+      "details": "The validator asserts the sealed_root form for all three tasks and rejects mutations that move any of those preparation commands back outside sealed_root.",
+      "evidence": [
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:67",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:69",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:71",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:134",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:135",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:136"
+      ],
+      "commandResults": [
+        "node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs => {\"status\":\"PASS\",\"checks\":5,\"errors\":[]}",
+        "node benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs => {\"status\":\"PASS\",\"shellBlocks\":5,\"errors\":[]}"
+      ]
+    },
+    {
+      "name": "receipt_evidence_consistency",
+      "result": "PASS",
+      "details": "The canonical receipt now matches the HARNESS_DEFECT root cause, and the stale exact wording is preserved separately in receipt-review-input-unreviewed.json.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:26",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:37",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:26",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:37"
+      ]
+    },
+    {
+      "name": "historical_failure_boundary",
+      "result": "PASS",
+      "details": "dispatch-attempt-1.json preserves run 30711805623 as historical FAILURE evidence only, classifies it as HARNESS_DEFECT, and keeps NOT_READY / NOT_CREATED boundaries with no READY cache claim.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:25",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:26",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:39",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:44",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:48",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:14",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:21",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:35",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:39"
+      ]
+    },
+    {
+      "name": "scope_guardrails",
+      "result": "PASS",
+      "details": "The pushed branch diff remains limited to the workflow, one static validation test, and G1 evidence files. No task facts, oracle files, thresholds, credentials, Codex/Pilot claims, or unrelated repair surfaces changed.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:12",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:27",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:37",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:76",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:105"
+      ]
+    },
+    {
+      "name": "local_and_pr_validation",
+      "result": "PASS",
+      "details": "Current static validators pass locally, and PR #49 validate checks are completed successfully on ubuntu-latest, macos-latest, and windows-latest on August 1, 2026.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:27",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:28",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:29"
+      ],
+      "independentObservations": {
+        "prChecks": [
+          "validate (ubuntu-latest) = SUCCESS",
+          "validate (macos-latest) = SUCCESS",
+          "validate (windows-latest) = SUCCESS"
+        ]
+      }
+    },
+    {
+      "name": "handoff_metadata_consistency",
+      "result": "FAIL",
+      "details": "The handoff metadata still does not match the actual PR state. The file records a truncated headCommit ending in ...a8d7, while both git and the live PR head are ...a8d7e2. The handoff also still says PR checks were IN_PROGRESS even though the live PR checks are all COMPLETED/SUCCESS on August 1, 2026.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:10",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:53"
+      ],
+      "observedValues": {
+        "gitHead": "e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2",
+        "prHead": "e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2",
+        "handoffHead": "e5bc2c68b85c62cd6f1887a111d0b65505a8d7",
+        "prChecks": [
+          "validate (ubuntu-latest): COMPLETED/SUCCESS",
+          "validate (macos-latest): COMPLETED/SUCCESS",
+          "validate (windows-latest): COMPLETED/SUCCESS"
+        ]
+      }
+    }
+  ],
+  "smallestRecommendedFix": {
+    "description": "Correct only the handoff metadata to the actual PR head and actual PR checks state.",
+    "changesNeeded": [
+      "Set harness-repair-1-luna-handoff.json headCommit to e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2.",
+      "Replace the stale handoff checks text with the current completed PR check result."
+    ],
+    "expectedRiskReduction": "Removes the last evidence-integrity mismatch without reopening workflow, test, or dispatch evidence."
+  },
+  "validated": {
+    "normalPath": "Workflow prepare commands are wrapped by cd \"$sealed_root\" for Immich, Uptime Kuma, and Paperless.",
+    "failurePath": "Static mutation tests still reject moving any of those commands back outside sealed_root.",
+    "integrationEdge": "The corrected canonical receipt, preserved unreviewed receipt, corrected dispatch evidence, and live PR status still disagree only at the handoff metadata layer."
+  },
+  "residualRisk": [
+    "No post-repair workflow dispatch was run, which is consistent with the claimed static-only repair boundary.",
+    "Until the handoff metadata is corrected, reviewers consuming only that handoff can derive the wrong exact head and outdated PR check state."
+  ]
+}

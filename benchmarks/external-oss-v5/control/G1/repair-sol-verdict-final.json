@@ -1,0 +1,75 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "reviewType": "final-repair-evidence-acceptance",
+  "reviewedAt": "2026-08-01",
+  "reviewedHead": "e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2",
+  "verdict": "ACCEPT",
+  "criteria": [
+    {
+      "criterion": "Relevant G1 JSON files parse successfully",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/repair-sol-review-evidence-final.json"
+      ]
+    },
+    {
+      "criterion": "Historical REJECT artifacts explicitly point to preserved unreviewed bytes and old hashes",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/repair-sol-review-evidence-final.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-sol-verdict.json",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:26",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json:37"
+      ]
+    },
+    {
+      "criterion": "Corrected canonical artifacts explicitly point to current bytes and corrected hashes",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/repair-sol-review-evidence-final.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-corrected-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-corrected-sol-verdict.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:25",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:26",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:37"
+      ]
+    },
+    {
+      "criterion": "The handoff head matches local git HEAD and the handoff records PR #49 validate checks as COMPLETED/SUCCESS",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/repair-sol-review-evidence-final.json",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:10",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:52",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:53",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:56"
+      ]
+    },
+    {
+      "criterion": "Workflow and static validation files are unchanged in the current worktree and the local validators pass",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/repair-sol-review-evidence-final.json",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:12",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:14",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:27",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:28",
+        "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json:29"
+      ]
+    }
+  ],
+  "independentlyRecomputed": [
+    "git rev-parse HEAD = e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2",
+    "harness-repair-1-luna-handoff.json records headCommit = e5bc2c68b85c62cd6f1887a111d0b65505a8d7e2 and PR #49 validate checks COMPLETED/SUCCESS",
+    "sha256(benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json)=c819703327717d07f410a0cd138135736ec0dfab3e94da4b17cd5dea5703024f",
+    "sha256(benchmarks/external-oss-v5/control/G1/receipt-review-input-unreviewed.json)=5e42290374d5ed38c1eb17c001b66504484052e14bbd76c4faa00ee547768aef",
+    "sha256(benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json)=1a77ff825e984577776d9f663175ba077b4e96fb92f5dc09db655cc3b3fc094e",
+    "sha256(benchmarks/external-oss-v5/control/G1/receipt-review-input.json)=6ac2bdb161b59ed440f63c90dcbf58dbe95e76a777d2cbdb1591e9b3d1136903",
+    "node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs = PASS",
+    "node benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs = PASS",
+    "git diff --name-only -- .github/workflows/external-oss-v5-dependency-cache.yml benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs produced no output"
+  ],
+  "claimBoundary": "This verdict accepts only the repaired evidence set under benchmarks/external-oss-v5/control/G1: preserved historical REJECT inputs, corrected canonical ACCEPT inputs, handoff metadata consistency with local HEAD and recorded PR #49 checks, and unchanged passing workflow/static validation files. It does not claim any rerun, READY cache, or new workflow execution."
+}

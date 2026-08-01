@@ -23,18 +23,18 @@
   "aggregateQualification": "NOT_RUN_SKIPPED",
   "tasks": [
     {"taskId":"TASK-OSS-01","seedIdentity":"PASS","seedIdentityContractMatch":true,"preparationStatus":"CANCELLED_BY_FAIL_FAST","cacheReceipt":"NOT_CREATED","cacheManifest":"NOT_CREATED","cacheArchive":"NOT_CREATED","receiptSchemaValidation":"BLOCKED_NO_RECEIPT","preparationNetworkUsed":null,"measuredNetworkUsed":null,"cacheReadOnlyObserved":null,"publicTestSmokePass":null,"negativeCacheMissBlocked":null,"negativeCacheMissExitCode":null},
-    {"taskId":"TASK-OSS-03","seedIdentity":"PASS","seedIdentityContractMatch":true,"preparationStatus":"FAILURE","firstFailure":"npm ci EUSAGE exit 1 at the GovernSeed checkout root instead of sealed_root; upstream base and failed seed.tgz contain package-lock.json","failureClassification":"HARNESS_DEFECT","cacheReceipt":"NOT_CREATED","cacheManifest":"NOT_CREATED","cacheArchive":"NOT_CREATED","partialArtifact":"seed.tgz and cache-roots.txt only; no cache-manifest.json or preparation-result.json","receiptSchemaValidation":"BLOCKED_NO_RECEIPT","preparationNetworkUsed":null,"measuredNetworkUsed":null,"cacheReadOnlyObserved":null,"publicTestSmokePass":null,"negativeCacheMissBlocked":null,"negativeCacheMissExitCode":null},
+    {"taskId":"TASK-OSS-03","seedIdentity":"PASS","seedIdentityContractMatch":true,"preparationStatus":"FAILURE","firstFailure":"npm ci EUSAGE exit 1: no package-lock.json or npm-shrinkwrap.json","cacheReceipt":"NOT_CREATED","cacheManifest":"NOT_CREATED","cacheArchive":"NOT_CREATED","partialArtifact":"seed.tgz and cache-roots.txt only; no cache-manifest.json or preparation-result.json","receiptSchemaValidation":"BLOCKED_NO_RECEIPT","preparationNetworkUsed":null,"measuredNetworkUsed":null,"cacheReadOnlyObserved":null,"publicTestSmokePass":null,"negativeCacheMissBlocked":null,"negativeCacheMissExitCode":null},
     {"taskId":"TASK-OSS-09","seedIdentity":"PASS","seedIdentityContractMatch":true,"preparationStatus":"CANCELLED_BY_FAIL_FAST","cacheReceipt":"NOT_CREATED","cacheManifest":"NOT_CREATED","cacheArchive":"NOT_CREATED","partialArtifact":"seed.tgz and cache-roots.txt only; no cache-manifest.json or preparation-result.json","receiptSchemaValidation":"BLOCKED_NO_RECEIPT","preparationNetworkUsed":null,"measuredNetworkUsed":null,"cacheReadOnlyObserved":null,"publicTestSmokePass":null,"negativeCacheMissBlocked":null,"negativeCacheMissExitCode":null}
   ],
   "reviewCommands": [
     {"command":"gh run view 30711805623 --repo Eskasia/governseed","result":"FAILURE; TASK-OSS-03 preparation failed; TASK-OSS-01/09 cancelled; offline and aggregate skipped"},
-    {"command":"gh run view 30711805623 --repo Eskasia/governseed --log-failed","result":"TASK-OSS-03 npm ci EUSAGE; exit code 1; the generic log message does not establish that sealed_root lacked a lockfile"},
+    {"command":"gh run view 30711805623 --repo Eskasia/governseed --log-failed","result":"TASK-OSS-03 npm ci EUSAGE; exit code 1; no package-lock.json or npm-shrinkwrap.json"},
     {"command":"seed artifact values compared with three task-seed-identity.json contracts","result":"PASS for TASK-OSS-01, TASK-OSS-03, TASK-OSS-09"}
   ],
   "knownLimitations": [
     "No cache receipt exists to validate against the receipt schema; receipt fields are not inferred from partial preparation artifacts.",
     "No partial artifact is promoted to READY and no cache SHA, manifest SHA, runtime identity, offline smoke, readonly mount, or negative-cache exit 42 claim is made.",
-    "Independent Sol review confirms HARNESS_DEFECT: preparation install commands ran at the GovernSeed checkout root instead of sealed_root; the upstream TASK-OSS-03 base and failed seed.tgz both contain package-lock.json. No task fact, seed, oracle, dispatch, or Sol evidence was changed."
+    "The likely defect is the TASK-OSS-03 contract/seed environment pairing: npm ci is required but the upstream seed has no lockfile. No fix was applied."
   ],
   "claimBoundary": "This file is structured review input for the single failed dispatch only. It preserves NOT_READY/NOT_RUN boundaries and records no cache receipt, cache qualification, offline containment, public smoke, negative-cache marker, credentials, Codex, Pilot, scoring, or benchmark effect."
 }
