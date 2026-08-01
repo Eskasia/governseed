@@ -1,0 +1,160 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 3,
+  "reviewType": "sol-acceptance-layer",
+  "reviewedAt": "2026-08-01",
+  "reviewedHead": "acd5a113855ec4a96f63042dddbc44c0926ce106",
+  "scope": "G1 measured dispatch attempt 3 evidence only: independently verify run 30714926737 identity, jobs, artifacts, downloaded TASK-OSS-09 diagnostics/phase markers, HARNESS_DEFECT classification, and zero-READY boundary. No workflow/task/oracle/contract/lock edits, no rerun, and no cache READY claim.",
+  "repoIdentity": {
+    "worktree": "/Users/william/governseed-v5-g1-cwd-fix",
+    "gitHead": "acd5a113855ec4a96f63042dddbc44c0926ce106",
+    "runHead": "da2488ec9dd5e2addd64743c3d2208e1de95d0b9",
+    "preReviewStatus": "Tracked worktree diff was clean. Pre-existing untracked review inputs were benchmarks/external-oss-v5/control/G1/attempt-2-repro/, attempt-3-artifacts/, attempt-3-luna-handoff.json, and dispatch-attempt-3.json."
+  },
+  "inputEvidence": {
+    "dispatchAttemptPath": "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json",
+    "dispatchAttemptSha256": "0df4a8bf75f7dfb741ccc5558775f8786d5282b31475116febb97af3204dc413",
+    "lunaHandoffPath": "benchmarks/external-oss-v5/control/G1/attempt-3-luna-handoff.json",
+    "lunaHandoffSha256": "6408c3660833608437c59feb5e58be4091144eb61bd9e294fcfa869dfe29cc99",
+    "downloadedFiles": {
+      "attempt-3-artifacts/run-view.json": "f002b0e4d0383b69a2274a380a3ac382cfe5387afdf88e0b572f069c49f4d22d",
+      "attempt-3-artifacts/jobs.json": "9ac5ce595b2c494daf3aeb42e500c10a53c17a2a35bb5fe441ef553e9a3ad0be",
+      "attempt-3-artifacts/artifacts.json": "7d36ced0e82584ee0fb380f6bb4239a76d0003b7e21d360d6757e2cb4c3599c5",
+      "attempt-3-artifacts/failed.log": "2f70f8753e6c3510e08eab6fed61ad9e846187d77fe8ffdac166b5c80375ed8e",
+      "attempt-3-artifacts/task-oss-09-artifact.zip": "f1891bd1f161e754bc626c1c697bd0e3cb69a0d39b98d52c1cda384886b35d97",
+      "attempt-3-artifacts/task-oss-09/task-oss-09-diagnostics.txt": "ae32c268a5b77cd69d57128d28bc03895da8dd8bd61281520d4824dbe019fb32",
+      "attempt-3-artifacts/task-oss-09/phase-markers.txt": "edad502f715b11e1e6865dee1529e86cea40e1e219972ee2bf111f88f4ccfd0e",
+      "attempt-3-artifacts/task-oss-09/phase-failure.txt": "a35e49b9879fab9aa34d429b8955c4dc97d9f67e00bdbd1bf22de5fa7384a3f8",
+      "attempt-3-artifacts/task-oss-09/cache-roots.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "attempt-3-artifacts/task-oss-09/seed-archive.sha256": "9746b0917e34bcea2f60d9cae3813830fe0d20313e2e100bd34868ce51b427d7",
+      "attempt-3-artifacts/task-oss-09/seed.tgz": "f9919128991d5b6d0805a0b6b1927950209047185578cad8b6d7026c22e467e8"
+    },
+    "remoteVerification": {
+      "ghRunSummarySha256": "fa0eae00ef8ec8f259133e2cec6d6ef6952d8704e4c2e5ce59ddde40f7360ba0",
+      "ghJobsJsonSha256": "9ac5ce595b2c494daf3aeb42e500c10a53c17a2a35bb5fe441ef553e9a3ad0be",
+      "ghArtifactsApiSha256": "7d36ced0e82584ee0fb380f6bb4239a76d0003b7e21d360d6757e2cb4c3599c5",
+      "jobsJsonMatchesDownloaded": true,
+      "artifactsJsonMatchesDownloaded": true
+    }
+  },
+  "exactFilesReviewed": [
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-3-luna-handoff.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/run-view.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/jobs.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/artifacts.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/failed.log",
+    "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09-artifact.zip",
+    "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/task-oss-09-diagnostics.txt",
+    "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-markers.txt",
+    "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-failure.txt",
+    ".github/workflows/external-oss-v5-dependency-cache.yml"
+  ],
+  "independentChecks": [
+    {
+      "name": "run_identity",
+      "result": "PASS",
+      "details": "GitHub Actions run 30714926737 exists for workflow External OSS V5 dependency cache on main head da2488ec9dd5e2addd64743c3d2208e1de95d0b9. The run was created on Saturday, August 1, 2026, completed with failure, and matches the attempt-3 evidence files.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json:9",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json:13",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json:15",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/run-view.json",
+        "gh run view 30714926737 --repo Eskasia/governseed --json databaseId,workflowName,headSha,headBranch,status,conclusion,createdAt,updatedAt,url"
+      ]
+    },
+    {
+      "name": "jobs_and_first_failure",
+      "result": "PASS",
+      "details": "All three seed-identity jobs succeeded. The first measured failure is TASK-OSS-09 job 91408840323 at step Reconstruct seed and prepare public dependency cache. TASK-OSS-01 and TASK-OSS-03 were cancelled by fail-fast. Offline verification and aggregate qualification were skipped.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json:21",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json:35",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/jobs.json",
+        "gh run view 30714926737 --repo Eskasia/governseed --json jobs"
+      ]
+    },
+    {
+      "name": "artifact_inventory_and_integrity",
+      "result": "PASS",
+      "details": "There are exactly six artifacts for run 30714926737. The downloaded TASK-OSS-09 artifact zip matches the GitHub API digest and contains only cache-roots.txt, phase-failure.txt, phase-markers.txt, seed-archive.sha256, seed.tgz, and task-oss-09-diagnostics.txt.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json:45",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/artifacts.json",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09-artifact.zip",
+        "gh api 'repos/Eskasia/governseed/actions/runs/30714926737/artifacts?per_page=100'",
+        "unzip -l benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09-artifact.zip"
+      ],
+      "artifactDigests": {
+        "external-oss-v5-dependency-cache-TASK-OSS-01": "4af09327eb3bb45cfad3a1b1bd483f19aedd04ac710f83a9bb93bd563d48420e",
+        "external-oss-v5-dependency-cache-TASK-OSS-03": "4d998fbf914e49273cf5e54560203db25c7ecad9fba76ced2dbdf74a95d85b2c",
+        "external-oss-v5-dependency-cache-TASK-OSS-09": "f1891bd1f161e754bc626c1c697bd0e3cb69a0d39b98d52c1cda384886b35d97",
+        "external-oss-v5-seed-identity-TASK-OSS-01": "9b39c1e4e2b691cac8b4da29cf680b77f1fb880ef90791fce56e9bc744a3e4b5",
+        "external-oss-v5-seed-identity-TASK-OSS-03": "ee19e8144b2d9d313a24d1e66d05be6207d61a981299c9426321aa22c6a0d455",
+        "external-oss-v5-seed-identity-TASK-OSS-09": "4d959e3643586cae13fd8bfb38299d686eb9c98808e5b44939b7da475af8739c"
+      }
+    },
+    {
+      "name": "harness_defect_classification",
+      "result": "PASS",
+      "details": "The same run recorded uv_version=uv 0.11.8 (x86_64-unknown-linux-gnu) in task-oss-09-diagnostics.txt, while the workflow step asserts test \"$(uv --version)\" = \"uv 0.11.8\". phase-markers.txt stops before after-task-oss-09-runtime-version-checks and phase-failure.txt records lastPhase=before-task-oss-09-runtime-version-checks with exitCode=1. That proves the failure is the harness's brittle exact-string assertion, not a task READY failure. This review does not claim why uv emitted the suffix or that the formatting is stable beyond this run.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/task-oss-09-diagnostics.txt:2",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-markers.txt:2",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-failure.txt:2",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:321",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/failed.log",
+        "gh run view 30714926737 --repo Eskasia/governseed --json jobs"
+      ],
+      "classificationMatrix": {
+        "HARNESS_DEFECT": "PROVEN",
+        "TASK_DEFECT": "NOT_SUPPORTED_BY_EVIDENCE",
+        "ENVIRONMENT_DEFECT": "NOT_SUPPORTED_BY_EVIDENCE",
+        "INFRASTRUCTURE_DEFECT": "NOT_SUPPORTED_BY_EVIDENCE"
+      }
+    },
+    {
+      "name": "zero_ready_boundary",
+      "result": "PASS",
+      "details": "Zero READY is preserved. The failure occurred before uv sync, pytest, cache-root emission, cache archive, runtime image, manifest, preparation-result.json, offline verification, and aggregate qualification. The partial artifact contains no cache.tgz, cache-manifest.json, manifest.sha256, preparation-result.json, runtime-image.tgz, or receipt artifact. cache-roots.txt is empty.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json:53",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-failure.txt:2",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/cache-roots.txt",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:323",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:402",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:430",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:483",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:509",
+        "unzip -l benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09-artifact.zip"
+      ]
+    },
+    {
+      "name": "claim_boundary",
+      "result": "PASS",
+      "details": "The attempt-3 evidence stays within a conservative boundary: one failed measured dispatch, no rerun, no READY receipt, no offline proof, and no aggregate qualification. The HARNESS_DEFECT claim is confined to the verified exact-string mismatch in the runtime-version-check phase.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json:70",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-luna-handoff.json:28",
+        "gh run view 30714926737 --repo Eskasia/governseed --json status,conclusion,jobs",
+        "gh api 'repos/Eskasia/governseed/actions/runs/30714926737/artifacts?per_page=100'"
+      ]
+    }
+  ],
+  "minimalMitigation": {
+    "recommendedChange": "Replace the exact uv output assertion with a version-aware match that tolerates the observed platform suffix, for example verifying that uv --version begins with \"uv 0.11.8\" while still preserving the pinned version requirement.",
+    "expectedRiskReduction": "Removes a harness-only false negative at the runtime-version-check gate without expanding the READY boundary or weakening later task/install/test/offline requirements."
+  },
+  "unverifiedLimits": [
+    "This review does not prove whether uv will always include the platform suffix on future runners.",
+    "This review does not classify any behavior after the runtime-version-check gate because uv sync, pytest, cache generation, offline verification, and aggregation were not reached for TASK-OSS-09.",
+    "This review does not claim any cache READY, receipt completeness, offline proof, aggregate qualification, or benchmark success."
+  ],
+  "residualRisk": [
+    "After the harness assertion is fixed, a later TASK-OSS-09 failure could still appear in uv sync, uv.lock immutability, pytest, or subsequent cache-generation phases.",
+    "TASK-OSS-01 and TASK-OSS-03 remain unqualified because fail-fast cancelled them before offline verification."
+  ],
+  "verdict": "ACCEPT",
+  "claimBoundary": "This review accepts attempt-3 evidence only because the same-run downloaded diagnostics, phase markers, workflow source, and failed-run metadata prove a HARNESS_DEFECT at the TASK-OSS-09 runtime-version-check phase while preserving zero READY. It does not claim any cache READY, any post-fix success, any task/environment defect, or any fact beyond run 30714926737 on main head da2488ec9dd5e2addd64743c3d2208e1de95d0b9."
+}

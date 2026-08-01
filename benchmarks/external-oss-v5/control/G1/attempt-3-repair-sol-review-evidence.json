@@ -1,0 +1,154 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 3,
+  "repairCycle": 3,
+  "reviewedAt": "2026-08-01",
+  "reviewedHead": "da2488ec9dd5e2addd64743c3d2208e1de95d0b9",
+  "baseHead": "da2488ec9dd5e2addd64743c3d2208e1de95d0b9",
+  "scope": "Uncommitted G1 repair-cycle-3 static review for branch benchmark/v5-g1-uv-version-parse, limited to the minimal TASK-OSS-09 uv version parsing change and its static regression validator. No workflow dispatch, no evidence rewrites, no READY claim, no commit, and no push.",
+  "identity": {
+    "worktree": "/Users/william/governseed-v5-g1-cwd-fix",
+    "branch": "benchmark/v5-g1-uv-version-parse",
+    "gitHead": "da2488ec9dd5e2addd64743c3d2208e1de95d0b9",
+    "preReviewDiffFiles": [
+      ".github/workflows/external-oss-v5-dependency-cache.yml",
+      "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs"
+    ]
+  },
+  "preservedEvidenceHashes": {
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json": "0df4a8bf75f7dfb741ccc5558775f8786d5282b31475116febb97af3204dc413",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3-sol-review-evidence.json": "c0c9c55dce61e44a899924e3e1048a0064decb8bd93b456fa0031b6889b82ce0",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3-sol-verdict.json": "9d452351a0e479f9d493c2e912bd8dbcd1a520712b8e0d687e9008a8faa10ce7",
+    "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/task-oss-09-diagnostics.txt": "ae32c268a5b77cd69d57128d28bc03895da8dd8bd61281520d4824dbe019fb32",
+    "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-failure.txt": "a35e49b9879fab9aa34d429b8955c4dc97d9f67e00bdbd1bf22de5fa7384a3f8",
+    "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-markers.txt": "edad502f715b11e1e6865dee1529e86cea40e1e219972ee2bf111f88f4ccfd0e"
+  },
+  "independentChecks": [
+    {
+      "name": "minimal_change_scope",
+      "result": "PASS",
+      "details": "The pre-review worktree diff is limited to the workflow file and the static workflow validator. No prior attempt-3 artifact, dispatch evidence, test fixture, lockfile, or control JSON was modified by this repair patch.",
+      "evidence": [
+        "git diff --name-only => .github/workflows/external-oss-v5-dependency-cache.yml, benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
+        "git diff --name-only -- benchmarks/external-oss-v5/control/G1/attempt-3-artifacts benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json benchmarks/external-oss-v5/control/G1/dispatch-attempt-3-sol-review-evidence.json benchmarks/external-oss-v5/control/G1/dispatch-attempt-3-sol-verdict.json => <empty>"
+      ]
+    },
+    {
+      "name": "ubuntu_suffix_mismatch_fixed",
+      "result": "PASS",
+      "details": "The observed failure evidence from Saturday, August 1, 2026 recorded uv_version=uv 0.11.8 (x86_64-unknown-linux-gnu) at the exact runtime-version-check phase. The repair now captures uv --version once, preserves the full output for diagnostics/runtime_uv, and validates only the first two fields so the observed Ubuntu suffix mismatch is accepted without weakening the version pin.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/task-oss-09-diagnostics.txt:2",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-failure.txt:2",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-markers.txt:2",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:305",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:306",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:309",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:322",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:351"
+      ]
+    },
+    {
+      "name": "uv_0_11_8_requirement_retained",
+      "result": "PASS",
+      "details": "The runtime gate still requires uv 0.11.8 exactly. The change narrows the comparison to the first two fields of the full uv output; it does not permit a different version number.",
+      "evidence": [
+        ".github/workflows/external-oss-v5-dependency-cache.yml:322",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:83",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:150"
+      ]
+    },
+    {
+      "name": "full_uv_output_retained",
+      "result": "PASS",
+      "details": "The patch retains the full uv output string in both the diagnostics artifact and runtime_uv instead of truncating it to the parsed prefix.",
+      "evidence": [
+        ".github/workflows/external-oss-v5-dependency-cache.yml:306",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:309",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:351"
+      ]
+    },
+    {
+      "name": "static_regression_rejects_brittle_full_string_assertion",
+      "result": "PASS",
+      "details": "The validator now requires the tolerant uv capture and first-two-fields check, explicitly rejects the old exact full-string assertion, and includes a negative mutation that fails if that brittle assertion is restored.",
+      "evidence": [
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:82",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:83",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:84",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:150"
+      ]
+    },
+    {
+      "name": "no_install_test_cache_network_credential_ready_oracle_lock_threshold_change",
+      "result": "PASS",
+      "details": "No install/test/cache/network/credential/READY/task/oracle/lock/threshold behavior changed in this repair. The only workflow hunk changes are uv capture, tolerant version comparison, and reusing the captured full string. The surrounding install, uv sync, lock immutability, pytest, cache-root emission, and runtime capture flow is unchanged, and the validator still enforces the existing credential, network, lock, and READY boundaries.",
+      "evidence": [
+        "git diff --name-only => .github/workflows/external-oss-v5-dependency-cache.yml, benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:323",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:327",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:331",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:337",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:344",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:86",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:87",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:88",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:90",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:114",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:121",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:122",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:123"
+      ]
+    },
+    {
+      "name": "prior_attempt_3_failure_evidence_immutable",
+      "result": "PASS",
+      "details": "The prior attempt-3 failure evidence remained outside the repair diff, and the recomputed hashes for the key dispatch and TASK-OSS-09 failure files match the preserved review inputs collected before writing this Sol review.",
+      "evidence": [
+        "git diff --name-only -- benchmarks/external-oss-v5/control/G1/attempt-3-artifacts benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json benchmarks/external-oss-v5/control/G1/dispatch-attempt-3-sol-review-evidence.json benchmarks/external-oss-v5/control/G1/dispatch-attempt-3-sol-verdict.json => <empty>",
+        "shasum -a 256 benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json => 0df4a8bf75f7dfb741ccc5558775f8786d5282b31475116febb97af3204dc413",
+        "shasum -a 256 benchmarks/external-oss-v5/control/G1/dispatch-attempt-3-sol-review-evidence.json => c0c9c55dce61e44a899924e3e1048a0064decb8bd93b456fa0031b6889b82ce0",
+        "shasum -a 256 benchmarks/external-oss-v5/control/G1/dispatch-attempt-3-sol-verdict.json => 9d452351a0e479f9d493c2e912bd8dbcd1a520712b8e0d687e9008a8faa10ce7",
+        "shasum -a 256 benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/task-oss-09-diagnostics.txt => ae32c268a5b77cd69d57128d28bc03895da8dd8bd61281520d4824dbe019fb32",
+        "shasum -a 256 benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-failure.txt => a35e49b9879fab9aa34d429b8955c4dc97d9f67e00bdbd1bf22de5fa7384a3f8",
+        "shasum -a 256 benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-markers.txt => edad502f715b11e1e6865dee1529e86cea40e1e219972ee2bf111f88f4ccfd0e"
+      ]
+    },
+    {
+      "name": "targeted_validators_pass",
+      "result": "PASS",
+      "details": "The targeted validators for the workflow and shell assumptions pass against the repaired worktree, the updated validator parses successfully, and git diff --check reports no formatting damage.",
+      "evidence": [
+        "node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs => {\"status\":\"PASS\",\"checks\":5,\"errors\":[]}",
+        "node benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs => {\"status\":\"PASS\",\"shellBlocks\":5,\"errors\":[]}",
+        "node --check benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs => PASS",
+        "git diff --check => PASS"
+      ]
+    },
+    {
+      "name": "full_npm_ci_honestly_blocked_by_180s_governance_hang",
+      "result": "PASS",
+      "details": "A fresh local full CI run wrapped by an independent 180-second alarm timed out rather than completing. The captured log shows progress through check, validate, validate:runtime-proof, and partial test:governance output before stalling with no further progress, so full npm ci is honestly BLOCKED instead of misreported as passing.",
+      "evidence": [
+        "perl 180s alarm wrapper around npm run ci => TIMEOUT",
+        "/tmp/g1-ci-log.b5iqvD tail shows completion of check, validate, validate:runtime-proof, then partial test:governance output with no later script banner"
+      ]
+    }
+  ],
+  "validated": {
+    "normalPath": "The repaired workflow preserves full uv output and accepts the recorded Ubuntu suffix while still pinning uv 0.11.8.",
+    "failurePath": "The static regression rejects reverting to the brittle exact full-string uv assertion.",
+    "integrationEdge": "The full repository CI remains blocked by the existing 180-second governance hang, so this review does not overstate end-to-end success."
+  },
+  "residualRisk": [
+    "This is a static-only acceptance. No new workflow dispatch was run, so later TASK-OSS-09 phases after runtime-version-check remain unverified in this review.",
+    "The 180-second local npm run ci timeout is an existing governance-runner blocker outside the scope of this minimal uv version parsing repair."
+  ],
+  "smallestRecommendedFix": {
+    "description": "No further code change is required within the requested repair scope.",
+    "expectedRiskReduction": "The current two-file patch already removes the proven harness-only false negative caused by the exact uv full-string assertion while keeping the pinned version and existing safety boundaries intact."
+  },
+  "verdict": "ACCEPT",
+  "claimBoundary": "This ACCEPT covers only the minimal uncommitted repair-cycle-3 worktree change on Saturday, August 1, 2026: parsing the first two fields of uv --version while retaining the full uv output, plus the matching static regression. It does not claim a rerun, benchmark success, cache READY, offline qualification, aggregate qualification, or any change outside the two reviewed files."
+}

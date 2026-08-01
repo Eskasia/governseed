@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attempt": 3,
+  "repairCycle": 3,
+  "status": "BLOCKED",
+  "repository": "Eskasia/governseed",
+  "branch": "benchmark/v5-g1-uv-version-parse",
+  "baseRef": "origin/main",
+  "baseHead": "da2488ec9dd5e2addd64743c3d2208e1de95d0b9",
+  "workingTreeHead": "da2488ec9dd5e2addd64743c3d2208e1de95d0b9",
+  "scope": {
+    "changedFiles": [
+      ".github/workflows/external-oss-v5-dependency-cache.yml",
+      "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
+      "benchmarks/external-oss-v5/control/G1/attempt-3-repair-luna-handoff.json"
+    ],
+    "workflowChange": "TASK-OSS-09 captures the complete uv --version output, retains it in diagnostics and runtime_uv, and validates the first two fields as uv 0.11.8 so the observed Ubuntu platform suffix is accepted.",
+    "validatorChange": "The existing static validator requires the tolerant capture/field check, rejects the brittle exact full-string assertion, and includes a negative mutation for reverting that assertion.",
+    "unchanged": [
+      "attempt-3 JSON, Sol review/verdict, and artifact files",
+      "install, test, cache, seed, oracle, task facts, contracts, lock, thresholds, credentials, network, READY semantics",
+      "no dispatch, commit, or push"
+    ]
+  },
+  "validation": [
+    {"command":"node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs","result":"PASS; checks=5"},
+    {"command":"node benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs","result":"PASS; shellBlocks=5"},
+    {"command":"node --check benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs","result":"PASS"},
+    {"command":"git diff --check","result":"PASS"},
+    {"command":"JSON parse of G1 root JSON evidence","result":"PASS; 27 files parsed"},
+    {"command":"timeout 180s npm run ci","result":"BLOCKED; timed out after check/validate/validate:runtime-proof and partial governance test output with no further output"}
+  ],
+  "claimBoundary": "This handoff claims only a local, uncommitted repair worktree at the exact origin/main head with the two-file harness patch and passing targeted/static checks. It does not claim a new workflow dispatch, READY cache, receipt, offline proof, runtime qualification, benchmark result, commit, push, or publication. The bounded npm run ci timeout recurred and is recorded as BLOCKED; no prior attempt-3 evidence was edited."
+}
