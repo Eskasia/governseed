@@ -1,0 +1,51 @@
+{
+  "protocolVersion": 1,
+  "agent": "Luna",
+  "task": "GovernSeed V5 G0 execution layer",
+  "phase": "G0",
+  "attempt": 2,
+  "status": "READY_FOR_REVIEW",
+  "remediationApplied": "Corrected inherited accounting from the unsupported value 29 to the exact V4 manifest scope: 34 total items, 31 absent repository-path items, and 3 hidden-oracle references outside the workspace.",
+  "repository": "Eskasia/governseed",
+  "origin": "https://github.com/Eskasia/governseed.git",
+  "worktree": "/Users/william/governseed-v5-g0-luna",
+  "branch": "benchmark/v5-g0",
+  "baseCommit": "b83900394b1d525dedb32581e219d31d235db349",
+  "headCommit": "b83900394b1d525dedb32581e219d31d235db349",
+  "initialCleanState": true,
+  "filesChanged": [
+    "benchmarks/external-oss-v5/current-state.json",
+    "benchmarks/external-oss-v5/inherited-evidence-v5.json",
+    "benchmarks/external-oss-v5/control/G0/luna-handoff.json"
+  ],
+  "commands": [
+    {"command":"git fetch origin main && git worktree add -b benchmark/v5-g0 /Users/william/governseed-v5-g0-luna origin/main","exit":0,"result":"HEAD b839003; clean initial worktree"},
+    {"command":"git status --short --branch && git rev-parse HEAD && git rev-parse origin/main","exit":0,"result":"benchmark/v5-g0; HEAD equals origin/main at b839003"},
+    {"command":"node benchmarks/external-oss-v5/tests/schema-validation.mjs","exit":0,"result":"PASS; 17 JSON files parsed"},
+    {"command":"node benchmarks/external-oss-v5/tests/seed-contract-validation.mjs","exit":0,"result":"PASS; 99 checks"},
+    {"command":"node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs","exit":0,"result":"PASS; 23 checks"},
+    {"command":"ruby -e 'require \"yaml\"; YAML.load_file(\".github/workflows/external-oss-v5-dependency-cache.yml\")'","exit":0,"result":"YAML_PASS"},
+    {"command":"gh run view 30703626223 --repo Eskasia/governseed","exit":0,"result":"success; V4 runner preflight; head e932664; one job PASS"},
+    {"command":"gh run view 30708399340 --repo Eskasia/governseed","exit":0,"result":"success; V5 seed-runtime; head b839003; TASK-OSS-01/03/09 PASS"},
+    {"command":"git fetch exact upstream base/fix commits in temporary bare repositories","exit":0,"result":"commit objects verified for all six V5 upstream SHAs"},
+    {"command":"sha256sum V4 immutable sources","exit":0,"result":"five V5-inherited V4 source hashes match"}
+  ],
+  "workflowRuns": [
+    {"runId":30703626223,"workflow":"External OSS V4 runner preflight","headSha":"e9326647012692ff3b7a11071409a9c783776ea2","status":"completed","conclusion":"success","url":"https://github.com/Eskasia/governseed/actions/runs/30703626223","receiptStatus":"READY","receiptSha256":"68f191f7a799862bebf1d7f92a172c9c953e6f4ef4c15ef1181f2e9fcb14a4e5"},
+    {"runId":30708399340,"workflow":"External OSS V5 dependency cache","headSha":"b83900394b1d525dedb32581e219d31d235db349","status":"completed","conclusion":"success","url":"https://github.com/Eskasia/governseed/actions/runs/30708399340","matrixJobs":["TASK-OSS-01","TASK-OSS-03","TASK-OSS-09"],"claim":"seed identity qualification only; dependency cache NOT_RUN"}
+  ],
+  "artifactPathsHashes": [
+    {"runId":30703626223,"artifact":"external-oss-v4-runner-preflight-30703626223","artifactId":8819606697,"path":"preflight-receipt.json","downloadedSha256":"494d7a8d6e49b3295b60e0b1d220bff174b16d352007308915f824bf4befba68","receiptSha256":"68f191f7a799862bebf1d7f92a172c9c953e6f4ef4c15ef1181f2e9fcb14a4e5"},
+    {"runId":30708399340,"artifact":"external-oss-v5-seed-identity-TASK-OSS-01","artifactId":8821056971,"paths":{"sealed-commit.txt":"10aeacd3fa75ff53736de82d06eda0612d05685758db24542987cf7ce214f9f4","sealed-tree.txt":"4d4262c59b7605b07469bff8c75ffbc7e3841a3ffebc09a9346968035738fe9e","sealed-tree-sha256.txt":"4794957eab0d8a04824e9aff176bd008cb021a46f15deed98667f65b164b0630","upstream-base.txt":"6f3fb032a71c7e44bbe7d71934dfe5295cdb76fce29562387b164a87436462f2"}},
+    {"runId":30708399340,"artifact":"external-oss-v5-seed-identity-TASK-OSS-03","artifactId":8821056237,"paths":{"sealed-commit.txt":"849fe31047244d0ca68ca86f3e45b81355664d153ac81d4dfa35098e8436b712","sealed-tree.txt":"6285b4f06f53252fdabae2d76a15c3e3b6d63e9050c8347cc778ab020476e3c7","sealed-tree-sha256.txt":"5ba6019505fd4b180da3cb507bd8bc3a4838fe53e5239065c0cfb852aa0a298e","upstream-base.txt":"4c938ce6e4ca967fefc20f1e500f08df2b52bd39dd3d0346e80182b02ee78b0a"}},
+    {"runId":30708399340,"artifact":"external-oss-v5-seed-identity-TASK-OSS-09","artifactId":8821058354,"paths":{"sealed-commit.txt":"9f11482e2b656ee9e3baa525b771fc9d3581abdeb3a6c88acd416cb017605de6","sealed-tree.txt":"111a68911a1fe06011860973a5d0fe57740b4eb8bf9c6164a20b7f278fc3b249","sealed-tree-sha256.txt":"a883a9129d82a2c8d9a46311da734ffa9faa60b87c168f1ba726ecd3299775e7","upstream-base.txt":"a197083e592276584b4a9b5d34e543269b3847b00926109adb8f96f5cd0690e7"}}
+  ],
+  "knownLimitations": [
+    "The V4 inherited manifest has 34 total items: 31 repository-path items absent from clean origin/main and 3 hidden-oracle references outside the workspace; unavailable sources are not rehashed or promoted to fresh observations.",
+    "V4 dependency cache remains BLOCKED despite the separate V4 runner preflight being READY.",
+    "No workflow was dispatched by this task; run IDs above are historical receipts verified read-only.",
+    "No credentials, Codex, Pilot, measured run, benchmark lock, task-fact/oracle modification, or PR was created."
+  ],
+  "claimBoundary": "This is a G0 handoff for review, not a Sol verdict and not G0 completion. It claims only the recorded repository identity, verified V4 runner receipt, verified V5 seed-runtime receipts, seed contracts, and static validations. It makes no V5 dependency-cache READY, execution, treatment, or benchmark-effect claim.",
+  "blockers": []
+}

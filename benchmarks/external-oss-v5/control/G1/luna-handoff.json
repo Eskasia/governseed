@@ -1,0 +1,102 @@
+{
+  "protocolVersion": 1,
+  "agent": "Luna",
+  "task": "GovernSeed V5 G1 measured dependency-cache qualification preparation",
+  "gate": "G1",
+  "attempt": 1,
+  "status": "READY_FOR_REVIEW",
+  "repository": "Eskasia/governseed",
+  "origin": "https://github.com/Eskasia/governseed.git",
+  "worktree": "/Users/william/governseed-v5-g1-luna",
+  "localBranch": "benchmark/v5-g1-luna",
+  "targetPushBranch": "benchmark/v5-measured-cache",
+  "baseCommit": "b83900394b1d525dedb32581e219d31d235db349",
+  "headCommit": "5d11dc39940a4c78a2fd387510111faad50da0b0",
+  "initialCleanState": true,
+  "preservedPr48StaticHarnessHead": "5d11dc39940a4c78a2fd387510111faad50da0b0",
+  "filesChanged": [
+    "benchmarks/external-oss-v5/current-state.json",
+    "benchmarks/external-oss-v5/inherited-evidence-v5.json",
+    "benchmarks/external-oss-v5/control/G0/luna-handoff.json",
+    "benchmarks/external-oss-v5/control/G0/sol-verdict.json",
+    "benchmarks/external-oss-v5/control/G0/sol-review-evidence.json",
+    "benchmarks/external-oss-v5/control/G1/luna-handoff.json"
+  ],
+  "preservedPr48StaticHarnessFiles": [
+    ".github/workflows/external-oss-v5-dependency-cache.yml",
+    "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-01/cache-contract.json",
+    "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-01/cache-receipt.template.json",
+    "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-03/cache-contract.json",
+    "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-03/cache-receipt.template.json",
+    "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-09/cache-contract.json",
+    "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-09/cache-receipt.template.json",
+    "benchmarks/external-oss-v5/dependency-cache/qualification-status.json",
+    "benchmarks/external-oss-v5/dependency-cache/seed-runtime-qualification.json",
+    "benchmarks/external-oss-v5/schemas/dependency-cache-receipt.schema.json",
+    "benchmarks/external-oss-v5/tests/dependency-cache-receipt-validation.mjs",
+    "benchmarks/external-oss-v5/tests/dependency-cache-schema-validation.mjs",
+    "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
+    "benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs"
+  ],
+  "copiedEvidenceSha256": {
+    "benchmarks/external-oss-v5/current-state.json": "1a5455f3baa85d4d493b37b7a45fe842e4f0c9e433f7fca6c9338fc99ba91c43",
+    "benchmarks/external-oss-v5/inherited-evidence-v5.json": "cce821c548e263628d02132affb7e20de100f07343a4cb4593a73a097a726b19",
+    "benchmarks/external-oss-v5/control/G0/luna-handoff.json": "d1be1662db1cd39f5bf7e1218e4287cdc4f480b818fd7542bd3bb7af564f0a17",
+    "benchmarks/external-oss-v5/control/G0/sol-verdict.json": "767f0e1fa864e8758db11a817743ecb68af84ac60d175401c08b2e370f1379f0",
+    "benchmarks/external-oss-v5/control/G0/sol-review-evidence.json": "f30dc58086e3b3c0f31e92bf567a59380d8879dbab1c80a4c247d680a796064d"
+  },
+  "solG0": {
+    "verdictPath": "benchmarks/external-oss-v5/control/G0/sol-verdict.json",
+    "attemptReviewed": 2,
+    "verdict": "ACCEPT",
+    "verdictBytesPreserved": true,
+    "reviewEvidenceBytesPreserved": true
+  },
+  "commands": [
+    {"command":"git worktree add -b benchmark/v5-g1-luna /Users/william/governseed-v5-g1-luna origin/benchmark/v5-measured-cache","exit":0,"result":"fresh worktree at 5d11dc3; initial clean state"},
+    {"command":"sha256sum copied G0/Sol files against /Users/william/governseed-v5-g0-luna","exit":0,"result":"all five copied file hashes match byte-for-byte"},
+    {"command":"node benchmarks/external-oss-v5/tests/schema-validation.mjs","exit":0,"result":"PASS; 30 JSON files parsed"},
+    {"command":"node benchmarks/external-oss-v5/tests/seed-contract-validation.mjs","exit":0,"result":"PASS; 99 checks"},
+    {"command":"node benchmarks/external-oss-v5/tests/dependency-cache-schema-validation.mjs","exit":0,"result":"PASS; 103 checks; all three cache contracts and NOT_RUN templates"},
+    {"command":"node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs","exit":0,"result":"PASS; 5 checks"},
+    {"command":"node benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs","exit":0,"result":"PASS; 5 shell blocks"},
+    {"command":"ruby -e 'require \"yaml\"; YAML.load_file(\".github/workflows/external-oss-v5-dependency-cache.yml\")'","exit":0,"result":"V5_YAML_PASS"},
+    {"command":"ruby -e 'require \"yaml\"; YAML.load_file(\".github/workflows/external-oss-v4-runner-preflight.yml\")'","exit":0,"result":"V4_YAML_PASS"},
+    {"command":"npm run ci","exit":0,"result":"PASS through check, validate, all test suites, eval, runtime proof mock, smoke projects, package smoke, and fixtures"},
+    {"command":"docker info --format 'ServerVersion={{.ServerVersion}} CgroupVersion={{.CgroupVersion}} CPUs={{.NCPU}} MemTotal={{.MemTotal}}'","exit":1,"result":"Docker daemon unavailable at unix:///Users/william/.docker/run/docker.sock; no local Docker qualification performed"},
+    {"command":"gh pr view 48 --repo Eskasia/governseed","exit":0,"result":"PR OPEN; head benchmark/v5-measured-cache at 5d11dc3; validate ubuntu/macos/windows SUCCESS before this update"}
+  ],
+  "pr": {
+    "number": 48,
+    "url": "https://github.com/Eskasia/governseed/pull/48",
+    "state": "OPEN",
+    "baseBranch": "main",
+    "baseCommit": "b83900394b1d525dedb32581e219d31d235db349",
+    "sourceHeadBeforeUpdate": "5d11dc39940a4c78a2fd387510111faad50da0b0",
+    "checksBeforeUpdate": [
+      {"name":"validate (ubuntu-latest)","status":"COMPLETED","conclusion":"SUCCESS"},
+      {"name":"validate (macos-latest)","status":"COMPLETED","conclusion":"SUCCESS"},
+      {"name":"validate (windows-latest)","status":"COMPLETED","conclusion":"SUCCESS"}
+    ],
+    "updateAction": "Commit and push only to benchmark/v5-measured-cache; do not merge."
+  },
+  "cachePathVerification": {
+    "tasks": ["TASK-OSS-01","TASK-OSS-03","TASK-OSS-09"],
+    "requiredCacheEntriesVerified": true,
+    "artifactOnlyPreparationAndTransfer": true,
+    "uploadArtifactPaths": true,
+    "downloadArtifactPaths": true,
+    "actionsCacheUsed": false,
+    "fallbackDownload": false,
+    "measuredNetworkPolicy": "none",
+    "localCacheArchivesGenerated": false
+  },
+  "knownLimitations": [
+    "Local Docker daemon is unavailable, so no local container or cache archive was generated; hosted measured qualification remains unrun.",
+    "The V5 workflow has not been dispatched by this task; merge and independent Sol G1 review are required before dispatch.",
+    "The copied Sol G0 review-evidence file contains its historical pre-repair v5RecordedItemCount=29 mismatch; it is preserved byte-for-byte as instructed, while Sol's separate G0 verdict remains ACCEPT.",
+    "No credentials, Codex, Pilot, V2/V3/V4 files, task facts, oracles, benchmark lock, or cache receipt was created or modified."
+  ],
+  "claimBoundary": "This G1 handoff claims only clean PR-head preparation, preservation of PR #48 static harness and accepted G0 evidence, static workflow/schema/task/cache-path validation, root CI, and the observed local Docker-unavailable state. It does not claim measured dependency-cache qualification, cache archives, offline smoke, negative cache-miss proof, Codex execution, Pilot, credential transport, benchmark effects, merge, or dispatch.",
+  "nextReviewer": "Independent Sol G1 review"
+}

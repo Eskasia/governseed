@@ -1,0 +1,98 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G0",
+  "attemptReviewed": 2,
+  "verdict": "ACCEPT",
+  "criteria": [
+    {
+      "id": "repo-head-identity",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/current-state.json",
+        "benchmarks/external-oss-v5/control/G0/luna-handoff.json"
+      ]
+    },
+    {
+      "id": "v4-v5-immutable-hash-revalidation",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/inherited-evidence-v5.json",
+        "benchmarks/external-oss-v4/inherited-evidence.json",
+        "benchmarks/external-oss-v4/dependency-cache/attempt-1-failure-summary.json",
+        "benchmarks/external-oss-v4/dependency-cache/dispatch-attempt-1.json",
+        "benchmarks/external-oss-v4/dependency-cache/qualification-status.json",
+        "benchmarks/external-oss-v4/runner/preflight-receipt.json",
+        "benchmarks/external-oss-v4/phase-4-gate.json"
+      ]
+    },
+    {
+      "id": "v4-ready-run-and-receipt",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/current-state.json",
+        "benchmarks/external-oss-v5/control/G0/luna-handoff.json"
+      ]
+    },
+    {
+      "id": "v5-seed-runtime-matrix-identity",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/current-state.json",
+        "benchmarks/external-oss-v5/control/G0/luna-handoff.json"
+      ]
+    },
+    {
+      "id": "seed-contracts-and-hidden-oracle-hash-chain",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-01/task-seed-identity.json",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-01/hidden-oracle-revalidation.json",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-03/task-seed-identity.json",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-03/hidden-oracle-revalidation.json",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-09/task-seed-identity.json",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-09/hidden-oracle-revalidation.json",
+        "benchmarks/external-oss-v5/current-state.json"
+      ]
+    },
+    {
+      "id": "no-fabricated-v5-ready-or-lock",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/dependency-cache/qualification-status.json",
+        "benchmarks/external-oss-v5/blockers.json",
+        "benchmarks/external-oss-v5/current-state.json"
+      ]
+    },
+    {
+      "id": "v2-v3-scope-accounting-is-exact",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/inherited-evidence-v5.json",
+        "benchmarks/external-oss-v4/inherited-evidence.json",
+        "benchmarks/external-oss-v5/control/G0/luna-handoff.json",
+        "benchmarks/external-oss-v5/current-state.json"
+      ]
+    },
+    {
+      "id": "hash-and-claim-boundary-consistency",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/inherited-evidence-v5.json",
+        "benchmarks/external-oss-v5/current-state.json",
+        "benchmarks/external-oss-v5/control/G0/luna-handoff.json",
+        "benchmarks/external-oss-v5/dependency-cache/qualification-status.json"
+      ]
+    }
+  ],
+  "independentlyRecomputed": [
+    "Repository HEAD and origin/main identity at b83900394b1d525dedb32581e219d31d235db349.",
+    "V4 inherited manifest scope counts: 34 total items, 31 repository-path items, 31 missing repository-path items in the clean worktree, and 3 hidden-oracle references outside the workspace.",
+    "SHA-256 for the updated inherited-evidence-v5.json and all five V4 immutable evidence files from raw file bytes.",
+    "Local V5 validations: schema-validation PASS, seed-contract-validation PASS, dependency-cache-workflow-validation PASS.",
+    "GitHub run identity for V4 run 30703626223 and V5 run 30708399340.",
+    "V4 READY receipt body SHA-256 68f191f7a799862bebf1d7f92a172c9c953e6f4ef4c15ef1181f2e9fcb14a4e5 and V5 seed-artifact inner values for TASK-OSS-01, TASK-OSS-03, and TASK-OSS-09.",
+    "Absence of any V5 benchmark lock, READY receipt file, or measured dependency-cache artifact in the worktree."
+  ],
+  "remediation": [],
+  "claimBoundary": "This verdict accepts the G0 evidence package for review readiness only. It confirms exact inherited-evidence accounting, immutable-hash preservation, V4 READY runner identity, V5 seed-runtime identity, seed-contract consistency, and fail-closed claim boundaries. It does not authorize or claim a V5 measured dependency-cache run, Codex execution, Pilot, confirmatory run, credential use, or benchmark result."
+}

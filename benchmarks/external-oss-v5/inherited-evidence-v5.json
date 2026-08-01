@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "phase": "G0",
+  "status": "READY_FOR_REVIEW",
+  "remediationApplied": "Replaced the unsupported V2/V3 count with exact V4 manifest scope accounting.",
+  "sourceManifest": {
+    "v4InheritedEvidencePath": "benchmarks/external-oss-v4/inherited-evidence.json",
+    "v4InheritedEvidenceSha256": "10c65e3d799a7dcf7037573b83fe313b8341b8b8d700f8f71fd7877640da29e9",
+    "v5InheritedEvidencePath": "benchmarks/external-oss-v5/inherited-evidence.json",
+    "v5InheritedEvidenceSha256": "605c9284d3e2edc69108d26adf6a47163464c63a1d2e6a6722be14faf154d85b"
+  },
+  "v5RevalidatedImmutableSources": [
+    {"path":"benchmarks/external-oss-v4/dependency-cache/attempt-1-failure-summary.json","sha256":"35bb7ee4c3392b3d46fd6d8f5b5a9eff56ddb380713bdfd33ee5523aa555fc3b","status":"BLOCKED"},
+    {"path":"benchmarks/external-oss-v4/dependency-cache/dispatch-attempt-1.json","sha256":"108a5e2c689aa69b232ced59fec83d4d98a871245d459599a59887321ca7d0c4","status":"BLOCKED"},
+    {"path":"benchmarks/external-oss-v4/dependency-cache/qualification-status.json","sha256":"1f1e6b78d536cdb4b8c45266b460a5d43eec099de61a1a81724e28c6c8928313","status":"BLOCKED"},
+    {"path":"benchmarks/external-oss-v4/runner/preflight-receipt.json","sha256":"bf0db6e49dd3eb8df3804545af0801b4e6c79a7d3b1d789e7a54a1c71ce8f53f","status":"BLOCKED"},
+    {"path":"benchmarks/external-oss-v4/phase-4-gate.json","sha256":"33fa38f3f3b603f47d797ec1086481adac281a8bb03ec390c2d848a60fd807d3","status":"BLOCKED"}
+  ],
+  "v2v3RecordedEvidence": {
+    "recordedInV4Manifest": true,
+    "scope": "benchmarks/external-oss-v4/inherited-evidence.json",
+    "manifestItemCount": 34,
+    "repoPathItemCount": 31,
+    "repoPathItemsAbsentFromCleanWorktree": 31,
+    "hiddenOracleReferenceCount": 3,
+    "hiddenOracleReferencesOutsideWorkspace": 3,
+    "independentlyRehashedInFreshWorktree": false,
+    "reason": "All 31 repository-path items are absent from clean origin/main; the three remaining entries are hidden-oracle references outside the workspace. No uncommitted evidence worktree was used.",
+    "preservation": "The V4 manifest and its recorded hashes are untouched."
+  },
+  "v4FailureEvidence": {
+    "attempt1FailurePath":"benchmarks/external-oss-v4/dependency-cache/attempt-1-failure-summary.json",
+    "attempt1FailureSha256":"35bb7ee4c3392b3d46fd6d8f5b5a9eff56ddb380713bdfd33ee5523aa555fc3b",
+    "qualification":"BLOCKED",
+    "claim":"No V4 dependency-cache archive or READY cache receipt is claimed."
+  },
+  "claimBoundary": "Inherited V2/V3 evidence remains recorded but not rehashed here where source files are absent. V4 failure evidence is revalidated and preserved. No inherited evidence is promoted into a V5 measured-run claim."
+}

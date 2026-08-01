@@ -1,0 +1,97 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G0",
+  "reviewedAt": "2026-08-01",
+  "reviewer": "Sol",
+  "scope": "Independent review of Luna G0 handoff, current-state, inherited evidence, repo identity, V4/V5 external run receipts, seed contracts, and fabricated READY/lock absence.",
+  "repoIdentity": {
+    "worktree": "/Users/william/governseed-v5-g0-luna",
+    "origin": "https://github.com/Eskasia/governseed.git",
+    "headCommit": "b83900394b1d525dedb32581e219d31d235db349",
+    "originMainCommit": "b83900394b1d525dedb32581e219d31d235db349",
+    "onlyUntrackedFiles": [
+      "benchmarks/external-oss-v5/current-state.json",
+      "benchmarks/external-oss-v5/inherited-evidence-v5.json",
+      "benchmarks/external-oss-v5/control/G0/luna-handoff.json"
+    ]
+  },
+  "recomputedHashes": {
+    "benchmarks/external-oss-v4/inherited-evidence.json": "10c65e3d799a7dcf7037573b83fe313b8341b8b8d700f8f71fd7877640da29e9",
+    "benchmarks/external-oss-v5/inherited-evidence.json": "605c9284d3e2edc69108d26adf6a47163464c63a1d2e6a6722be14faf154d85b",
+    "benchmarks/external-oss-v4/dependency-cache/attempt-1-failure-summary.json": "35bb7ee4c3392b3d46fd6d8f5b5a9eff56ddb380713bdfd33ee5523aa555fc3b",
+    "benchmarks/external-oss-v4/dependency-cache/dispatch-attempt-1.json": "108a5e2c689aa69b232ced59fec83d4d98a871245d459599a59887321ca7d0c4",
+    "benchmarks/external-oss-v4/dependency-cache/qualification-status.json": "1f1e6b78d536cdb4b8c45266b460a5d43eec099de61a1a81724e28c6c8928313",
+    "benchmarks/external-oss-v4/runner/preflight-receipt.json": "bf0db6e49dd3eb8df3804545af0801b4e6c79a7d3b1d789e7a54a1c71ce8f53f",
+    "benchmarks/external-oss-v4/phase-4-gate.json": "33fa38f3f3b603f47d797ec1086481adac281a8bb03ec390c2d848a60fd807d3",
+    "v4Run30703626223ArtifactZipSha256": "40147ecaed09cf057ffcd608c2f0cd787697f6d28fe5a1091ee652613328de58",
+    "v4Run30703626223PreflightReceiptBodySha256": "68f191f7a799862bebf1d7f92a172c9c953e6f4ef4c15ef1181f2e9fcb14a4e5",
+    "v4Run30703626223PreflightReceiptJsonSha256": "494d7a8d6e49b3295b60e0b1d220bff174b16d352007308915f824bf4befba68",
+    "v5Run30708399340Task01ArtifactZipSha256": "faa6e7fdd24c41173b94439e22b4b70936bdebe67e0305d3a5b808422a92844b",
+    "v5Run30708399340Task03ArtifactZipSha256": "306ea7fc232ca86dab3fa605b801f05a9001499b0bbae8352e2f896706105f32",
+    "v5Run30708399340Task09ArtifactZipSha256": "d429f63d7e2c9e42ec65f6c574b4e4ecfc85a8a8f4efefc7e52a2259cdc16fc4"
+  },
+  "externalRunVerification": {
+    "v4ReadyRun": {
+      "runId": 30703626223,
+      "workflow": "External OSS V4 runner preflight",
+      "headSha": "e9326647012692ff3b7a11071409a9c783776ea2",
+      "conclusion": "success",
+      "jobNames": [
+        "V4 disposable containment preflight"
+      ],
+      "artifactName": "external-oss-v4-runner-preflight-30703626223",
+      "receiptStatus": "READY",
+      "receiptBodySha256": "68f191f7a799862bebf1d7f92a172c9c953e6f4ef4c15ef1181f2e9fcb14a4e5"
+    },
+    "v5SeedRuntimeRun": {
+      "runId": 30708399340,
+      "workflow": "External OSS V5 dependency cache",
+      "headSha": "b83900394b1d525dedb32581e219d31d235db349",
+      "conclusion": "success",
+      "matrixJobs": [
+        "Qualify V5 seed identity (TASK-OSS-01)",
+        "Qualify V5 seed identity (TASK-OSS-03)",
+        "Qualify V5 seed identity (TASK-OSS-09)"
+      ]
+    }
+  },
+  "seedContractCrossChecks": [
+    {
+      "taskId": "TASK-OSS-01",
+      "artifactMatchesContract": true,
+      "hiddenOracleHashChainMatches": true,
+      "redGreenExitCodesMatch": true
+    },
+    {
+      "taskId": "TASK-OSS-03",
+      "artifactMatchesContract": true,
+      "hiddenOracleHashChainMatches": true,
+      "redGreenExitCodesMatch": true
+    },
+    {
+      "taskId": "TASK-OSS-09",
+      "artifactMatchesContract": true,
+      "hiddenOracleHashChainMatches": true,
+      "redGreenExitCodesMatch": true
+    }
+  ],
+  "v2v3ManifestCountCheck": {
+    "v4ManifestTotalItems": 34,
+    "v4ManifestWorkspacePathItems": 31,
+    "v4ManifestHiddenOracleRefs": 3,
+    "v5RecordedItemCount": 29,
+    "matches": false,
+    "finding": "benchmarks/external-oss-v5/inherited-evidence-v5.json records 29 V2/V3 items without a basis that matches the V4 manifest structure."
+  },
+  "fabricatedReadyOrLockCheck": {
+    "v5BenchmarkLockFilesFound": [],
+    "v5ReadyReceiptFilesFound": [],
+    "v5DependencyCacheDispatchArtifactsFound": [],
+    "result": "PASS"
+  },
+  "independentValidationCommands": [
+    "node benchmarks/external-oss-v5/tests/schema-validation.mjs",
+    "node benchmarks/external-oss-v5/tests/seed-contract-validation.mjs",
+    "node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs"
+  ]
+}

@@ -1,0 +1,99 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "phase": "G0",
+  "status": "READY_FOR_REVIEW",
+  "repository": "Eskasia/governseed",
+  "origin": "https://github.com/Eskasia/governseed.git",
+  "worktree": "/Users/william/governseed-v5-g0-luna",
+  "branch": "benchmark/v5-g0",
+  "baseCommit": "b83900394b1d525dedb32581e219d31d235db349",
+  "headCommit": "b83900394b1d525dedb32581e219d31d235db349",
+  "initialCleanState": true,
+  "remediationApplied": "Corrected V4 inherited-evidence accounting to 34 total items: 31 repository-path items absent from the clean worktree and 3 hidden-oracle references outside the workspace.",
+  "currentWorktreeState": "Three G0 evidence files are uncommitted; no other changes are present.",
+  "filesChanged": [
+    "benchmarks/external-oss-v5/current-state.json",
+    "benchmarks/external-oss-v5/inherited-evidence-v5.json",
+    "benchmarks/external-oss-v5/control/G0/luna-handoff.json"
+  ],
+  "v4Runner": {
+    "runId": 30703626223,
+    "workflow": "External OSS V4 runner preflight",
+    "headSha": "e9326647012692ff3b7a11071409a9c783776ea2",
+    "conclusion": "success",
+    "receiptStatus": "READY",
+    "receiptSha256": "68f191f7a799862bebf1d7f92a172c9c953e6f4ef4c15ef1181f2e9fcb14a4e5",
+    "artifact": "external-oss-v4-runner-preflight-30703626223"
+  },
+  "v5SeedRuntime": {
+    "runId": 30708399340,
+    "workflow": "External OSS V5 dependency cache",
+    "headSha": "b83900394b1d525dedb32581e219d31d235db349",
+    "conclusion": "success",
+    "matrixPassJobs": [
+      "TASK-OSS-01",
+      "TASK-OSS-03",
+      "TASK-OSS-09"
+    ],
+    "dependencyCacheStatus": "NOT_RUN"
+  },
+  "taskSeedContracts": [
+    {
+      "taskId": "TASK-OSS-01",
+      "repository": "immich-app/immich",
+      "upstreamBaseCommit": "834cc54abcc4127ee13a127ade2e2f467d46c063",
+      "upstreamFixCommit": "d8ed7d7bb9d5a816ba55abda0123cfb543b04050",
+      "sealedSeedCommit": "15ba6bed78feebe392dfbe13cf0be4065b260af7",
+      "sealedSeedGitTree": "88516884b2ff20092e8113d3ca73db404c657295",
+      "sealedSeedTreeSha256": "3ebafacc713e37ea6939f08b1205198b415c5ae62dcbddb9f11ce4ab732ee70e",
+      "hiddenOracleSha256": "bc20c7b7821138e733a2aadbaf48397b0e3840c6cdb3c27bb8ae8a4c963ee6c3",
+      "parentExitCode": 1,
+      "fixExitCode": 0
+    },
+    {
+      "taskId": "TASK-OSS-03",
+      "repository": "louislam/uptime-kuma",
+      "upstreamBaseCommit": "efa194a6df72572e5245a25794bdad7ad34bea2d",
+      "upstreamFixCommit": "b829329e0acf3e00d0d5f0f1afd9e714a66f0a7c",
+      "sealedSeedCommit": "672d8d324fde3a0d874ee752ab8e1ef4751972bb",
+      "sealedSeedGitTree": "ac7ff80f13a48e911da363c5a14269b5e9c3111d",
+      "sealedSeedTreeSha256": "5fdbf067da484e3778a1345297a33d984779be73c020ded93198a1c84f5a07ca",
+      "hiddenOracleSha256": "bd05a49e86e5f268a7adc62c5defe2addc51032ad7f8b6e6461777c078e74cc6",
+      "parentExitCode": 1,
+      "fixExitCode": 0
+    },
+    {
+      "taskId": "TASK-OSS-09",
+      "repository": "paperless-ngx/paperless-ngx",
+      "upstreamBaseCommit": "fb3816486cf9fac6bcc23a82200f632a6f1b6ce8",
+      "upstreamFixCommit": "92c016ce473a27cfbf015eeaec4cfbde37c85e8e",
+      "sealedSeedCommit": "17562a35c7b3ebf87e0c960306af6de39c79248b",
+      "sealedSeedGitTree": "e555d1a1cdcc53b05f0fa1ecce36c996dd203ac2",
+      "sealedSeedTreeSha256": "64d046e9abad54f4f10d2e489d4385e5ca6df1e0d5b8d67ecf48ad560bf4ad42",
+      "hiddenOracleSha256": "34c3f64aebd45be29fd0b1033e3649025a2c93b2c153178ecb124c086d368f2c",
+      "parentExitCode": 1,
+      "fixExitCode": 0
+    }
+  ],
+  "dependencyCache": {
+    "staticQualification": "PASS",
+    "status": "NOT_RUN",
+    "dispatch": "NOT_RUN_BY_SCOPE",
+    "cacheArchives": "NOT_RUN",
+    "offlineContainer": "NOT_RUN"
+  },
+  "validation": {
+    "schemaValidation": "PASS",
+    "seedContractValidation": "PASS",
+    "dependencyWorkflowValidation": "PASS",
+    "v5WorkflowYaml": "PASS",
+    "v4WorkflowYaml": "PASS"
+  },
+  "knownLimitations": [
+    "V4 dependency-cache qualification remains BLOCKED and its failure evidence is preserved by immutable hash.",
+    "V4 inherited-evidence.json contains 34 items: 31 repository-path items absent from clean origin/main and 3 hidden-oracle references outside the workspace; these scopes are recorded without rehashing unavailable sources.",
+    "No V5 dependency cache, Codex execution, Pilot, confirmatory run, credential transport, or benchmark effect is claimed."
+  ],
+  "claimBoundary": "G0 records repository identity, inherited evidence, V4 READY runner identity, V5 seed-runtime success, and static seed contracts only. It does not authorize or claim a V5 measured dependency cache, Codex run, Pilot, confirmatory run, credential use, or benchmark result."
+}
