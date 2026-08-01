@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "status": "NOT_RUN",
+  "dependencyCaches": "NOT_RUN",
+  "workflowPath": ".github/workflows/external-oss-v4-dependency-cache.yml",
+  "tasks": [
+    {"taskId": "TASK-OSS-01", "repository": "immich-app/immich", "cacheStatus": "NOT_RUN", "cacheReceipt": "NOT_CREATED"},
+    {"taskId": "TASK-OSS-03", "repository": "louislam/uptime-kuma", "cacheStatus": "NOT_RUN", "cacheReceipt": "NOT_CREATED"},
+    {"taskId": "TASK-OSS-09", "repository": "paperless-ngx/paperless-ngx", "cacheStatus": "NOT_RUN", "cacheReceipt": "NOT_CREATED"}
+  ],
+  "staticValidation": "PASS_STATIC_ONLY",
+  "fullCi": "PASS",
+  "localDocker": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+  "offlineSmoke": "NOT_RUN",
+  "negativeCacheMissTests": "NOT_RUN",
+  "claimBoundary": "Workflow and static qualification only; no Actions dispatch, cache archive, offline container, public smoke, negative cache-miss, Codex task, Pilot, or READY receipt was produced."
+}

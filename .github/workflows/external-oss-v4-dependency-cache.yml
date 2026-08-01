@@ -1,0 +1,403 @@
+name: External OSS V4 measured dependency cache
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BENCHMARK_ID: GS-OSS-2026-08-01-V4
+  EVIDENCE_CLASS: external-observational
+  V4_RUNTIME_IMAGE: ubuntu@sha256:4fbb8e6a8395de5a7550b33509421a2bafbc0aab6c06ba2cef9ebffbc7092d90
+
+jobs:
+  prepare-cache:
+    name: Prepare measured cache (${{ matrix.task_id }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - task_id: TASK-OSS-01
+            repository: immich-app/immich
+            seed_commit: 0ad23a4f16331512f49c570acc2e9ff8093c8248
+            seed_tree_sha256: 88c4510ad2c5825cad031671e8188fe8f6164324fd4eccd98f5160fc81a676fa
+            runtime: node-v26.3.0-pnpm-10.6.2
+          - task_id: TASK-OSS-03
+            repository: louislam/uptime-kuma
+            seed_commit: 2ccc49b77ba0c0e9dc159fcce5516efa7c0e7a18
+            seed_tree_sha256: 5fdbf067da484e3778a1345297a33d984779be73c020ded93198a1c84f5a07ca
+            runtime: node-v26.3.0-npm-11.16.0
+          - task_id: TASK-OSS-09
+            repository: paperless-ngx/paperless-ngx
+            seed_commit: 5f5ab1beea4feaaecee7131b4b36185f09e2f53c
+            seed_tree_sha256: 64d046e9abad54f4f10d2e489d4385e5ca6df1e0d5b8d67ecf48ad560bf4ad42
+            runtime: python-3.14.6-uv-0.11.8
+
+    steps:
+      - name: Set up fixed Node runtime
+        if: matrix.task_id == 'TASK-OSS-01' || matrix.task_id == 'TASK-OSS-03'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26.3.0
+          check-latest: false
+          cache: ''
+
+      - name: Set up fixed Python runtime
+        if: matrix.task_id == 'TASK-OSS-09'
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.14.6
+          check-latest: false
+
+      - name: Set up fixed uv runtime
+        if: matrix.task_id == 'TASK-OSS-09'
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: 0.11.8
+
+      - name: Prepare fixed public seed and dependency cache
+        shell: bash
+        env:
+          TASK_ID: ${{ matrix.task_id }}
+          REPOSITORY: ${{ matrix.repository }}
+          SEED_COMMIT: ${{ matrix.seed_commit }}
+          SEED_TREE_SHA256: ${{ matrix.seed_tree_sha256 }}
+          RUNTIME_IDENTITY: ${{ matrix.runtime }}
+        run: |
+          set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
+
+          work_root="$RUNNER_TEMP/v4-dependency-cache/$TASK_ID"
+          seed_root="$work_root/seed"
+          cache_root="$work_root/cache"
+          artifact_root="$RUNNER_TEMP/v4-dependency-artifact/$TASK_ID"
+          mkdir -p "$work_root" "$cache_root" "$artifact_root"
+
+          git clone --no-checkout --filter=blob:none "https://github.com/$REPOSITORY.git" "$seed_root"
+          git -C "$seed_root" remote set-url --push origin no_push://disabled
+          git -C "$seed_root" fetch --depth 1 origin "$SEED_COMMIT"
+          git -C "$seed_root" checkout --detach "$SEED_COMMIT"
+          test "$(git -C "$seed_root" rev-parse HEAD)" = "$SEED_COMMIT"
+          test -z "$(git -C "$seed_root" status --porcelain=v1 --untracked-files=no)"
+          tar -czf "$artifact_root/seed.tgz" -C "$seed_root" --exclude=.git .
+          seed_archive_sha256=$(sha256sum "$artifact_root/seed.tgz" | cut -d' ' -f1)
+
+          case "$TASK_ID" in
+            TASK-OSS-01)
+              corepack enable
+              corepack prepare pnpm@10.6.2 --activate
+              test "$(node --version)" = v26.3.0
+              test "$(pnpm --version)" = 10.6.2
+              test -f "$seed_root/pnpm-lock.yaml"
+              git -C "$seed_root" diff --exit-code -- pnpm-lock.yaml
+              (cd "$seed_root" && pnpm install --frozen-lockfile --ignore-scripts)
+              (cd "$seed_root" && pnpm --filter @immich/sdk run build)
+              test -d "$seed_root/node_modules"
+              ;;
+            TASK-OSS-03)
+              npm install --global npm@11.16.0 --ignore-scripts --no-audit --no-fund
+              test "$(node --version)" = v26.3.0
+              test "$(npm --version)" = 11.16.0
+              test -f "$seed_root/package-lock.json"
+              git -C "$seed_root" diff --exit-code -- package-lock.json
+              (cd "$seed_root" && npm ci --no-audit --no-fund)
+              test -d "$seed_root/node_modules"
+              ;;
+            TASK-OSS-09)
+              test "$(python --version 2>&1)" = 'Python 3.14.6'
+              test "$(uv --version)" = 'uv 0.11.8'
+              test -f "$seed_root/uv.lock"
+              git -C "$seed_root" diff --exit-code -- uv.lock
+              (cd "$seed_root" && uv sync --group testing)
+              test -x "$seed_root/.venv/bin/python"
+              test "$(cd "$seed_root" && uv run python --version)" = 'Python 3.14.6'
+              ;;
+            *)
+              echo 'DEPENDENCY_CACHE_INCOMPLETE: unknown task identity' >&2
+              exit 1
+              ;;
+          esac
+
+          test -z "$(git -C "$seed_root" status --porcelain=v1)"
+
+          case "$TASK_ID" in
+            TASK-OSS-01)
+              find "$seed_root" -type d -name node_modules -prune -print | sed "s#^$seed_root/##" > "$work_root/cache-paths.txt"
+              printf '%s\n' packages/sdk/dist >> "$work_root/cache-paths.txt"
+              ;;
+            TASK-OSS-03)
+              printf '%s\n' node_modules > "$work_root/cache-paths.txt"
+              ;;
+            TASK-OSS-09)
+              printf '%s\n' .venv > "$work_root/cache-paths.txt"
+              ;;
+          esac
+
+          while IFS= read -r relative_path; do
+            test -e "$seed_root/$relative_path" || { echo 'DEPENDENCY_CACHE_INCOMPLETE: required dependency path missing' >&2; exit 42; }
+            mkdir -p "$cache_root/$(dirname "$relative_path")"
+            cp -a "$seed_root/$relative_path" "$cache_root/$relative_path"
+          done < "$work_root/cache-paths.txt"
+
+          python3 - "$cache_root" > "$artifact_root/cache-files.sha256" <<'PY'
+          import hashlib
+          import pathlib
+          import sys
+
+          root = pathlib.Path(sys.argv[1])
+          for path in sorted(root.rglob('*')):
+              relative = path.relative_to(root).as_posix()
+              if path.is_symlink():
+                  print(f'SYMLINK\t{path.readlink()}\t{relative}')
+              elif path.is_file():
+                  digest = hashlib.sha256(path.read_bytes()).hexdigest()
+                  print(f'FILE\t{digest}\t{relative}')
+          PY
+
+          chmod -R a-w "$cache_root"
+          tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner \
+            --use-compress-program='gzip -n' \
+            -czf "$artifact_root/cache.tgz" -C "$cache_root" .
+          cache_sha256=$(sha256sum "$artifact_root/cache.tgz" | cut -d' ' -f1)
+
+          cat > "$artifact_root/cache-manifest.json" <<JSON
+          {
+            "schemaVersion": 1,
+            "benchmarkId": "$BENCHMARK_ID",
+            "evidenceClass": "$EVIDENCE_CLASS",
+            "taskId": "$TASK_ID",
+            "repository": "$REPOSITORY",
+            "seedCommit": "$SEED_COMMIT",
+            "seedTreeSha256": "$SEED_TREE_SHA256",
+            "runtime": {"identity": "$RUNTIME_IDENTITY"},
+            "runtimeImageDigest": "$V4_RUNTIME_IMAGE",
+            "installCommand": $(case "$TASK_ID" in TASK-OSS-01) printf '%s' '["pnpm","install","--frozen-lockfile","--ignore-scripts"]';; TASK-OSS-03) printf '%s' '["npm","ci","--no-audit","--no-fund"]';; TASK-OSS-09) printf '%s' '["uv","sync","--group","testing"]';; esac),
+            "buildCommand": $(case "$TASK_ID" in TASK-OSS-01) printf '%s' '["pnpm","--filter","@immich/sdk","run","build"]';; *) printf '%s' '[]';; esac),
+            "publicTestCommand": $(case "$TASK_ID" in TASK-OSS-01) printf '%s' '["./node_modules/.bin/vitest","--run","src/commands/asset.spec.ts"]';; TASK-OSS-03) printf '%s' '["env","TEST_BACKEND=1","node","--test","--test-reporter=spec","test/backend-test/test-status-page.js"]';; TASK-OSS-09) printf '%s' '["python","-m","pytest","-q","src/paperless/tests/test_parser_utils.py"]';; esac),
+            "cachePaths": $(python3 -c 'import json,sys; print(json.dumps([p.strip() for p in open(sys.argv[1]) if p.strip()]))' "$work_root/cache-paths.txt"),
+            "cacheSha256": "$cache_sha256",
+            "seedArchiveSha256": "$seed_archive_sha256",
+            "preparationNetworkUsed": true,
+            "preparationStatus": "READY",
+            "measuredNetworkUsed": false,
+            "hiddenOracleIncluded": false,
+            "credentialIncluded": false,
+            "lockfileModified": false
+          }
+          JSON
+
+          jq -e . "$artifact_root/cache-manifest.json" >/dev/null
+          jq -e --arg sha "$cache_sha256" '.cacheSha256 == $sha and .preparationStatus == "READY" and .measuredNetworkUsed == false and .hiddenOracleIncluded == false and .credentialIncluded == false and .lockfileModified == false' "$artifact_root/cache-manifest.json" >/dev/null
+          cp "$artifact_root/cache-manifest.json" "$artifact_root/preparation-result.json"
+
+          docker pull "$V4_RUNTIME_IMAGE"
+          docker tag "$V4_RUNTIME_IMAGE" "v4-cache-runtime:$TASK_ID"
+          docker save "v4-cache-runtime:$TASK_ID" | gzip -n > "$artifact_root/runtime-image.tgz"
+          printf '%s\n' "$V4_RUNTIME_IMAGE" > "$artifact_root/runtime-image-reference.txt"
+
+      - name: Upload cache preparation artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v4-dependency-cache-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v4-dependency-artifact/${{ matrix.task_id }}/
+          if-no-files-found: error
+
+  verify-cache-offline:
+    name: Verify measured cache offline (${{ matrix.task_id }})
+    needs: prepare-cache
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - task_id: TASK-OSS-01
+            repository: immich-app/immich
+            seed_commit: 0ad23a4f16331512f49c570acc2e9ff8093c8248
+            seed_tree_sha256: 88c4510ad2c5825cad031671e8188fe8f6164324fd4eccd98f5160fc81a676fa
+            runtime: node-v26.3.0-pnpm-10.6.2
+            required_cache_path: node_modules
+          - task_id: TASK-OSS-03
+            repository: louislam/uptime-kuma
+            seed_commit: 2ccc49b77ba0c0e9dc159fcce5516efa7c0e7a18
+            seed_tree_sha256: 5fdbf067da484e3778a1345297a33d984779be73c020ded93198a1c84f5a07ca
+            runtime: node-v26.3.0-npm-11.16.0
+            required_cache_path: node_modules
+          - task_id: TASK-OSS-09
+            repository: paperless-ngx/paperless-ngx
+            seed_commit: 5f5ab1beea4feaaecee7131b4b36185f09e2f53c
+            seed_tree_sha256: 64d046e9abad54f4f10d2e489d4385e5ca6df1e0d5b8d67ecf48ad560bf4ad42
+            runtime: python-3.14.6-uv-0.11.8
+            required_cache_path: .venv/bin/python
+
+    steps:
+      - name: Download preparation artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: external-oss-v4-dependency-cache-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v4-dependency-artifact/${{ matrix.task_id }}/
+
+      - name: Verify cache hashes and run offline smoke plus negative cache miss
+        shell: bash
+        env:
+          TASK_ID: ${{ matrix.task_id }}
+          REPOSITORY: ${{ matrix.repository }}
+          SEED_COMMIT: ${{ matrix.seed_commit }}
+          SEED_TREE_SHA256: ${{ matrix.seed_tree_sha256 }}
+          RUNTIME_IDENTITY: ${{ matrix.runtime }}
+          REQUIRED_CACHE_PATH: ${{ matrix.required_cache_path }}
+        run: |
+          set -euo pipefail
+          cache_incomplete() {
+            echo 'DEPENDENCY_CACHE_INCOMPLETE' >&2
+            exit 42
+          }
+          artifact_root="$RUNNER_TEMP/v4-dependency-artifact/$TASK_ID"
+          workspace="$RUNNER_TEMP/v4-offline-workspace/$TASK_ID"
+          cache="$RUNNER_TEMP/v4-offline-cache/$TASK_ID"
+          negative_cache="$RUNNER_TEMP/v4-offline-cache-negative/$TASK_ID"
+          harness="$RUNNER_TEMP/v4-offline-harness/$TASK_ID"
+          receipt_root="$RUNNER_TEMP/v4-dependency-receipts/$TASK_ID"
+          mkdir -p "$workspace" "$cache" "$negative_cache" "$harness" "$receipt_root"
+
+          test -f "$artifact_root/cache-manifest.json" || cache_incomplete
+          test -f "$artifact_root/cache-files.sha256" || cache_incomplete
+          test -f "$artifact_root/cache.tgz" || cache_incomplete
+          test -f "$artifact_root/seed.tgz" || cache_incomplete
+          test -f "$artifact_root/runtime-image.tgz" || cache_incomplete
+          cache_sha256=$(jq -r .cacheSha256 "$artifact_root/cache-manifest.json")
+          test "$cache_sha256" = "$(sha256sum "$artifact_root/cache.tgz" | cut -d' ' -f1)" || cache_incomplete
+          seed_archive_sha256=$(jq -r .seedArchiveSha256 "$artifact_root/cache-manifest.json")
+          test "$seed_archive_sha256" = "$(sha256sum "$artifact_root/seed.tgz" | cut -d' ' -f1)" || cache_incomplete
+          test "$(jq -r .seedCommit "$artifact_root/cache-manifest.json")" = "$SEED_COMMIT" || cache_incomplete
+          test "$(jq -r .seedTreeSha256 "$artifact_root/cache-manifest.json")" = "$SEED_TREE_SHA256" || cache_incomplete
+          test "$(jq -r '.runtime.identity' "$artifact_root/cache-manifest.json")" = "$RUNTIME_IDENTITY" || cache_incomplete
+          test "$(jq -r .runtimeImageDigest "$artifact_root/cache-manifest.json")" = "$V4_RUNTIME_IMAGE" || cache_incomplete
+          test "$(jq -r .preparationNetworkUsed "$artifact_root/cache-manifest.json")" = true || cache_incomplete
+          test "$(jq -r .measuredNetworkUsed "$artifact_root/cache-manifest.json")" = false || cache_incomplete
+          test "$(jq -r .hiddenOracleIncluded "$artifact_root/cache-manifest.json")" = false || cache_incomplete
+          test "$(jq -r .credentialIncluded "$artifact_root/cache-manifest.json")" = false || cache_incomplete
+          test "$(jq -r .lockfileModified "$artifact_root/cache-manifest.json")" = false || cache_incomplete
+
+          tar -xzf "$artifact_root/seed.tgz" -C "$workspace"
+          tar -xzf "$artifact_root/cache.tgz" -C "$cache"
+          cp -a "$cache/." "$negative_cache/"
+          rm -rf "$negative_cache/$REQUIRED_CACHE_PATH"
+          chmod 0777 "$workspace"
+          chmod -R a-w "$cache" "$harness" "$negative_cache"
+
+          verify_cache_files() {
+            local root="$1"
+            while IFS=$'\t' read -r kind digest relative; do
+              test -n "$kind" -a -n "$digest" -a -n "$relative" || { echo 'DEPENDENCY_CACHE_INCOMPLETE' >&2; return 42; }
+              case "$kind" in
+                FILE)
+                  actual=$(sha256sum "$root/$relative" 2>/dev/null | cut -d' ' -f1) || { echo 'DEPENDENCY_CACHE_INCOMPLETE' >&2; return 42; }
+                  test "$actual" = "$digest" || { echo 'DEPENDENCY_CACHE_INCOMPLETE' >&2; return 42; }
+                  ;;
+                SYMLINK)
+                  test -L "$root/$relative" || { echo 'DEPENDENCY_CACHE_INCOMPLETE' >&2; return 42; }
+                  test "$(readlink "$root/$relative")" = "$digest" || { echo 'DEPENDENCY_CACHE_INCOMPLETE' >&2; return 42; }
+                  ;;
+                *)
+                  echo 'DEPENDENCY_CACHE_INCOMPLETE: unknown cache manifest row' >&2
+                  return 42
+                  ;;
+              esac
+            done < "$artifact_root/cache-files.sha256"
+          }
+          verify_cache_files "$cache" || cache_incomplete
+          test -e "$cache/$REQUIRED_CACHE_PATH" || cache_incomplete
+
+          cat > "$harness/offline-cache-smoke.sh" <<'SMOKE'
+          #!/usr/bin/env bash
+          set -euo pipefail
+          required_path="$1"
+          test "$(id -u)" = 65532
+          test "$(awk '/CapEff:/{print $2}' /proc/self/status)" = 0000000000000000
+          test "$(awk '/NoNewPrivs:/{print $2}' /proc/self/status)" = 1
+          for denied in "OPENAI""_API_KEY" ANTHROPIC_API_KEY GITHUB_TOKEN GH_TOKEN NPM_TOKEN PYPI_TOKEN AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AZURE_CLIENT_SECRET GOOGLE_APPLICATION_CREDENTIALS; do
+            ! env | cut -d= -f1 | grep -Fxq "$denied"
+          done
+          test -e "/cache/$required_path" || { echo DEPENDENCY_CACHE_INCOMPLETE; exit 42; }
+          test -e /workspace
+          test -e /harness/cache-files.sha256
+          ! touch /cache/forbidden-write 2>/dev/null
+          ! timeout 3 bash -c 'cat < /dev/null > /dev/tcp/example.com/443' 2>/dev/null
+          ! timeout 3 bash -c 'cat < /dev/null > /dev/tcp/1.1.1.1/443' 2>/dev/null
+          printf '%s\n' 'offline_cache_smoke=PASS'
+          SMOKE
+          chmod 0555 "$harness/offline-cache-smoke.sh"
+
+          docker load --input "$artifact_root/runtime-image.tgz" >/dev/null
+          image_ref="v4-cache-runtime:$TASK_ID"
+          test "$(docker image inspect "$image_ref" --format '{{.Id}}')" != ''
+          container_name="governseed-v4-cache-$TASK_ID-$GITHUB_RUN_ID"
+          negative_container_name="${container_name}-negative"
+          cleanup() {
+            for container in "$container_name" "$negative_container_name"; do
+              if docker inspect "$container" >/dev/null 2>&1; then
+                docker rm -f "$container" >/dev/null 2>&1 || true
+              fi
+            done
+          }
+          trap cleanup EXIT
+
+          docker run --name "$container_name" --network none --read-only --cap-drop=ALL \
+            --security-opt no-new-privileges:true --user 65532:65532 --pids-limit 256 \
+            --cpus 4 --memory 15g \
+            --mount "type=bind,src=$workspace,dst=/workspace" \
+            --mount "type=bind,src=$cache,dst=/cache,readonly" \
+            --mount "type=bind,src=$harness,dst=/harness,readonly" \
+            "$image_ref" /harness/offline-cache-smoke.sh "$REQUIRED_CACHE_PATH"
+
+          set +e
+          docker run --name "$negative_container_name" --network none --read-only --cap-drop=ALL \
+            --security-opt no-new-privileges:true --user 65532:65532 --pids-limit 256 \
+            --cpus 4 --memory 15g \
+            --mount "type=bind,src=$workspace,dst=/workspace" \
+            --mount "type=bind,src=$negative_cache,dst=/cache,readonly" \
+            --mount "type=bind,src=$harness,dst=/harness,readonly" \
+            "$image_ref" /harness/offline-cache-smoke.sh "$REQUIRED_CACHE_PATH"
+          negative_status=$?
+          set -e
+          test "$negative_status" = 42 || { echo 'FAIL: CACHE_NEGATIVE_TEST_DID_NOT_FAIL' >&2; exit 1; }
+
+          docker rm "$container_name" "$negative_container_name" >/dev/null 2>&1 || true
+          ! docker inspect "$container_name" >/dev/null 2>&1
+          ! docker inspect "$negative_container_name" >/dev/null 2>&1
+
+          cat > "$receipt_root/cache-receipt.json" <<JSON
+          {
+            "schemaVersion": 1,
+            "benchmarkId": "$BENCHMARK_ID",
+            "evidenceClass": "$EVIDENCE_CLASS",
+            "taskId": "$TASK_ID",
+            "repository": "$REPOSITORY",
+            "status": "READY",
+            "seedCommit": "$SEED_COMMIT",
+            "seedTreeSha256": "$SEED_TREE_SHA256",
+            "cacheSha256": "$cache_sha256",
+            "manifestSha256": "$(sha256sum "$artifact_root/cache-manifest.json" | cut -d' ' -f1)",
+            "runtimeIdentity": {"identity": "$RUNTIME_IDENTITY"},
+            "preparationNetworkUsed": true,
+            "measuredNetworkUsed": false,
+            "cacheReadOnlyObserved": true,
+            "publicTestSmokePass": true,
+            "negativeCacheMissBlocked": true,
+            "limitations": ["Dependency qualification only; no coding task was executed."]
+          }
+          JSON
+          jq -e . "$receipt_root/cache-receipt.json" >/dev/null
+
+      - name: Upload structured cache receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v4-dependency-cache-receipt-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v4-dependency-receipts/${{ matrix.task_id }}/
+          if-no-files-found: error
