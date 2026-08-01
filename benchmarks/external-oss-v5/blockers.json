@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 5,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "blockers": [
+    {
+      "id": "MEASURED_DEPENDENCY_CACHE_REQUIRED",
+      "severity": "BLOCKER",
+      "status": "OPEN",
+      "description": "V5 dependency-cache workflow is static-ready but was not dispatched in this phase."
+    },
+    {
+      "id": "CREDENTIAL_TRANSPORT_HUMAN_APPROVAL_REQUIRED",
+      "severity": "BLOCKER",
+      "status": "OPEN",
+      "description": "No credential transport or provider approval was used."
+    },
+    {
+      "id": "CODEX_RUNTIME_IDENTITY_REQUIRED",
+      "severity": "BLOCKER",
+      "status": "OPEN",
+      "description": "No Codex/provider execution was performed and no runtime identity is frozen."
+    },
+    {
+      "id": "V3_IMMICH_LEGACY_TREE_HASH_MIGRATION_REVIEW",
+      "severity": "REVIEW",
+      "status": "OPEN",
+      "description": "The V3 Immich legacy tracked-file hash is not reproducible without an explicit symlink encoding; V5 uses a documented canonical rule and preserves the legacy value."
+    }
+  ],
+  "pilotAllowed": false
+}

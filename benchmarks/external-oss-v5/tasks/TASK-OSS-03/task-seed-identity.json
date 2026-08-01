@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 5,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-03",
+  "repository": "louislam/uptime-kuma",
+  "upstreamRepositoryUrl": "https://github.com/louislam/uptime-kuma.git",
+  "upstreamBaseCommit": "efa194a6df72572e5245a25794bdad7ad34bea2d",
+  "upstreamFixCommit": "b829329e0acf3e00d0d5f0f1afd9e714a66f0a7c",
+  "upstreamBaseReachable": true,
+  "upstreamFixReachable": true,
+  "seedOverlayPath": null,
+  "seedOverlaySha256": null,
+  "sealedSeedCommit": "672d8d324fde3a0d874ee752ab8e1ef4751972bb",
+  "sealedSeedGitTree": "ac7ff80f13a48e911da363c5a14269b5e9c3111d",
+  "sealedSeedTreeSha256": "5fdbf067da484e3778a1345297a33d984779be73c020ded93198a1c84f5a07ca",
+  "taskBriefSha256": "58fec842805c88a130003f8468762131dd9ebfb8d1205c96008a94e3273c73c3",
+  "hiddenOracleSha256": "bd05a49e86e5f268a7adc62c5defe2addc51032ad7f8b6e6461777c078e74cc6",
+  "legacyV3SeedCommit": "2ccc49b77ba0c0e9dc159fcce5516efa7c0e7a18",
+  "legacyV3SeedTreeSha256": "5fdbf067da484e3778a1345297a33d984779be73c020ded93198a1c84f5a07ca",
+  "legacyV3SeedTreeHashReproduced": true,
+  "reconstruction": {
+    "mode": "upstream-base-plus-reviewed-overlay",
+    "overlayApplied": false,
+    "overlayPaths": [],
+    "sealedCommitStableAcrossTwoReconstructions": true,
+    "sealedGitTreeStableAcrossTwoReconstructions": true,
+    "sealedTreeSha256StableAcrossTwoReconstructions": true,
+    "status": "PASS"
+  }
+}

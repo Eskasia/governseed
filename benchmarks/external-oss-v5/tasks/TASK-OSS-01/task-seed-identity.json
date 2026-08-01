@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 5,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-01",
+  "repository": "immich-app/immich",
+  "upstreamRepositoryUrl": "https://github.com/immich-app/immich.git",
+  "upstreamBaseCommit": "834cc54abcc4127ee13a127ade2e2f467d46c063",
+  "upstreamFixCommit": "d8ed7d7bb9d5a816ba55abda0123cfb543b04050",
+  "upstreamBaseReachable": true,
+  "upstreamFixReachable": true,
+  "seedOverlayPath": "benchmarks/external-oss-v5/tasks/TASK-OSS-01/seed-overlay.patch",
+  "seedOverlaySha256": "21d58d72776c4812ace78d650e29c19e10f7ecfbc5a7434539e1b8c630351f94",
+  "sealedSeedCommit": "15ba6bed78feebe392dfbe13cf0be4065b260af7",
+  "sealedSeedGitTree": "88516884b2ff20092e8113d3ca73db404c657295",
+  "sealedSeedTreeSha256": "3ebafacc713e37ea6939f08b1205198b415c5ae62dcbddb9f11ce4ab732ee70e",
+  "taskBriefSha256": "9e5914971d085ac857ddf63055be06f224379ad6b32dde7991f01380818e33f7",
+  "hiddenOracleSha256": "bc20c7b7821138e733a2aadbaf48397b0e3840c6cdb3c27bb8ae8a4c963ee6c3",
+  "legacyV3SeedCommit": "0ad23a4f16331512f49c570acc2e9ff8093c8248",
+  "legacyV3SeedTreeSha256": "88c4510ad2c5825cad031671e8188fe8f6164324fd4eccd98f5160fc81a676fa",
+  "legacyV3SeedTreeHashReproduced": false,
+  "reconstruction": {
+    "mode": "upstream-base-plus-reviewed-overlay",
+    "overlayApplied": true,
+    "overlayPaths": [".vscode/settings.json", "design/.DS_Store", "e2e/test-assets"],
+    "sealedCommitStableAcrossTwoReconstructions": true,
+    "sealedGitTreeStableAcrossTwoReconstructions": true,
+    "sealedTreeSha256StableAcrossTwoReconstructions": true,
+    "status": "PASS"
+  }
+}

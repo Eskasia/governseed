@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 5,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-09",
+  "publicIssueOrPr": "https://github.com/paperless-ngx/paperless-ngx/pull/12994",
+  "language": "Python",
+  "behavior": "plain-text ingestion must handle BOM-marked UTF-16 input and remove NUL characters",
+  "workingDirectory": ".",
+  "publicTestCommand": ["python", "-m", "pytest", "-q", "src/paperless/tests/test_parser_utils.py"],
+  "dependencyInstallCommand": ["uv", "sync", "--group", "testing"],
+  "buildCommand": [],
+  "runtime": {"python": "3.14.6", "uv": "0.11.8"},
+  "allowedPathClass": ["src/paperless/parsers/**", "src/paperless/tests/**"],
+  "forbiddenPathClass": ["uv.lock", "migrations/**", "src-ui/**", "generated/**", "credentials/**"]
+}

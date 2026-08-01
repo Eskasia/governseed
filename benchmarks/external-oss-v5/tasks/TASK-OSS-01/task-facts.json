@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 5,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-01",
+  "publicIssueOrPr": "https://github.com/immich-app/immich/pull/29614",
+  "language": "TypeScript",
+  "behavior": "CLI upload requests must carry the selected asset visibility",
+  "workingDirectory": "packages/cli",
+  "publicTestCommand": ["./node_modules/.bin/vitest", "--run", "src/commands/asset.spec.ts"],
+  "dependencyInstallCommand": ["pnpm", "install", "--frozen-lockfile", "--ignore-scripts"],
+  "buildCommand": ["pnpm", "--filter", "@immich/sdk", "run", "build"],
+  "runtime": {"node": "v26.3.0", "pnpm": "10.6.2"},
+  "allowedPathClass": ["packages/cli/**", "packages/sdk/**", "docs/docs/features/command-line-interface.md"],
+  "forbiddenPathClass": ["pnpm-lock.yaml", "server/**", "mobile/**", "generated/**", "credentials/**"]
+}

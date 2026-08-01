@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 5,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-03",
+  "oracleSha256": "bd05a49e86e5f268a7adc62c5defe2addc51032ad7f8b6e6461777c078e74cc6",
+  "commandIdentitySha256": "8edc0eccb45d576ded88f617aff3e18f54789a3b0ce0731e20928d2feec2adca",
+  "parent": {"exitCode": 1, "status": "FAIL_EXPECTED"},
+  "fix": {"exitCode": 0, "status": "PASS"},
+  "status": "PASS",
+  "claimBoundary": "The hidden oracle was executed outside the agent workspace against synthetic incident data; no oracle source or expected result was exposed to a coding agent."
+}

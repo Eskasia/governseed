@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 5,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "gate": "SEED_IDENTITY_REPAIRED_STATIC_READY",
+  "pr46Evidence": "PASS_MERGED_IMMUTABLE_EVIDENCE_PRESERVED",
+  "upstreamCommitIdentities": {"status": "PASS", "tasks": 3},
+  "sealedSeedReconstructions": {"status": "PASS", "tasks": 3, "independentReconstructions": 2},
+  "hiddenOraclesRevalidated": {"status": "PASS", "tasks": 3, "redGreenVerified": true},
+  "taskSeedContracts": {"status": "PASS", "tasks": 3},
+  "dependencyWorkflow": {"status": "STATIC_READY", "dispatch": "NOT_RUN"},
+  "pilotAllowed": false,
+  "blockers": [
+    "MEASURED_DEPENDENCY_CACHE_REQUIRED",
+    "CREDENTIAL_TRANSPORT_HUMAN_APPROVAL_REQUIRED",
+    "CODEX_RUNTIME_IDENTITY_REQUIRED"
+  ],
+  "claimBoundary": "V5 fixes seed identity and qualifies the dependency-cache workflow statically. It does not claim dependency-cache execution, Codex runs, Pilot, confirmatory runs, or benchmark effects."
+}

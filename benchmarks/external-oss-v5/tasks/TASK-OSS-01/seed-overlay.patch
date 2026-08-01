@@ -1,0 +1,109 @@
+diff --git a/.vscode/settings.json b/.vscode/settings.json
+deleted file mode 100644
+index 4653a1123b..0000000000
+--- a/.vscode/settings.json
++++ /dev/null
+@@ -1,79 +0,0 @@
+-{
+-  "[css]": {
+-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+-    "editor.formatOnSave": true
+-  },
+-  "[dart]": {
+-    "editor.defaultFormatter": "Dart-Code.dart-code",
+-    "editor.formatOnSave": true,
+-    "editor.selectionHighlight": false,
+-    "editor.suggest.snippetsPreventQuickSuggestions": false,
+-    "editor.suggestSelection": "first",
+-    "editor.tabCompletion": "onlySnippets",
+-    "editor.wordBasedSuggestions": "off"
+-  },
+-  "[javascript]": {
+-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+-    "editor.formatOnSave": true
+-  },
+-  "[json]": {
+-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+-    "editor.formatOnSave": true
+-  },
+-  "[jsonc]": {
+-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+-    "editor.formatOnSave": true
+-  },
+-  "[svelte]": {
+-    "editor.defaultFormatter": "svelte.svelte-vscode",
+-    "editor.formatOnSave": true,
+-    "tailwindCSS.lint.suggestCanonicalClasses": "ignore"
+-  },
+-  "svelte.plugin.svelte.compilerWarnings": {
+-    "state_referenced_locally": "ignore"
+-  },
+-  "[typescript]": {
+-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+-    "editor.formatOnSave": true
+-  },
+-  "cSpell.words": ["immich"],
+-  "css.lint.unknownAtRules": "ignore",
+-  "editor.bracketPairColorization.enabled": true,
+-  "editor.formatOnSave": true,
+-  "eslint.useFlatConfig": true,
+-  "eslint.validate": ["javascript", "typescript", "svelte"],
+-  "eslint.workingDirectories": [
+-    { "directory": "cli", "changeProcessCWD": true },
+-    { "directory": "e2e", "changeProcessCWD": true },
+-    { "directory": "server", "changeProcessCWD": true },
+-    { "directory": "web", "changeProcessCWD": true }
+-  ],
+-  "files.watcherExclude": {
+-    "**/.jj/**": true,
+-    "**/.git/**": true,
+-    "**/node_modules/**": true,
+-    "**/build/**": true,
+-    "**/dist/**": true,
+-    "**/.svelte-kit/**": true
+-  },
+-  "explorer.fileNesting.enabled": true,
+-  "explorer.fileNesting.patterns": {
+-    "*.dart": "${capture}.g.dart,${capture}.gr.dart,${capture}.drift.dart",
+-    "*.ts": "${capture}.spec.ts,${capture}.mock.ts",
+-    "*.js": "${capture}.spec.js,${capture}.mock.js",
+-    "package.json": "package-lock.json, yarn.lock, pnpm-lock.yaml, bun.lockb, bun.lock, pnpm-workspace.yaml, .pnpmfile.cjs"
+-  },
+-  "search.exclude": {
+-    "**/node_modules": true,
+-    "**/build": true,
+-    "**/dist": true,
+-    "**/.svelte-kit": true,
+-    "**/open-api/typescript-sdk/src": true
+-  },
+-  "svelte.enable-ts-plugin": true,
+-  "tailwindCSS.experimental.configFile": {
+-    "web/src/app.css": "web/src/**"
+-  },
+-  "js/ts.preferences.importModuleSpecifier": "non-relative",
+-  "vitest.maximumConfigs": 10
+-}
+diff --git a/design/.DS_Store b/design/.DS_Store
+deleted file mode 100644
+index 65ee281c919ff475cbffc33551b5f9490d52de26..0000000000000000000000000000000000000000
+GIT binary patch
+literal 0
+HcmV?d00001
+
+literal 6148
+zcmeHKO-}+r41I$fFkCq5ZT|qQ7=OS@@L*y*Nc7By8zhmBz>?r?f4Z-ox=K)wCYY9V
+zUZ>M`=o`a0077s3+yz<y8dSmBDTi-F)<qAbW*)(yH6~bMfeuz2U5<ePIlCrCJh2sK
+z_<DZRRWZKXZi+P{at!c>4GLOwq<G>vzhX-}r#D5P6$)yKN6vGs)jMKLj-9SASv$rr
+z7%4e3X3urc7tZFaIOa?;WNoQ256oHcBNbCz(<jv>zr(r{?)d4Eb?M@^>SDjEn3?|C
+z@4fYVUR7yZ)i%1gz$LD@?}wGq+Sy<G^cW7?zoRqY3^)VE0Pk#(Ml+(1&VV!E3{(ur
+z??XZr%nZwj`qRNdp8&)<-72)@Eg?CHVP;rH<O(IkRANjG_QVJ=o&Ln)GQ%=rOh?e2
+zS;uw`_Cg7|JN=1<BV-YMbOxM(eFjeAv?cfd&Cl=u{Uo0`1J1y|Vj$G}gMN=K+1+~3
+voZPhubx0MFxH4juLPM`&#>!QEMpdCd5rdc+mJ#Wp_&)+lgAdNYpEB?cO#DiA
+
+diff --git a/e2e/test-assets b/e2e/test-assets
+deleted file mode 160000
+index 6742055402..0000000000
+--- a/e2e/test-assets
++++ /dev/null
+@@ -1 +0,0 @@
+-Subproject commit 6742055402de1aa48f93d12ded7d18f4057f9d1f
