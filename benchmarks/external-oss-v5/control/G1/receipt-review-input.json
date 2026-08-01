@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "gate": "G1",
+  "runId": 30711805623,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30711805623",
+  "headSha": "188df340b67d70a3fa32d30ce3e1761fcdb1ec7b",
+  "status": "BLOCKED",
+  "conclusion": "FAILURE",
+  "receiptReview": "NO_READY_RECEIPTS",
+  "rerun": "NOT_PERFORMED",
+  "receiptSchema": "benchmarks/external-oss-v5/schemas/dependency-cache-receipt.schema.json",
+  "readyReceiptCount": 0,
+  "artifactAvailability": {
+    "seedIdentityArtifacts": "AVAILABLE_BY_SUCCESSFUL_UPLOAD_STEPS",
+    "partialDependencyPreparationArtifacts": "UPLOAD_STEP_SUCCESS_FOR_TASK_OSS_03_AND_TASK_OSS_09; TASK_OSS_01_UPLOAD_STEP_RAN_AFTER_CANCELLATION",
+    "cacheReceipts": "NOT_CREATED",
+    "cacheArchivesDownloadedForReview": false
+  },
+  "measuredCacheStatus": "NOT_READY",
+  "offlineVerification": "NOT_RUN_SKIPPED",
+  "aggregateQualification": "NOT_RUN_SKIPPED",
+  "tasks": [
+    {"taskId":"TASK-OSS-01","seedIdentity":"PASS","seedIdentityContractMatch":true,"preparationStatus":"CANCELLED_BY_FAIL_FAST","cacheReceipt":"NOT_CREATED","cacheManifest":"NOT_CREATED","cacheArchive":"NOT_CREATED","receiptSchemaValidation":"BLOCKED_NO_RECEIPT","preparationNetworkUsed":null,"measuredNetworkUsed":null,"cacheReadOnlyObserved":null,"publicTestSmokePass":null,"negativeCacheMissBlocked":null,"negativeCacheMissExitCode":null},
+    {"taskId":"TASK-OSS-03","seedIdentity":"PASS","seedIdentityContractMatch":true,"preparationStatus":"FAILURE","firstFailure":"npm ci EUSAGE exit 1: no package-lock.json or npm-shrinkwrap.json","cacheReceipt":"NOT_CREATED","cacheManifest":"NOT_CREATED","cacheArchive":"NOT_CREATED","partialArtifact":"seed.tgz and cache-roots.txt only; no cache-manifest.json or preparation-result.json","receiptSchemaValidation":"BLOCKED_NO_RECEIPT","preparationNetworkUsed":null,"measuredNetworkUsed":null,"cacheReadOnlyObserved":null,"publicTestSmokePass":null,"negativeCacheMissBlocked":null,"negativeCacheMissExitCode":null},
+    {"taskId":"TASK-OSS-09","seedIdentity":"PASS","seedIdentityContractMatch":true,"preparationStatus":"CANCELLED_BY_FAIL_FAST","cacheReceipt":"NOT_CREATED","cacheManifest":"NOT_CREATED","cacheArchive":"NOT_CREATED","partialArtifact":"seed.tgz and cache-roots.txt only; no cache-manifest.json or preparation-result.json","receiptSchemaValidation":"BLOCKED_NO_RECEIPT","preparationNetworkUsed":null,"measuredNetworkUsed":null,"cacheReadOnlyObserved":null,"publicTestSmokePass":null,"negativeCacheMissBlocked":null,"negativeCacheMissExitCode":null}
+  ],
+  "reviewCommands": [
+    {"command":"gh run view 30711805623 --repo Eskasia/governseed","result":"FAILURE; TASK-OSS-03 preparation failed; TASK-OSS-01/09 cancelled; offline and aggregate skipped"},
+    {"command":"gh run view 30711805623 --repo Eskasia/governseed --log-failed","result":"TASK-OSS-03 npm ci EUSAGE; exit code 1; no package-lock.json or npm-shrinkwrap.json"},
+    {"command":"seed artifact values compared with three task-seed-identity.json contracts","result":"PASS for TASK-OSS-01, TASK-OSS-03, TASK-OSS-09"}
+  ],
+  "knownLimitations": [
+    "No cache receipt exists to validate against the receipt schema; receipt fields are not inferred from partial preparation artifacts.",
+    "No partial artifact is promoted to READY and no cache SHA, manifest SHA, runtime identity, offline smoke, readonly mount, or negative-cache exit 42 claim is made.",
+    "The likely defect is the TASK-OSS-03 contract/seed environment pairing: npm ci is required but the upstream seed has no lockfile. No fix was applied."
+  ],
+  "claimBoundary": "This file is structured review input for the single failed dispatch only. It preserves NOT_READY/NOT_RUN boundaries and records no cache receipt, cache qualification, offline containment, public smoke, negative-cache marker, credentials, Codex, Pilot, scoring, or benchmark effect."
+}

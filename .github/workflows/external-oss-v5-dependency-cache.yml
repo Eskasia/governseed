@@ -246,8 +246,11 @@ jobs:
               corepack prepare pnpm@10.6.2 --activate
               test "$(node --version)" = "v26.3.0"
               test "$(pnpm --version)" = "10.6.2"
-              pnpm install --frozen-lockfile --ignore-scripts
-              pnpm --filter @immich/sdk run build
+              (
+                cd "$sealed_root"
+                pnpm install --frozen-lockfile --ignore-scripts
+                pnpm --filter @immich/sdk run build
+              )
               test "$(git -C "$sealed_root" status --porcelain -- pnpm-lock.yaml)" = ""
               (
                 cd "$sealed_root/packages/cli"
@@ -269,7 +272,10 @@ jobs:
             TASK-OSS-03)
               test "$(node --version)" = "v26.3.0"
               test "$(npm --version)" = "11.16.0"
-              npm ci --no-audit --no-fund
+              (
+                cd "$sealed_root"
+                npm ci --no-audit --no-fund
+              )
               test "$(git -C "$sealed_root" status --porcelain -- package-lock.json)" = ""
               (
                 cd "$sealed_root"
@@ -286,7 +292,10 @@ jobs:
             TASK-OSS-09)
               test "$(python --version 2>&1)" = "Python 3.14.6"
               test "$(uv --version)" = "uv 0.11.8"
-              uv sync --group testing
+              (
+                cd "$sealed_root"
+                uv sync --group testing
+              )
               test "$(git -C "$sealed_root" status --porcelain -- uv.lock)" = ""
               export PAPERLESS_SECRET_KEY=synthetic-test-only-value
               export PAPERLESS_DISABLE_DBHANDLER=true

@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational-reviewed",
+  "gate": "G1",
+  "attempt": 1,
+  "repository": "Eskasia/governseed",
+  "ref": "main",
+  "headSha": "188df340b67d70a3fa32d30ce3e1761fcdb1ec7b",
+  "workflow": ".github/workflows/external-oss-v5-dependency-cache.yml",
+  "runId": 30711805623,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30711805623",
+  "status": "COMPLETED",
+  "conclusion": "FAILURE",
+  "qualification": "BLOCKED",
+  "rerun": "NOT_PERFORMED",
+  "firstFailure": {
+    "taskId": "TASK-OSS-03",
+    "jobId": 91400502649,
+    "step": "Reconstruct seed and prepare public dependency cache",
+    "command": "npm ci --no-audit --no-fund",
+    "code": "EUSAGE",
+    "exitCode": 1,
+    "jobUrl": "https://github.com/Eskasia/governseed/actions/runs/30711805623/job/91400502649",
+    "message": "npm ci ran at the GovernSeed checkout root instead of sealed_root; the upstream TASK-OSS-03 base and failed seed.tgz both contain package-lock.json.",
+    "classification": "HARNESS_DEFECT",
+    "basis": "The preparation commands for TASK-OSS-01, TASK-OSS-03, and TASK-OSS-09 were executed before changing into sealed_root. The failed run is preserved unchanged; task facts and seed/oracle evidence are not modified."
+  },
+  "jobs": {
+    "TASK-OSS-01": "CANCELLED_BY_FAIL_FAST",
+    "TASK-OSS-03": "FAILURE",
+    "TASK-OSS-09": "CANCELLED_BY_FAIL_FAST",
+    "verifyDependencyCacheOffline": "SKIPPED",
+    "aggregateQualification": "SKIPPED"
+  },
+  "artifactAvailability": {
+    "seedIdentityArtifacts": "AVAILABLE_IN_RUN",
+    "dependencyCacheArtifacts": "PARTIAL_PREPARATION_ONLY",
+    "cacheReceipts": "NOT_CREATED",
+    "cacheArchivesDownloadedForReview": false,
+    "artifactHashes": "NOT_RECOMPUTED; no artifacts downloaded in this repair step"
+  },
+  "remediation": {
+    "workflowRepair": "Run each preparation install/build command inside sealed_root while preserving exact commands, lockfile checks, and containment boundaries.",
+    "failedRun": "Preserved unchanged as historical evidence.",
+    "futureDispatch": "NOT_PERFORMED"
+  },
+  "claimBoundary": "Run 30711805623 is historical FAILURE evidence only. No measured dependency cache is READY; no cache receipt, offline verification, aggregate qualification, rerun, benchmark result, credential use, Codex, or Pilot is claimed."
+}

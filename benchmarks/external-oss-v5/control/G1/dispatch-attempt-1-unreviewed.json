@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "gate": "G1",
+  "attempt": 1,
+  "repository": "Eskasia/governseed",
+  "ref": "main",
+  "headSha": "188df340b67d70a3fa32d30ce3e1761fcdb1ec7b",
+  "workflow": ".github/workflows/external-oss-v5-dependency-cache.yml",
+  "dispatchCommand": "gh workflow run .github/workflows/external-oss-v5-dependency-cache.yml --repo Eskasia/governseed --ref main",
+  "runId": 30711805623,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30711805623",
+  "createdAt": "2026-08-01T18:07:03Z",
+  "status": "COMPLETED",
+  "conclusion": "FAILURE",
+  "qualification": "BLOCKED",
+  "rerun": "NOT_PERFORMED",
+  "jobs": {
+    "seedIdentity": {
+      "TASK-OSS-01": "PASS",
+      "TASK-OSS-03": "PASS",
+      "TASK-OSS-09": "PASS"
+    },
+    "prepareDependencyCache": {
+      "TASK-OSS-03": {"status":"FAILURE","jobId":91400502649,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30711805623/job/91400502649"},
+      "TASK-OSS-01": {"status":"CANCELLED","jobId":91400502653,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30711805623/job/91400502653"},
+      "TASK-OSS-09": {"status":"CANCELLED","jobId":91400502637,"jobUrl":"https://github.com/Eskasia/governseed/actions/runs/30711805623/job/91400502637"}
+    },
+    "verifyDependencyCacheOffline": "SKIPPED",
+    "aggregateQualification": "SKIPPED"
+  },
+  "firstFailure": {
+    "taskId": "TASK-OSS-03",
+    "jobId": 91400502649,
+    "step": "Reconstruct seed and prepare public dependency cache",
+    "command": "npm ci --no-audit --no-fund",
+    "code": "EUSAGE",
+    "exitCode": 1,
+    "logUrl": "https://github.com/Eskasia/governseed/actions/runs/30711805623/job/91400502649",
+    "message": "npm ci requires an existing package-lock.json or npm-shrinkwrap.json; the upstream seed has neither.",
+    "classification": "TASK_CONTRACT_OR_SEED_ENVIRONMENT_DEFECT",
+    "basis": "TASK-OSS-03 cache contract requires npm ci, while its task facts forbid package-lock.json modification and the fetched seed lacks a lockfile. No contract or seed was changed."
+  },
+  "artifactAvailability": {
+    "seedIdentityArtifacts": "UPLOAD_STEP_SUCCESS_FOR_TASK_OSS_01_03_09",
+    "dependencyCacheArtifacts": {
+      "TASK-OSS-03": "UPLOAD_STEP_SUCCESS_PARTIAL_PREPARATION_ONLY",
+      "TASK-OSS-09": "UPLOAD_STEP_SUCCESS_PARTIAL_PREPARATION_ONLY",
+      "TASK-OSS-01": "UPLOAD_STEP_SUCCESS_AFTER_CANCELLATION"
+    },
+    "cacheReceipts": "NOT_CREATED",
+    "cacheArchivesDownloadedForReview": false
+  },
+  "claimBoundary": "One V5 dependency-cache workflow dispatch occurred. Seed identity qualification passed for all three tasks, but measured cache preparation failed first at TASK-OSS-03 and fail-fast cancelled TASK-OSS-01/TASK-OSS-09. No cache receipt, READY cache, offline verification, aggregate qualification, Codex, Pilot, credentials, rerun, or benchmark result is claimed."
+}

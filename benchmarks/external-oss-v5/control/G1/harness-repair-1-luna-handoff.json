@@ -1,0 +1,60 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attempt": 1,
+  "status": "READY_FOR_REVIEW",
+  "repository": "Eskasia/governseed",
+  "branch": "benchmark/v5-g1-cwd-fix",
+  "baseCommit": "188df340b67d70a3fa32d30ce3e1761fcdb1ec7b",
+  "headCommit": "188df340b67d70a3fa32d30ce3e1761fcdb1ec7b",
+  "repairScope": "Minimal workflow cwd repair only; final repair commit is reported with the pushed handoff.",
+  "filesChanged": [
+    ".github/workflows/external-oss-v5-dependency-cache.yml",
+    "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-reviewed.json",
+    "benchmarks/external-oss-v5/control/G1/receipt-review-input.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-sol-verdict.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-sol-review-evidence.json",
+    "benchmarks/external-oss-v5/control/G1/harness-repair-1-luna-handoff.json"
+  ],
+  "commands": [
+    {"command": "git fetch origin main", "result": "PASS; origin/main = 188df340b67d70a3fa32d30ce3e1761fcdb1ec7b"},
+    {"command": "git status --short --branch", "result": "PASS at fresh worktree creation; clean source HEAD verified"},
+    {"command": "sha256sum preserved G1 evidence", "result": "PASS; source bytes preserved for the four requested files; dispatch-attempt-1 also preserved as unreviewed"},
+    {"command": "node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs", "result": "PASS; 5 checks"},
+    {"command": "node benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs", "result": "PASS; 5 shell blocks"},
+    {"command": "npm run ci", "result": "PASS; completed all npm ci stages"},
+    {"command": "node JSON parse checks for all G1 evidence", "result": "PASS"},
+    {"command": "git diff --check and changed-file scope check", "result": "PASS; only workflow, one static test, requested structured G1 evidence, and repair handoff changed"}
+  ],
+  "failedRun": {
+    "runId": 30711805623,
+    "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30711805623",
+    "headCommit": "188df340b67d70a3fa32d30ce3e1761fcdb1ec7b",
+    "status": "FAILURE",
+    "firstFailedTask": "TASK-OSS-03",
+    "firstFailedCommand": "npm ci --no-audit --no-fund",
+    "firstFailedCode": "EUSAGE",
+    "cancelledJobs": ["TASK-OSS-01", "TASK-OSS-09"],
+    "skippedJobs": ["verifyDependencyCacheOffline", "aggregateQualification"],
+    "rerun": "NOT_PERFORMED"
+  },
+  "remediationApplied": [
+    "TASK-OSS-01 pnpm install and pnpm --filter @immich/sdk run build now run inside sealed_root.",
+    "TASK-OSS-03 npm ci now runs inside sealed_root.",
+    "TASK-OSS-09 uv sync --group testing now runs inside sealed_root.",
+    "Static regression mutations reject each preparation install outside sealed_root and accept the sealed-root form.",
+    "Original dispatch-attempt-1.json bytes are preserved and duplicated as dispatch-attempt-1-unreviewed.json; reviewed classification is in dispatch-attempt-1-reviewed.json."
+  ],
+  "prStatus": "NOT_CREATED_YET",
+  "checks": "LOCAL_VALIDATION_PASS; GitHub PR checks not yet available",
+  "knownLimitations": [
+    "Run 30711805623 remains unchanged historical FAILURE evidence.",
+    "No artifacts were downloaded in this repair step and no cache archives or receipts are created.",
+    "No workflow was dispatched; a future dispatch requires review and merge gates."
+  ],
+  "claimBoundary": "This handoff claims only a static harness repair candidate and preserved historical failure evidence. It does not claim measured dependency-cache READY, receipt validity, offline qualification, aggregate qualification, rerun, benchmark result, credentials, Codex, Pilot, merge, or dispatch."
+}

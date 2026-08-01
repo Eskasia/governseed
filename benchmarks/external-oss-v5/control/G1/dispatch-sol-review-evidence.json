@@ -1,0 +1,96 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 1,
+  "scope": "Dispatch attempt 1 evidence classification only",
+  "reviewedAt": "2026-08-01",
+  "repoIdentity": {
+    "worktree": "/Users/william/governseed-v5-g1-run-luna",
+    "headSha": "188df340b67d70a3fa32d30ce3e1761fcdb1ec7b",
+    "originMainSha": "188df340b67d70a3fa32d30ce3e1761fcdb1ec7b",
+    "untrackedEvidenceFiles": [
+      "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json",
+      "benchmarks/external-oss-v5/control/G1/receipt-review-input.json"
+    ]
+  },
+  "inputEvidence": {
+    "dispatchAttemptPath": "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json",
+    "dispatchAttemptSha256": "c819703327717d07f410a0cd138135736ec0dfab3e94da4b17cd5dea5703024f",
+    "receiptReviewInputPath": "benchmarks/external-oss-v5/control/G1/receipt-review-input.json",
+    "receiptReviewInputSha256": "5e42290374d5ed38c1eb17c001b66504484052e14bbd76c4faa00ee547768aef"
+  },
+  "independentChecks": [
+    {
+      "name": "run_identity",
+      "result": "PASS",
+      "details": "GitHub Actions run 30711805623 exists for workflow External OSS V5 dependency cache at head 188df340b67d70a3fa32d30ce3e1761fcdb1ec7b with overall conclusion failure.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:9",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:12",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:15",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:16"
+      ]
+    },
+    {
+      "name": "failed_run_facts",
+      "result": "PASS",
+      "details": "The first failed prepare job is TASK-OSS-03. TASK-OSS-01 and TASK-OSS-09 were cancelled by fail-fast. Offline verification and aggregate qualification were skipped.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:25",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:30",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:21",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:22",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:23"
+      ]
+    },
+    {
+      "name": "no_ready_receipts",
+      "result": "PASS",
+      "details": "There are zero READY receipts, no cache manifests, no cache archives, and no offline or aggregate qualification output. GitHub artifact inventory contains only seed identity artifacts plus partial dependency-cache artifacts for TASK-OSS-03 and TASK-OSS-09.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:11",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:14",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:25",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:26",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:27"
+      ],
+      "artifactInventory": [
+        "external-oss-v5-dependency-cache-TASK-OSS-09",
+        "external-oss-v5-dependency-cache-TASK-OSS-03",
+        "external-oss-v5-seed-identity-TASK-OSS-09",
+        "external-oss-v5-seed-identity-TASK-OSS-01",
+        "external-oss-v5-seed-identity-TASK-OSS-03"
+      ]
+    },
+    {
+      "name": "root_cause_classification",
+      "result": "FAIL",
+      "details": "The structured evidence claims TASK-OSS-03 failed because the upstream seed lacks package-lock.json or npm-shrinkwrap.json. Independent review disproves that claim: the upstream base commit efa194a6df72572e5245a25794bdad7ad34bea2d contains root package-lock.json, and the failed run's archived seed.tgz also contains package-lock.json. The workflow instead runs npm ci, pnpm install, and uv sync without first changing into $sealed_root, so TASK-OSS-03 npm ci executed in the benchmark repo root, where package-lock.json is absent. This is a harness defect, not a task-contract, seed-environment, or infrastructure defect.",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:33",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:41",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json:43",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:26",
+        "benchmarks/external-oss-v5/control/G1/receipt-review-input.json:37",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:249",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:272",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:289",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-03/task-seed-identity.json:6",
+        "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-03/cache-contract.json:6",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-03/task-facts.json:6"
+      ],
+      "independentObservations": {
+        "upstreamBaseLockfilePath": "package-lock.json",
+        "failedSeedArtifactLockfilePath": "package-lock.json",
+        "benchmarkRepoRootHasPackageLock": false,
+        "benchmarkRepoRootHasPackageJson": true,
+        "githubFailedLogObserved": "npm ci returned EUSAGE with the generic lockfile-required message; the log does not prove the sealed seed lacked a lockfile."
+      },
+      "classification": "HARNESS_DEFECT"
+    }
+  ],
+  "residualRisk": [
+    "This review does not qualify any measured cache output, because no READY receipt exists.",
+    "The failed run remains valid as historical failure evidence only; a behavioral repair would require a future workflow change and a new dispatch."
+  ]
+}
