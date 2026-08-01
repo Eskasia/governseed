@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attempt": 3,
+  "status": "READY_FOR_REVIEW",
+  "repository": "Eskasia/governseed",
+  "ref": "main",
+  "mergeHead": "da2488ec9dd5e2addd64743c3d2208e1de95d0b9",
+  "runId": 30714926737,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30714926737",
+  "runStatus": "COMPLETED",
+  "runConclusion": "FAILURE",
+  "filesChanged": ["benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json","benchmarks/external-oss-v5/control/G1/attempt-3-luna-handoff.json","benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/"],
+  "commands": [
+    {"command":"git fetch origin main && git rev-parse refs/remotes/origin/main","result":"PASS; da2488ec9dd5e2addd64743c3d2208e1de95d0b9"},
+    {"command":"gh workflow run .github/workflows/external-oss-v5-dependency-cache.yml --repo Eskasia/governseed --ref main","result":"PASS; exactly one dispatch, run 30714926737"},
+    {"command":"gh run watch 30714926737 --repo Eskasia/governseed --exit-status","result":"FAILURE; completed without rerun"},
+    {"command":"gh run view / --json jobs and --log-failed","result":"PASS; raw run-view.json, jobs.json, failed.log preserved"},
+    {"command":"gh api repos/Eskasia/governseed/actions/runs/30714926737/artifacts?per_page=100","result":"PASS; six artifact metadata records preserved"},
+    {"command":"gh run download 30714926737 --name external-oss-v5-dependency-cache-TASK-OSS-09","result":"PASS; diagnostics and partial seed archive downloaded; API artifact digest verified against downloaded zip"}
+  ],
+  "firstFailure": {"taskId":"TASK-OSS-09","jobId":91408840323,"step":"Reconstruct seed and prepare public dependency cache","phase":"before-task-oss-09-runtime-version-checks","exitCode":1},
+  "artifactHashes": {"TASK-OSS-09 api/downloadedZip":"f1891bd1f161e754bc626c1c697bd0e3cb69a0d39b98d52c1cda384886b35d97","TASK-OSS-09 seed.tgz":"f9919128991d5b6d0805a0b6b1927950209047185578cad8b6d7026c22e467e8","TASK-OSS-09 diagnostics":"ae32c268a5b77cd69d57128d28bc03895da8dd8bd61281520d4824dbe019fb32"},
+  "evidenceFiles": ["benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json","benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/run-view.json","benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/jobs.json","benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/failed.log","benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/artifacts.json","benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09-artifact.zip"],
+  "receiptBoundary": {"readyReceiptCount":0,"TASK-OSS-01":"NOT_READY","TASK-OSS-03":"NOT_READY","TASK-OSS-09":"NOT_READY","offlineProof":"NOT_RUN_SKIPPED","aggregateQualification":"NOT_RUN_SKIPPED","blocked":true},
+  "knownLimitations": ["All three measured cache tasks lack complete receipt/manifest/archive/offline evidence.","TASK-OSS-09 artifact is partial and contains phase diagnostics plus seed archive, not a qualified measured cache receipt.","No READY claim is made despite any artifact-internal preparation-status text because the job failed and offline/aggregate qualification was skipped.","No workflow, tests, tasks, oracles, contracts, lock, prior attempt, commit, push, or rerun was changed or performed."],
+  "claimBoundary": "This handoff claims only one completed measured dispatch attempt and structured FAILURE evidence. It preserves zero READY and blocked facts; it does not claim any measured dependency cache READY, complete receipt/manifest/archive/offline proof, runtime qualification, benchmark result, rerun, credentials, Codex, Pilot, or modification of runs 30711805623/30713763827."
+}

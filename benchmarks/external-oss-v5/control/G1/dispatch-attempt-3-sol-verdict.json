@@ -1,0 +1,96 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 3,
+  "reviewType": "sol-acceptance-layer",
+  "reviewedAt": "2026-08-01",
+  "reviewedHead": "acd5a113855ec4a96f63042dddbc44c0926ce106",
+  "verdict": "ACCEPT",
+  "criteria": [
+    {
+      "criterion": "Run identity matches one Saturday, August 1, 2026 measured dispatch at head da2488ec9dd5e2addd64743c3d2208e1de95d0b9",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json:9",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json:13",
+        "gh run view 30714926737 --repo Eskasia/governseed --json databaseId,headSha,status,conclusion"
+      ]
+    },
+    {
+      "criterion": "Jobs and artifact inventory are independently verified against GitHub and local downloads",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json:21",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json:45",
+        "gh run view 30714926737 --repo Eskasia/governseed --json jobs",
+        "gh api 'repos/Eskasia/governseed/actions/runs/30714926737/artifacts?per_page=100'",
+        "unzip -l benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09-artifact.zip"
+      ]
+    },
+    {
+      "criterion": "HARNESS_DEFECT is proven by the same-run mismatch between observed uv output and the workflow's exact uv assertion",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/task-oss-09-diagnostics.txt:2",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-markers.txt:2",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-failure.txt:2",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:321",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/failed.log"
+      ]
+    },
+    {
+      "criterion": "Zero READY boundary is preserved for all three tasks",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json:53",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:402",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:430",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:483",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:509"
+      ]
+    },
+    {
+      "criterion": "Claim boundary remains conservative and makes no unsupported READY, task, or environment claim",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json:70",
+        "benchmarks/external-oss-v5/control/G1/attempt-3-luna-handoff.json:28"
+      ]
+    },
+    {
+      "criterion": "Review scope stayed inside the requested output boundary",
+      "status": "PASS",
+      "evidence": [
+        "git diff --name-only",
+        "git status --short --branch"
+      ]
+    }
+  ],
+  "independentlyRecomputed": [
+    "git rev-parse HEAD=acd5a113855ec4a96f63042dddbc44c0926ce106",
+    "sha256(benchmarks/external-oss-v5/control/G1/dispatch-attempt-3.json)=0df4a8bf75f7dfb741ccc5558775f8786d5282b31475116febb97af3204dc413",
+    "sha256(benchmarks/external-oss-v5/control/G1/attempt-3-luna-handoff.json)=6408c3660833608437c59feb5e58be4091144eb61bd9e294fcfa869dfe29cc99",
+    "sha256(benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09-artifact.zip)=f1891bd1f161e754bc626c1c697bd0e3cb69a0d39b98d52c1cda384886b35d97",
+    "sha256(benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/task-oss-09-diagnostics.txt)=ae32c268a5b77cd69d57128d28bc03895da8dd8bd61281520d4824dbe019fb32",
+    "sha256(benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-markers.txt)=edad502f715b11e1e6865dee1529e86cea40e1e219972ee2bf111f88f4ccfd0e",
+    "sha256(benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/phase-failure.txt)=a35e49b9879fab9aa34d429b8955c4dc97d9f67e00bdbd1bf22de5fa7384a3f8",
+    "sha256(benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/cache-roots.txt)=e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "sha256(benchmarks/external-oss-v5/control/G1/attempt-3-artifacts/task-oss-09/seed.tgz)=f9919128991d5b6d0805a0b6b1927950209047185578cad8b6d7026c22e467e8",
+    "gh run view 30714926737 --repo Eskasia/governseed --json databaseId,workflowName,headSha,headBranch,status,conclusion,createdAt,updatedAt,url => run 30714926737, headSha da2488ec9dd5e2addd64743c3d2208e1de95d0b9, status completed, conclusion failure",
+    "gh run view 30714926737 --repo Eskasia/governseed --json jobs => TASK-OSS-09 prepare job 91408840323 failed first; TASK-OSS-01 and TASK-OSS-03 prepare jobs were cancelled; offline and aggregate jobs were skipped",
+    "gh api 'repos/Eskasia/governseed/actions/runs/30714926737/artifacts?per_page=100' => total_count 6; saved artifacts.json is byte-identical to the API response",
+    "saved jobs.json is byte-identical to the fresh gh run view jobs response",
+    "Downloaded TASK-OSS-09 artifact contains exactly cache-roots.txt, phase-failure.txt, phase-markers.txt, seed-archive.sha256, seed.tgz, and task-oss-09-diagnostics.txt",
+    "Same-run diagnostics recorded uv_version=uv 0.11.8 (x86_64-unknown-linux-gnu) while workflow line 321 asserts test \"$(uv --version)\" = \"uv 0.11.8\""
+  ],
+  "minimalMitigation": [
+    "Change the TASK-OSS-09 runtime-version gate to validate uv 0.11.8 with a tolerant match that accepts the observed platform suffix instead of an exact full-string comparison.",
+    "Keep the rest of the TASK-OSS-09 preparation, cache, and offline READY gates unchanged so the fix only removes this harness false negative."
+  ],
+  "claimBoundary": "This ACCEPT covers only attempt-3 evidence for run 30714926737 on main head da2488ec9dd5e2addd64743c3d2208e1de95d0b9. It accepts the HARNESS_DEFECT classification because the same run proves the uv output/assertion mismatch and preserves zero READY. This review does not claim any cache READY, any successful rerun, any task defect, any environment defect, or any fact beyond the recorded attempt-3 evidence."
+}

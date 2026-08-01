@@ -79,6 +79,9 @@ const validateWorkflow = (source) => {
   require(task09.includes('phase_mark "before-task-oss-09-uv-lock-immutability-check"'), 'TASK-OSS-09 lockfile phase marker present');
   require(task09.includes('phase_mark "before-task-oss-09-pytest"'), 'TASK-OSS-09 pytest phase marker present');
   require(task09.includes('task-oss-09-diagnostics.txt'), 'TASK-OSS-09 diagnostics artifact present');
+  require(task09.includes('uv_version=$(uv --version)'), 'TASK-OSS-09 captures full uv version output');
+  require(task09.includes("awk '{print $1, $2}'"), 'TASK-OSS-09 checks uv version fields tolerantly');
+  require(!task09.includes('test "$(uv --version)" = "uv 0.11.8"'), 'TASK-OSS-09 rejects brittle full-string uv version check');
   require(task09.includes('libmagic'), 'TASK-OSS-09 libmagic diagnostic present');
   require(prepare.includes('trap \'rc=$?; trap - ERR;'), 'preparation failure trap records phase and exit code');
   require(!task09.match(/(?:printenv|\benv\s*>|OPENAI_API_KEY|ANTHROPIC_API_KEY|GITHUB_TOKEN|GH_TOKEN|NPM_TOKEN|PYPI_TOKEN|AWS_ACCESS_KEY_ID|AWS_SECRET_ACCESS_KEY)/u), 'TASK-OSS-09 diagnostics do not dump sensitive environment values');
@@ -144,6 +147,7 @@ expectRejected('Immich preparation install outside sealed_root', workflow.replac
 expectRejected('Uptime Kuma preparation install outside sealed_root', workflow.replace('(\n                cd "$sealed_root"\n                npm ci --no-audit --no-fund\n              )', 'npm ci --no-audit --no-fund'));
 expectRejected('Paperless preparation install outside sealed_root', workflow.replace('(\n                cd "$sealed_root"\n                uv sync --group testing\n              )', 'uv sync --group testing'));
 expectRejected('missing TASK-OSS-09 runtime phase marker', workflow.replace('phase_mark "before-task-oss-09-runtime-version-checks"', 'phase_mark "missing-runtime-phase-marker"'));
+expectRejected('brittle TASK-OSS-09 uv version check', workflow.replace("              test \"$(printf '%s\\n' \"$uv_version\" | awk '{print $1, $2}')\" = \"uv 0.11.8\"", '              test "$(uv --version)" = "uv 0.11.8"'));
 expectRejected('missing preparation failure trap', workflow.replace("trap 'rc=$?; trap - ERR;", "trap 'rc=$?;"));
 
 const allChecks = [

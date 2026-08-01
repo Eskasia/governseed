@@ -303,9 +303,10 @@ jobs:
               ;;
             TASK-OSS-09)
               phase_mark "before-task-oss-09-runtime-version-checks"
+              uv_version=$(uv --version)
               {
                 printf 'python_version=%s\n' "$(python --version 2>&1)"
-                printf 'uv_version=%s\n' "$(uv --version)"
+                printf 'uv_version=%s\n' "$uv_version"
                 if python -c 'import importlib.util; raise SystemExit(0 if importlib.util.find_spec("magic") else 1)'; then
                   printf '%s\n' 'python_magic_package=present'
                 else
@@ -318,7 +319,7 @@ jobs:
                 fi
               } > "$artifact_root/task-oss-09-diagnostics.txt"
               test "$(python --version 2>&1)" = "Python 3.14.6"
-              test "$(uv --version)" = "uv 0.11.8"
+              test "$(printf '%s\n' "$uv_version" | awk '{print $1, $2}')" = "uv 0.11.8"
               phase_mark "after-task-oss-09-runtime-version-checks"
               phase_mark "before-task-oss-09-uv-sync"
               (
@@ -347,7 +348,7 @@ jobs:
               runtime_npm=""
               runtime_pnpm=""
               runtime_python=$(python --version 2>&1)
-              runtime_uv=$(uv --version)
+              runtime_uv="$uv_version"
               ;;
             *)
               echo "unknown task: $TASK_ID" >&2

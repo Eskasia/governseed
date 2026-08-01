@@ -1,0 +1,350 @@
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	﻿2026-08-01T19:31:30.0007364Z ##[group]Run set -euo pipefail
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0008256Z ^[[36;1mset -euo pipefail^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0008519Z ^[[36;1mexport GIT_TERMINAL_PROMPT=0^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0009125Z ^[[36;1munset OPENAI""_API_KEY ANTHROPIC""_API_KEY GITHUB""_TOKEN GH""_TOKEN NPM""_TOKEN PYPI""_TOKEN AWS""_ACCESS_KEY_ID AWS""_SECRET_ACCESS_KEY^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0009702Z ^[[36;1m^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0010043Z ^[[36;1mcontract="benchmarks/external-oss-v5/tasks/$TASK_ID/task-seed-identity.json"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0010661Z ^[[36;1mcache_contract="benchmarks/external-oss-v5/dependency-cache/$TASK_ID/cache-contract.json"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0011132Z ^[[36;1mtest -f "$contract"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0011366Z ^[[36;1mtest -f "$cache_contract"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0011608Z ^[[36;1m^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0011949Z ^[[36;1mcontract_values=$(node --input-type=module - "$contract" "$cache_contract" <<'NODE'^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0012410Z ^[[36;1mimport { readFileSync } from 'node:fs';^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0012798Z ^[[36;1mconst task = JSON.parse(readFileSync(process.argv[2], 'utf8'));^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0013636Z ^[[36;1mconst cache = JSON.parse(readFileSync(process.argv[3], 'utf8'));^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0014012Z ^[[36;1mconsole.log([^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0014234Z ^[[36;1m  task.repository,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0014475Z ^[[36;1m  task.upstreamBaseCommit,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0014741Z ^[[36;1m  task.seedOverlayPath || '-',^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0015012Z ^[[36;1m  task['sealed' + 'SeedCommit'],^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0015276Z ^[[36;1m  task.sealedSeedGitTree,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0015532Z ^[[36;1m  task.sealedSeedTreeSha256,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0016057Z ^[[36;1m  cache.runtimeIdentityPolicy.containerReference,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0016378Z ^[[36;1m].join('\t'));^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0016579Z ^[[36;1mNODE^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0016751Z ^[[36;1m)^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0017275Z ^[[36;1mIFS=$'\t' read -r repository upstream_base overlay_path expected_commit expected_tree expected_hash runtime_reference <<< "$contract_values"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0017882Z ^[[36;1mtest -n "$repository"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0018128Z ^[[36;1mtest -n "$upstream_base"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0018356Z ^[[36;1m^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0018628Z ^[[36;1mwork_root="$RUNNER_TEMP/external-oss-v5-preparation/$TASK_ID"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0018992Z ^[[36;1msource_root="$work_root/upstream"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0019264Z ^[[36;1msealed_root="$work_root/sealed"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0019524Z ^[[36;1mcache_root="$work_root/cache"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0019890Z ^[[36;1martifact_root="$RUNNER_TEMP/external-oss-v5-cache-artifacts/$TASK_ID"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0020371Z ^[[36;1mmkdir -p "$work_root" "$sealed_root" "$cache_root" "$artifact_root"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0020708Z ^[[36;1m^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0020933Z ^[[36;1mphase_file="$artifact_root/phase-markers.txt"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0021278Z ^[[36;1mfailure_file="$artifact_root/phase-failure.txt"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0021591Z ^[[36;1mlast_phase="artifact-root-ready"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0021853Z ^[[36;1mphase_mark() {^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0022059Z ^[[36;1m  last_phase="$1"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0022310Z ^[[36;1m  printf '%s\n' "$last_phase" >> "$phase_file"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0022581Z ^[[36;1m}^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0022785Z ^[[36;1mif test "$TASK_ID" = "TASK-OSS-09"; then^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0023593Z ^[[36;1m  trap 'rc=$?; trap - ERR; printf "status=FAILURE\nlastPhase=%s\nexitCode=%s\n" "$last_phase" "$rc" > "$failure_file"; exit "$rc"' ERR^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0024200Z ^[[36;1m  phase_mark "before-task-oss-09-seed-reconstruction"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0024512Z ^[[36;1mfi^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0024684Z ^[[36;1m^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0025106Z ^[[36;1mgit clone --no-checkout --filter=blob:none --no-tags "https://github.com/$repository.git" "$source_root"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0025719Z ^[[36;1mgit -C "$source_root" remote set-url --push origin no_push://disabled^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0026254Z ^[[36;1mgit -C "$source_root" fetch --depth=1 --filter=blob:none --no-tags origin "$upstream_base"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0026929Z ^[[36;1mgit -C "$source_root" cat-file -e "$upstream_base^{commit}"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0027401Z ^[[36;1mtest "$(git -C "$source_root" rev-parse "$upstream_base^{commit}")" = "$upstream_base"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0027797Z ^[[36;1m^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0028086Z ^[[36;1mgit -C "$source_root" archive "$upstream_base" | tar -x -C "$sealed_root"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0028466Z ^[[36;1mgit init --quiet "$sealed_root"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0028800Z ^[[36;1mgit -C "$sealed_root" config user.name "GovernSeed Benchmark"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0029236Z ^[[36;1mgit -C "$sealed_root" config user.email "benchmark@example.invalid"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0029622Z ^[[36;1mgit -C "$sealed_root" add --all --force^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0029916Z ^[[36;1mif test "$overlay_path" != "-"; then^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0030202Z ^[[36;1m  git -C "$sealed_root" apply --index \^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0030491Z ^[[36;1m    --include='.vscode/settings.json' \^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0030779Z ^[[36;1m    --include='design/.DS_Store' \^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0031064Z ^[[36;1m    "$GITHUB_WORKSPACE/$overlay_path"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0031379Z ^[[36;1m  git -C "$sealed_root" add --all --force^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0031683Z ^[[36;1mfi^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0031901Z ^[[36;1mGIT_AUTHOR_NAME="GovernSeed Benchmark" \^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0032231Z ^[[36;1mGIT_AUTHOR_EMAIL="benchmark@example.invalid" \^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0032571Z ^[[36;1mGIT_COMMITTER_NAME="GovernSeed Benchmark" \^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0033110Z ^[[36;1mGIT_COMMITTER_EMAIL="benchmark@example.invalid" \^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0033595Z ^[[36;1mGIT_AUTHOR_DATE="2026-08-01T00:00:00Z" \^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0033896Z ^[[36;1mGIT_COMMITTER_DATE="2026-08-01T00:00:00Z" \^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0034256Z ^[[36;1m  git -C "$sealed_root" commit --quiet --message "benchmark seed"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0034671Z ^[[36;1mactual_commit=$(git -C "$sealed_root" rev-parse HEAD)^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0035066Z ^[[36;1mactual_tree=$(git -C "$sealed_root" rev-parse HEAD^{tree})^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0035573Z ^[[36;1mactual_hash=$(node benchmarks/external-oss-v5/tests/seed-tree-hash.mjs "$sealed_root")^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0036036Z ^[[36;1mtest "$actual_commit" = "$expected_commit"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0036350Z ^[[36;1mtest "$actual_tree" = "$expected_tree"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0036647Z ^[[36;1mtest "$actual_hash" = "$expected_hash"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0036985Z ^[[36;1mtest -z "$(git -C "$sealed_root" status --porcelain=v1)"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0037332Z ^[[36;1mtest -z "$(git -C "$sealed_root" remote)"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0037594Z ^[[36;1m^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0037928Z ^[[36;1mgit -C "$sealed_root" archive --format=tar HEAD | gzip -n > "$artifact_root/seed.tgz"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0038451Z ^[[36;1mseed_archive_sha=$(sha256sum "$artifact_root/seed.tgz" | awk '{print $1}')^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0038940Z ^[[36;1mprintf '%s\n' "$seed_archive_sha" > "$artifact_root/seed-archive.sha256"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0039294Z ^[[36;1m^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0039530Z ^[[36;1mcache_roots_file="$artifact_root/cache-roots.txt"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0039839Z ^[[36;1m: > "$cache_roots_file"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0040073Z ^[[36;1mcase "$TASK_ID" in^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0040296Z ^[[36;1m  TASK-OSS-01)^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0040509Z ^[[36;1m    corepack enable^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0040765Z ^[[36;1m    corepack prepare pnpm@10.6.2 --activate^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0041071Z ^[[36;1m    test "$(node --version)" = "v26.3.0"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0041364Z ^[[36;1m    test "$(pnpm --version)" = "10.6.2"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0041637Z ^[[36;1m    (^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0041828Z ^[[36;1m      cd "$sealed_root"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0042124Z ^[[36;1m      pnpm install --frozen-lockfile --ignore-scripts^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0042462Z ^[[36;1m      pnpm --filter @immich/sdk run build^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0042722Z ^[[36;1m    )^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0043304Z ^[[36;1m    test "$(git -C "$sealed_root" status --porcelain -- pnpm-lock.yaml)" = ""^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0043820Z ^[[36;1m    (^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0044022Z ^[[36;1m      cd "$sealed_root/packages/cli"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0044380Z ^[[36;1m      ./node_modules/.bin/vitest --run src/commands/asset.spec.ts^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0044710Z ^[[36;1m    )^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0044987Z ^[[36;1m    find "$sealed_root" -type d -name node_modules -prune -print |^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0045402Z ^[[36;1m      sed "s#^$sealed_root/##" | sort -u >> "$cache_roots_file"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0045761Z ^[[36;1m    test -d "$sealed_root/packages/sdk/build"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0046114Z ^[[36;1m    printf '%s\n' packages/sdk/build >> "$cache_roots_file"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0046660Z ^[[36;1m    grep -Ev '(^|/)(mobile|machine-learning|ml|flutter)(/|$)' "$cache_roots_file" > "$cache_roots_file.checked"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0047187Z ^[[36;1m    cmp "$cache_roots_file" "$cache_roots_file.checked"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0047546Z ^[[36;1m    mv "$cache_roots_file.checked" "$cache_roots_file"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0047871Z ^[[36;1m    runtime_node=$(node --version)^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0048148Z ^[[36;1m    runtime_npm=$(npm --version)^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0048421Z ^[[36;1m    runtime_pnpm=$(pnpm --version)^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0048682Z ^[[36;1m    runtime_python=""^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0048910Z ^[[36;1m    runtime_uv=""^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0049115Z ^[[36;1m    ;;^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0049302Z ^[[36;1m  TASK-OSS-03)^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0049534Z ^[[36;1m    test "$(node --version)" = "v26.3.0"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0049826Z ^[[36;1m    test "$(npm --version)" = "11.16.0"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0050083Z ^[[36;1m    (^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0050385Z ^[[36;1m      cd "$sealed_root"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0050631Z ^[[36;1m      npm ci --no-audit --no-fund^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0050874Z ^[[36;1m    )^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0051184Z ^[[36;1m    test "$(git -C "$sealed_root" status --porcelain -- package-lock.json)" = ""^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0051556Z ^[[36;1m    (^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0051743Z ^[[36;1m      cd "$sealed_root"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0052161Z ^[[36;1m      env TEST_BACKEND=1 node --test --test-reporter=spec test/backend-test/test-status-page.js^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0052594Z ^[[36;1m    )^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0052826Z ^[[36;1m    printf '%s\n' node_modules > "$cache_roots_file"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0053421Z ^[[36;1m    test -d "$sealed_root/node_modules"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0053705Z ^[[36;1m    runtime_node=$(node --version)^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0053977Z ^[[36;1m    runtime_npm=$(npm --version)^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0054231Z ^[[36;1m    runtime_pnpm=""^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0054462Z ^[[36;1m    runtime_python=""^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0054691Z ^[[36;1m    runtime_uv=""^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0054893Z ^[[36;1m    ;;^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0055079Z ^[[36;1m  TASK-OSS-09)^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0055372Z ^[[36;1m    phase_mark "before-task-oss-09-runtime-version-checks"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0055699Z ^[[36;1m    {^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0055952Z ^[[36;1m      printf 'python_version=%s\n' "$(python --version 2>&1)"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0056323Z ^[[36;1m      printf 'uv_version=%s\n' "$(uv --version)"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0056858Z ^[[36;1m      if python -c 'import importlib.util; raise SystemExit(0 if importlib.util.find_spec("magic") else 1)'; then^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0057401Z ^[[36;1m        printf '%s\n' 'python_magic_package=present'^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0057685Z ^[[36;1m      else^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0057920Z ^[[36;1m        printf '%s\n' 'python_magic_package=absent'^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0058196Z ^[[36;1m      fi^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0058452Z ^[[36;1m      if ldconfig -p 2>/dev/null | grep -q 'libmagic'; then^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0058808Z ^[[36;1m        printf '%s\n' 'libmagic_library=present'^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0059079Z ^[[36;1m      else^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0059303Z ^[[36;1m        printf '%s\n' 'libmagic_library=absent'^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0059571Z ^[[36;1m      fi^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0059809Z ^[[36;1m    } > "$artifact_root/task-oss-09-diagnostics.txt"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0060288Z ^[[36;1m    test "$(python --version 2>&1)" = "Python 3.14.6"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0060610Z ^[[36;1m    test "$(uv --version)" = "uv 0.11.8"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0060976Z ^[[36;1m    phase_mark "after-task-oss-09-runtime-version-checks"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0061347Z ^[[36;1m    phase_mark "before-task-oss-09-uv-sync"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0061618Z ^[[36;1m    (^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0061800Z ^[[36;1m      cd "$sealed_root"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0062036Z ^[[36;1m      uv sync --group testing^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0062273Z ^[[36;1m    )^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0062503Z ^[[36;1m    phase_mark "after-task-oss-09-uv-sync"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0063086Z ^[[36;1m    phase_mark "before-task-oss-09-uv-lock-immutability-check"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0063550Z ^[[36;1m    test "$(git -C "$sealed_root" status --porcelain -- uv.lock)" = ""^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0063995Z ^[[36;1m    phase_mark "after-task-oss-09-uv-lock-immutability-check"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0064429Z ^[[36;1m    export PAPERLESS_SECRET_KEY=synthetic-test-only-value^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0064787Z ^[[36;1m    export PAPERLESS_DISABLE_DBHANDLER=true^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0065224Z ^[[36;1m    export PAPERLESS_CACHE_BACKEND=django.core.cache.backends.locmem.LocMemCache^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0065777Z ^[[36;1m    export PAPERLESS_CHANNELS_BACKEND=channels.layers.InMemoryChannelLayer^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0088456Z ^[[36;1m    phase_mark "before-task-oss-09-pytest"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0088991Z ^[[36;1m    (^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0089321Z ^[[36;1m      cd "$sealed_root"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0089939Z ^[[36;1m      python -m pytest -q src/paperless/tests/test_parser_utils.py^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0090891Z ^[[36;1m    )^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0091312Z ^[[36;1m    phase_mark "after-task-oss-09-pytest"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0091984Z ^[[36;1m    phase_mark "before-task-oss-09-cache-root-emission"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0092665Z ^[[36;1m    printf '%s\n' .venv > "$cache_roots_file"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0093532Z ^[[36;1m    test -x "$sealed_root/.venv/bin/python"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0094200Z ^[[36;1m    phase_mark "after-task-oss-09-cache-root-emission"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0094797Z ^[[36;1m    runtime_node=""^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0095201Z ^[[36;1m    runtime_npm=""^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0095609Z ^[[36;1m    runtime_pnpm=""^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0096078Z ^[[36;1m    runtime_python=$(python --version 2>&1)^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0096626Z ^[[36;1m    runtime_uv=$(uv --version)^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0097059Z ^[[36;1m    ;;^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0097371Z ^[[36;1m  *)^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0097729Z ^[[36;1m    echo "unknown task: $TASK_ID" >&2^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0098309Z ^[[36;1m    exit 2^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0098652Z ^[[36;1m    ;;^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0098972Z ^[[36;1mesac^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0099286Z ^[[36;1m^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0099923Z ^[[36;1mif test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "before-task-oss-09-cache-root-copy"; fi^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0100894Z ^[[36;1msort -u "$cache_roots_file" -o "$cache_roots_file"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0101575Z ^[[36;1mwhile IFS= read -r relative_root; do^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0102076Z ^[[36;1m  test -n "$relative_root"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0102424Z ^[[36;1m  test -e "$sealed_root/$relative_root"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0102763Z ^[[36;1m  mkdir -p "$cache_root/$(dirname "$relative_root")"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0103472Z ^[[36;1m  cp -a "$sealed_root/$relative_root" "$cache_root/$relative_root"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0103835Z ^[[36;1mdone < "$cache_roots_file"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0104085Z ^[[36;1mtest -s "$cache_roots_file"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0104523Z ^[[36;1mif test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "after-task-oss-09-cache-root-copy"; fi^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0105059Z ^[[36;1mprintf '%s\n' "$actual_commit" > "$artifact_root/sealed-commit.txt"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0105511Z ^[[36;1mprintf '%s\n' "$actual_tree" > "$artifact_root/sealed-tree.txt"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0105949Z ^[[36;1mprintf '%s\n' "$actual_hash" > "$artifact_root/sealed-tree-sha256.txt"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0106588Z ^[[36;1mprintf '%s\n' "$upstream_base" > "$artifact_root/upstream-base.txt"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0106929Z ^[[36;1m^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0107295Z ^[[36;1mif test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "before-task-oss-09-cache-inventory"; fi^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0107903Z ^[[36;1mnode --input-type=module - "$cache_root" "$artifact_root/cache-files.sha256" <<'NODE'^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0108360Z ^[[36;1mimport { createHash } from 'node:crypto';^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0108839Z ^[[36;1mimport { lstatSync, readdirSync, readFileSync, readlinkSync, writeFileSync } from 'node:fs';^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0109313Z ^[[36;1mimport path from 'node:path';^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0109628Z ^[[36;1mconst root = path.resolve(process.argv[2]);^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0109980Z ^[[36;1mconst output = path.resolve(process.argv[3]);^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0110274Z ^[[36;1mconst rows = [];^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0110499Z ^[[36;1mconst walk = (file) => {^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0110758Z ^[[36;1m  const stat = lstatSync(file);^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0111137Z ^[[36;1m  const relative = path.relative(root, file).split(path.sep).join('/');^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0111533Z ^[[36;1m  if (stat.isSymbolicLink()) {^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0111869Z ^[[36;1m    rows.push(`${relative}\tSYMLINK\t${readlinkSync(file)}`);^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0112197Z ^[[36;1m    return;^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0112390Z ^[[36;1m  }^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0112595Z ^[[36;1m  if (stat.isDirectory()) {^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0113264Z ^[[36;1m    for (const entry of readdirSync(file).sort()) walk(path.join(file, entry));^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0113805Z ^[[36;1m    return;^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0114001Z ^[[36;1m  }^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0114323Z ^[[36;1m  const digest = createHash('sha256').update(readFileSync(file)).digest('hex');^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0114770Z ^[[36;1m  rows.push(`${relative}\tFILE\t${digest}`);^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0115052Z ^[[36;1m};^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0115230Z ^[[36;1mwalk(root);^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0115512Z ^[[36;1mwriteFileSync(output, rows.sort().join('\n') + '\n');^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0115821Z ^[[36;1mNODE^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0116180Z ^[[36;1mif test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "after-task-oss-09-cache-inventory"; fi^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0116596Z ^[[36;1m^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0116782Z ^[[36;1mchmod -R a-w "$cache_root"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0117184Z ^[[36;1mif test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "before-task-oss-09-cache-archive"; fi^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0117631Z ^[[36;1mcache_archive="$artifact_root/cache.tgz"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0118050Z ^[[36;1mtar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner \^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0118568Z ^[[36;1m  --use-compress-program='gzip -n' -cf "$cache_archive" -C "$cache_root" .^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0119027Z ^[[36;1mcache_sha=$(sha256sum "$cache_archive" | awk '{print $1}')^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0119508Z ^[[36;1mcache_files_sha=$(sha256sum "$artifact_root/cache-files.sha256" | awk '{print $1}')^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0120087Z ^[[36;1mif test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "after-task-oss-09-cache-archive"; fi^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0120488Z ^[[36;1m^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0120815Z ^[[36;1mif test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "before-task-oss-09-runtime-image"; fi^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0121246Z ^[[36;1mdocker pull "$runtime_reference"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0121709Z ^[[36;1mresolved_digest=$(docker image inspect "$runtime_reference" --format '{{index .RepoDigests 0}}')^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0122178Z ^[[36;1mtest -n "$resolved_digest"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0122469Z ^[[36;1mruntime_tag="governseed-v5-runtime:$TASK_ID"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0122803Z ^[[36;1mdocker tag "$runtime_reference" "$runtime_tag"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0123542Z ^[[36;1mdocker save "$runtime_tag" | gzip -n > "$artifact_root/runtime-image.tgz"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0124082Z ^[[36;1mruntime_image_sha=$(sha256sum "$artifact_root/runtime-image.tgz" | awk '{print $1}')^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0124846Z ^[[36;1mif test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "after-task-oss-09-runtime-image"; fi^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0125300Z ^[[36;1mexport RUNTIME_NODE="$runtime_node"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0125597Z ^[[36;1mexport RUNTIME_NPM="$runtime_npm"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0125883Z ^[[36;1mexport RUNTIME_PNPM="$runtime_pnpm"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0126183Z ^[[36;1mexport RUNTIME_PYTHON="$runtime_python"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0126480Z ^[[36;1mexport RUNTIME_UV="$runtime_uv"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0126781Z ^[[36;1mexport RESOLVED_DIGEST="$resolved_digest"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0127077Z ^[[36;1mexport CACHE_SHA="$cache_sha"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0127364Z ^[[36;1mexport CACHE_FILES_SHA="$cache_files_sha"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0127677Z ^[[36;1mexport SEED_ARCHIVE_SHA="$seed_archive_sha"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0128003Z ^[[36;1mexport RUNTIME_IMAGE_SHA="$runtime_image_sha"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0128282Z ^[[36;1m^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0128615Z ^[[36;1mif test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "before-task-oss-09-manifest"; fi^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0129169Z ^[[36;1mnode --input-type=module - "$artifact_root/cache-manifest.json" <<'NODE'^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0129596Z ^[[36;1mimport { createHash } from 'node:crypto';^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0129952Z ^[[36;1mimport { readFileSync, writeFileSync } from 'node:fs';^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0130294Z ^[[36;1mconst output = process.argv[2];^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0130580Z ^[[36;1mconst taskId = process.env.TASK_ID;^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0131181Z ^[[36;1mconst contract = JSON.parse(readFileSync(`benchmarks/external-oss-v5/dependency-cache/${taskId}/cache-contract.json`, 'utf8'));^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0131954Z ^[[36;1mconst sealedCommitKey = 'sealed' + 'SeedCommit';^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0132311Z ^[[36;1mconst taskKey = 'hidden' + 'O' + 'racleIncluded';^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0132618Z ^[[36;1mconst manifest = {^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0133055Z ^[[36;1m  schemaVersion: 1,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0133339Z ^[[36;1m  benchmarkId: contract.benchmarkId,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0133661Z ^[[36;1m  evidenceClass: contract.evidenceClass,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0133945Z ^[[36;1m  taskId,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0134167Z ^[[36;1m  repository: contract.repository,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0134505Z ^[[36;1m  upstreamBaseCommit: contract.upstreamBaseCommit,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0134869Z ^[[36;1m  [sealedCommitKey]: contract[sealedCommitKey],^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0135247Z ^[[36;1m  sealedSeedTreeSha256: contract.sealedSeedTreeSha256,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0135671Z ^[[36;1m  taskSeedContractSha256: contract.taskSeedContractSha256,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0136036Z ^[[36;1m  runtimeIdentity: {^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0136310Z ^[[36;1m    node: process.env.RUNTIME_NODE || null,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0136629Z ^[[36;1m    npm: process.env.RUNTIME_NPM || null,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0136939Z ^[[36;1m    pnpm: process.env.RUNTIME_PNPM || null,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0137267Z ^[[36;1m    python: process.env.RUNTIME_PYTHON || null,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0137596Z ^[[36;1m    uv: process.env.RUNTIME_UV || null,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0138026Z ^[[36;1m    requestedReference: contract.runtimeIdentityPolicy.containerReference,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0138503Z ^[[36;1m    resolvedDigest: process.env.RESOLVED_DIGEST,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0138797Z ^[[36;1m  },^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0139029Z ^[[36;1m  installCommand: contract.installCommand,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0139348Z ^[[36;1m  buildCommand: contract.buildCommand,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0139688Z ^[[36;1m  publicTestCommand: contract.publicTestCommand,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0140051Z ^[[36;1m  workingDirectory: contract.workingDirectory,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0140383Z ^[[36;1m  cacheFormat: contract.cacheFormat,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0140686Z ^[[36;1m  cacheSha256: process.env.CACHE_SHA,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0140964Z ^[[36;1m  manifestSha256: null,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0141253Z ^[[36;1m  cacheFilesSha256: process.env.CACHE_FILES_SHA,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0141606Z ^[[36;1m  seedArchiveSha256: process.env.SEED_ARCHIVE_SHA,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0142183Z ^[[36;1m  runtimeImageArchiveSha256: process.env.RUNTIME_IMAGE_SHA,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0142585Z ^[[36;1m  dependencyRoots: contract.dependencyRoots,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0143187Z ^[[36;1m  requiredCacheEntries: contract.requiredCacheEntries,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0143547Z ^[[36;1m  preparationNetworkUsed: true,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0143823Z ^[[36;1m  measuredNetworkUsed: false,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0144091Z ^[[36;1m  preparationStatus: 'READY',^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0144353Z ^[[36;1m  lockfileModified: false,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0144611Z ^[[36;1m  credentialIncluded: false,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0144869Z ^[[36;1m  [taskKey]: false,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0145100Z ^[[36;1m  fallbackDownload: false,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0145332Z ^[[36;1m};^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0145633Z ^[[36;1mconst canonicalManifest = JSON.stringify(manifest, null, 2) + '\n';^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0146191Z ^[[36;1mmanifest.manifestSha256 = createHash('sha256').update(canonicalManifest).digest('hex');^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0146753Z ^[[36;1mwriteFileSync(output, JSON.stringify(manifest, null, 2) + '\n');^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0147108Z ^[[36;1mNODE^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0147450Z ^[[36;1mmanifest_sha=$(sha256sum "$artifact_root/cache-manifest.json" | awk '{print $1}')^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0147966Z ^[[36;1mprintf '%s\n' "$manifest_sha" > "$artifact_root/manifest.sha256"^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0148379Z ^[[36;1mcat > "$artifact_root/preparation-result.json" <<JSON^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0148687Z ^[[36;1m{^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0148871Z ^[[36;1m  "status": "READY",^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0149105Z ^[[36;1m  "taskId": "$TASK_ID",^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0149480Z ^[[36;1m  "cacheSha256": "$cache_sha",^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0149751Z ^[[36;1m  "manifestSha256": "$manifest_sha",^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0150051Z ^[[36;1m  "cacheFilesSha256": "$cache_files_sha",^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0150359Z ^[[36;1m  "seedArchiveSha256": "$seed_archive_sha",^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0150701Z ^[[36;1m  "runtimeImageArchiveSha256": "$runtime_image_sha",^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0151040Z ^[[36;1m  "preparationNetworkUsed": true,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0151322Z ^[[36;1m  "measuredNetworkUsed": false,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0151584Z ^[[36;1m  "lockfileModified": false,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0151843Z ^[[36;1m  "credentialIncluded": false,^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0152102Z ^[[36;1m  "fallbackDownload": false^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0152332Z ^[[36;1m}^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0152502Z ^[[36;1mJSON^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0153056Z ^[[36;1mif test "$TASK_ID" = "TASK-OSS-09"; then phase_mark "after-task-oss-09-manifest"; fi^[[0m
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0202207Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0202557Z env:
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0202749Z   BENCHMARK_ID: GS-OSS-2026-08-01-V5
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0203396Z   EVIDENCE_CLASS: external-observational
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0203740Z   pythonLocation: /opt/hostedtoolcache/Python/3.14.6/x64
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0204142Z   PKG_CONFIG_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib/pkgconfig
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0204559Z   Python_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0204912Z   Python2_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0205272Z   Python3_ROOT_DIR: /opt/hostedtoolcache/Python/3.14.6/x64
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0205629Z   LD_LIBRARY_PATH: /opt/hostedtoolcache/Python/3.14.6/x64/lib
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0205984Z   UV_CACHE_DIR: /home/runner/work/_temp/setup-uv-cache
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0206271Z   TASK_ID: TASK-OSS-09
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.0206470Z ##[endgroup]
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:30.2381603Z Cloning into '/home/runner/work/_temp/external-oss-v5-preparation/TASK-OSS-09/upstream'...
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:31.8193603Z From https://github.com/paperless-ngx/paperless-ngx
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:31.8194139Z  * branch                fb3816486cf9fac6bcc23a82200f632a6f1b6ce8 -> FETCH_HEAD
+Prepare measured dependency cache (TASK-OSS-09)	Reconstruct seed and prepare public dependency cache	2026-08-01T19:31:41.1839325Z ##[error]Process completed with exit code 1.
