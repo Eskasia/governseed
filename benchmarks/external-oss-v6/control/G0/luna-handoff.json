@@ -1,0 +1,54 @@
+{
+  "protocolVersion": 1,
+  "agent": "Luna",
+  "role": "V6 execution layer",
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "gate": "G0",
+  "status": "READY_FOR_REVIEW",
+  "investigationOnly": true,
+  "identity": {
+    "branch": "benchmark/v6-offline-permission-fix",
+    "baseCommit": "80063bef888c660f513e081c7e2b9807d98aa744",
+    "v5CommitRecordedByRequest": "80063bef888c660f513e081c7e2b9807d98aa744",
+    "v5RunId": 30717085665,
+    "v5RunHeadCommit": "07a9033eccefcb01314d01b4715269a83b3e20b4"
+  },
+  "commands": [
+    {"command":"git status --short --branch; git rev-parse HEAD","result":"clean branch benchmark/v6-offline-permission-fix; HEAD 80063bef888c660f513e081c7e2b9807d98aa744"},
+    {"command":"id; pwd; command -v bash; command -v docker; docker info","result":"uid=501 gid=20 groups recorded; cwd /Users/william/governseed-v6-permission-fix; interpreter /bin/bash; Docker daemon unavailable"},
+    {"command":"chmod 0555 benchmarks/external-oss-v6/minimal-reproducer.sh && benchmarks/external-oss-v6/minimal-reproducer.sh","result":"PASS: TASK-OSS-01 node_modules rm exit 1 target present; TASK-OSS-03 node_modules rm exit 1 target present; TASK-OSS-09 .venv/bin/python rm exit 1 target present"},
+    {"command":"node -e \"JSON.parse(require('fs').readFileSync('benchmarks/external-oss-v6/reproducer-result.json')); JSON.parse(require('fs').readFileSync('benchmarks/external-oss-v6/inherited-evidence.json'))\"","result":"PASS: JSON parses"},
+    {"command":"python3 - <<'PY' ... csv.DictReader ... PY","result":"PASS: permission-matrix.csv has 18 candidate rows; statuses include CONFIRMED, REJECTED, and NOT_APPLICABLE"}
+  ],
+  "rootCauseConclusion": {
+    "status": "CONFIRMED",
+    "claim": "V5 creates the cache, chmod -R a-w source cache, cp -a source cache/. into negative_cache, then the failing rm -rf selected required path runs in the GitHub Actions host runner shell; the local reproducer actor is host UID 501. Copied non-writable parent modes cause deletion to fail for all three required task paths. UID 65532 container execution and Docker runtime are untested/NOT_APPLICABLE.",
+    "candidateMatrix": "All requested candidates plus distinct mount and containment candidates are classified in permission-matrix.csv with concrete evidence and precise Docker limitations. Only copied read-only-tree mutation denial is CONFIRMED for the observed failure."
+  },
+  "environment": {
+    "platform": "darwin",
+    "uid": 501,
+    "gid": 20,
+    "supplementaryGroupsRecorded": true,
+    "cwd": "/Users/william/governseed-v6-permission-fix",
+    "shell": "/bin/zsh",
+    "interpreter": "/bin/bash",
+    "failingRmActor": "GitHub Actions host runner shell in V5; local reproducer host UID 501",
+    "uid65532ContainerExecution": "NOT_APPLICABLE: not executed",
+    "docker": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+    "mounts": "Host mount summary inspected; Docker /workspace /cache /harness mount inspection not applicable because daemon unavailable"
+  },
+  "artifacts": [
+    {"path":"benchmarks/external-oss-v6/inherited-evidence.json","sha256":"fc17b02f663340095b456d25f9474eebc968994f5fae215f34f50d38fd1bebf9"},
+    {"path":"benchmarks/external-oss-v6/permission-root-cause.json","sha256":"863b724af4b3970f0f3cf4d4f585fb1b23892aef517aea240d9af0976359a1a4"},
+    {"path":"benchmarks/external-oss-v6/permission-matrix.csv","sha256":"c5adab473f3eb4e70d5319f31def9ceb1725589b62aab464eab6365bb1b7f173"},
+    {"path":"benchmarks/external-oss-v6/minimal-reproducer.sh","sha256":"6fbdc38fa9bd5c5f07bfe9b6da5d9ff9a3c1576dd8b2e18e4fbfe5f3199dd7b3"},
+    {"path":"benchmarks/external-oss-v6/reproducer-result.json","sha256":"2b974d3e36b5db21971495a351a1c3e7be97661af68b74ad3492b9738ae38372"}
+  ],
+  "limitations": [
+    "Docker daemon unavailable locally; exact UID/GID 65532, OCI mounts, read-only rootfs, network none, cap-drop, and no-new-privileges were not runtime-tested.",
+    "No V5 cache archives, virtualenvs, raw logs, external clones, secrets, or environment dumps were copied or recorded.",
+    "No V6 workflow, regression suite, PR, dispatch, cache receipt, smoke result, or Sol acceptance was created or claimed."
+  ],
+  "claimBoundary": "READY_FOR_REVIEW means G0 investigation artifacts are complete for independent review. It is not READY cache qualification, G1 acceptance, workflow readiness, or permission-fix acceptance."
+}

@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "gate": "G1",
+  "repairCycle": 1,
+  "executionLayer": "primary-fallback",
+  "lunaExecution": "BLOCKED_USAGE_LIMIT",
+  "status": "READY_FOR_INDEPENDENT_REVIEW",
+  "baseCommit": "7dcd3af3a17c3ba85355e4c7748cf3a6f49aa3c0",
+  "branch": "benchmark/v6-offline-permission-fix-r1",
+  "preserved": [
+    "PR #54 and its rejection evidence",
+    "benchmarks/external-oss-v2/ through benchmarks/external-oss-v5/",
+    ".github/workflows/external-oss-v5-dependency-cache.yml",
+    "benchmarks/external-oss-v6/control/G0/sol-verdict.json",
+    "benchmarks/external-oss-v6/control/G0/sol-review-evidence.json"
+  ],
+  "changedFiles": [
+    ".github/workflows/external-oss-v6-dependency-cache.yml",
+    "benchmarks/external-oss-v6/tests/v6-contract-validation.mjs",
+    "benchmarks/external-oss-v6/tests/v6-permission-regression.mjs",
+    "benchmarks/external-oss-v6/control/G1/repair-1/local-validation.json",
+    "benchmarks/external-oss-v6/control/G1/repair-1/implementation-handoff.json"
+  ],
+  "artifactHashes": [
+    {"path":".github/workflows/external-oss-v6-dependency-cache.yml","sha256":"3177340958dd64ad918f70f543dcf0e4e49cfd54d7d558165e733cf88b29dae9"},
+    {"path":"benchmarks/external-oss-v6/tests/v6-contract-validation.mjs","sha256":"98ecb7b62d1ebd8e2bfde0b1627680bae1ed496d6fdc5edc5667076b60da988a"},
+    {"path":"benchmarks/external-oss-v6/tests/v6-permission-regression.mjs","sha256":"41f537a1b0347660c0c443f5801aa2764016ee41266d832306df46b9b665cb3d"},
+    {"path":"benchmarks/external-oss-v6/tests/v6-shell-validation.mjs","sha256":"e476311dd65409e3446cc129caf325b2edba822792ff595177045ddd265afa0f"},
+    {"path":"benchmarks/external-oss-v6/control/G1/repair-1/local-validation.json","sha256":"8eaa28b2f4843b7f0a33f65fc4311f7ca61a9c40def0dc12360100f58ffb66f2"}
+  ],
+  "securityBoundary": {
+    "sourceCacheReadonlyBeforeArchive": true,
+    "negativeTreeTemporarilyWritableOnlyForHostRemoval": true,
+    "negativeTreeReadonlyBeforeMount": true,
+    "cacheMountReadonly": true,
+    "networkNone": true,
+    "readonlyRootfs": true,
+    "nonRoot": "65532:65532",
+    "capDropAll": true,
+    "noNewPrivileges": true,
+    "writableMounts": ["/workspace", "/tmp", "/home/benchmark"],
+    "noChmod777": true
+  },
+  "claimBoundary": "Implementation handoff only. No G1 acceptance, runtime result, cache READY, smoke result, credential, Codex, hidden oracle, Pilot, scoring, merge, or dispatch claim. Independent Sol review is mandatory; primary fallback is disclosed because Luna could not execute this repair under the current usage limit."
+}

@@ -1,0 +1,354 @@
+{
+  "protocolVersion": 1,
+  "agent": "Sol",
+  "role": "independent read-only acceptance reviewer",
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "gate": "G1",
+  "reviewType": "PR safety and minimality acceptance review",
+  "reviewDate": "2026-08-02",
+  "recommendedVerdict": "REJECT",
+  "mergeAuthorized": false,
+  "runtimeAccepted": false,
+  "cacheReadyAccepted": false,
+  "scope": {
+    "repository": "/Users/william/governseed-v6-permission-fix",
+    "pullRequest": "https://github.com/Eskasia/governseed/pull/54",
+    "baseCommit": "80063bef888c660f513e081c7e2b9807d98aa744",
+    "reviewCommit": "7dcd3af3a17c3ba85355e4c7748cf3a6f49aa3c0",
+    "reviewCommitTree": "8001381e4f92b44422db89e41f0f3e20cf823a5e",
+    "authorizedWrites": [
+      "benchmarks/external-oss-v6/control/G1/sol-review-evidence.json",
+      "benchmarks/external-oss-v6/control/G1/sol-verdict.json"
+    ],
+    "prohibitedActionsObserved": []
+  },
+  "repositoryIdentity": {
+    "head": "7dcd3af3a17c3ba85355e4c7748cf3a6f49aa3c0",
+    "base": "80063bef888c660f513e081c7e2b9807d98aa744",
+    "mergeBase": "80063bef888c660f513e081c7e2b9807d98aa744",
+    "branch": "benchmark/v6-offline-permission-fix",
+    "preReviewWorktree": "CLEAN",
+    "diffCheck": "PASS",
+    "diffSummary": "14 added files, 1365 insertions, 0 deletions; no V5 path changed",
+    "v5Immutable": true,
+    "priorG0SolFilesUnchanged": true
+  },
+  "pullRequestState": {
+    "number": 54,
+    "state": "OPEN",
+    "isDraft": false,
+    "headRefOidMatchesReviewCommit": true,
+    "baseRefOidMatchesBaseCommit": true,
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "CLEAN",
+    "reviewDecision": "",
+    "reportedChecks": [
+      {
+        "name": "validate (ubuntu-latest)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/Eskasia/governseed/actions/runs/30719705172/job/91421312047"
+      },
+      {
+        "name": "validate (macos-latest)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/Eskasia/governseed/actions/runs/30719705172/job/91421312048"
+      },
+      {
+        "name": "validate (windows-latest)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/Eskasia/governseed/actions/runs/30719705172/job/91421312017"
+      }
+    ],
+    "requiredChecksReportedByGitHub": "NONE",
+    "checkBoundary": "The three current Validate GovernSeed checks run npm run ci. package.json has no V6 script, and the manual V6 workflow was not executed by these checks. Their success is product/static CI evidence, not V6 Docker runtime evidence."
+  },
+  "findings": [
+    {
+      "id": "G1-BLOCK-001",
+      "severity": "BLOCKING",
+      "status": "CONFIRMED",
+      "title": "The workflow bypasses rather than minimally repairs the confirmed read-only-copy mutation boundary",
+      "evidence": [
+        ".github/workflows/external-oss-v6-dependency-cache.yml:179-190 copies and archives cache_root without first making the source cache recursively read-only.",
+        ".github/workflows/external-oss-v6-dependency-cache.yml:249-253 performs cp -a, rm, then chmod read-only in diagnosis; it has no writable transition on the disposable negative tree before rm.",
+        ".github/workflows/external-oss-v6-dependency-cache.yml:297-301 repeats cp -a, rm, then chmod read-only in offline verification; it has no writable transition before rm.",
+        "benchmarks/external-oss-v6/tests/v6-contract-validation.mjs:57 checks an unused $cache spelling rather than $cache_root, and lines 58-60 require cp/rm/read-only but not the required writable-negative transition.",
+        "The fresh G0 reproducer still confirms that source chmod read-only before cp -a preserves non-writable parent modes and makes host rm fail for all three required paths."
+      ],
+      "impact": "The implemented sequence is writable source, writable copied negative tree, removal, then read-only. It does not preserve the source/cache read-only boundary while minimally making only the disposable negative tree writable for host removal, so it does not implement the accepted root-cause repair contract.",
+      "requiredRepair": "Keep the source/cache tree read-only, explicitly make only the disposable negative tree writable before host-side removal, verify the required path is absent, and restore that negative tree read-only before its read-only cache mount. Update the contract test to require this exact order and the actual variable names."
+    },
+    {
+      "id": "G1-BLOCK-002",
+      "severity": "BLOCKING",
+      "status": "CONFIRMED",
+      "title": "Unreadable cache does not produce the required DEPENDENCY_CACHE_INCOMPLETE code",
+      "evidence": [
+        ".github/workflows/external-oss-v6-dependency-cache.yml:328 maps a missing required path to DEPENDENCY_CACHE_INCOMPLETE, but line 329 maps an unreadable required path to CACHE_READ_DENIED.",
+        "benchmarks/external-oss-v6/tests/v6-permission-regression.mjs:12 derives DEPENDENCY_CACHE_INCOMPLETE only from existsSync=false, and line 40 tests only a removed path.",
+        "The independent semantic check reported workflowUnreadableCode=CACHE_READ_DENIED and regressionUnreadableCacheCase=false."
+      ],
+      "impact": "The explicit G1 contract that an unreadable dependency cache fail closed as DEPENDENCY_CACHE_INCOMPLETE is neither implemented nor regression-tested.",
+      "requiredRepair": "Map an unreadable required cache entry to DEPENDENCY_CACHE_INCOMPLETE and add a regression that creates an existing but unreadable cache entry and asserts that exact code."
+    },
+    {
+      "id": "G1-BLOCK-003",
+      "severity": "BLOCKING",
+      "status": "CONFIRMED",
+      "title": "The required negative-removal fail-closed regression is absent",
+      "evidence": [
+        "benchmarks/external-oss-v6/tests/v6-permission-regression.mjs:28-33 copies a writable cache tree; line 35 makes only the source required directory read-only after the copy.",
+        "benchmarks/external-oss-v6/tests/v6-permission-regression.mjs:38 removes the still-writable negative entry successfully, and line 39 makes the negative root read-only only after removal.",
+        "The test does not inject EACCES/EPERM or another denied removal, does not assert the workflow aborts when removal fails, and contains none of TASK-OSS-01, TASK-OSS-03, or TASK-OSS-09.",
+        "The independent semantic check reported regressionNegativeReadonlyBeforeRemoval=false, regressionAssertsDeniedRemoval=false, and regressionTaskIds=[]."
+      ],
+      "impact": "Although set -e plus the post-removal existence check make the shell implementation statically fail closed, the specifically required regression does not protect that behavior or establish the same negative-cache contract for all three tasks.",
+      "requiredRepair": "Add a denied-removal case that proves nonzero removal leaves the target present and causes the qualification path to fail, then exercise or table-drive the exact contract for all three task IDs."
+    },
+    {
+      "id": "G1-BLOCK-004",
+      "severity": "BLOCKING",
+      "status": "CONFIRMED",
+      "title": "Uploaded failure evidence collapses the structured diagnostic codes",
+      "evidence": [
+        ".github/workflows/external-oss-v6-dependency-cache.yml:294 overwrites diagnostics.json with OFFLINE_PERMISSION_CAUSE_UNKNOWN for every nonzero shell exit.",
+        ".github/workflows/external-oss-v6-dependency-cache.yml:318-336 emits specific codes inside the container, but lines 351 and 355 redirect those outputs under the runtime root.",
+        ".github/workflows/external-oss-v6-dependency-cache.yml:369-371 uploads only cache-receipt.json and diagnostics.json, not the redirected positive or negative output containing the specific code.",
+        "benchmarks/external-oss-v6/tests/v6-contract-validation.mjs:62-64 verifies only that code strings occur somewhere in workflow source."
+      ],
+      "impact": "A runtime failure would publish the generic unknown code rather than the structured cause produced by the harness, so the structured failure-code contract is not realized in reviewable G1 evidence.",
+      "requiredRepair": "Preserve the specific sanitized harness or host failure code in diagnostics.json and test the resulting uploaded diagnostic contract, while retaining a bounded unknown fallback only for genuinely unclassified failures."
+    }
+  ],
+  "acceptanceCriteria": [
+    {
+      "id": 1,
+      "status": "FAIL",
+      "result": "The G0 host-side read-only-copy mutation root cause is independently confirmed, but the PR does not implement the required minimal writable-negative/read-only-source sequence.",
+      "findingIds": [
+        "G1-BLOCK-001"
+      ]
+    },
+    {
+      "id": 2,
+      "status": "PASS",
+      "result": "Exactly the five required jobs exist in the required order."
+    },
+    {
+      "id": 3,
+      "status": "PASS_STATIC_ONLY",
+      "result": "No secrets, environment gate, Codex, hidden oracle, or provider execution is present; permissions are contents read. Network activity is confined to public pre-runtime seed/cache preparation. The Docker commands statically specify network none, read-only rootfs, UID/GID 65532, cap-drop ALL, no-new-privileges, read-only cache/harness, and only /workspace, /tmp, and /home/benchmark as writable binds. No chmod 777, container root user, or skipped smoke was found. None of these Docker properties was runtime-accepted."
+    },
+    {
+      "id": 4,
+      "status": "FAIL",
+      "result": "Five job structure and a real GitHub Actions Docker integration implementation exist, but unreadable-cache classification, denied-removal regression coverage, and reviewable structured failure diagnostics are deficient.",
+      "findingIds": [
+        "G1-BLOCK-002",
+        "G1-BLOCK-003",
+        "G1-BLOCK-004"
+      ]
+    },
+    {
+      "id": 5,
+      "status": "PASS_WITH_LIMITATION",
+      "result": "Committed G1 evidence is text-only and sanitized; no credential, hidden oracle, Codex result, external-service result, cache archive, virtualenv, dependency tree, or runtime image is committed. The local Docker limitation exactly states EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE and docker info independently failed because the local daemon socket is absent. The workflow also hard-codes that local-only literal in its GitHub-hosted diagnosis receipt without checking daemon availability; this receipt has not been produced or accepted."
+    },
+    {
+      "id": 6,
+      "status": "PASS_BOUNDARY",
+      "result": "Fresh local/static checks and current PR checks are recorded separately from runtime. The workflow_dispatch-only Docker integration has not run in this review, and no G1 runtime acceptance or READY cache claim is made."
+    }
+  ],
+  "verifiedPasses": [
+    "All five required workflow jobs exist, with all three task IDs represented in each matrix job and in the aggregate gate.",
+    "The static container boundary includes network none, read-only rootfs, fixed non-root 65532:65532, cap-drop ALL, no-new-privileges, read-only cache and harness mounts, and writable disposable workspace, TMP, and HOME mounts.",
+    "No chmod 777, container root user, skipped positive smoke, secret reference, environment gate, Codex/provider execution, or committed cache binary was found.",
+    "All five Luna-declared G1 artifact hashes match current bytes; the G1 handoff hash was independently computed separately.",
+    "All 16 inherited V5 source hashes match; V5 run 30717085665 remains a completed failure/BLOCKED record and no V5 path differs from the base.",
+    "All V6 JSON files, permission-matrix CSV, YAML, and shell syntax parse; the focused V6 tests mechanically pass.",
+    "Fresh npm run ci and npm run ci:experimental both exit 0.",
+    "All three current PR Validate GovernSeed checks completed successfully."
+  ],
+  "artifactHashVerification": {
+    "lunaDeclaredHashesAllMatch": true,
+    "artifacts": [
+      {
+        "path": ".github/workflows/external-oss-v6-dependency-cache.yml",
+        "sha256": "8d77ea9caf692f07fb33be16c0b4e478791ef115036dfcc8815d347e8649712d"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/tests/v6-contract-validation.mjs",
+        "sha256": "5798cd346bf94a9c02a552f12462a22dc725d792df3d0ee5f8d23e879204ad38"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/tests/v6-permission-regression.mjs",
+        "sha256": "769f4a1f63b2366ad1d6eacf65f52ceade696ad23949f9ba4e6ce5abe452c6ab"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/tests/v6-shell-validation.mjs",
+        "sha256": "e476311dd65409e3446cc129caf325b2edba822792ff595177045ddd265afa0f"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/control/G1/local-validation.json",
+        "sha256": "50c0743d6b8322360ad29407c1b1853824c443821f7f9fe010b34a7540868ddb"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/control/G1/luna-handoff.json",
+        "sha256": "9960c05a8e3efdcf01bc0a5e8c1950f4d7a9f8d1dd568964612a427755acbe5d"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/inherited-evidence.json",
+        "sha256": "fc17b02f663340095b456d25f9474eebc968994f5fae215f34f50d38fd1bebf9"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/permission-root-cause.json",
+        "sha256": "863b724af4b3970f0f3cf4d4f585fb1b23892aef517aea240d9af0976359a1a4"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/permission-matrix.csv",
+        "sha256": "c5adab473f3eb4e70d5319f31def9ceb1725589b62aab464eab6365bb1b7f173"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/minimal-reproducer.sh",
+        "sha256": "6fbdc38fa9bd5c5f07bfe9b6da5d9ff9a3c1576dd8b2e18e4fbfe5f3199dd7b3"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/reproducer-result.json",
+        "sha256": "2b974d3e36b5db21971495a351a1c3e7be97661af68b74ad3492b9738ae38372"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/control/G0/luna-handoff.json",
+        "sha256": "b8888c4c3e1dfe620eeca8d773d77113a543b9bfbb9c121e280d8c3a5155a6c2"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/control/G0/sol-review-evidence.json",
+        "sha256": "0838ea90c07b907d82fa7abfbbba05202c1e93fe4c2e387d754baf68aec37902"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/control/G0/sol-verdict.json",
+        "sha256": "2dad1f807682d7e7baa8f09cccfb2295af6f378a96f74fa7e2b3f8cbfed8d508"
+      }
+    ]
+  },
+  "v5DependentHashVerification": {
+    "sourceCount": 16,
+    "mismatches": 0,
+    "allMatch": true,
+    "runId": 30717085665,
+    "runConclusion": "failure",
+    "qualification": "BLOCKED",
+    "v5WorkflowSha256": "8191426107b555f17a74149ab1c8d846c9595ab96412a9eafba15283551ea81d",
+    "runEvidence": {
+      "benchmarks/external-oss-v5/control/G1/attempt-5-run.json": "46e3e0b152425b399acb659b1f3b07de97385e600e477ee21f98075d09c5e307",
+      "benchmarks/external-oss-v5/control/G1/attempt-5-jobs.json": "52d6aa793d01aeb73392a757a676dc4be86012926ef832da2eba8f67585ea81e",
+      "benchmarks/external-oss-v5/control/G1/attempt-5-artifacts.json": "3260d34f18c048c1069c4968bd0e1b2566a031dd06f7e96dadb684a231c197f0",
+      "benchmarks/external-oss-v5/control/G1/attempt-5-diagnostics.json": "e619238a30739e2863ae10d615877ea52883136978725cd24c9247eefc8f7926",
+      "benchmarks/external-oss-v5/control/G1/attempt-5-luna-handoff.json": "3c2682d4f686e88cb913dadd0ccae2e420e6bde798b685a79e1cc47db4039feb",
+      "benchmarks/external-oss-v5/control/G1/attempt-5-sol-verdict.json": "4cbe2b2b149fa54d05c7c53d7b1c6e5a89ab638fa52b0c78fd6b768a795e1113",
+      "benchmarks/external-oss-v5/control/G1/attempt-5-sol-review-evidence.json": "8605f75950e8fb10f9139e5d7bf195145cdbf874b840169d3353141b91452799"
+    }
+  },
+  "freshValidation": {
+    "json": "PASS",
+    "csv": "PASS: 18 rows; CONFIRMED, REJECTED, NOT_APPLICABLE represented",
+    "yaml": "PASS",
+    "bashSyntax": "PASS: minimal reproducer and six workflow run blocks",
+    "focusedV6ContractTest": "PASS_MECHANICALLY_WITH_BLOCKING_COVERAGE_GAPS",
+    "focusedV6ShellTest": "PASS",
+    "focusedV6PermissionRegression": "PASS_MECHANICALLY_WITH_BLOCKING_COVERAGE_GAPS",
+    "freshG0Reproducer": "PASS: all three host UID 501 removals exit 1 with targets present; result SHA-256 remains 2b974d3e36b5db21971495a351a1c3e7be97661af68b74ad3492b9738ae38372",
+    "npmRunCi": "PASS",
+    "npmRunCiExperimental": "PASS",
+    "dockerInfo": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+    "dockerInfoExitCode": 1,
+    "dockerInfoResult": "Local Docker socket /Users/william/.docker/run/docker.sock is absent; no Docker runtime command or result is claimed.",
+    "actionlint": "NOT_AVAILABLE",
+    "shellcheck": "NOT_AVAILABLE"
+  },
+  "commands": [
+    {
+      "command": "git rev-parse HEAD; git rev-parse <base>; git merge-base HEAD <base>; git status --short; git diff --name-status <base>..HEAD; git diff --check <base>..HEAD",
+      "exitCode": 0,
+      "result": "Exact review/base/merge-base identities confirmed; pre-review tree clean; 14 added files; diff check PASS."
+    },
+    {
+      "command": "git diff --quiet <base>..HEAD -- benchmarks/external-oss-v5 .github/workflows/external-oss-v5-dependency-cache.yml; git diff --quiet -- benchmarks/external-oss-v6/control/G0",
+      "exitCode": 0,
+      "result": "V5 immutable paths have no PR diff; prior G0 Sol files have no worktree modification."
+    },
+    {
+      "command": "gh pr view 54 --repo Eskasia/governseed --json state,isDraft,mergeable,mergeStateStatus,headRefOid,baseRefOid,reviewDecision,statusCheckRollup; gh pr checks 54 --repo Eskasia/governseed",
+      "exitCode": 0,
+      "result": "PR OPEN, non-draft, MERGEABLE/CLEAN, exact head/base; Linux, macOS, and Windows Validate GovernSeed checks all SUCCESS."
+    },
+    {
+      "command": "gh pr checks 54 --repo Eskasia/governseed --required",
+      "exitCode": 1,
+      "result": "GitHub reports no checks configured as required on the branch."
+    },
+    {
+      "command": "shasum -a 256 <workflow, three V6 tests, G1 evidence, G0 evidence>; independently compare Luna-declared hashes",
+      "exitCode": 0,
+      "result": "All declared hashes match; independent hashes are recorded in artifactHashVerification."
+    },
+    {
+      "command": "node --input-type=module <recompute every inherited-evidence.json source hash>",
+      "exitCode": 0,
+      "result": "sources=16 mismatches=0"
+    },
+    {
+      "command": "jq empty <all V6 JSON>; python3 csv.DictReader permission-matrix.csv; Ruby YAML.load_file workflow; bash -n minimal-reproducer.sh; V6 shell-block parser with bash -n",
+      "exitCode": 0,
+      "result": "JSON, 18-row CSV, YAML, reproducer Bash, and all six workflow shell blocks parse."
+    },
+    {
+      "command": "node benchmarks/external-oss-v6/tests/v6-contract-validation.mjs; node benchmarks/external-oss-v6/tests/v6-shell-validation.mjs; node benchmarks/external-oss-v6/tests/v6-permission-regression.mjs",
+      "exitCode": 0,
+      "result": "All three report PASS, but independent source assertions expose the blocking coverage and contract gaps in G1-BLOCK-001 through G1-BLOCK-004."
+    },
+    {
+      "command": "node --input-type=module <independent workflow/test semantic assertions>",
+      "exitCode": 0,
+      "result": "sourceCacheReadonlyBeforeArchive=false; diagnoseRequiredRepairOrder=false; offlineRequiredRepairOrder=false; workflowUnreadableCode=CACHE_READ_DENIED; regressionNegativeReadonlyBeforeRemoval=false; regressionAssertsDeniedRemoval=false; regressionUnreadableCacheCase=false; regressionTaskIds=[]; uploadedFailureTrapCode=OFFLINE_PERMISSION_CAUSE_UNKNOWN; dockerIntegrationImplemented=true."
+    },
+    {
+      "command": "bash benchmarks/external-oss-v6/minimal-reproducer.sh; shasum -a 256 benchmarks/external-oss-v6/reproducer-result.json; git status --short",
+      "exitCode": 0,
+      "result": "Fresh host reproduction confirms all three denied removals; result remains byte-identical to the committed G0 artifact and creates no repository diff."
+    },
+    {
+      "command": "npm run ci",
+      "exitCode": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "npm run ci:experimental",
+      "exitCode": 0,
+      "result": "PASS: 125 tests, 0 failures"
+    },
+    {
+      "command": "docker info --format '{{.ServerVersion}}'",
+      "exitCode": 1,
+      "result": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE; local daemon socket absent."
+    },
+    {
+      "command": "git diff --numstat <base>..HEAD; file <each changed file>; scan changed paths and contents for archives, dependency trees, secrets, credentials, Codex, hidden oracle, provider execution, chmod 777, and root container user",
+      "exitCode": 0,
+      "result": "All committed changes are text; no cache/runtime binary or credential-bearing evidence is committed; prohibited workflow features are absent."
+    }
+  ],
+  "limitations": [
+    "Docker is unavailable locally. UID/GID 65532 execution, mounts, read-only rootfs, network none, capabilities, no-new-privileges, positive smoke, negative smoke, cleanup, and containment were not runtime-tested or accepted.",
+    "The manual external-oss-v6-dependency-cache workflow was not dispatched. No GitHub Actions V6 cache artifact, receipt, runtime result, or aggregate READY result exists in this review.",
+    "Current PR checks run the repository's npm run ci matrix and all pass, but package.json has no V6 test script, so those checks do not independently exercise the added V6 tests or Docker workflow.",
+    "actionlint and shellcheck are unavailable; YAML parsing, bash -n for all six run blocks, focused tests, and independent source checks were completed.",
+    "The fresh G0 reproduction ran on Darwin as host UID 501 and proves only the accepted host mutation-denial mechanism, not Linux/Docker runtime behavior."
+  ],
+  "reviewerOwnership": "This evidence and the paired Sol verdict are independent reviewer artifacts. Luna is not authorized to alter, replace, or reinterpret the verdict.",
+  "authorizationBoundary": "REJECT does not authorize merge, dispatch, runtime qualification, cache readiness, or any V5/product change. A repaired PR requires a new independent review.",
+  "claimBoundary": "This review evaluates only whether commit 7dcd3af3a17c3ba85355e4c7748cf3a6f49aa3c0 / PR #54 is a safe, minimal G1 workflow repair that may be merged. REJECT is based on static/local contract defects. It is not G1 runtime acceptance, Docker acceptance, cache READY, offline-smoke success, task acceptance, benchmark-effect evidence, or a claim that any V6 workflow run occurred."
+}

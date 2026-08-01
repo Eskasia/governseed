@@ -1,0 +1,422 @@
+name: External OSS V6 dependency cache
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BENCHMARK_ID: GS-OSS-2026-08-02-V6
+  EVIDENCE_CLASS: external-observational
+
+jobs:
+  qualify-seed-identity:
+    name: Qualify V6 seed identity (${{ matrix.task_id }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - task_id: TASK-OSS-01
+          - task_id: TASK-OSS-03
+          - task_id: TASK-OSS-09
+    steps:
+      - name: Checkout benchmark contracts
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Validate V6 contracts and workflow boundary
+        run: |
+          node benchmarks/external-oss-v6/tests/v6-contract-validation.mjs
+          node benchmarks/external-oss-v6/tests/v6-shell-validation.mjs
+      - name: Reconstruct exact inherited seed identity
+        shell: bash
+        env:
+          TASK_ID: ${{ matrix.task_id }}
+        run: |
+          set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
+          contract="benchmarks/external-oss-v5/tasks/$TASK_ID/task-seed-identity.json"
+          values=$(node --input-type=module - "$contract" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const x = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+          console.log([x.repository, x.upstreamBaseCommit, x.seedOverlayPath || '-', x.sealedSeedCommit, x.sealedSeedGitTree, x.sealedSeedTreeSha256].join('\t'));
+          NODE
+          )
+          IFS=$'\t' read -r repository upstream_base overlay expected_commit expected_tree expected_hash <<< "$values"
+          root="$RUNNER_TEMP/v6-seed/$TASK_ID"
+          source_root="$root/upstream"
+          sealed_root="$root/sealed"
+          mkdir -p "$sealed_root"
+          git clone --no-checkout --filter=blob:none --no-tags "https://github.com/$repository.git" "$source_root"
+          git -C "$source_root" remote set-url --push origin no_push://disabled
+          git -C "$source_root" fetch --depth=1 --filter=blob:none --no-tags origin "$upstream_base"
+          test "$(git -C "$source_root" rev-parse "$upstream_base^{commit}")" = "$upstream_base"
+          git -C "$source_root" archive "$upstream_base" | tar -x -C "$sealed_root"
+          git init --quiet "$sealed_root"
+          git -C "$sealed_root" config user.name "GovernSeed Benchmark"
+          git -C "$sealed_root" config user.email benchmark@example.invalid
+          git -C "$sealed_root" add --all --force
+          if test "$overlay" != "-"; then git -C "$sealed_root" apply --index --include='.vscode/settings.json' --include='design/.DS_Store' "$GITHUB_WORKSPACE/$overlay"; git -C "$sealed_root" add --all --force; fi
+          GIT_AUTHOR_NAME="GovernSeed Benchmark" GIT_AUTHOR_EMAIL=benchmark@example.invalid GIT_COMMITTER_NAME="GovernSeed Benchmark" GIT_COMMITTER_EMAIL=benchmark@example.invalid GIT_AUTHOR_DATE=2026-08-02T00:00:00Z GIT_COMMITTER_DATE=2026-08-02T00:00:00Z git -C "$sealed_root" commit --quiet --message "benchmark seed"
+          actual_commit=$(git -C "$sealed_root" rev-parse HEAD)
+          actual_tree=$(git -C "$sealed_root" rev-parse HEAD^{tree})
+          actual_hash=$(node benchmarks/external-oss-v5/tests/seed-tree-hash.mjs "$sealed_root")
+          test "$actual_commit" = "$expected_commit"
+          test "$actual_tree" = "$expected_tree"
+          test "$actual_hash" = "$expected_hash"
+          test -z "$(git -C "$sealed_root" status --porcelain=v1)"
+          test -z "$(git -C "$sealed_root" remote)"
+          mkdir -p "$RUNNER_TEMP/v6-seed-receipts/$TASK_ID"
+          printf '{"taskId":"%s","sealedSeedCommit":"%s","sealedSeedGitTree":"%s","sealedSeedTreeSha256":"%s"}\n' "$TASK_ID" "$actual_commit" "$actual_tree" "$actual_hash" > "$RUNNER_TEMP/v6-seed-receipts/$TASK_ID/seed-identity.json"
+      - name: Upload sanitized seed receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v6-seed-identity-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v6-seed-receipts/${{ matrix.task_id }}/seed-identity.json
+          if-no-files-found: ignore
+
+  prepare-dependency-cache:
+    name: Prepare measured dependency cache (${{ matrix.task_id }})
+    needs: qualify-seed-identity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - task_id: TASK-OSS-01
+          - task_id: TASK-OSS-03
+          - task_id: TASK-OSS-09
+    steps:
+      - name: Checkout benchmark contracts
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Set up Node runtime
+        if: matrix.task_id == 'TASK-OSS-01' || matrix.task_id == 'TASK-OSS-03'
+        uses: actions/setup-node@v4
+        with:
+          node-version: 26.3.0
+      - name: Set up Python runtime
+        if: matrix.task_id == 'TASK-OSS-09'
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.14
+      - name: Set up uv
+        if: matrix.task_id == 'TASK-OSS-09'
+        uses: astral-sh/setup-uv@v6
+        with:
+          version: 0.11.8
+      - name: Prepare cache and public runtime image
+        shell: bash
+        env:
+          TASK_ID: ${{ matrix.task_id }}
+        run: |
+          set -euo pipefail
+          export GIT_TERMINAL_PROMPT=0
+          task_contract="benchmarks/external-oss-v5/tasks/$TASK_ID/task-seed-identity.json"
+          cache_contract="benchmarks/external-oss-v5/dependency-cache/$TASK_ID/cache-contract.json"
+          values=$(node --input-type=module - "$task_contract" "$cache_contract" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const t = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+          const c = JSON.parse(readFileSync(process.argv[3], 'utf8'));
+          console.log([t.repository,t.upstreamBaseCommit,t.seedOverlayPath||'-',t.sealedSeedCommit,t.sealedSeedGitTree,t.sealedSeedTreeSha256,c.runtimeIdentityPolicy.containerReference].join('\t'));
+          NODE
+          )
+          IFS=$'\t' read -r repository upstream_base overlay expected_commit expected_tree expected_hash runtime_reference <<< "$values"
+          root="$RUNNER_TEMP/v6-prepare/$TASK_ID"
+          source_root="$root/upstream"
+          sealed_root="$root/sealed"
+          cache_root="$root/cache"
+          artifact_root="$RUNNER_TEMP/external-oss-v6-cache-artifacts/$TASK_ID"
+          mkdir -p "$sealed_root" "$cache_root" "$artifact_root"
+          git clone --no-checkout --filter=blob:none --no-tags "https://github.com/$repository.git" "$source_root"
+          git -C "$source_root" remote set-url --push origin no_push://disabled
+          git -C "$source_root" fetch --depth=1 --filter=blob:none --no-tags origin "$upstream_base"
+          test "$(git -C "$source_root" rev-parse "$upstream_base^{commit}")" = "$upstream_base"
+          git -C "$source_root" archive "$upstream_base" | tar -x -C "$sealed_root"
+          git init --quiet "$sealed_root"
+          git -C "$sealed_root" config user.name "GovernSeed Benchmark"
+          git -C "$sealed_root" config user.email benchmark@example.invalid
+          git -C "$sealed_root" add --all --force
+          if test "$overlay" != "-"; then git -C "$sealed_root" apply --index --include='.vscode/settings.json' --include='design/.DS_Store' "$GITHUB_WORKSPACE/$overlay"; git -C "$sealed_root" add --all --force; fi
+          GIT_AUTHOR_NAME="GovernSeed Benchmark" GIT_AUTHOR_EMAIL=benchmark@example.invalid GIT_COMMITTER_NAME="GovernSeed Benchmark" GIT_COMMITTER_EMAIL=benchmark@example.invalid GIT_AUTHOR_DATE=2026-08-02T00:00:00Z GIT_COMMITTER_DATE=2026-08-02T00:00:00Z git -C "$sealed_root" commit --quiet --message "benchmark seed"
+          actual_commit=$(git -C "$sealed_root" rev-parse HEAD)
+          actual_tree=$(git -C "$sealed_root" rev-parse HEAD^{tree})
+          actual_hash=$(node benchmarks/external-oss-v5/tests/seed-tree-hash.mjs "$sealed_root")
+          test "$actual_commit" = "$expected_commit"; test "$actual_tree" = "$expected_tree"; test "$actual_hash" = "$expected_hash"
+          cache_roots="$artifact_root/cache-roots.txt"
+          : > "$cache_roots"
+          case "$TASK_ID" in
+            TASK-OSS-01)
+              corepack enable; corepack prepare pnpm@10.6.2 --activate
+              ( cd "$sealed_root"; pnpm install --frozen-lockfile --ignore-scripts; pnpm --filter @immich/sdk run build )
+              test -z "$(git -C "$sealed_root" status --porcelain -- pnpm-lock.yaml)"
+              ( cd "$sealed_root/packages/cli"; ./node_modules/.bin/vitest --run src/commands/asset.spec.ts )
+              find "$sealed_root" -type d -name node_modules -prune -print | sed "s#^$sealed_root/##" | sort -u >> "$cache_roots"
+              printf '%s\n' packages/sdk/build >> "$cache_roots"
+              ;;
+            TASK-OSS-03)
+              ( cd "$sealed_root"; npm ci --no-audit --no-fund )
+              test -z "$(git -C "$sealed_root" status --porcelain -- package-lock.json)"
+              ( cd "$sealed_root"; env TEST_BACKEND=1 node --test --test-reporter=spec test/backend-test/test-status-page.js )
+              printf '%s\n' node_modules >> "$cache_roots"
+              ;;
+            TASK-OSS-09)
+              uv sync --group testing --directory "$sealed_root"
+              test -z "$(git -C "$sealed_root" status --porcelain -- uv.lock)"
+              export PAPERLESS_SECRET_KEY=synthetic-test-only-value PAPERLESS_DISABLE_DBHANDLER=true PAPERLESS_CACHE_BACKEND=django.core.cache.backends.locmem.LocMemCache PAPERLESS_CHANNELS_BACKEND=channels.layers.InMemoryChannelLayer
+              ( cd "$sealed_root"; .venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py )
+              printf '%s\n' .venv >> "$cache_roots"
+              ;;
+            *) exit 2 ;;
+          esac
+          sort -u "$cache_roots" -o "$cache_roots"
+          while IFS= read -r relative_root; do
+            test -n "$relative_root"; test -e "$sealed_root/$relative_root"
+            mkdir -p "$cache_root/$(dirname "$relative_root")"
+            cp -a "$sealed_root/$relative_root" "$cache_root/$relative_root"
+          done < "$cache_roots"
+          test -s "$cache_roots"
+          chmod -R a-w "$cache_root"
+          git -C "$sealed_root" archive --format=tar HEAD | gzip -n > "$artifact_root/seed.tgz"
+          docker pull "$runtime_reference"
+          runtime_tag="governseed-v6-runtime:$TASK_ID"
+          docker tag "$runtime_reference" "$runtime_tag"
+          docker save "$runtime_tag" | gzip -n > "$artifact_root/runtime-image.tgz"
+          tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --use-compress-program='gzip -n' -cf "$artifact_root/cache.tgz" -C "$cache_root" .
+          cache_sha=$(sha256sum "$artifact_root/cache.tgz" | awk '{print $1}')
+          seed_sha=$(sha256sum "$artifact_root/seed.tgz" | awk '{print $1}')
+          image_sha=$(sha256sum "$artifact_root/runtime-image.tgz" | awk '{print $1}')
+          node --input-type=module - "$artifact_root/cache-manifest.json" <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const out = process.argv[2]; const id = process.env.TASK_ID;
+          const c = JSON.parse(readFileSync(`benchmarks/external-oss-v5/dependency-cache/${id}/cache-contract.json`, 'utf8'));
+          writeFileSync(out, JSON.stringify({schemaVersion:1,benchmarkId:'GS-OSS-2026-08-02-V6',evidenceClass:'external-observational',taskId:id,repository:c.repository,upstreamBaseCommit:c.upstreamBaseCommit,sealedSeedCommit:c.sealedSeedCommit,sealedSeedTreeSha256:c.sealedSeedTreeSha256,taskSeedContractSha256:c.taskSeedContractSha256,cacheSha256:process.env.CACHE_SHA,seedArchiveSha256:process.env.SEED_SHA,runtimeImageArchiveSha256:process.env.IMAGE_SHA,dependencyRoots:c.dependencyRoots,requiredCacheEntries:c.requiredCacheEntries,preparationNetworkUsed:true,measuredNetworkUsed:false,lockfileModified:false,credentialIncluded:false,fallbackDownload:false,cacheReadonlyByMount:true}, null, 2)+'\n');
+          NODE
+          CACHE_SHA="$cache_sha" SEED_SHA="$seed_sha" IMAGE_SHA="$image_sha" node --input-type=module - "$artifact_root/cache-manifest.json" <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const p=process.argv[2]; const x=JSON.parse(readFileSync(p,'utf8')); x.cacheSha256=process.env.CACHE_SHA; x.seedArchiveSha256=process.env.SEED_SHA; x.runtimeImageArchiveSha256=process.env.IMAGE_SHA; writeFileSync(p,JSON.stringify(x,null,2)+'\n');
+          NODE
+          printf '{"status":"READY","taskId":"%s","cacheSha256":"%s","preparationNetworkUsed":true,"measuredNetworkUsed":false,"credentialIncluded":false,"fallbackDownload":false}\n' "$TASK_ID" "$cache_sha" > "$artifact_root/preparation-result.json"
+      - name: Upload prepared cache artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v6-dependency-cache-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/external-oss-v6-cache-artifacts/${{ matrix.task_id }}/
+          if-no-files-found: ignore
+
+  diagnose-offline-permissions:
+    name: Diagnose offline permissions (${{ matrix.task_id }})
+    needs: prepare-dependency-cache
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - task_id: TASK-OSS-01
+          - task_id: TASK-OSS-03
+          - task_id: TASK-OSS-09
+    steps:
+      - name: Checkout benchmark contracts
+        uses: actions/checkout@v4
+      - name: Download prepared cache
+        uses: actions/download-artifact@v4
+        with:
+          name: external-oss-v6-dependency-cache-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v6-input/${{ matrix.task_id }}
+      - name: Run sanitized host-boundary diagnosis
+        shell: bash
+        env:
+          TASK_ID: ${{ matrix.task_id }}
+        run: |
+          set -euo pipefail
+          input="$RUNNER_TEMP/v6-input/$TASK_ID"
+          out="$RUNNER_TEMP/v6-diagnosis/$TASK_ID"
+          mkdir -p "$out" "$RUNNER_TEMP/v6-negative/$TASK_ID"
+          printf '{"schemaVersion":1,"status":"STARTED","taskId":"%s"}\n' "$TASK_ID" > "$out/diagnostics.json"
+          failure_code=OFFLINE_PERMISSION_CAUSE_UNKNOWN
+          trap 'rc=$?; if test "$rc" -ne 0; then printf "{\"schemaVersion\":1,\"status\":\"FAILURE\",\"taskId\":\"%s\",\"code\":\"%s\"}\n" "$TASK_ID" "$failure_code" > "$out/diagnostics.json"; fi; exit "$rc"' EXIT
+          case "$TASK_ID" in TASK-OSS-01|TASK-OSS-03) required_path=node_modules;; TASK-OSS-09) required_path=.venv/bin/python;; *) exit 2;; esac
+          test -f "$input/cache.tgz"
+          cache_root="$RUNNER_TEMP/v6-diagnosis-cache/$TASK_ID"
+          negative_cache="$RUNNER_TEMP/v6-negative/$TASK_ID"
+          mkdir -p "$cache_root" "$negative_cache"
+          tar -xzf "$input/cache.tgz" -C "$cache_root"
+          chmod -R a-w "$cache_root"
+          cp -a "$cache_root/." "$negative_cache/"
+          chmod -R u+rwX "$negative_cache"
+          rm -rf "$negative_cache/$required_path"
+          test ! -e "$negative_cache/$required_path"
+          chmod -R a-w "$negative_cache"
+          printf '{"schemaVersion":1,"status":"PASS","taskId":"%s","actor":"GitHub Actions host runner shell","operation":"create/cache; chmod source cache read-only; cp -a into disposable negative cache; chmod negative tree owner-writable; rm required path; chmod negative tree read-only","requiredPath":"%s","negativeCacheReadonlyAfterRemoval":true,"docker":"EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE"}\n' "$TASK_ID" "$required_path" > "$out/diagnostics.json"
+      - name: Upload sanitized diagnosis
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v6-diagnosis-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v6-diagnosis/${{ matrix.task_id }}/diagnostics.json
+          if-no-files-found: ignore
+
+  verify-dependency-cache-offline:
+    name: Verify dependency cache offline (${{ matrix.task_id }})
+    needs: diagnose-offline-permissions
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - task_id: TASK-OSS-01
+          - task_id: TASK-OSS-03
+          - task_id: TASK-OSS-09
+    steps:
+      - name: Checkout benchmark contracts
+        uses: actions/checkout@v4
+      - name: Download prepared cache
+        uses: actions/download-artifact@v4
+        with:
+          name: external-oss-v6-dependency-cache-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v6-input/${{ matrix.task_id }}
+      - name: Run offline runtime integration and negative smoke
+        shell: bash
+        env:
+          TASK_ID: ${{ matrix.task_id }}
+        run: |
+          set -euo pipefail
+          input="$RUNNER_TEMP/v6-input/$TASK_ID"
+          root="$RUNNER_TEMP/v6-runtime/$TASK_ID"
+          workspace="$root/workspace"; cache_root="$root/cache"; negative_cache="$root/negative-cache"; harness="$root/harness"; home_dir="$root/home"; tmp_dir="$root/tmp"; out="$RUNNER_TEMP/v6-receipts/$TASK_ID"
+          mkdir -p "$workspace" "$cache_root" "$negative_cache" "$harness" "$home_dir" "$tmp_dir" "$out"
+          printf '{"schemaVersion":1,"status":"STARTED","taskId":"%s"}\n' "$TASK_ID" > "$out/diagnostics.json"
+          failure_code=OFFLINE_PERMISSION_CAUSE_UNKNOWN
+          extract_failure_code() {
+            for diagnostic in "$root/positive-output" "$root/negative-output"; do
+              if test -f "$diagnostic"; then
+                grep -Eo 'WORKSPACE_TRAVERSE_DENIED|HARNESS_EXECUTION_DENIED|CACHE_READ_DENIED|RUNTIME_BINARY_EXECUTION_DENIED|WORKING_DIRECTORY_DENIED|HOME_NOT_WRITABLE|TMP_NOT_WRITABLE|DEPENDENCY_CACHE_INCOMPLETE|OFFLINE_PERMISSION_CAUSE_UNKNOWN' "$diagnostic" | tail -n 1 && return 0
+              fi
+            done
+            return 1
+          }
+          trap 'rc=$?; if test "$rc" -ne 0; then diagnostic_code=$(extract_failure_code || true); test -n "$diagnostic_code" || diagnostic_code="$failure_code"; printf "{\"schemaVersion\":1,\"status\":\"FAILURE\",\"taskId\":\"%s\",\"code\":\"%s\"}\n" "$TASK_ID" "$diagnostic_code" > "$out/diagnostics.json"; fi; exit "$rc"' EXIT
+          case "$TASK_ID" in TASK-OSS-01) required_path=node_modules;; TASK-OSS-03) required_path=node_modules;; TASK-OSS-09) required_path=.venv/bin/python;; *) exit 2;; esac
+          tar -xzf "$input/seed.tgz" -C "$workspace"
+          tar -xzf "$input/cache.tgz" -C "$cache_root"
+          chmod -R a-w "$cache_root"
+          cp -a "$cache_root/." "$negative_cache/"
+          chmod -R u+rwX "$negative_cache"
+          rm -rf "$negative_cache/$required_path"
+          test ! -e "$negative_cache/$required_path"
+          chmod -R a-w "$negative_cache"
+          cache_roots="$input/cache-roots.txt"
+          while IFS= read -r relative_root; do
+            test -n "$relative_root"; test -e "$cache_root/$relative_root"
+            mkdir -p "$workspace/$(dirname "$relative_root")"
+            ln -s "/cache/$relative_root" "$workspace/$relative_root"
+          done < "$cache_roots"
+          sudo chown -R 65532:65532 "$workspace"
+          sudo chmod -R u+rwX,go-rwx "$workspace"
+          sudo install -d -o 65532 -g 65532 -m 0700 "$home_dir" "$tmp_dir"
+          cat > "$harness/offline-smoke.sh" <<'BASH'
+          #!/usr/bin/env bash
+          set -u
+          fail() { echo "$1"; exit 1; }
+          test "$(id -u)" = 65532 || fail OFFLINE_PERMISSION_CAUSE_UNKNOWN
+          test "$(awk '/^CapEff:/{print $2}' /proc/self/status)" = 0000000000000000 || fail OFFLINE_PERMISSION_CAUSE_UNKNOWN
+          test "$(awk '/^NoNewPrivs:/{print $2}' /proc/self/status)" = 1 || fail OFFLINE_PERMISSION_CAUSE_UNKNOWN
+          cd /workspace 2>/dev/null || fail WORKSPACE_TRAVERSE_DENIED
+          test -w /workspace || fail WORKSPACE_TRAVERSE_DENIED
+          touch /workspace/.v6-write-test 2>/dev/null || fail WORKSPACE_TRAVERSE_DENIED
+          rm -f /workspace/.v6-write-test
+          test -w /home/benchmark || fail HOME_NOT_WRITABLE
+          touch /home/benchmark/.v6-home-test 2>/dev/null || fail HOME_NOT_WRITABLE
+          rm -f /home/benchmark/.v6-home-test
+          test -w /tmp || fail TMP_NOT_WRITABLE
+          touch /tmp/.v6-tmp-test 2>/dev/null || fail TMP_NOT_WRITABLE
+          rm -f /tmp/.v6-tmp-test
+          test -e "/cache/$2" || fail DEPENDENCY_CACHE_INCOMPLETE
+          test -r "/cache/$2" || fail DEPENDENCY_CACHE_INCOMPLETE
+          test -x "/cache/$2" || fail RUNTIME_BINARY_EXECUTION_DENIED
+          if touch /cache/.v6-cache-write-test 2>/dev/null; then fail CACHE_READ_DENIED; fi
+          case "$1" in
+            TASK-OSS-01) cd /workspace/packages/cli 2>/dev/null || fail WORKING_DIRECTORY_DENIED; ./node_modules/.bin/vitest --run src/commands/asset.spec.ts 2>/dev/null || fail RUNTIME_BINARY_EXECUTION_DENIED ;;
+            TASK-OSS-03) cd /workspace 2>/dev/null || fail WORKING_DIRECTORY_DENIED; TEST_BACKEND=1 node --test --test-reporter=spec test/backend-test/test-status-page.js 2>/dev/null || fail RUNTIME_BINARY_EXECUTION_DENIED ;;
+            TASK-OSS-09) cd /workspace 2>/dev/null || fail WORKING_DIRECTORY_DENIED; PAPERLESS_SECRET_KEY=synthetic-test-only-value PAPERLESS_DISABLE_DBHANDLER=true PAPERLESS_CACHE_BACKEND=django.core.cache.backends.locmem.LocMemCache PAPERLESS_CHANNELS_BACKEND=channels.layers.InMemoryChannelLayer /cache/.venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py 2>/dev/null || fail RUNTIME_BINARY_EXECUTION_DENIED ;;
+            *) fail OFFLINE_PERMISSION_CAUSE_UNKNOWN ;;
+          esac
+          echo PASS
+          BASH
+          chmod 0555 "$harness/offline-smoke.sh"
+          test -x "$harness/offline-smoke.sh" || { echo HARNESS_EXECUTION_DENIED; exit 1; }
+          docker load --input "$input/runtime-image.tgz" >/dev/null
+          image="governseed-v6-runtime:$TASK_ID"
+          docker create --name "v6-${TASK_ID,,}-positive" --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true --user 65532:65532 --pids-limit 256 --cpus 4 --memory 15g --mount "type=bind,src=$workspace,dst=/workspace" --mount "type=bind,src=$cache_root,dst=/cache,readonly" --mount "type=bind,src=$harness,dst=/harness,readonly" --mount "type=bind,src=$home_dir,dst=/home/benchmark" --mount "type=bind,src=$tmp_dir,dst=/tmp" "$image" /harness/offline-smoke.sh "$TASK_ID" "$required_path" > "$out/positive-id"
+          positive_id=$(tail -n 1 "$out/positive-id")
+          test "$(docker inspect "$positive_id" --format '{{.HostConfig.NetworkMode}}')" = none
+          test "$(docker inspect "$positive_id" --format '{{.HostConfig.ReadonlyRootfs}}')" = true
+          test "$(docker inspect "$positive_id" --format '{{json .HostConfig.CapDrop}}')" = '["ALL"]'
+          docker inspect "$positive_id" --format '{{json .HostConfig.SecurityOpt}}' | grep -Fq no-new-privileges:true
+          test "$(docker inspect "$positive_id" --format '{{.Config.User}}')" = 65532:65532
+          docker start -a "$positive_id" > "$root/positive-output" 2>&1
+          docker rm -f "$positive_id" >/dev/null
+          docker create --name "v6-${TASK_ID,,}-negative" --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true --user 65532:65532 --pids-limit 256 --cpus 4 --memory 15g --mount "type=bind,src=$workspace,dst=/workspace" --mount "type=bind,src=$negative_cache,dst=/cache,readonly" --mount "type=bind,src=$harness,dst=/harness,readonly" --mount "type=bind,src=$home_dir,dst=/home/benchmark" --mount "type=bind,src=$tmp_dir,dst=/tmp" "$image" /harness/offline-smoke.sh "$TASK_ID" "$required_path" > "$out/negative-id"
+          negative_id=$(tail -n 1 "$out/negative-id")
+          set +e; docker start -a "$negative_id" > "$root/negative-output" 2>&1; negative_rc=$?; set -e
+          docker rm -f "$negative_id" >/dev/null
+          grep -Fq DEPENDENCY_CACHE_INCOMPLETE "$root/negative-output"
+          test "$negative_rc" -eq 1
+          printf '{"schemaVersion":1,"status":"PASS","taskId":"%s","positiveSmoke":"PASS","negativeSmoke":"DEPENDENCY_CACHE_INCOMPLETE","docker":"network none; readonly rootfs; readonly cache; non-root 65532:65532"}\n' "$TASK_ID" > "$out/diagnostics.json"
+          node --input-type=module - "$out/cache-receipt.json" <<'NODE'
+          import { writeFileSync } from 'node:fs';
+          writeFileSync(process.argv[2], JSON.stringify({schemaVersion:1,benchmarkId:'GS-OSS-2026-08-02-V6',taskId:process.env.TASK_ID,status:'READY',positiveSmoke:'PASS',negativeSmoke:'DEPENDENCY_CACHE_INCOMPLETE',network:'none',readonlyRootfs:true,cacheMount:'readonly',user:'65532:65532',capDrop:['ALL'],noNewPrivileges:true,writableMounts:['/workspace','/tmp','/home/benchmark'],credentials:false,hiddenSources:false},null,2)+'\n');
+          NODE
+      - name: Upload sanitized offline receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v6-receipt-${{ matrix.task_id }}
+          path: |
+            ${{ runner.temp }}/v6-receipts/${{ matrix.task_id }}/cache-receipt.json
+            ${{ runner.temp }}/v6-receipts/${{ matrix.task_id }}/diagnostics.json
+          if-no-files-found: ignore
+
+  aggregate-cache-qualification:
+    name: Aggregate V6 cache qualification
+    needs: verify-dependency-cache-offline
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Download sanitized receipts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: external-oss-v6-receipt-TASK-OSS-*
+          path: ${{ runner.temp }}/v6-receipts
+          merge-multiple: true
+      - name: Aggregate exactly three measured caches
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module - "${RUNNER_TEMP}/v6-qualification.json" <<'NODE'
+          import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+          import path from 'node:path';
+          const root=path.join(process.env.RUNNER_TEMP,'v6-receipts');
+          const files=readdirSync(root,{recursive:true}).filter(x=>String(x).endsWith('cache-receipt.json')).map(x=>path.join(root,x));
+          const receipts=files.map(x=>JSON.parse(readFileSync(x,'utf8'))).sort((a,b)=>a.taskId.localeCompare(b.taskId));
+          const expected=['TASK-OSS-01','TASK-OSS-03','TASK-OSS-09'];
+          if (receipts.length!==3 || receipts.map(x=>x.taskId).join(',')!==expected.join(',') || receipts.some(x=>x.status!=='READY'||x.negativeSmoke!=='DEPENDENCY_CACHE_INCOMPLETE')) process.exit(1);
+          writeFileSync(process.argv[2],JSON.stringify({schemaVersion:1,benchmarkId:'GS-OSS-2026-08-02-V6',status:'READY',dependencyCacheQualification:'READY',tasks:expected,offlineSmoke:'3/3 PASS',negativeSmoke:'3/3 DEPENDENCY_CACHE_INCOMPLETE',claimBoundary:'G1 measured cache qualification only; no credentials, Codex, lock, Pilot, baseline/governed, scoring, or acceptance claim.'},null,2)+'\n');
+          NODE
+      - name: Upload aggregate qualification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v6-aggregate-qualification
+          path: ${{ runner.temp }}/v6-qualification.json
+          if-no-files-found: ignore

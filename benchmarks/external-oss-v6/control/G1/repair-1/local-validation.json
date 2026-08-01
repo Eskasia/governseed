@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "gate": "G1",
+  "repairCycle": 1,
+  "baseCommit": "7dcd3af3a17c3ba85355e4c7748cf3a6f49aa3c0",
+  "branch": "benchmark/v6-offline-permission-fix-r1",
+  "status": "PASS_LOCAL_STATIC",
+  "checks": {
+    "v6Contract": "PASS",
+    "v6Shell": "PASS",
+    "v6PermissionRegression": "PASS",
+    "v6JsonParse": "PASS",
+    "v6YamlParse": "PASS",
+    "bashSyntax": "PASS",
+    "npmRunCheck": "PASS",
+    "npmRunValidate": "PASS",
+    "npmRunTestGovernance": "PASS",
+    "npmRunTestPrivacy": "PASS",
+    "npmRunTestExperimental": "PASS",
+    "npmRunCi": "PASS",
+    "lockfile": "NOT_APPLICABLE_NO_LOCKFILE",
+    "v5Immutability": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "regressionCoverage": {
+    "sourceCacheReadonlyBeforeArchive": true,
+    "negativeTreeOwnerWritableBeforeRemoval": true,
+    "negativeTreeReadonlyAfterRemoval": true,
+    "deniedRemovalFailsClosed": true,
+    "taskIds": ["TASK-OSS-01", "TASK-OSS-03", "TASK-OSS-09"],
+    "unreadableCacheCode": "DEPENDENCY_CACHE_INCOMPLETE",
+    "specificDiagnosticCodePreserved": true
+  },
+  "docker": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+  "runtimeIntegration": "NOT_RUN_LOCALLY",
+  "claimBoundary": "Repair-1 local/static evidence only; no Docker runtime, cache readiness, offline smoke, credentials, Codex, hidden oracle, Pilot, scoring, merge, or dispatch claim. Luna execution layer was unavailable for this repair because of account usage limit; independent Sol review remains required."
+}
