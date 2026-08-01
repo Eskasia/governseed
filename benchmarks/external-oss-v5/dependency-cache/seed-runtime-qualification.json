@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "runId": 30708399340,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30708399340",
+  "workflowName": "External OSS V5 dependency cache",
+  "event": "workflow_dispatch",
+  "headBranch": "main",
+  "headSha": "b83900394b1d525dedb32581e219d31d235db349",
+  "conclusion": "success",
+  "taskJobs": {
+    "TASK-OSS-01": "PASS",
+    "TASK-OSS-03": "PASS",
+    "TASK-OSS-09": "PASS"
+  },
+  "qualification": "SEED_RUNTIME_ONLY",
+  "dependencyCacheQualification": "NOT_RUN",
+  "claimBoundary": "This run proves only exact seed reconstruction. It does not prove dependency cache preparation, cache hashes, offline smoke, negative cache miss, or a READY cache receipt."
+}

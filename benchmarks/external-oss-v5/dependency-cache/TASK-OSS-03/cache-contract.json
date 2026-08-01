@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-03",
+  "repository": "louislam/uptime-kuma",
+  "upstreamBaseCommit": "efa194a6df72572e5245a25794bdad7ad34bea2d",
+  "sealedSeedCommit": "672d8d324fde3a0d874ee752ab8e1ef4751972bb",
+  "sealedSeedTreeSha256": "5fdbf067da484e3778a1345297a33d984779be73c020ded93198a1c84f5a07ca",
+  "taskSeedContractSha256": "6ca94ddef9e6f2e8a7acaa5da7733aacddd426e6313b4bf800d8cd68a35ead15",
+  "taskFactsPath": "benchmarks/external-oss-v5/tasks/TASK-OSS-03/task-facts.json",
+  "runtimeIdentityPolicy": {
+    "node": "v26.3.0",
+    "npm": "11.16.0",
+    "containerReference": "node:26.3.0-bookworm",
+    "resolvedContainerDigest": "CAPTURED_DURING_PREPARATION"
+  },
+  "installCommand": ["npm", "ci", "--no-audit", "--no-fund"],
+  "buildCommand": [],
+  "publicTestCommand": ["env", "TEST_BACKEND=1", "node", "--test", "--test-reporter=spec", "test/backend-test/test-status-page.js"],
+  "workingDirectory": ".",
+  "dependencyRoots": ["node_modules"],
+  "requiredCacheEntries": ["node_modules"],
+  "cacheFormat": "tar.gz",
+  "cacheMutation": false,
+  "networkPolicy": {
+    "preparation": "public-network-only",
+    "measured": "none",
+    "fallbackDownload": false
+  },
+  "forbiddenServices": ["database", "new-monitor-integrations", "dependency-update", "translation"],
+  "status": "NOT_RUN"
+}
