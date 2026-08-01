@@ -54,10 +54,21 @@ require(prepare.includes('cache.tgz'), 'cache archive');
 require(prepare.includes('runtime-image.tgz'), 'runtime image archive');
 require(prepare.includes('preparationNetworkUsed'), 'preparation provenance');
 require(prepare.includes('measuredNetworkUsed'), 'measured provenance');
-require(!prepare.includes('chmod -R a-w "$cache"'), 'actual cache is not chmod before host mutation');
-require(diagnose.includes('cp -a "$cache/." "$negative/"'), 'diagnose copies disposable negative tree');
-require(diagnose.includes('rm -rf "$negative/$required_path"'), 'diagnose removes required path');
-require(diagnose.includes('chmod -R a-w "$negative"'), 'diagnose restores negative tree readonly');
+require(prepare.includes('chmod -R a-w "$cache_root"'), 'source cache is made readonly before archive');
+const requireOrder = (block, needles, label) => {
+  let previous = -1;
+  for (const needle of needles) {
+    const position = block.indexOf(needle);
+    require(position > previous, `${label} order missing or invalid: ${needle}`);
+    previous = position;
+  }
+};
+for (const [label, block] of [['diagnose', diagnose], ['offline', offline]]) {
+  requireOrder(block, ['cp -a "$cache_root/." "$negative_cache/"', 'chmod -R u+rwX "$negative_cache"', 'rm -rf "$negative_cache/$required_path"', 'chmod -R a-w "$negative_cache"'], `${label} negative-cache repair`);
+}
+require(diagnose.includes('cp -a "$cache_root/." "$negative_cache/"'), 'diagnose copies disposable negative tree');
+require(diagnose.includes('rm -rf "$negative_cache/$required_path"'), 'diagnose removes required path');
+require(diagnose.includes('chmod -R a-w "$negative_cache"'), 'diagnose restores negative tree readonly');
 require(!diagnose.includes('chmod 0777'), 'no chmod 777');
 for (const code of ['WORKSPACE_TRAVERSE_DENIED','HARNESS_EXECUTION_DENIED','CACHE_READ_DENIED','RUNTIME_BINARY_EXECUTION_DENIED','WORKING_DIRECTORY_DENIED','HOME_NOT_WRITABLE','TMP_NOT_WRITABLE','DEPENDENCY_CACHE_INCOMPLETE','OFFLINE_PERMISSION_CAUSE_UNKNOWN']) {
   require(workflow.includes(code), `missing structured code ${code}`);
@@ -73,6 +84,9 @@ require(offline.includes('dst=/harness,readonly'), 'readonly harness mount');
 require(offline.includes('docker inspect'), 'runtime integration inspection');
 require(offline.includes('negative_cache'), 'negative runtime smoke');
 require(diagnose.includes('diagnostics.json'), 'sanitized always diagnostics');
+require(offline.includes('extract_failure_code'), 'specific failure code preservation');
+require(offline.includes('diagnostic_code="$failure_code"'), 'bounded diagnostic fallback');
+require(offline.includes('test -r "/cache/$2" || fail DEPENDENCY_CACHE_INCOMPLETE'), 'unreadable cache fails incomplete');
 require(aggregate.includes('READY'), 'aggregate readiness gate');
 require(aggregate.includes('TASK-OSS-01') && aggregate.includes('TASK-OSS-03') && aggregate.includes('TASK-OSS-09'), 'aggregate fixed tasks');
 require(!offline.match(/\b(?:curl|wget|npm|pnpm|uv)\s+(?:install|ci|sync)/iu), 'no offline dependency mutation');

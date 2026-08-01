@@ -182,6 +182,7 @@ jobs:
             cp -a "$sealed_root/$relative_root" "$cache_root/$relative_root"
           done < "$cache_roots"
           test -s "$cache_roots"
+          chmod -R a-w "$cache_root"
           git -C "$sealed_root" archive --format=tar HEAD | gzip -n > "$artifact_root/seed.tgz"
           docker pull "$runtime_reference"
           runtime_tag="governseed-v6-runtime:$TASK_ID"
@@ -240,18 +241,21 @@ jobs:
           out="$RUNNER_TEMP/v6-diagnosis/$TASK_ID"
           mkdir -p "$out" "$RUNNER_TEMP/v6-negative/$TASK_ID"
           printf '{"schemaVersion":1,"status":"STARTED","taskId":"%s"}\n' "$TASK_ID" > "$out/diagnostics.json"
-          trap 'rc=$?; if test "$rc" -ne 0; then printf "{\"schemaVersion\":1,\"status\":\"FAILURE\",\"taskId\":\"%s\",\"code\":\"OFFLINE_PERMISSION_CAUSE_UNKNOWN\"}\n" "$TASK_ID" > "$out/diagnostics.json"; fi; exit "$rc"' EXIT
+          failure_code=OFFLINE_PERMISSION_CAUSE_UNKNOWN
+          trap 'rc=$?; if test "$rc" -ne 0; then printf "{\"schemaVersion\":1,\"status\":\"FAILURE\",\"taskId\":\"%s\",\"code\":\"%s\"}\n" "$TASK_ID" "$failure_code" > "$out/diagnostics.json"; fi; exit "$rc"' EXIT
           case "$TASK_ID" in TASK-OSS-01|TASK-OSS-03) required_path=node_modules;; TASK-OSS-09) required_path=.venv/bin/python;; *) exit 2;; esac
           test -f "$input/cache.tgz"
-          cache="$RUNNER_TEMP/v6-diagnosis-cache/$TASK_ID"
-          negative="$RUNNER_TEMP/v6-negative/$TASK_ID"
-          mkdir -p "$cache" "$negative"
-          tar -xzf "$input/cache.tgz" -C "$cache"
-          cp -a "$cache/." "$negative/"
-          rm -rf "$negative/$required_path"
-          test ! -e "$negative/$required_path"
-          chmod -R a-w "$negative"
-          printf '{"schemaVersion":1,"status":"PASS","taskId":"%s","actor":"GitHub Actions host runner shell","operation":"create/cache; cp -a into disposable negative cache; rm required path; chmod negative tree read-only","requiredPath":"%s","negativeCacheReadonlyAfterRemoval":true,"docker":"EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE"}\n' "$TASK_ID" "$required_path" > "$out/diagnostics.json"
+          cache_root="$RUNNER_TEMP/v6-diagnosis-cache/$TASK_ID"
+          negative_cache="$RUNNER_TEMP/v6-negative/$TASK_ID"
+          mkdir -p "$cache_root" "$negative_cache"
+          tar -xzf "$input/cache.tgz" -C "$cache_root"
+          chmod -R a-w "$cache_root"
+          cp -a "$cache_root/." "$negative_cache/"
+          chmod -R u+rwX "$negative_cache"
+          rm -rf "$negative_cache/$required_path"
+          test ! -e "$negative_cache/$required_path"
+          chmod -R a-w "$negative_cache"
+          printf '{"schemaVersion":1,"status":"PASS","taskId":"%s","actor":"GitHub Actions host runner shell","operation":"create/cache; chmod source cache read-only; cp -a into disposable negative cache; chmod negative tree owner-writable; rm required path; chmod negative tree read-only","requiredPath":"%s","negativeCacheReadonlyAfterRemoval":true,"docker":"EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE"}\n' "$TASK_ID" "$required_path" > "$out/diagnostics.json"
       - name: Upload sanitized diagnosis
         if: always()
         uses: actions/upload-artifact@v4
@@ -288,20 +292,31 @@ jobs:
           set -euo pipefail
           input="$RUNNER_TEMP/v6-input/$TASK_ID"
           root="$RUNNER_TEMP/v6-runtime/$TASK_ID"
-          workspace="$root/workspace"; cache="$root/cache"; negative_cache="$root/negative-cache"; harness="$root/harness"; home_dir="$root/home"; tmp_dir="$root/tmp"; out="$RUNNER_TEMP/v6-receipts/$TASK_ID"
-          mkdir -p "$workspace" "$cache" "$negative_cache" "$harness" "$home_dir" "$tmp_dir" "$out"
+          workspace="$root/workspace"; cache_root="$root/cache"; negative_cache="$root/negative-cache"; harness="$root/harness"; home_dir="$root/home"; tmp_dir="$root/tmp"; out="$RUNNER_TEMP/v6-receipts/$TASK_ID"
+          mkdir -p "$workspace" "$cache_root" "$negative_cache" "$harness" "$home_dir" "$tmp_dir" "$out"
           printf '{"schemaVersion":1,"status":"STARTED","taskId":"%s"}\n' "$TASK_ID" > "$out/diagnostics.json"
-          trap 'rc=$?; if test "$rc" -ne 0; then printf "{\"schemaVersion\":1,\"status\":\"FAILURE\",\"taskId\":\"%s\",\"code\":\"OFFLINE_PERMISSION_CAUSE_UNKNOWN\"}\n" "$TASK_ID" > "$out/diagnostics.json"; fi; exit "$rc"' EXIT
+          failure_code=OFFLINE_PERMISSION_CAUSE_UNKNOWN
+          extract_failure_code() {
+            for diagnostic in "$root/positive-output" "$root/negative-output"; do
+              if test -f "$diagnostic"; then
+                grep -Eo 'WORKSPACE_TRAVERSE_DENIED|HARNESS_EXECUTION_DENIED|CACHE_READ_DENIED|RUNTIME_BINARY_EXECUTION_DENIED|WORKING_DIRECTORY_DENIED|HOME_NOT_WRITABLE|TMP_NOT_WRITABLE|DEPENDENCY_CACHE_INCOMPLETE|OFFLINE_PERMISSION_CAUSE_UNKNOWN' "$diagnostic" | tail -n 1 && return 0
+              fi
+            done
+            return 1
+          }
+          trap 'rc=$?; if test "$rc" -ne 0; then diagnostic_code=$(extract_failure_code || true); test -n "$diagnostic_code" || diagnostic_code="$failure_code"; printf "{\"schemaVersion\":1,\"status\":\"FAILURE\",\"taskId\":\"%s\",\"code\":\"%s\"}\n" "$TASK_ID" "$diagnostic_code" > "$out/diagnostics.json"; fi; exit "$rc"' EXIT
           case "$TASK_ID" in TASK-OSS-01) required_path=node_modules;; TASK-OSS-03) required_path=node_modules;; TASK-OSS-09) required_path=.venv/bin/python;; *) exit 2;; esac
           tar -xzf "$input/seed.tgz" -C "$workspace"
-          tar -xzf "$input/cache.tgz" -C "$cache"
-          cp -a "$cache/." "$negative_cache/"
+          tar -xzf "$input/cache.tgz" -C "$cache_root"
+          chmod -R a-w "$cache_root"
+          cp -a "$cache_root/." "$negative_cache/"
+          chmod -R u+rwX "$negative_cache"
           rm -rf "$negative_cache/$required_path"
           test ! -e "$negative_cache/$required_path"
           chmod -R a-w "$negative_cache"
           cache_roots="$input/cache-roots.txt"
           while IFS= read -r relative_root; do
-            test -n "$relative_root"; test -e "$cache/$relative_root"
+            test -n "$relative_root"; test -e "$cache_root/$relative_root"
             mkdir -p "$workspace/$(dirname "$relative_root")"
             ln -s "/cache/$relative_root" "$workspace/$relative_root"
           done < "$cache_roots"
@@ -326,7 +341,7 @@ jobs:
           touch /tmp/.v6-tmp-test 2>/dev/null || fail TMP_NOT_WRITABLE
           rm -f /tmp/.v6-tmp-test
           test -e "/cache/$2" || fail DEPENDENCY_CACHE_INCOMPLETE
-          test -r "/cache/$2" || fail CACHE_READ_DENIED
+          test -r "/cache/$2" || fail DEPENDENCY_CACHE_INCOMPLETE
           test -x "/cache/$2" || fail RUNTIME_BINARY_EXECUTION_DENIED
           if touch /cache/.v6-cache-write-test 2>/dev/null; then fail CACHE_READ_DENIED; fi
           case "$1" in
@@ -341,7 +356,7 @@ jobs:
           test -x "$harness/offline-smoke.sh" || { echo HARNESS_EXECUTION_DENIED; exit 1; }
           docker load --input "$input/runtime-image.tgz" >/dev/null
           image="governseed-v6-runtime:$TASK_ID"
-          docker create --name "v6-${TASK_ID,,}-positive" --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true --user 65532:65532 --pids-limit 256 --cpus 4 --memory 15g --mount "type=bind,src=$workspace,dst=/workspace" --mount "type=bind,src=$cache,dst=/cache,readonly" --mount "type=bind,src=$harness,dst=/harness,readonly" --mount "type=bind,src=$home_dir,dst=/home/benchmark" --mount "type=bind,src=$tmp_dir,dst=/tmp" "$image" /harness/offline-smoke.sh "$TASK_ID" "$required_path" > "$out/positive-id"
+          docker create --name "v6-${TASK_ID,,}-positive" --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true --user 65532:65532 --pids-limit 256 --cpus 4 --memory 15g --mount "type=bind,src=$workspace,dst=/workspace" --mount "type=bind,src=$cache_root,dst=/cache,readonly" --mount "type=bind,src=$harness,dst=/harness,readonly" --mount "type=bind,src=$home_dir,dst=/home/benchmark" --mount "type=bind,src=$tmp_dir,dst=/tmp" "$image" /harness/offline-smoke.sh "$TASK_ID" "$required_path" > "$out/positive-id"
           positive_id=$(tail -n 1 "$out/positive-id")
           test "$(docker inspect "$positive_id" --format '{{.HostConfig.NetworkMode}}')" = none
           test "$(docker inspect "$positive_id" --format '{{.HostConfig.ReadonlyRootfs}}')" = true
