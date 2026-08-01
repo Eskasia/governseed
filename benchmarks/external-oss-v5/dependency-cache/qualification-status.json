@@ -7,8 +7,14 @@
   "staticQualification": "PASS",
   "v4InheritedStatus": "BLOCKED",
   "v4FailureEvidence": "benchmarks/external-oss-v4/dependency-cache/attempt-1-failure-summary.json",
+  "seedRuntimeQualificationRun": 30708399340,
+  "dependencyCacheQualification": "NOT_RUN",
   "v5Dispatch": "NOT_RUN_BY_SCOPE",
+  "preparationJobs": "NOT_RUN_BY_SCOPE",
   "cacheArchives": "NOT_RUN",
+  "offlineJobs": "NOT_RUN_BY_SCOPE",
   "offlineContainer": "NOT_RUN",
+  "overallReady": false,
+  "cacheReceipts": "NOT_RUN",
   "claimBoundary": "No V5 dependency cache was dispatched or measured in this phase."
 }

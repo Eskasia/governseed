@@ -1,0 +1,39 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-09",
+  "repository": "paperless-ngx/paperless-ngx",
+  "upstreamBaseCommit": "fb3816486cf9fac6bcc23a82200f632a6f1b6ce8",
+  "sealedSeedCommit": "17562a35c7b3ebf87e0c960306af6de39c79248b",
+  "sealedSeedTreeSha256": "64d046e9abad54f4f10d2e489d4385e5ca6df1e0d5b8d67ecf48ad560bf4ad42",
+  "taskSeedContractSha256": "9735771f442b4962b83c8c7323c2707f30e570f27202ac86d4db810876cd98d3",
+  "taskFactsPath": "benchmarks/external-oss-v5/tasks/TASK-OSS-09/task-facts.json",
+  "runtimeIdentityPolicy": {
+    "python": "3.14.6",
+    "uv": "0.11.8",
+    "containerReference": "python:3.14.6-slim-bookworm",
+    "resolvedContainerDigest": "CAPTURED_DURING_PREPARATION"
+  },
+  "installCommand": ["uv", "sync", "--group", "testing"],
+  "buildCommand": [],
+  "publicTestCommand": ["python", "-m", "pytest", "-q", "src/paperless/tests/test_parser_utils.py"],
+  "workingDirectory": ".",
+  "dependencyRoots": [".venv"],
+  "requiredCacheEntries": [".venv/bin/python"],
+  "cacheFormat": "tar.gz",
+  "cacheMutation": false,
+  "networkPolicy": {
+    "preparation": "public-network-only",
+    "measured": "none",
+    "fallbackDownload": false
+  },
+  "forbiddenServices": ["postgresql", "redis", "tika", "gotenberg", "ocr"],
+  "preparationEnvironment": {
+    "PAPERLESS_SECRET_KEY": "synthetic-test-only-value",
+    "PAPERLESS_DISABLE_DBHANDLER": "true",
+    "PAPERLESS_CACHE_BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    "PAPERLESS_CHANNELS_BACKEND": "channels.layers.InMemoryChannelLayer"
+  },
+  "status": "NOT_RUN"
+}

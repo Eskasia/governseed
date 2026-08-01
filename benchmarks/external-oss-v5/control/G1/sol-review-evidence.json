@@ -1,0 +1,71 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 2,
+  "reviewer": "Sol",
+  "scope": "Independent re-review of G1 repair cycle 2: Luna handoff identity, PR #48 head/check state, preserved static harness, static workflow/schema/contracts/tests, and false-READY/cache boundaries.",
+  "repoIdentity": {
+    "worktree": "/Users/william/governseed-v5-g1-luna",
+    "origin": "https://github.com/Eskasia/governseed.git",
+    "actualHeadCommit": "70743cb174b02c444432bf498a5f5d3dff405ea7",
+    "originMainCommit": "b83900394b1d525dedb32581e219d31d235db349",
+    "pr48HeadCommit": "70743cb174b02c444432bf498a5f5d3dff405ea7",
+    "handoffHeadCommit": "d105dbc29d9b6af4f0b30e5519fefe6fc02ffb5a",
+    "handoffCurrentHeadCommit": "d105dbc29d9b6af4f0b30e5519fefe6fc02ffb5a",
+    "preservedStaticHarnessCommit": "5d11dc39940a4c78a2fd387510111faad50da0b0",
+    "handoffMatchesActualHead": false
+  },
+  "externalCheckStateAtReview": {
+    "reviewDate": "2026-08-01",
+    "prNumber": 48,
+    "prUrl": "https://github.com/Eskasia/governseed/pull/48",
+    "currentHead": "70743cb174b02c444432bf498a5f5d3dff405ea7",
+    "validateChecks": {
+      "ubuntu-latest": "SUCCESS",
+      "macos-latest": "SUCCESS",
+      "windows-latest": "IN_PROGRESS"
+    },
+    "staticHarnessCommitChecks": {
+      "head": "5d11dc39940a4c78a2fd387510111faad50da0b0",
+      "ubuntu-latest": "SUCCESS",
+      "macos-latest": "SUCCESS",
+      "windows-latest": "SUCCESS"
+    }
+  },
+  "staticHarnessAndBoundaryChecks": {
+    "workflowSha256": "a2e35ceb125f50f0d03d76dc322c7e1cb1a44ffd5c8e9d54c2af873911016835",
+    "qualificationStatusSha256": "f66d99a529391c41c74c78dfeba9de074a08dd5843d09536e5932b7549b1da51",
+    "handoffSha256": "6ba6b744d9dc36616e76c6b76807a12e474e6a4b19bb749484492ea6931a6a90",
+    "localValidation": {
+      "schemaValidation": "PASS",
+      "seedContractValidation": "PASS",
+      "dependencyCacheSchemaValidation": "PASS",
+      "dependencyCacheWorkflowValidation": "PASS",
+      "workflowShellValidation": "PASS"
+    },
+    "falseReadyCacheClaim": false,
+    "committedReadyReceiptsPresent": false,
+    "committedAggregateQualificationArtifactPresent": false,
+    "committedBenchmarkLockPresent": false,
+    "localDockerQualification": "NOT_RUN",
+    "workflowContainsNoCredentialsCodexOrOracle": true,
+    "v2v3v4MutationObserved": false
+  },
+  "g0EvidenceCopyCheck": {
+    "currentStateSha256": "1a5455f3baa85d4d493b37b7a45fe842e4f0c9e433f7fca6c9338fc99ba91c43",
+    "inheritedEvidenceV5Sha256": "cce821c548e263628d02132affb7e20de100f07343a4cb4593a73a097a726b19",
+    "g0LunaHandoffSha256": "d1be1662db1cd39f5bf7e1218e4287cdc4f480b818fd7542bd3bb7af564f0a17",
+    "g0SolVerdictSha256": "767f0e1fa864e8758db11a817743ecb68af84ac60d175401c08b2e370f1379f0",
+    "g0SolReviewEvidenceSha256": "f30dc58086e3b3c0f31e92bf567a59380d8879dbab1c80a4c247d680a796064d",
+    "matchesHandoffClaims": true
+  },
+  "finding": {
+    "severity": "medium",
+    "title": "G1 handoff still identifies the prior evidence commit, not the actual current PR/worktree head",
+    "evidence": [
+      "Actual worktree HEAD and PR #48 head are 70743cb174b02c444432bf498a5f5d3dff405ea7.",
+      "benchmarks/external-oss-v5/control/G1/luna-handoff.json records headCommit=currentHeadCommit=d105dbc29d9b6af4f0b30e5519fefe6fc02ffb5a.",
+      "The prior static-harness commit 5d11dc39940a4c78a2fd387510111faad50da0b0 is now correctly separated, but the handoff still does not reflect the actual pushed repair-cycle-2 head."
+    ]
+  }
+}
