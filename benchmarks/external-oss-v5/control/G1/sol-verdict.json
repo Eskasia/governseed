@@ -1,0 +1,86 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 3,
+  "verdict": "ACCEPT",
+  "criteria": [
+    {
+      "id": "three-layer-seed-prepare-offline-design",
+      "status": "PASS",
+      "evidence": [
+        ".github/workflows/external-oss-v5-dependency-cache.yml",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
+        "benchmarks/external-oss-v5/control/G1/luna-handoff.json"
+      ]
+    },
+    {
+      "id": "exact-task-contract-bindings",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-01/cache-contract.json",
+        "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-03/cache-contract.json",
+        "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-09/cache-contract.json",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-01/task-facts.json",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-03/task-facts.json",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-09/task-facts.json",
+        "benchmarks/external-oss-v5/tests/dependency-cache-schema-validation.mjs"
+      ]
+    },
+    {
+      "id": "artifact-only-cache-paths-and-offline-receipts",
+      "status": "PASS",
+      "evidence": [
+        ".github/workflows/external-oss-v5-dependency-cache.yml",
+        "benchmarks/external-oss-v5/dependency-cache/qualification-status.json",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs"
+      ]
+    },
+    {
+      "id": "readonly-network-none-containment-and-negative-cache-miss",
+      "status": "PASS",
+      "evidence": [
+        ".github/workflows/external-oss-v5-dependency-cache.yml",
+        "benchmarks/external-oss-v5/schemas/dependency-cache-receipt.schema.json",
+        "benchmarks/external-oss-v5/tests/dependency-cache-receipt-validation.mjs",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs"
+      ]
+    },
+    {
+      "id": "no-credentials-codex-or-oracle-and-no-v2v3v4-mutation",
+      "status": "PASS",
+      "evidence": [
+        ".github/workflows/external-oss-v5-dependency-cache.yml",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
+        "benchmarks/external-oss-v5/control/G1/luna-handoff.json"
+      ]
+    },
+    {
+      "id": "local-docker-not-run-boundary-and-no-false-ready-claim",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/dependency-cache/qualification-status.json",
+        "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-01/cache-receipt.template.json",
+        "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-03/cache-receipt.template.json",
+        "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-09/cache-receipt.template.json",
+        "benchmarks/external-oss-v5/control/G1/luna-handoff.json"
+      ]
+    },
+    {
+      "id": "ci-evidence-and-pr-head-identity",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/luna-handoff.json"
+      ]
+    }
+  ],
+  "independentlyRecomputed": [
+    "Actual worktree HEAD and PR #48 remote head at 70743cb174b02c444432bf498a5f5d3dff405ea7.",
+    "Top-level G1 handoff identity fields and PR identity fields against the current worktree and remote PR head.",
+    "Current PR #48 check-run state on Saturday, August 1, 2026: validate ubuntu SUCCESS, validate macOS SUCCESS, validate windows SUCCESS.",
+    "SHA-256 for the current workflow, qualification-status, and uncommitted G1 handoff bytes.",
+    "Local validation results for schema-validation, seed-contract-validation, dependency-cache-schema-validation, dependency-cache-workflow-validation, and workflow-shell-validation.",
+    "Absence of any committed READY cache receipt, aggregate qualification artifact, benchmark lock, runtime-image archive, cache archive, or seed archive."
+  ],
+  "remediation": [],
+  "claimBoundary": "This verdict accepts the G1 static evidence package only. It confirms current PR/worktree identity alignment, preserved static-harness boundaries, static workflow/schema/task/cache-path validation, local Docker NOT_RUN boundary, and no false READY/cache claim. It does not require or claim workflow dispatch, Docker qualification, measured dependency-cache artifacts, offline receipts, Codex execution, credential use, Pilot, merge, or benchmark results."
+}
