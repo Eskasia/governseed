@@ -1,0 +1,19 @@
+{
+  "runId": 30717085665,
+  "qualification": "BLOCKED",
+  "firstFailure": {
+    "taskId": "TASK-OSS-09",
+    "jobId": 91414789819,
+    "step": "Run offline cache and containment verification",
+    "exitCode": 1,
+    "message": "rm: cannot remove '/home/runner/work/_temp/external-oss-v5-offline-negative-cache/TASK-OSS-09/.venv/bin/python': Permission denied",
+    "effect": "TASK-OSS-09 produced no cache-receipt.json; the matrix strategy then cancelled TASK-OSS-01 and TASK-OSS-03 and skipped aggregate qualification."
+  },
+  "taskReceipts": {
+    "TASK-OSS-01": {"status": "BLOCKED", "receipt": "NOT_PRODUCED", "reason": "offline verification cancelled after TASK-OSS-09 failure"},
+    "TASK-OSS-03": {"status": "BLOCKED", "receipt": "NOT_PRODUCED", "reason": "offline artifact download cancelled after TASK-OSS-09 failure", "npmCiNoLockfile": "NOT_ENCOUNTERED"},
+    "TASK-OSS-09": {"status": "BLOCKED", "receipt": "NOT_PRODUCED", "reason": "negative-cache removal failed with permission denied"}
+  },
+  "notApplicableHandling": "npm ci no-lockfile was not encountered; no NOT_APPLICABLE_NO_LOCKFILE classification was fabricated.",
+  "excludedFromRepository": ["cache.tgz", "runtime-image.tgz", "seed.tgz", "virtualenvs", "raw logs"]
+}

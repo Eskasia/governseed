@@ -1,0 +1,34 @@
+{
+  "protocolVersion": 1,
+  "agent": "Luna",
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attempt": 5,
+  "status": "BLOCKED",
+  "qualification": "NOT_READY",
+  "repository": "Eskasia/governseed",
+  "origin": "https://github.com/Eskasia/governseed.git",
+  "originMainCommit": "07a9033eccefcb01314d01b4715269a83b3e20b4",
+  "dispatchRef": "main",
+  "runId": 30717085665,
+  "runHeadCommit": "07a9033eccefcb01314d01b4715269a83b3e20b4",
+  "artifactEvidencePath": "benchmarks/external-oss-v5/control/G1/attempt-5-artifacts.json",
+  "firstFailurePath": "benchmarks/external-oss-v5/control/G1/attempt-5-diagnostics.json",
+  "firstFailure": "TASK-OSS-09 offline verification, Run offline cache and containment verification: rm failed with Permission denied for .venv/bin/python in the negative cache.",
+  "cacheQualification": {
+    "TASK-OSS-01": "BLOCKED",
+    "TASK-OSS-03": "BLOCKED",
+    "TASK-OSS-09": "BLOCKED"
+  },
+  "readyClaim": false,
+  "g2Started": false,
+  "pilotStarted": false,
+  "repairOrRerunPerformed": false,
+  "claimBoundary": "BLOCKED is the only valid G1 result for attempt 5. Preparation jobs succeeded, but no offline cache receipt or aggregate qualification artifact exists. This handoff claims only the exact post-merge dispatch, API run/job/artifact metadata, seed artifact hashes, and first failure. It claims no READY cache, G2, Pilot, Codex execution, or benchmark result.",
+  "evidence": [
+    "benchmarks/external-oss-v5/control/G1/attempt-5-run.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-5-jobs.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-5-artifacts.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-5-diagnostics.json"
+  ]
+}
