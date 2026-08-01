@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "attempt": 1,
+  "workflow": ".github/workflows/external-oss-v4-dependency-cache.yml",
+  "ref": "main",
+  "headSha": "08579d4c7fa662b93e9fbcd32cdc76659db82bac",
+  "event": "workflow_dispatch",
+  "inputs": {},
+  "dispatchedAt": "2026-08-01T15:00:49Z",
+  "runId": 30704989330,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30704989330",
+  "createdAt": "2026-08-01T15:00:52Z",
+  "startedAt": "2026-08-01T15:00:52Z",
+  "completedAt": "2026-08-01T15:01:08Z",
+  "status": "completed",
+  "conclusion": "failure",
+  "rerun": false,
+  "artifactDownload": "NOT_RUN",
+  "claimBoundary": "Single measured dependency-cache dispatch only; no cache receipt, offline container, Codex task, Pilot, or confirmatory run is claimed."
+}

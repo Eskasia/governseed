@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "status": "BLOCKED",
+  "runId": 30704989330,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30704989330",
+  "failureClass": "task-defect",
+  "firstFailedJob": "Prepare measured cache (TASK-OSS-09)",
+  "firstFailedStep": "Prepare fixed public seed and dependency cache",
+  "failureCode": "SEED_COMMIT_UNREACHABLE",
+  "taskId": "TASK-OSS-09",
+  "repository": "paperless-ngx/paperless-ngx",
+  "seedCommit": "5f5ab1beea4feaaecee7131b4b36185f09e2f53c",
+  "exitCode": 128,
+  "observedError": "Public git fetch could not resolve the sealed seed commit in paperless-ngx/paperless-ngx.",
+  "prepareCacheStatus": "FAILED",
+  "offlineVerifyStatus": "NOT_RUN",
+  "negativeTestStatus": "NOT_RUN",
+  "otherTasks": [
+    {"taskId": "TASK-OSS-01", "repository": "immich-app/immich", "status": "CANCELLED_BEFORE_PREPARATION"},
+    {"taskId": "TASK-OSS-03", "repository": "louislam/uptime-kuma", "status": "CANCELLED_BEFORE_PREPARATION"}
+  ],
+  "artifacts": "NOT_CREATED",
+  "action": "STOPPED_WITHOUT_RERUN",
+  "claimBoundary": "The runner was dispatched from main, but no dependency cache was qualified and no measured task run was authorized."
+}

@@ -17,7 +17,17 @@
     {
       "id": "V4_DEPENDENCY_CACHE_PREPARATION_NOT_RUN",
       "severity": "BLOCKER",
-      "evidence": "V3 rehearsal caches are inherited only; no V4 network-enabled preparation job created measured cache manifests."
+      "evidence": "The single V4 dispatch 30704989330 failed before cache preparation completed; no V4 cache receipt or offline verification artifact was created."
+    },
+    {
+      "id": "V4_DEPENDENCY_CACHE_RUN_FAILED",
+      "severity": "BLOCKER",
+      "evidence": "dependency-cache/failure-summary.json records run 30704989330 failing in TASK-OSS-09 seed preparation with exit code 128."
+    },
+    {
+      "id": "TASK_OSS_09_SEED_COMMIT_UNREACHABLE",
+      "severity": "BLOCKER",
+      "evidence": "The public fetch in run 30704989330 reported that seed commit 5f5ab1beea4feaaecee7131b4b36185f09e2f53c was not a ref in paperless-ngx/paperless-ngx."
     },
     {
       "id": "CODEX_RUNTIME_IDENTITY_NOT_FROZEN",

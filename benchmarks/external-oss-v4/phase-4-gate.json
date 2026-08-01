@@ -15,11 +15,12 @@
   "blockers": [
     "RUNNER_PREFLIGHT_FAILED",
     "WORKFLOW_DEFECT_DOCKER_MOUNT_SYNTAX_INVALID",
-    "V4_DEPENDENCY_CACHE_PREPARATION_NOT_RUN",
+    "V4_DEPENDENCY_CACHE_RUN_FAILED",
+    "TASK_OSS_09_SEED_COMMIT_UNREACHABLE",
     "CODEX_RUNTIME_IDENTITY_NOT_FROZEN",
     "PROVIDER_CREDENTIAL_HUMAN_APPROVAL_NOT_PROVIDED",
     "PILOT_LOCK_INCOMPLETE"
   ],
   "claimDisposition": "NOT_EVALUATED",
-  "claimBoundary": "V4 runner qualification is not treatment evaluation. No Codex, baseline, governed, provider, or task run is allowed while pilotAllowed is false."
+  "claimBoundary": "V4 runner and dependency-cache qualification is not treatment evaluation. The single cache dispatch failed during sealed seed preparation; no Codex, baseline, governed, provider, or task run is allowed while pilotAllowed is false."
 }
