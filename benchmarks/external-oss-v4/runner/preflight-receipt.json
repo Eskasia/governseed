@@ -6,10 +6,20 @@
   "claimDisposition": "NOT_EVALUATED",
   "runner": {
     "platform": "GitHub-hosted ubuntu-24.04",
-    "qualificationStatus": "NOT_RUN",
-    "localDockerClient": "Docker Engine 29.4.2 darwin/arm64",
-    "localDockerDaemon": "UNAVAILABLE"
+    "qualificationStatus": "FAILED_WORKFLOW_DEFECT",
+    "os": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.17.0-1020-azure",
+    "architecture": "x86_64",
+    "dockerClientVersion": "28.0.4",
+    "dockerServerVersion": "28.0.4",
+    "cgroupVersion": "2",
+    "hostCpuCount": 4,
+    "hostMemoryBytes": 16766423040,
+    "cpuLimitInput": "4",
+    "memoryLimitInput": "16g",
+    "pidsLimitInput": "256"
   },
+  "ociImageDigest": "sha256:4fbb8e6a8395de5a7550b33509421a2bafbc0aab6c06ba2cef9ebffbc7092d90",
   "networkNoneObserved": false,
   "credentialEnvironmentClean": false,
   "workspaceBoundaryObserved": false,
@@ -19,9 +29,9 @@
   "artifactPrivacyScanPass": false,
   "cleanupComplete": false,
   "limitations": [
-    "The disposable GitHub Actions workflow has been created but not dispatched in this environment.",
-    "The local Docker daemon is unavailable; no local container observation is substituted.",
-    "OCI image digest, host identity, cgroup result, resource values, and receipt hash are therefore unknown.",
+    "The exact GitHub Actions run failed before container creation because the workflow used invalid Docker long-form mount syntax.",
+    "Host identity, cgroup v2, resource capacity, and OCI digest were observed; network, credential, filesystem, process, cache, and cleanup boundaries were not observed.",
+    "No READY receipt or receipt hash was produced.",
     "No Codex, provider credential, baseline arm, governed arm, or benchmark task was executed."
   ]
 }

@@ -25,4 +25,4 @@ The first two commands validate V4 structure and workflow text. The inherited-ev
 
 ## Current reproduction boundary
 
-The local Docker client reported a missing daemon socket. No GitHub Actions dispatch or provider credential use was performed. The current `runner/preflight-receipt.json` is intentionally `BLOCKED`, and there is no V4 `benchmark-lock.json` or run record. `V3_HIDDEN_ORACLE_ROOT` is a logical alias resolved only by the local hash revalidation harness; no personal absolute path is committed.
+The exact GitHub Actions dispatch was run `30701085510` at `2026-08-01T13:07:27Z` on `main` SHA `307810d49645e78515e41adaf21ce8ba35d080d9`. It failed before container creation because Docker rejected the workspace bind mount's bare `rw` field. The blocked receipt and structured partial observations preserve this result; the run was not automatically rerun. No provider credential or benchmark task was executed. There is no V4 `benchmark-lock.json` or run record. `V3_HIDDEN_ORACLE_ROOT` is a logical alias resolved only by the local hash revalidation harness; no personal absolute path is committed.
