@@ -1,0 +1,25 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "runId": 30701085510,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30701085510",
+  "status": "BLOCKED",
+  "classification": "WORKFLOW_DEFECT",
+  "failedStep": "Run hardened network/filesystem/credential/process checks",
+  "failureCode": "DOCKER_MOUNT_SYNTAX_INVALID",
+  "failureObservation": "docker create rejected the workspace bind mount because the long-form --mount option used bare rw instead of a key=value field.",
+  "partialObservations": {
+    "hostIdentity": "PASS",
+    "ociDigestResolution": "PASS",
+    "containerCreated": false,
+    "networkIsolation": "NOT_OBSERVED",
+    "credentialEnvironment": "NOT_OBSERVED",
+    "filesystemBoundary": "NOT_OBSERVED",
+    "processCleanup": "NOT_OBSERVED",
+    "dependencyCache": "NOT_OBSERVED",
+    "receipt": "NOT_PUBLISHED"
+  },
+  "rerunPolicy": "NO_AUTOMATIC_RERUN",
+  "claimDisposition": "NOT_EVALUATED"
+}

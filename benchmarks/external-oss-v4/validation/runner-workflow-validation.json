@@ -10,5 +10,7 @@
   "checks": 18,
   "yamlParse": "PASS (Ruby Psych)",
   "failures": [],
-  "runtimeQualification": "NOT_RUN"
+  "runtimeQualification": "FAILED_WORKFLOW_DEFECT",
+  "runtimeRunId": 30701085510,
+  "runtimeFailureCode": "DOCKER_MOUNT_SYNTAX_INVALID"
 }

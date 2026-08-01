@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "runId": 30701085510,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30701085510",
+  "sourceArtifact": "image-identity.txt",
+  "requestedReference": "ubuntu@sha256:4fbb8e6a8395de5a7550b33509421a2bafbc0aab6c06ba2cef9ebffbc7092d90",
+  "resolvedReference": "ubuntu@sha256:4fbb8e6a8395de5a7550b33509421a2bafbc0aab6c06ba2cef9ebffbc7092d90",
+  "ociImageDigest": "sha256:4fbb8e6a8395de5a7550b33509421a2bafbc0aab6c06ba2cef9ebffbc7092d90",
+  "claimBoundary": "The digest was pulled and resolved; no successful measured container run is claimed."
+}

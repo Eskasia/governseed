@@ -5,14 +5,14 @@
   "status": "BLOCKED",
   "blockers": [
     {
-      "id": "RUNNER_PREFLIGHT_NOT_DISPATCHED",
+      "id": "RUNNER_PREFLIGHT_FAILED",
       "severity": "BLOCKER",
-      "evidence": ".github/workflows/external-oss-v4-runner-preflight.yml exists but no GitHub Actions run/receipt was available in this environment."
+      "evidence": "runner/observed/failure-summary.json records run 30701085510 as failed before container creation."
     },
     {
-      "id": "LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+      "id": "WORKFLOW_DEFECT_DOCKER_MOUNT_SYNTAX_INVALID",
       "severity": "BLOCKER",
-      "evidence": "Docker client 29.4.2 on darwin/arm64 reported that the Docker daemon socket was unavailable."
+      "evidence": "The exact run log records Docker rejecting the workspace --mount option because bare rw is not a key=value field."
     },
     {
       "id": "V4_DEPENDENCY_CACHE_PREPARATION_NOT_RUN",

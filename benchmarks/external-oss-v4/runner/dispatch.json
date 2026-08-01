@@ -1,0 +1,18 @@
+{
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "workflow": "external-oss-v4-runner-preflight.yml",
+  "ref": "main",
+  "headSha": "307810d49645e78515e41adaf21ce8ba35d080d9",
+  "dispatchedAt": "2026-08-01T13:07:27Z",
+  "runId": 30701085510,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30701085510",
+  "event": "workflow_dispatch",
+  "inputs": {
+    "ociImageDigest": "sha256:4fbb8e6a8395de5a7550b33509421a2bafbc0aab6c06ba2cef9ebffbc7092d90",
+    "cpuLimit": "4",
+    "memoryLimit": "16g",
+    "pidsLimit": "256"
+  },
+  "conclusion": "failure"
+}

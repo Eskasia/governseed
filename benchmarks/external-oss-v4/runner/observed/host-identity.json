@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "runId": 30701085510,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30701085510",
+  "sourceArtifact": "host-identity.txt",
+  "observed": {
+    "os": "Ubuntu 24.04.4 LTS",
+    "kernel": "6.17.0-1020-azure",
+    "architecture": "x86_64",
+    "dockerClientVersion": "28.0.4",
+    "dockerServerVersion": "28.0.4",
+    "dockerApiVersion": "1.48",
+    "cgroupVersion": "2",
+    "hostCpuCount": 4,
+    "hostMemoryBytes": 16766423040
+  },
+  "claimBoundary": "Host identity was observed before the container-create failure; no container boundary or cleanup claim is made."
+}
