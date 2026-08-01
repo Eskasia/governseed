@@ -15,8 +15,14 @@ const requirements = [
   ['finite pids limit', /--pids-limit/u],
   ['no Docker socket mount', /dockerSocketMounted|docker\.sock/u],
   ['credential denylist', /OPENAI(?:_API_KEY|""_API_KEY)[\s\S]*ANTHROPIC_API_KEY[\s\S]*GITHUB_TOKEN/u],
-  ['workspace read-write mount', /dst=\/workspace,rw/u],
-  ['cache read-only mount', /dst=\/cache,ro/u],
+  ['workspace default writable mount', /dst=\/workspace"/u],
+  ['cache explicit readonly mount', /dst=\/cache,readonly"/u],
+  ['harness explicit readonly mount', /dst=\/harness,readonly"/u],
+  ['mount mode inspection artifact', /container-mounts\.json/u],
+  ['effective workspace mount mode proof', /test "\$workspace_rw" = true/u],
+  ['effective cache mount mode proof', /test "\$cache_rw" = false/u],
+  ['effective harness mount mode proof', /test "\$harness_rw" = false/u],
+  ['unique destination proof', /grep -Fxc "\$destination"/u],
   ['container state proof', /\.State\.Status.*\.State\.Running.*\.State\.Pid/u],
   ['cgroup populated proof', /cgroup\.events|populated 0/u],
   ['container removal proof', /docker rm.*container_id/u],
@@ -26,4 +32,50 @@ const failures = requirements.filter(([, pattern]) => !pattern.test(workflow)).m
 assert.deepEqual(failures, [], `runner workflow requirements failed: ${failures.join(', ')}`);
 assert.doesNotMatch(workflow, /secrets\./u, 'V4 preflight must not reference GitHub secrets');
 assert.doesNotMatch(workflow, /environment:/u, 'V4 preflight must not use a GitHub Environment');
-console.log(JSON.stringify({ status: 'PASS', checks: requirements.length, failures: [] }, null, 2));
+
+const parseDockerMountMode = (source) => {
+  const match = source.match(/--mount\s+"([^"]+)"/u);
+  if (!match) return { accepted: false, writable: false };
+  const options = match[1].split(',');
+  if (!options.every((option) => option.includes('=') || option === 'readonly')) {
+    return { accepted: false, writable: false };
+  }
+  return { accepted: true, writable: !options.includes('readonly') };
+};
+
+const mountModeCases = [
+  {
+    name: 'bare rw is rejected',
+    source: '--mount "type=bind,src=/tmp/workspace,dst=/workspace,rw"',
+    expected: { accepted: false, writable: false },
+  },
+  {
+    name: 'workspace without mode is writable',
+    source: '--mount "type=bind,src=/tmp/workspace,dst=/workspace"',
+    expected: { accepted: true, writable: true },
+  },
+  {
+    name: 'cache readonly is accepted',
+    source: '--mount "type=bind,src=/tmp/cache,dst=/cache,readonly"',
+    expected: { accepted: true, writable: false },
+  },
+  {
+    name: 'harness readonly is accepted',
+    source: '--mount "type=bind,src=/tmp/harness,dst=/harness,readonly"',
+    expected: { accepted: true, writable: false },
+  },
+];
+
+for (const { name, source, expected } of mountModeCases) {
+  assert.deepEqual(parseDockerMountMode(source), expected, name);
+}
+
+assert.doesNotMatch(workflow, /dst=\/workspace,rw(?:"|\s|$)/u, 'bare workspace rw must stay rejected');
+assert.doesNotMatch(workflow, /dst=\/(?:cache|harness),ro(?:"|\s|$)/u, 'bare ro must stay rejected');
+
+console.log(JSON.stringify({
+  status: 'PASS',
+  checks: requirements.length + mountModeCases.length + 2,
+  failures: [],
+  mountModeCases: mountModeCases.map(({ name, expected }) => ({ name, ...expected })),
+}, null, 2));
