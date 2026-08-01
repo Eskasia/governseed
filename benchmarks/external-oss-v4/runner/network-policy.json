@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "policyId": "V4-NETWORK-NONE-1",
+  "measuredContainer": {
+    "dockerNetworkFlag": "--network none",
+    "requiredObservedNetworkMode": "none",
+    "loopbackOnly": true,
+    "dnsAttempt": "must fail",
+    "httpsAttempt": "must fail",
+    "directIpv4Attempt": "must fail",
+    "directIpv6Attempt": "must fail"
+  },
+  "providerAccess": {
+    "directContainerEgress": false,
+    "providerCredentialInContainer": false,
+    "hostProxy": "only after separate credential-transport approval; not active in V4 qualification"
+  },
+  "failClosed": [
+    "NetworkMode is not exactly none",
+    "Any network attempt succeeds",
+    "Docker inspect evidence is unavailable",
+    "Proxy/relay policy or cleanup evidence is incomplete"
+  ],
+  "hashDisposition": "This policy is a V4 input; its SHA-256 must be frozen in a future valid pilot lock."
+}

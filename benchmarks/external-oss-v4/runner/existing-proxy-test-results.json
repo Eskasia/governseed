@@ -1,0 +1,14 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "source": {
+    "checkCommand": "npm run check:experimental",
+    "testCommand": "npm run test:experimental",
+    "sourceScope": ["experimental/governance-impact/lib/credential-proxy.mjs", "experimental/governance-impact/lib/oci-proxy-facade.mjs", "experimental/governance-impact/uds-relay.mjs"]
+  },
+  "checkExperimental": {"status": "PASS", "exitCode": 0},
+  "testExperimental": {"status": "PASS", "exitCode": 0, "tests": 125, "passed": 125, "failed": 0, "durationMs": 1069.999459},
+  "reviewFinding": "The existing proxy is a host-side Unix-domain HTTP proxy with fixed POST /v1/responses, bounded request/response bytes, quotas, deadlines, closed policy, sanitized errors/logs, and cleanup proofs. The OCI facade and relay also reject missing Docker/cgroup/base provenance and prove stopped/cgroup cleanup in their existing tests.",
+  "qualificationBoundary": "These tests validate the existing experimental interface and static/offline safety contracts; they do not qualify a GitHub-hosted Ubuntu runner and do not authorize provider credential use."
+}

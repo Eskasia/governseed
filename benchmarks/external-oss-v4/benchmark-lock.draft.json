@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "benchmarkType": "exploratory-pilot",
+  "evidenceClass": "external-observational",
+  "status": "BLOCKED: PILOT_LOCK_INCOMPLETE",
+  "governseed": {
+    "repository": "Eskasia/governseed",
+    "commit": "154e6038d69c1048f0f912ef32520df487e7a8b8",
+    "packageVersion": "0.1.1"
+  },
+  "inheritedEvidenceManifest": {
+    "sourcePath": "inherited-evidence.json",
+    "sourceSha256": "10c65e3d799a7dcf7037573b83fe313b8341b8b8d700f8f71fd7877640da29e9"
+  },
+  "knownPilotShape": {
+    "repositories": [
+      {
+        "id": "OSS-01",
+        "repository": "immich-app/immich",
+        "seedTreeSha256": "88c4510ad2c5825cad031671e8188fe8f6164324fd4eccd98f5160fc81a676fa",
+        "seedCommitSha": "0ad23a4f16331512f49c570acc2e9ff8093c8248",
+        "taskId": "TASK-OSS-01",
+        "taskSha256": "9e5914971d085ac857ddf63055be06f224379ad6b32dde7991f01380818e33f7",
+        "publicTestCommandSha256": "e954816da5a511df8b58c07cf370ecad8e1fb5174976bb6daa6bc6d74720b281",
+        "hiddenOracleSha256": "bc20c7b7821138e733a2aadbaf48397b0e3840c6cdb3c27bb8ae8a4c963ee6c3",
+        "allowedPaths": ["packages/cli/**", "packages/sdk/**", "docs/docs/features/command-line-interface.md"],
+        "forbiddenPaths": ["pnpm-lock.yaml", "server/**", "mobile/**", "generated/**", "credentials/**"],
+        "timeoutSeconds": 2700,
+        "tokenCeiling": 150000
+      },
+      {
+        "id": "OSS-03",
+        "repository": "louislam/uptime-kuma",
+        "seedTreeSha256": "5fdbf067da484e3778a1345297a33d984779be73c020ded93198a1c84f5a07ca",
+        "seedCommitSha": "2ccc49b77ba0c0e9dc159fcce5516efa7c0e7a18",
+        "taskId": "TASK-OSS-03",
+        "taskSha256": "58fec842805c88a130003f8468762131dd9ebfb8d1205c96008a94e3273c73c3",
+        "publicTestCommandSha256": "fcfc86d646cf661f0b80a106c31c455fd53d93f0d0caba892bf9f85bda0b36f6",
+        "hiddenOracleSha256": "bd05a49e86e5f268a7adc62c5defe2addc51032ad7f8b6e6461777c078e74cc6",
+        "allowedPaths": ["server/model/**", "test/backend-test/**"],
+        "forbiddenPaths": ["package.json", "package-lock.json", "db/**", "src/lang/**", "generated/**", "credentials/**"],
+        "timeoutSeconds": 2700,
+        "tokenCeiling": 150000
+      },
+      {
+        "id": "OSS-09",
+        "repository": "paperless-ngx/paperless-ngx",
+        "seedTreeSha256": "64d046e9abad54f4f10d2e489d4385e5ca6df1e0d5b8d67ecf48ad560bf4ad42",
+        "seedCommitSha": "5f5ab1beea4feaaecee7131b4b36185f09e2f53c",
+        "taskId": "TASK-OSS-09",
+        "taskSha256": "59c0898106338adce0c2489e1213ba67e7c0549a90f4c8208ab581c54046e719",
+        "publicTestCommandSha256": "7b12efc35d26848e2c6b2f348098cdccc26c68137da854781533fc761ee7b777",
+        "hiddenOracleSha256": "34c3f64aebd45be29fd0b1033e3649025a2c93b2c153178ecb124c086d368f2c",
+        "allowedPaths": ["src/paperless/parsers/**", "src/paperless/tests/**"],
+        "forbiddenPaths": ["uv.lock", "migrations/**", "src-ui/**", "generated/**", "credentials/**"],
+        "timeoutSeconds": 2700,
+        "tokenCeiling": 150000
+      }
+    ],
+    "repetitionsPerArm": 3,
+    "arms": ["baseline", "governed"],
+    "expectedRunCount": 18
+  },
+  "knownPolicyHashes": {
+    "networkPolicySha256": "cc7166ede39ded0f405261051e89f628d0a70ca38e31d3387bcf01fff3e0583f",
+    "containmentPolicySha256": "c2ad9d85cea6a60f363e97978c3c377f441c326f8f8ca57c60e0644071b7e8ad",
+    "credentialTransportDesignSha256": "a25f712b5c157bb9a4007c27b38e669b121553e31d8dba7c32b04be232f10577"
+  },
+  "blockers": [
+    "RUNNER_PREFLIGHT_RECEIPT_NOT_READY",
+    "OCI_IMAGE_DIGEST_NOT_OBSERVED",
+    "CODEX_VERSION_NOT_FROZEN",
+    "CODEX_BINARY_SHA256_NOT_FROZEN",
+    "MODEL_ID_NOT_FROZEN",
+    "RUNNER_PREFLIGHT_RECEIPT_SHA256_NOT_AVAILABLE",
+    "RANDOMIZATION_SEED_NOT_FROZEN",
+    "ARM_ORDER_NOT_FROZEN",
+    "V4_DEPENDENCY_CACHE_MANIFEST_NOT_CREATED",
+    "ACTUAL_CPU_MEMORY_PID_LIMITS_NOT_OBSERVED"
+  ],
+  "claimBoundary": "Draft only. No V4 measured runner qualification or Pilot lock is claimed."
+}

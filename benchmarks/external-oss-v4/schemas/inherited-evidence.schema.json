@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://governseed.dev/schemas/external-oss-v4/inherited-evidence.schema.json",
+  "title": "V4 inherited evidence manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "benchmarkId", "evidenceClass", "items"],
+  "properties": {
+    "schemaVersion": {"const": 1}, "benchmarkId": {"const": "GS-OSS-2026-08-01-V4"}, "evidenceClass": {"const": "external-observational"},
+    "items": {"type": "array", "minItems": 1, "items": {"$ref": "#/$defs/item"}}
+  },
+  "$defs": {
+    "item": {
+      "type": "object", "additionalProperties": false,
+      "required": ["inheritedFromBenchmark", "sourcePath", "sourceSha256", "revalidatedContentHash"],
+      "properties": {
+        "inheritedFromBenchmark": {"enum": ["GS-OSS-2026-08-01-V2", "GS-OSS-2026-08-01-V3"]},
+        "sourcePath": {"type": "string", "pattern": "^(?!/).+"},
+        "sourceRoot": {"type": "string"},
+        "sourceSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "revalidatedContentHash": {"const": true},
+        "role": {"type": "string"}
+      }
+    }
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "status": "PASS",
+  "command": "node --input-type=module < inherited-evidence hash checker",
+  "itemsChecked": 34,
+  "itemsRevalidated": 34,
+  "failures": [],
+  "claimBoundary": "This validates byte hashes of inherited artifacts only; it does not make V2/V3 observations into V4 observations."
+}

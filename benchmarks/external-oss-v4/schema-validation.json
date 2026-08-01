@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "status": "PASS",
+  "command": "node benchmarks/external-oss-v4/tests/schema-validation.test.mjs",
+  "testFileSha256": "2385228ee9e390be7c0e6906fa6592e45df6a33dc2480e9b085a7cc737b9e64d",
+  "schemas": {
+    "pilot-lock.schema.json": {"status": "PARSED", "sha256": "2ea014a15db4aeb0dddf263899e5fd24d9fef4c6ccd13383fa6aa4362ecf2b1b"},
+    "confirmatory-lock.schema.json": {"status": "PARSED", "sha256": "bb9d401d412b1f18776d951792b3beab4fb51d0ef8ec3f201b362609f13cfe68"},
+    "runner-preflight.schema.json": {"status": "PARSED", "sha256": "c588bf1b583434b02466cb5fb4a23a152b988ce42c32a6b4f58aa196a364a86f"},
+    "run-record.schema.json": {"status": "PARSED", "sha256": "6d6a44482450ab28c59c71f7422eefe85b8bdbdd92c2f3de7670b4bbb5f3cdb6"},
+    "inherited-evidence.schema.json": {"status": "PARSED", "sha256": "0300e8e226994318a2a1bf88c8d761759962f23a90b04022e66a519819d4e66e"}
+  },
+  "semanticCases": {
+    "total": 10,
+    "pass": 2,
+    "expectedFail": 8,
+    "cases": [
+      "three repositories pass Pilot lock",
+      "two repositories fail Pilot lock",
+      "four repositories fail Pilot lock",
+      "duplicate repository ID fails Pilot lock",
+      "duplicate task ID fails Pilot lock",
+      "missing oracle hash fails Pilot lock",
+      "expectedRunCount other than 18 fails Pilot lock",
+      "ten repositories fail Pilot lock",
+      "eight repositories pass Confirmatory shape",
+      "three repositories fail Confirmatory shape"
+    ]
+  },
+  "draftDisposition": "The V4 draft is intentionally not a Pilot-lock instance because runner/runtime/cache identities are not available."
+}

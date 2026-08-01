@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://governseed.dev/schemas/external-oss-v4/runner-preflight.schema.json",
+  "title": "V4 measured-run runner preflight receipt",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "benchmarkId", "evidenceClass", "status", "claimDisposition", "runner", "cleanupComplete", "limitations"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "benchmarkId": {"const": "GS-OSS-2026-08-01-V4"},
+    "evidenceClass": {"const": "external-observational"},
+    "status": {"enum": ["READY", "BLOCKED"]},
+    "claimDisposition": {"const": "NOT_EVALUATED"},
+    "runner": {"type": "object"},
+    "ociImageDigest": {"type": "string", "pattern": "^sha256:[0-9a-f]{64}$"},
+    "networkNoneObserved": {"type": "boolean"},
+    "credentialEnvironmentClean": {"type": "boolean"},
+    "workspaceBoundaryObserved": {"type": "boolean"},
+    "dependencyCacheReadOnly": {"type": "boolean"},
+    "processCleanupObserved": {"type": "boolean"},
+    "cgroupEmpty": {"type": "boolean"},
+    "artifactPrivacyScanPass": {"type": "boolean"},
+    "cleanupComplete": {"type": "boolean"},
+    "limitations": {"type": "array", "items": {"type": "string"}},
+    "receiptSha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  },
+  "allOf": [
+    {"if": {"properties": {"status": {"const": "READY"}}, "required": ["status"]}, "then": {"required": ["ociImageDigest", "networkNoneObserved", "credentialEnvironmentClean", "workspaceBoundaryObserved", "dependencyCacheReadOnly", "processCleanupObserved", "cgroupEmpty", "artifactPrivacyScanPass", "receiptSha256"], "properties": {"cleanupComplete": {"const": true}, "networkNoneObserved": {"const": true}, "credentialEnvironmentClean": {"const": true}, "workspaceBoundaryObserved": {"const": true}, "dependencyCacheReadOnly": {"const": true}, "processCleanupObserved": {"const": true}, "cgroupEmpty": {"const": true}, "artifactPrivacyScanPass": {"const": true}}}}
+  ]
+}

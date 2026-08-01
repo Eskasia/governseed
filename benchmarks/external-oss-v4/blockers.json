@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "status": "BLOCKED",
+  "blockers": [
+    {
+      "id": "RUNNER_PREFLIGHT_NOT_DISPATCHED",
+      "severity": "BLOCKER",
+      "evidence": ".github/workflows/external-oss-v4-runner-preflight.yml exists but no GitHub Actions run/receipt was available in this environment."
+    },
+    {
+      "id": "LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+      "severity": "BLOCKER",
+      "evidence": "Docker client 29.4.2 on darwin/arm64 reported that the Docker daemon socket was unavailable."
+    },
+    {
+      "id": "V4_DEPENDENCY_CACHE_PREPARATION_NOT_RUN",
+      "severity": "BLOCKER",
+      "evidence": "V3 rehearsal caches are inherited only; no V4 network-enabled preparation job created measured cache manifests."
+    },
+    {
+      "id": "CODEX_RUNTIME_IDENTITY_NOT_FROZEN",
+      "severity": "BLOCKER",
+      "evidence": "Exact Codex version, binary SHA-256, model ID, and provider runtime identity were not supplied."
+    },
+    {
+      "id": "PROVIDER_CREDENTIAL_HUMAN_APPROVAL_NOT_PROVIDED",
+      "severity": "BLOCKER",
+      "evidence": "V4 intentionally used no real provider credential and no GitHub Environment reviewer approval was available."
+    }
+  ],
+  "failClosedAction": "Do not create benchmark-lock.json and do not start the 18-run Pilot."
+}

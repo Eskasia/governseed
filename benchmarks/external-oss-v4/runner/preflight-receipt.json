@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "status": "BLOCKED",
+  "claimDisposition": "NOT_EVALUATED",
+  "runner": {
+    "platform": "GitHub-hosted ubuntu-24.04",
+    "qualificationStatus": "NOT_RUN",
+    "localDockerClient": "Docker Engine 29.4.2 darwin/arm64",
+    "localDockerDaemon": "UNAVAILABLE"
+  },
+  "networkNoneObserved": false,
+  "credentialEnvironmentClean": false,
+  "workspaceBoundaryObserved": false,
+  "dependencyCacheReadOnly": false,
+  "processCleanupObserved": false,
+  "cgroupEmpty": false,
+  "artifactPrivacyScanPass": false,
+  "cleanupComplete": false,
+  "limitations": [
+    "The disposable GitHub Actions workflow has been created but not dispatched in this environment.",
+    "The local Docker daemon is unavailable; no local container observation is substituted.",
+    "OCI image digest, host identity, cgroup result, resource values, and receipt hash are therefore unknown.",
+    "No Codex, provider credential, baseline arm, governed arm, or benchmark task was executed."
+  ]
+}

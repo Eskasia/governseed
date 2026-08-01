@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V4",
+  "evidenceClass": "external-observational",
+  "status": "BLOCKED",
+  "dockerClient": {
+    "version": "29.4.2",
+    "apiVersion": "1.54",
+    "osArch": "darwin/arm64",
+    "context": "desktop-linux"
+  },
+  "dockerDaemon": {
+    "status": "UNAVAILABLE",
+    "socket": "local Docker socket (path intentionally omitted from committed evidence)",
+    "error": "failed to connect to the docker API; daemon socket was not available"
+  },
+  "substitutionPolicy": "Do not substitute this macOS client observation for GitHub-hosted Ubuntu cgroup/network/filesystem/process qualification.",
+  "pilotImpact": "BLOCKED"
+}

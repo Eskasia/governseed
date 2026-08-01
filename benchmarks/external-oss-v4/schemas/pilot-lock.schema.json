@@ -1,0 +1,54 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://governseed.dev/schemas/external-oss-v4/pilot-lock.schema.json",
+  "title": "GovernSeed External OSS Benchmark V4 exploratory pilot lock",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "benchmarkType", "benchmarkId", "evidenceClass", "repositories", "repetitionsPerArm", "arms", "expectedRunCount"],
+  "properties": {
+    "schemaVersion": {"const": 1},
+    "benchmarkType": {"const": "exploratory-pilot"},
+    "benchmarkId": {"const": "GS-OSS-2026-08-01-V4"},
+    "evidenceClass": {"const": "external-observational"},
+    "repositories": {
+      "type": "array",
+      "minItems": 3,
+      "maxItems": 3,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/repository"},
+      "allOf": [
+        {"contains": {"properties": {"repository": {"const": "immich-app/immich"}}, "required": ["repository"]}},
+        {"contains": {"properties": {"repository": {"const": "louislam/uptime-kuma"}}, "required": ["repository"]}},
+        {"contains": {"properties": {"repository": {"const": "paperless-ngx/paperless-ngx"}}, "required": ["repository"]}}
+      ]
+    },
+    "repetitionsPerArm": {"const": 3},
+    "arms": {"const": ["baseline", "governed"]},
+    "expectedRunCount": {"const": 18},
+    "randomizationSeed": {"type": "integer", "minimum": 0}
+  },
+  "$defs": {
+    "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "sha1": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+    "repository": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "repository", "seedTreeSha256", "seedCommitSha", "taskId", "taskSha256", "publicTestCommandSha256", "hiddenOracleSha256", "dependencyCacheSha256", "allowedPaths", "forbiddenPaths", "timeoutSeconds", "tokenCeiling"],
+      "properties": {
+        "id": {"type": "string", "pattern": "^OSS-[0-9]{2}$"},
+        "repository": {"type": "string", "enum": ["immich-app/immich", "louislam/uptime-kuma", "paperless-ngx/paperless-ngx"]},
+        "seedTreeSha256": {"$ref": "#/$defs/sha256"},
+        "seedCommitSha": {"$ref": "#/$defs/sha1"},
+        "taskId": {"type": "string", "pattern": "^TASK-OSS-[0-9]{2}$"},
+        "taskSha256": {"$ref": "#/$defs/sha256"},
+        "publicTestCommandSha256": {"$ref": "#/$defs/sha256"},
+        "hiddenOracleSha256": {"$ref": "#/$defs/sha256"},
+        "dependencyCacheSha256": {"$ref": "#/$defs/sha256"},
+        "allowedPaths": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "forbiddenPaths": {"type": "array", "minItems": 1, "items": {"type": "string"}},
+        "timeoutSeconds": {"const": 2700},
+        "tokenCeiling": {"const": 150000}
+      }
+    }
+  }
+}
