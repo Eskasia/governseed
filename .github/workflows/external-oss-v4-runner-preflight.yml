@@ -110,9 +110,33 @@ jobs:
           timeout 1 sleep 5 >/dev/null 2>&1 && exit 64 || true
           printf '%s\n' "children=$foreground,$background,$detached" >> "$result"
           printf '%s\n' 'network=none credential_names=clean filesystem=bounded resource_limits=provided' >> "$result"
+          touch /workspace/container-ready
+
+          release_observed=false
+          for _ in $(seq 1 300); do
+            if test -f /workspace/container-release; then
+              release_observed=true
+              break
+            fi
+            sleep 0.1
+          done
+
+          test "$release_observed" = true
+          printf '%s\n' 'release=observed' >> "$result"
           CONTAINER_CHECK
           chmod 0555 "$harness/container-check.sh"
           container_name="governseed-v4-preflight-${GITHUB_RUN_ID}"
+          container_id=""
+
+          cleanup_container() {
+            if test -n "${container_id:-}" &&
+               docker inspect "$container_id" >/dev/null 2>&1; then
+              docker rm -f "$container_id" >/dev/null 2>&1 || true
+            fi
+          }
+
+          trap cleanup_container EXIT
+
           container_id=$(docker create --name "$container_name" --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true --user 65532:65532 --pids-limit "$PIDS_LIMIT" --cpus "$CPU_LIMIT" --memory "$MEMORY_LIMIT" --mount "type=bind,src=$workspace,dst=/workspace" --mount "type=bind,src=$cache,dst=/cache,readonly" --mount "type=bind,src=$harness,dst=/harness,readonly" "ubuntu@${OCI_IMAGE_DIGEST}" /harness/container-check.sh)
           docker inspect "$container_id" --format '{{json .HostConfig}}' > runner-artifacts/container-host-config.json
           test "$(docker inspect "$container_id" --format '{{.HostConfig.NetworkMode}}')" = none
@@ -150,20 +174,112 @@ jobs:
           done
           # No docker.sock, host home, git credential store, or provider credential mount is allowed.
           docker start "$container_id"
+
+          ready=false
+          for _ in $(seq 1 300); do
+            if test -f "$workspace/container-ready"; then
+              ready=true
+              break
+            fi
+
+            running=$(
+              docker inspect "$container_id" \
+                --format '{{.State.Running}}'
+            )
+
+            if test "$running" != true; then
+              break
+            fi
+
+            sleep 0.1
+          done
+
+          test "$ready" = true
+
+          container_pid=$(
+            docker inspect "$container_id" \
+              --format '{{.State.Pid}}'
+          )
+
+          test "$container_pid" -gt 0
+          test -r "/proc/$container_pid/cgroup"
+
+          cp "/proc/$container_pid/cgroup" \
+            runner-artifacts/container-cgroup-membership.txt
+
+          cgroup_relative=$(
+            awk -F: '$1 == "0" { print $3; exit }' \
+              "/proc/$container_pid/cgroup"
+          )
+
+          test -n "$cgroup_relative"
+          test "$cgroup_relative" != /
+
+          cgroup_path=$(
+            realpath -m "/sys/fs/cgroup${cgroup_relative}"
+          )
+
+          case "$cgroup_path" in
+            /sys/fs/cgroup/*)
+              ;;
+            *)
+              echo 'V4_PREFLIGHT_CGROUP_PATH_INVALID' >&2
+              exit 1
+              ;;
+          esac
+
+          test -d "$cgroup_path"
+          test -f "$cgroup_path/cgroup.events"
+
+          printf '%s\n' "$cgroup_path" \
+            > runner-artifacts/container-cgroup-path.txt
+
+          cp "$cgroup_path/cgroup.events" \
+            runner-artifacts/container-cgroup-events-running.txt
+
+          grep -Eq '^populated 1$' \
+            "$cgroup_path/cgroup.events"
+
+          touch "$workspace/container-release"
+
           docker wait "$container_id" > runner-artifacts/container-exit-code.txt
+          test "$(cat runner-artifacts/container-exit-code.txt)" = 0
+
           docker inspect "$container_id" --format '{{.State.Status}} {{.State.Running}} {{.State.Pid}}' | tee runner-artifacts/container-stop-state.txt
           test "$(docker inspect "$container_id" --format '{{.State.Status}}')" = exited
           test "$(docker inspect "$container_id" --format '{{.State.Running}}')" = false
           test "$(docker inspect "$container_id" --format '{{.State.Pid}}')" = 0
+
+          if test -f "$cgroup_path/cgroup.events"; then
+            cp "$cgroup_path/cgroup.events" \
+              runner-artifacts/container-cgroup-events-stopped.txt
+
+            grep -Eq '^populated 0$' \
+              "$cgroup_path/cgroup.events"
+
+            cleanup_observation="populated-zero"
+          elif test ! -e "$cgroup_path"; then
+            cleanup_observation="cgroup-removed"
+          else
+            echo 'V4_PREFLIGHT_CGROUP_CLEANUP_UNPROVEN' >&2
+            exit 1
+          fi
+
+          printf '%s\n' "$cleanup_observation" \
+            > runner-artifacts/container-cgroup-cleanup-observation.txt
+
           if docker top "$container_id" >/dev/null 2>&1; then
             echo 'V4_PREFLIGHT_LIVE_PROCESS_PROOF_FAILED' >&2
             exit 1
           fi
-          cgroup_events=$(find /sys/fs/cgroup -type f \( -path "*/docker-${container_id}.scope/cgroup.events" -o -path "*/${container_id}/cgroup.events" \) -print -quit)
-          test -n "$cgroup_events"
-          grep -Eq '^populated 0$' "$cgroup_events"
-          docker rm "$container_id" > runner-artifacts/container-remove.txt
-          ! docker inspect "$container_id" >/dev/null 2>&1
+
+          removed_container_id="$container_id"
+          docker rm "$removed_container_id" \
+            > runner-artifacts/container-remove.txt
+          container_id=""
+          trap - EXIT
+
+          ! docker inspect "$removed_container_id" >/dev/null 2>&1
           test -f "$workspace/inside-write"
           test ! -e "$cache/forbidden-write"
           python3 - "$workspace" "$cache" "$harness" <<'PY'
