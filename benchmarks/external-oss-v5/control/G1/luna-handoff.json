@@ -3,15 +3,17 @@
   "agent": "Luna",
   "task": "GovernSeed V5 G1 measured dependency-cache qualification preparation",
   "gate": "G1",
-  "attempt": 1,
+  "attempt": 2,
   "status": "READY_FOR_REVIEW",
+  "remediationApplied": "Corrected current repository identity from the prior static-harness head to the committed and pushed G1 handoff head d105dbc29d9b6af4f0b30e5519fefe6fc02ffb5a; retained 5d11dc39940a4c78a2fd387510111faad50da0b0 only as the prior PR #48 static-harness commit.",
   "repository": "Eskasia/governseed",
   "origin": "https://github.com/Eskasia/governseed.git",
   "worktree": "/Users/william/governseed-v5-g1-luna",
   "localBranch": "benchmark/v5-g1-luna",
   "targetPushBranch": "benchmark/v5-measured-cache",
   "baseCommit": "b83900394b1d525dedb32581e219d31d235db349",
-  "headCommit": "5d11dc39940a4c78a2fd387510111faad50da0b0",
+  "headCommit": "d105dbc29d9b6af4f0b30e5519fefe6fc02ffb5a",
+  "currentHeadCommit": "d105dbc29d9b6af4f0b30e5519fefe6fc02ffb5a",
   "initialCleanState": true,
   "preservedPr48StaticHarnessHead": "5d11dc39940a4c78a2fd387510111faad50da0b0",
   "filesChanged": [
@@ -64,7 +66,8 @@
     {"command":"ruby -e 'require \"yaml\"; YAML.load_file(\".github/workflows/external-oss-v4-runner-preflight.yml\")'","exit":0,"result":"V4_YAML_PASS"},
     {"command":"npm run ci","exit":0,"result":"PASS through check, validate, all test suites, eval, runtime proof mock, smoke projects, package smoke, and fixtures"},
     {"command":"docker info --format 'ServerVersion={{.ServerVersion}} CgroupVersion={{.CgroupVersion}} CPUs={{.NCPU}} MemTotal={{.MemTotal}}'","exit":1,"result":"Docker daemon unavailable at unix:///Users/william/.docker/run/docker.sock; no local Docker qualification performed"},
-    {"command":"gh pr view 48 --repo Eskasia/governseed","exit":0,"result":"PR OPEN; head benchmark/v5-measured-cache at 5d11dc3; validate ubuntu/macos/windows SUCCESS before this update"}
+    {"command":"gh pr view 48 --repo Eskasia/governseed","exit":0,"result":"PR OPEN; prior head benchmark/v5-measured-cache at 5d11dc3; validate ubuntu/macos/windows SUCCESS before this update"},
+    {"command":"git ls-remote origin refs/heads/benchmark/v5-measured-cache","exit":0,"result":"current remote head d105dbc29d9b6af4f0b30e5519fefe6fc02ffb5a"}
   ],
   "pr": {
     "number": 48,
@@ -72,6 +75,8 @@
     "state": "OPEN",
     "baseBranch": "main",
     "baseCommit": "b83900394b1d525dedb32581e219d31d235db349",
+    "headRefOid": "d105dbc29d9b6af4f0b30e5519fefe6fc02ffb5a",
+    "currentHeadCommit": "d105dbc29d9b6af4f0b30e5519fefe6fc02ffb5a",
     "sourceHeadBeforeUpdate": "5d11dc39940a4c78a2fd387510111faad50da0b0",
     "checksBeforeUpdate": [
       {"name":"validate (ubuntu-latest)","status":"COMPLETED","conclusion":"SUCCESS"},
