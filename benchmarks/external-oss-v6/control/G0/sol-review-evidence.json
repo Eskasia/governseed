@@ -1,0 +1,301 @@
+{
+  "protocolVersion": 1,
+  "agent": "Sol",
+  "role": "independent read-only acceptance reviewer",
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "gate": "G0",
+  "reviewRound": 3,
+  "reviewDate": "2026-08-02",
+  "reviewType": "final-repaired-phase-0-root-cause-evidence-acceptance",
+  "orchestratorStatus": "accepted",
+  "scope": "Final read-only re-review of the repaired V6 G0 investigation artifacts, their cited V5 workflow and run-30717085665 evidence, and current git state. Only this review evidence and its paired verdict are overwritten; no V5 file, formal V6 workflow, PR, push, dispatch, or workflow/product implementation is modified or performed.",
+  "repositoryIdentity": {
+    "branch": "benchmark/v6-offline-permission-fix",
+    "headCommit": "80063bef888c660f513e081c7e2b9807d98aa744",
+    "originMainCommit": "80063bef888c660f513e081c7e2b9807d98aa744",
+    "artifactBaseCommit": "80063bef888c660f513e081c7e2b9807d98aa744",
+    "identityMatch": true,
+    "currentWorktreeStatus": "Only the eight files under benchmarks/external-oss-v6/ are untracked; no tracked or staged change exists.",
+    "result": "PASS"
+  },
+  "commands": [
+    {
+      "command": "git rev-parse HEAD; git rev-parse origin/main; git branch --show-current; git status --short --untracked-files=all",
+      "exitCode": 0,
+      "result": "HEAD, origin/main, and artifact base all equal 80063bef888c660f513e081c7e2b9807d98aa744 on benchmark/v6-offline-permission-fix; only benchmarks/external-oss-v6 files are untracked."
+    },
+    {
+      "command": "git diff --quiet 80063bef888c660f513e081c7e2b9807d98aa744 -- benchmarks/external-oss-v5 .github/workflows/external-oss-v5-dependency-cache.yml; git diff --cached --quiet -- <same paths>; git status --short --untracked-files=all -- <same paths>",
+      "exitCode": 0,
+      "result": "V5 benchmark paths and the V5 formal workflow have no tracked, staged, or untracked changes."
+    },
+    {
+      "command": "shasum -a 256 <six supplied G0 input artifacts>; independently compare Luna's five declared artifact hashes",
+      "exitCode": 0,
+      "result": "Six hashes recomputed; all five Luna-declared hashes match, mismatches=0."
+    },
+    {
+      "command": "node --input-type=module <recompute every inherited-evidence.json source hash>",
+      "exitCode": 0,
+      "result": "sources=16 mismatches=0"
+    },
+    {
+      "command": "jq empty <four G0 input JSON files>; python3 csv.DictReader(strict=True) permission-matrix.csv validation; bash -n minimal-reproducer.sh",
+      "exitCode": 0,
+      "result": "JSON 4/4 valid; CSV header valid with 18 complete rows; statuses CONFIRMED=1, REJECTED=6, NOT_APPLICABLE=11; required mutation, mount, rootfs, UID 65532, smoke, and containment candidates present; Bash syntax PASS."
+    },
+    {
+      "command": "assert permission-root-cause.json rootCause.summary contains GitHub Actions host runner shell and host UID 501, excludes 65532/container-user attribution, and actorAttribution marks UID 65532 NOT_APPLICABLE",
+      "exitCode": 0,
+      "result": "root_summary_actor=PASS; local_uid501=PASS; uid65532_not_in_summary=PASS; uid65532_not_executed=PASS; operation_order=PASS."
+    },
+    {
+      "command": "scan core G0 artifacts for /EXPECTED_NOT_RUN:\\s*[A-Z_]+/ and compare every occurrence with EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+      "exitCode": 0,
+      "result": "occurrences=13 mismatches=0"
+    },
+    {
+      "command": "copy minimal-reproducer.sh to a fresh mktemp directory, execute it there, compare its result with the supplied reproducer-result.json, and remove only the temporary files",
+      "exitCode": 0,
+      "result": "Fresh result SHA-256 2b974d3e36b5db21971495a351a1c3e7be97661af68b74ad3492b9738ae38372; byte match true; all three cases ran as host UID 501, returned rm exit 1, left the target present, and recorded parent mode 555. Repository input artifacts were not rewritten."
+    },
+    {
+      "command": "docker info --format '{{.ServerVersion}}'",
+      "exitCode": 1,
+      "result": "Docker CLI /opt/homebrew/bin/docker exists, but /Users/william/.docker/run/docker.sock is absent; EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE independently confirmed."
+    },
+    {
+      "command": "jq selected identity/failure fields from attempt-5-run.json, attempt-5-jobs.json, and attempt-5-diagnostics.json; git show 07a9033eccefcb01314d01b4715269a83b3e20b4:.github/workflows/external-oss-v5-dependency-cache.yml | shasum -a 256",
+      "exitCode": 0,
+      "result": "Run 30717085665 concluded failure/BLOCKED at TASK-OSS-09 job 91414789819, exit 1, with host-path rm Permission denied; run-head workflow SHA-256 is 8191426107b555f17a74149ab1c8d846c9595ab96412a9eafba15283551ea81d."
+    },
+    {
+      "command": "nl -ba .github/workflows/external-oss-v5-dependency-cache.yml | sed -n '535,550p;608,645p;682,707p'",
+      "exitCode": 0,
+      "result": "The GitHub Actions host shell creates and mutates negative_cache through line 639. Harness creation starts at line 643, docker load at 685, docker create at 695, and --user 65532:65532 at 700; none was reached by the observed failure."
+    },
+    {
+      "command": "rg -n 'external-oss-v6|GS-OSS-2026-08-02-V6' .github/workflows",
+      "exitCode": 1,
+      "result": "No V6 formal workflow exists."
+    }
+  ],
+  "artifactHashVerification": {
+    "algorithm": "SHA-256",
+    "artifacts": [
+      {
+        "path": "benchmarks/external-oss-v6/inherited-evidence.json",
+        "sha256": "fc17b02f663340095b456d25f9474eebc968994f5fae215f34f50d38fd1bebf9",
+        "declaredHashMatch": true
+      },
+      {
+        "path": "benchmarks/external-oss-v6/permission-root-cause.json",
+        "sha256": "863b724af4b3970f0f3cf4d4f585fb1b23892aef517aea240d9af0976359a1a4",
+        "declaredHashMatch": true
+      },
+      {
+        "path": "benchmarks/external-oss-v6/permission-matrix.csv",
+        "sha256": "c5adab473f3eb4e70d5319f31def9ceb1725589b62aab464eab6365bb1b7f173",
+        "declaredHashMatch": true
+      },
+      {
+        "path": "benchmarks/external-oss-v6/minimal-reproducer.sh",
+        "sha256": "6fbdc38fa9bd5c5f07bfe9b6da5d9ff9a3c1576dd8b2e18e4fbfe5f3199dd7b3",
+        "declaredHashMatch": true,
+        "mode": "0555"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/reproducer-result.json",
+        "sha256": "2b974d3e36b5db21971495a351a1c3e7be97661af68b74ad3492b9738ae38372",
+        "declaredHashMatch": true,
+        "freshResultByteMatch": true
+      },
+      {
+        "path": "benchmarks/external-oss-v6/control/G0/luna-handoff.json",
+        "sha256": "b8888c4c3e1dfe620eeca8d773d77113a543b9bfbb9c121e280d8c3a5155a6c2",
+        "declaredHashMatch": null
+      }
+    ],
+    "result": "PASS"
+  },
+  "v5DependentHashVerification": {
+    "sourceCount": 16,
+    "mismatchCount": 0,
+    "result": "PASS",
+    "verified": {
+      ".github/workflows/external-oss-v5-dependency-cache.yml": "8191426107b555f17a74149ab1c8d846c9595ab96412a9eafba15283551ea81d",
+      "benchmarks/external-oss-v5/README.md": "f1db9489febd48427f0750cb977c30ec260ba1c36e35d268f2345d4ed41d616d",
+      "benchmarks/external-oss-v5/inherited-evidence-v5.json": "cce821c548e263628d02132affb7e20de100f07343a4cb4593a73a097a726b19",
+      "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-01/cache-contract.json": "55c86a04f19a5cb2d481379cf79c076cf111fcaf78c6f14be3c26ddc1f6f607d",
+      "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-03/cache-contract.json": "fb57622c073fb2b09da44318920ba58833dc583d21669e7ef3f678462bafaa61",
+      "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-09/cache-contract.json": "3d0183bd36b28b1c3a7afed183f2c36f13172499048ec6d98ce2e8b9c316e92e",
+      "benchmarks/external-oss-v5/tasks/TASK-OSS-01/task-facts.json": "3627a7aecaa7107a83bbf6552155d26915cfdd0bf985c4eab51ccea34eb6e10f",
+      "benchmarks/external-oss-v5/tasks/TASK-OSS-03/task-facts.json": "a5b132e9d87695e48051151609341b36a7ceb4ec4a17837dbcc80d0b94fa14bc",
+      "benchmarks/external-oss-v5/tasks/TASK-OSS-09/task-facts.json": "f2cefb871d1ac87befc9f6baa3f2eb845326e5752cb580dca166bbf5366d6b1e",
+      "benchmarks/external-oss-v5/control/G1/attempt-5-run.json": "46e3e0b152425b399acb659b1f3b07de97385e600e477ee21f98075d09c5e307",
+      "benchmarks/external-oss-v5/control/G1/attempt-5-jobs.json": "52d6aa793d01aeb73392a757a676dc4be86012926ef832da2eba8f67585ea81e",
+      "benchmarks/external-oss-v5/control/G1/attempt-5-artifacts.json": "3260d34f18c048c1069c4968bd0e1b2566a031dd06f7e96dadb684a231c197f0",
+      "benchmarks/external-oss-v5/control/G1/attempt-5-diagnostics.json": "e619238a30739e2863ae10d615877ea52883136978725cd24c9247eefc8f7926",
+      "benchmarks/external-oss-v5/control/G1/attempt-5-luna-handoff.json": "3c2682d4f686e88cb913dadd0ccae2e420e6bde798b685a79e1cc47db4039feb",
+      "benchmarks/external-oss-v5/control/G1/attempt-5-sol-verdict.json": "4cbe2b2b149fa54d05c7c53d7b1c6e5a89ab638fa52b0c78fd6b768a795e1113",
+      "benchmarks/external-oss-v5/control/G1/attempt-5-sol-review-evidence.json": "8605f75950e8fb10f9139e5d7bf195145cdbf874b840169d3353141b91452799"
+    }
+  },
+  "rootCauseVerification": {
+    "classification": "CONFIRMED",
+    "mechanism": "V5 makes the source cache recursively non-writable, cp -a preserves copied non-writable parent modes in negative_cache, and host-side rm cannot unlink the present selected entry.",
+    "v5FailingActor": "GitHub Actions host runner shell",
+    "localReproducerActor": "local host shell, UID 501",
+    "summaryContainsHostRunnerActor": true,
+    "summaryContainsLocalUid501": true,
+    "summaryAttributesFailureToUid65532": false,
+    "uid65532ContainerExecution": "NOT_APPLICABLE: not executed",
+    "operationOrder": [
+      "create/cache",
+      "chmod -R a-w source cache_root",
+      "cp -a source cache_root/. into negative_cache/",
+      "rm -rf negative_cache/<required path>"
+    ],
+    "result": "PASS"
+  },
+  "syntaxMatrixAndLiteralVerification": {
+    "json": {
+      "valid": true,
+      "files": 4
+    },
+    "csv": {
+      "valid": true,
+      "rows": 18,
+      "statusCounts": {
+        "CONFIRMED": 1,
+        "REJECTED": 6,
+        "NOT_APPLICABLE": 11
+      },
+      "explicitConfirmedMutationCandidate": true,
+      "explicitMountCandidates": true,
+      "explicitRootfsCandidate": true,
+      "explicitUid65532Candidate": true,
+      "explicitSmokeCandidate": true,
+      "explicitContainmentCandidates": true
+    },
+    "script": {
+      "bashSyntax": "PASS",
+      "freshExecution": "PASS",
+      "shellcheck": "NOT_AVAILABLE"
+    },
+    "exactDockerLiteral": {
+      "required": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+      "coreArtifactOccurrences": 13,
+      "mismatches": 0
+    },
+    "result": "PASS"
+  },
+  "freshReproducerVerification": {
+    "platform": "darwin",
+    "uid": 501,
+    "sha256": "2b974d3e36b5db21971495a351a1c3e7be97661af68b74ad3492b9738ae38372",
+    "byteMatchesSuppliedResult": true,
+    "cases": [
+      {
+        "taskId": "TASK-OSS-01",
+        "requiredPath": "node_modules",
+        "rmExitCode": 1,
+        "targetAfter": "present",
+        "targetMode": "555",
+        "parentMode": "555"
+      },
+      {
+        "taskId": "TASK-OSS-03",
+        "requiredPath": "node_modules",
+        "rmExitCode": 1,
+        "targetAfter": "present",
+        "targetMode": "555",
+        "parentMode": "555"
+      },
+      {
+        "taskId": "TASK-OSS-09",
+        "requiredPath": ".venv/bin/python",
+        "rmExitCode": 1,
+        "targetAfter": "present",
+        "targetMode": "444",
+        "parentMode": "555"
+      }
+    ],
+    "result": "PASS"
+  },
+  "runtimeAndContainmentBoundary": {
+    "dockerDaemon": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+    "runtimeChecksPerformed": false,
+    "uid65532RuntimeObserved": false,
+    "mountRuntimeObserved": false,
+    "rootfsRuntimeObserved": false,
+    "smokeRuntimeObserved": false,
+    "containmentRuntimeObserved": false,
+    "cacheReadinessClaimed": false,
+    "g1AcceptanceClaimed": false,
+    "matrixRuntimeCandidates": "NOT_APPLICABLE with exact Docker-unavailable limitations",
+    "result": "PASS"
+  },
+  "immutabilityAndPhaseBoundary": {
+    "v5FilesUnchanged": true,
+    "v5WorkflowUnchanged": true,
+    "run30717085665EvidenceUnchanged": true,
+    "v6FormalWorkflowExists": false,
+    "g0InvestigationOnly": true,
+    "prPushDispatchPerformed": false,
+    "result": "PASS"
+  },
+  "findings": [],
+  "acceptanceCriteria": [
+    {
+      "criterion": "Current git identity/status and G0 artifact inventory are independently verified",
+      "status": "PASS"
+    },
+    {
+      "criterion": "V5 immutable paths, formal workflow, and run-30717085665 evidence remain unchanged and hash-valid",
+      "status": "PASS"
+    },
+    {
+      "criterion": "All G0 input artifacts and dependent hashes verify",
+      "status": "PASS"
+    },
+    {
+      "criterion": "JSON/CSV parsing and Bash syntax verify",
+      "status": "PASS"
+    },
+    {
+      "criterion": "Fresh isolated reproducer byte-matches the supplied result",
+      "status": "PASS"
+    },
+    {
+      "criterion": "Root-cause summary attributes host-side rm to the GitHub Actions host shell/local UID 501 and not UID 65532",
+      "status": "PASS"
+    },
+    {
+      "criterion": "Matrix includes explicit CONFIRMED, REJECTED, NOT_APPLICABLE, mutation, mount, rootfs, smoke, UID 65532, and containment rows",
+      "status": "PASS"
+    },
+    {
+      "criterion": "Every core-artifact EXPECTED_NOT_RUN literal is exact and operation order is correct",
+      "status": "PASS"
+    },
+    {
+      "criterion": "UID 65532, Docker, mounts, rootfs, smoke, and containment remain untested and outside the claim",
+      "status": "PASS"
+    },
+    {
+      "criterion": "No V6 formal workflow exists and G0 remains investigation-only",
+      "status": "PASS"
+    }
+  ],
+  "limitations": [
+    "Docker runtime behavior was not tested because the local daemon is unavailable; UID 65532, bind mounts, read-only rootfs, network-none, capabilities, no-new-privileges, smoke, and containment remain unaccepted.",
+    "The fresh reproducer ran on Darwin as host UID 501 and proves only local filesystem mutation denial for the copied read-only tree.",
+    "shellcheck was unavailable; Bash syntax and a fresh isolated execution were verified.",
+    "No live GitHub API query was required; preserved V5 run evidence, current bytes, and the run-head workflow were independently parsed and rehashed."
+  ],
+  "evidenceSufficientToAuthorizeV6WorkflowImplementation": true,
+  "recommendedVerdict": "ACCEPT",
+  "authorizationBoundary": "Luna is authorized to implement a new V6 workflow subject to a separate implementation review. This authorization does not permit modifying V5 and does not accept any runtime result.",
+  "claimBoundary": "This acceptance establishes only that the final repaired G0 investigation evidence is sufficient to authorize Luna to implement a new V6 workflow. It is not G1 acceptance, Docker/runtime acceptance, cache readiness, smoke qualification, UID 65532 execution evidence, mount/rootfs/containment proof, task acceptance, benchmark effect evidence, or authorization in this review to modify V5, create or modify a formal workflow, create a PR, push, or dispatch."
+}

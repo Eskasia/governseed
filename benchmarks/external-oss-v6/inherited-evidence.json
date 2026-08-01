@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "evidenceClass": "external-observational",
+  "phase": "G0",
+  "sourceRepository": "Eskasia/governseed",
+  "v6BaseCommit": "80063bef888c660f513e081c7e2b9807d98aa744",
+  "v5Identity": {
+    "benchmarkId": "GS-OSS-2026-08-01-V5",
+    "commit": "80063bef888c660f513e081c7e2b9807d98aa744",
+    "workflowRunId": 30717085665,
+    "runHeadCommit": "07a9033eccefcb01314d01b4715269a83b3e20b4",
+    "status": "HARD_BLOCKED",
+    "repairBudget": "EXHAUSTED"
+  },
+  "immutableBoundary": {
+    "readOnly": ["benchmarks/external-oss-v2/", "benchmarks/external-oss-v3/", "benchmarks/external-oss-v4/", "benchmarks/external-oss-v5/", "V5 task facts", "sealed seed identity", "hidden oracle", "public acceptance criteria", "V5 formal workflow", "V5 failure evidence"],
+    "v6Scope": "Only benchmarks/external-oss-v6/ G0 investigation artifacts may be created. No V6 workflow, task fact, seed, oracle, acceptance criterion, PR, dispatch, or external clone is created.",
+    "claimBoundary": "These hashes establish provenance only. V5 evidence is not promoted into a V6 measured-run, cache-readiness, smoke, or acceptance claim."
+  },
+  "sources": [
+    {"path":".github/workflows/external-oss-v5-dependency-cache.yml","sha256":"8191426107b555f17a74149ab1c8d846c9595ab96412a9eafba15283551ea81d","role":"actual V5 operation and containment sequence"},
+    {"path":"benchmarks/external-oss-v5/README.md","sha256":"f1db9489febd48427f0750cb977c30ec260ba1c36e35d268f2345d4ed41d616d","role":"V5 contract and evidence boundary"},
+    {"path":"benchmarks/external-oss-v5/inherited-evidence-v5.json","sha256":"cce821c548e263628d02132affb7e20de100f07343a4cb4593a73a097a726b19","role":"V5 inherited provenance"},
+    {"path":"benchmarks/external-oss-v5/dependency-cache/TASK-OSS-01/cache-contract.json","sha256":"55c86a04f19a5cb2d481379cf79c076cf111fcaf78c6f14be3c26ddc1f6f607d","role":"immutable task cache contract"},
+    {"path":"benchmarks/external-oss-v5/dependency-cache/TASK-OSS-03/cache-contract.json","sha256":"fb57622c073fb2b09da44318920ba58833dc583d21669e7ef3f678462bafaa61","role":"immutable task cache contract"},
+    {"path":"benchmarks/external-oss-v5/dependency-cache/TASK-OSS-09/cache-contract.json","sha256":"3d0183bd36b28b1c3a7afed183f2c36f13172499048ec6d98ce2e8b9c316e92e","role":"immutable task cache contract"},
+    {"path":"benchmarks/external-oss-v5/tasks/TASK-OSS-01/task-facts.json","sha256":"3627a7aecaa7107a83bbf6552155d26915cfdd0bf985c4eab51ccea34eb6e10f","role":"immutable task fact"},
+    {"path":"benchmarks/external-oss-v5/tasks/TASK-OSS-03/task-facts.json","sha256":"a5b132e9d87695e48051151609341b36a7ceb4ec4a17837dbcc80d0b94fa14bc","role":"immutable task fact"},
+    {"path":"benchmarks/external-oss-v5/tasks/TASK-OSS-09/task-facts.json","sha256":"f2cefb871d1ac87befc9f6baa3f2eb845326e5752cb580dca166bbf5366d6b1e","role":"immutable task fact"},
+    {"path":"benchmarks/external-oss-v5/control/G1/attempt-5-run.json","sha256":"46e3e0b152425b399acb659b1f3b07de97385e600e477ee21f98075d09c5e307","role":"V5 run identity"},
+    {"path":"benchmarks/external-oss-v5/control/G1/attempt-5-jobs.json","sha256":"52d6aa793d01aeb73392a757a676dc4be86012926ef832da2eba8f67585ea81e","role":"V5 job outcomes"},
+    {"path":"benchmarks/external-oss-v5/control/G1/attempt-5-artifacts.json","sha256":"3260d34f18c048c1069c4968bd0e1b2566a031dd06f7e96dadb684a231c197f0","role":"V5 artifact boundary"},
+    {"path":"benchmarks/external-oss-v5/control/G1/attempt-5-diagnostics.json","sha256":"e619238a30739e2863ae10d615877ea52883136978725cd24c9247eefc8f7926","role":"V5 first failure"},
+    {"path":"benchmarks/external-oss-v5/control/G1/attempt-5-luna-handoff.json","sha256":"3c2682d4f686e88cb913dadd0ccae2e420e6bde798b685a79e1cc47db4039feb","role":"V5 Luna handoff"},
+    {"path":"benchmarks/external-oss-v5/control/G1/attempt-5-sol-verdict.json","sha256":"4cbe2b2b149fa54d05c7c53d7b1c6e5a89ab638fa52b0c78fd6b768a795e1113","role":"V5 independent verdict"},
+    {"path":"benchmarks/external-oss-v5/control/G1/attempt-5-sol-review-evidence.json","sha256":"8605f75950e8fb10f9139e5d7bf195145cdbf874b840169d3353141b91452799","role":"V5 final review evidence"}
+  ],
+  "sanitization": {"rawLogs":"not copied", "cacheArchives":"not copied", "virtualenvs":"not copied", "externalClones":"not created", "secrets":"not read or recorded"}
+}
