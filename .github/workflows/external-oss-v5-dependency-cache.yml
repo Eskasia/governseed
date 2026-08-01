@@ -337,7 +337,7 @@ jobs:
               phase_mark "before-task-oss-09-pytest"
               (
                 cd "$sealed_root"
-                python -m pytest -q src/paperless/tests/test_parser_utils.py
+                "$sealed_root/.venv/bin/python" -m pytest -q src/paperless/tests/test_parser_utils.py
               )
               phase_mark "after-task-oss-09-pytest"
               phase_mark "before-task-oss-09-cache-root-emission"
@@ -675,7 +675,7 @@ jobs:
               export PAPERLESS_CACHE_BACKEND=django.core.cache.backends.locmem.LocMemCache
               export PAPERLESS_CHANNELS_BACKEND=channels.layers.InMemoryChannelLayer
               cd /workspace
-              python -m pytest -q src/paperless/tests/test_parser_utils.py
+              /cache/.venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py
               ;;
             *) exit 2 ;;
           esac

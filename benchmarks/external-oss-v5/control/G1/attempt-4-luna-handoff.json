@@ -1,0 +1,63 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attempt": 4,
+  "status": "READY_FOR_REVIEW",
+  "qualification": "BLOCKED",
+  "repository": "Eskasia/governseed",
+  "ref": "main",
+  "mergeHead": "3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e",
+  "runId": 30715960590,
+  "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30715960590",
+  "runStatus": "COMPLETED",
+  "runConclusion": "FAILURE",
+  "dispatchCount": 1,
+  "reruns": {"30711805623":0,"30713763827":0,"30714926737":0},
+  "filesChanged": [
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-luna-handoff.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/"
+  ],
+  "commands": [
+    {"command":"git fetch origin main && git rev-parse origin/main","result":"PASS; 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e"},
+    {"command":"gh workflow run .github/workflows/external-oss-v5-dependency-cache.yml --repo Eskasia/governseed --ref main","result":"PASS; exactly one dispatch, run 30715960590"},
+    {"command":"gh run watch 30715960590 --repo Eskasia/governseed --exit-status","result":"FAILURE; completed without rerun"},
+    {"command":"gh run view 30715960590 --json ...; gh run view 30715960590 --log; gh run view 30715960590 --log-failed","result":"PASS; run view, jobs, full log, and failed log preserved"},
+    {"command":"gh api repos/Eskasia/governseed/actions/runs/30715960590/artifacts --paginate","result":"PASS; six non-expired artifact metadata records and API digests preserved"},
+    {"command":"gh run download 30715960590 --name <artifact> --dir <独立目錄>","result":"PASS; all six artifacts downloaded; dependency zip archives separately downloaded and integrity-tested"},
+    {"command":"shasum -a 256 <dependency zip>","result":"PASS; all three dependency zip hashes match GitHub API digest"},
+    {"command":"unzip -t/-Z1 <dependency zip>","result":"PASS; all three archives have no extraction errors; member inventories preserved"}
+  ],
+  "firstFailure": {"taskId":"TASK-OSS-09","jobId":91411473858,"step":"Reconstruct seed and prepare public dependency cache","phase":"before-task-oss-09-pytest","exitCode":1,"diagnostics":"python: No module named pytest"},
+  "taskOss09Phase": {"runtimeCheck":"PASSED; after-task-oss-09-runtime-version-checks recorded","laterFailure":"PRESERVED; before-task-oss-09-pytest, exitCode=1","phaseFailure":"status=FAILURE; lastPhase=before-task-oss-09-pytest; exitCode=1"},
+  "artifactHashes": {
+    "TASK-OSS-01 dependency zip":"4371fb19ddd31028c2b6e4453af0066e9ac8280c703f30197547dfad841c5b37",
+    "TASK-OSS-03 dependency zip":"5cea3e544e32fd945d4dce3f773bddfdb27f7d96d0911e83ed3196f695ff3cb7",
+    "TASK-OSS-09 dependency zip":"2563cb8e297207a20a658f7aaf36e2330915110c038575cb3214c8c9bd068a56",
+    "TASK-OSS-01 seed.tgz":"272c4d5723ddcc1018bc70941bf3afb7867a49c21f44afb92d4fee4e6ecec5ac",
+    "TASK-OSS-03 seed.tgz":"8ad4ccce681168d5685a69f6c0ed267059cfbd3d4dae76fc3d70ac8d2f1b13e3",
+    "TASK-OSS-09 seed.tgz":"f9919128991d5b6d0805a0b6b1927950209047185578cad8b6d7026c22e467e8",
+    "TASK-OSS-09 diagnostics":"ae32c268a5b77cd69d57128d28bc03895da8dd8bd61281520d4824dbe019fb32",
+    "TASK-OSS-09 phase-failure":"669bc1c94574c1fdef346e0af0a600ad361f45363e1539fc9ff8dfe4783c9218",
+    "TASK-OSS-09 phase-markers":"59f6a0ec86cb6d55dc1aedf4b4da01fcedf05faf2efd1b7ff25cd077248ed2f3"
+  },
+  "receiptBoundary": {"readyReceiptCount":0,"TASK-OSS-01":"NOT_READY","TASK-OSS-03":"NOT_READY","TASK-OSS-09":"NOT_READY","missing":["cache.tgz","cache-manifest.json","manifest.sha256","cache-files.sha256","preparation-result.json","runtime-image.tgz","cache-receipt.json"],"offlineProof":"NOT_RUN_SKIPPED","aggregateQualification":"NOT_RUN_SKIPPED","blocked":true},
+  "evidenceFiles": [
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/run-view.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/jobs.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/run.log",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/failed.log",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/artifacts.json",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/download-v2/",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/zip-archives/"
+  ],
+  "knownLimitations": [
+    "All three measured cache tasks lack complete receipt/manifest/cache archive/runtime image/offline evidence.",
+    "TASK-OSS-09 runtime-version-check passed, but a later pytest phase failed; the phase-failure evidence is retained and does not establish readiness.",
+    "No READY receipt, schema qualification, offline proof, aggregate qualification, benchmark result, or runtime-image qualification is claimed.",
+    "No workflow, tests, tasks, oracles, contracts, lock, prior attempt, commit, push, or rerun was changed or performed."
+  ],
+  "claimBoundary": "This handoff claims only one completed measured dispatch attempt and structured FAILURE evidence. It preserves the runtime-check phase pass followed by a later TASK-OSS-09 phase failure, and the zero READY boundary. It does not claim any measured dependency cache READY, receipt/archive/manifest completeness, offline proof, aggregate qualification, runtime image, benchmark result, rerun, credentials, Codex, Pilot, commit, or push."
+}

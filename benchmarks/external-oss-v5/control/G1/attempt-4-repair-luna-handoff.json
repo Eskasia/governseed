@@ -1,0 +1,46 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attempt": 4,
+  "repairCycle": 5,
+  "status": "READY_FOR_REVIEW",
+  "qualification": "BLOCKED",
+  "repository": "Eskasia/governseed",
+  "branch": "benchmark/v5-g1-python-venv",
+  "baseCommit": "3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e",
+  "headCommit": "3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e",
+  "repairScope": "Minimal harness-only interpreter-path repair for TASK-OSS-09 preparation and offline smoke.",
+  "filesChanged": [
+    ".github/workflows/external-oss-v5-dependency-cache.yml",
+    "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json"
+  ],
+  "commands": [
+    {"command": "git switch --detach origin/main && git switch -c benchmark/v5-g1-python-venv", "result": "PASS; HEAD is 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e"},
+    {"command": "node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs", "result": "PASS; {\"status\":\"PASS\",\"checks\":5,\"errors\":[]}"},
+    {"command": "node benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs", "result": "PASS; {\"status\":\"PASS\",\"shellBlocks\":5,\"errors\":[]}"},
+    {"command": "node --check benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs", "result": "PASS"},
+    {"command": "node JSON parse check for benchmarks/external-oss-v5/control/G1/*.json", "result": "PASS; 34 JSON files"},
+    {"command": "git diff --check", "result": "PASS"},
+    {"command": "npm ci (bounded invocation)", "result": "FAIL/EUSAGE; no package-lock.json or npm-shrinkwrap.json exists, so npm ci could not run"}
+  ],
+  "repair": {
+    "preparationPytest": "$sealed_root/.venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py",
+    "offlinePytest": "/cache/.venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py",
+    "staticRegression": "Validator requires both project-local interpreter paths and rejects the bare global python -m pytest invocation."
+  },
+  "preservedEvidence": [
+    "benchmarks/external-oss-v5/control/G1/attempt-4-artifacts/",
+    "benchmarks/external-oss-v5/control/G1/attempt-4-luna-handoff.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-review-evidence.json",
+    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-verdict.json"
+  ],
+  "knownLimitations": [
+    "npm ci was not runnable from origin/main because the repository has no package-lock.json; this is recorded as FAIL/EUSAGE, not as a hang.",
+    "No workflow dispatch, rerun, commit, push, merge, receipt, cache qualification, offline proof, aggregate qualification, or READY result was performed or claimed.",
+    "Task facts, seed/oracle/contracts/lock/thresholds, public test arguments, network/credential/READY semantics, and prior evidence were not changed."
+  ],
+  "claimBoundary": "This handoff claims only a static harness repair candidate from the specified origin/main base and preservation of attempt-4 evidence. It does not claim measured dependency-cache READY, receipt validity, offline qualification, aggregate qualification, benchmark success, credentials, Codex, Pilot, dispatch, commit, or push."
+}

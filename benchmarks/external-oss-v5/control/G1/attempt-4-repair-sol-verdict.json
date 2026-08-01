@@ -1,0 +1,116 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "gate": "G1",
+  "attemptReviewed": 4,
+  "repairCycleReviewed": 5,
+  "reviewType": "independent-sol-static-repair-review",
+  "reviewedAt": "2026-08-01",
+  "reviewedHead": "3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e",
+  "verdict": "ACCEPT",
+  "criteria": [
+    {
+      "criterion": "TASK-OSS-09 preparation uses the sealed-root virtualenv interpreter",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-sol-review-evidence.json",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:337",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:340"
+      ]
+    },
+    {
+      "criterion": "TASK-OSS-09 offline smoke uses the cached virtualenv interpreter",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-sol-review-evidence.json",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:672",
+        ".github/workflows/external-oss-v5-dependency-cache.yml:678"
+      ]
+    },
+    {
+      "criterion": "The public pytest argv remains unchanged from the benchmark contract",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-09/cache-contract.json:20",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-09/task-facts.json:10"
+      ]
+    },
+    {
+      "criterion": "Static regression coverage rejects reintroducing bare global python -m pytest in either repair site",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:81",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:82",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:116",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:117",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:153",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:154"
+      ]
+    },
+    {
+      "criterion": "No task, seed, oracle, contract, lock, threshold, network, credential, or READY semantics changed outside the exact repair surface",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-sol-review-evidence.json",
+        "git diff --name-only 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e -- . => .github/workflows/external-oss-v5-dependency-cache.yml, benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:90",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:92",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:120",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:126",
+        "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs:127"
+      ]
+    },
+    {
+      "criterion": "Attempt-4 failure evidence remains immutable and zero-READY remains preserved",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json:65",
+        "benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json:81",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-luna-handoff.json:45",
+        "git diff --name-only 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e -- benchmarks/external-oss-v5/control/G1/attempt-4-artifacts benchmarks/external-oss-v5/control/G1/dispatch-attempt-4.json benchmarks/external-oss-v5/control/G1/attempt-4-luna-handoff.json benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-review-evidence.json benchmarks/external-oss-v5/control/G1/dispatch-attempt-4-sol-verdict.json => <empty>"
+      ]
+    },
+    {
+      "criterion": "Repair-scope workflow, shell, JS, and scoped JSON validators pass",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-sol-review-evidence.json",
+        "node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs => PASS",
+        "node benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs => PASS",
+        "node --check benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs => PASS",
+        "node --input-type=module <parse benchmarks/external-oss-v5/control/G1/*.json> => PASS"
+      ]
+    },
+    {
+      "criterion": "npm ci remains honestly blocked by EUSAGE because the repository has no npm lockfile",
+      "status": "PASS",
+      "evidence": [
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-sol-review-evidence.json",
+        "benchmarks/external-oss-v5/control/G1/attempt-4-repair-luna-handoff.json:26",
+        "npm ci => npm error code EUSAGE; The `npm ci` command can only install with an existing package-lock.json or npm-shrinkwrap.json"
+      ]
+    }
+  ],
+  "independentlyRecomputed": [
+    "git rev-parse HEAD = 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e",
+    "git diff --name-only 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e -- . => .github/workflows/external-oss-v5-dependency-cache.yml, benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
+    "Preparation site now runs \"$sealed_root/.venv/bin/python\" -m pytest -q src/paperless/tests/test_parser_utils.py",
+    "Offline site now runs /cache/.venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py",
+    "cache-contract.json and task-facts.json still declare publicTestCommand [\"python\",\"-m\",\"pytest\",\"-q\",\"src/paperless/tests/test_parser_utils.py\"]",
+    "node benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs = PASS",
+    "node benchmarks/external-oss-v5/tests/workflow-shell-validation.mjs = PASS",
+    "node --check benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs = PASS",
+    "node --input-type=module <parse benchmarks/external-oss-v5/control/G1/*.json> = PASS before review write over 35 files and PASS after review write over 37 files",
+    "ruby -e 'require \"yaml\"; YAML.load_file(\".github/workflows/external-oss-v5-dependency-cache.yml\"); puts \"YAML_PASS\"' = YAML_PASS",
+    "git diff --check = PASS",
+    "npm ci = BLOCKED/EUSAGE because package-lock.json and npm-shrinkwrap.json are absent"
+  ],
+  "residualRisk": [
+    "This is a static-only acceptance of the repair candidate. No post-repair workflow rerun was performed, so later TASK-OSS-09 pytest, cache, runtime-image, offline, or aggregate behavior remains unverified.",
+    "The broad benchmarks/external-oss-v5 JSON walker is still blocked by unrelated untracked attempt-2-repro tsconfig fixtures and was not used as the acceptance signal for this repair."
+  ],
+  "claimBoundary": "This ACCEPT covers only the final static G1 repair candidate in the current uncommitted worktree atop 3d8c91a88977b2c3d1eac7483ee4d0faebcfbc2e. It accepts the repair because it is minimal, preserves the attempt-4 evidence package and zero-READY boundary, keeps the public test contract unchanged, adds explicit regression checks against global python, and records npm ci as BLOCKED/EUSAGE rather than overclaiming validation. It does not claim rerun success, cache READY, offline qualification, aggregate qualification, benchmark success, commit, push, or dispatch."
+}
