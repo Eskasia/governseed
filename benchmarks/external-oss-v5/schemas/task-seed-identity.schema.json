@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://governseed.dev/schemas/external-oss-v5/task-seed-identity.schema.json",
+  "title": "GovernSeed External OSS V5 task seed identity",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "benchmarkId",
+    "evidenceClass",
+    "taskId",
+    "repository",
+    "upstreamRepositoryUrl",
+    "upstreamBaseCommit",
+    "upstreamFixCommit",
+    "upstreamBaseReachable",
+    "upstreamFixReachable",
+    "seedOverlayPath",
+    "seedOverlaySha256",
+    "sealedSeedCommit",
+    "sealedSeedGitTree",
+    "sealedSeedTreeSha256",
+    "taskBriefSha256",
+    "hiddenOracleSha256",
+    "reconstruction"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 5 },
+    "benchmarkId": { "const": "GS-OSS-2026-08-01-V5" },
+    "evidenceClass": { "const": "external-observational" },
+    "taskId": { "type": "string", "pattern": "^TASK-OSS-[0-9]{2}$" },
+    "repository": { "type": "string", "pattern": "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$" },
+    "upstreamRepositoryUrl": { "type": "string", "format": "uri", "pattern": "^https://github\\.com/" },
+    "upstreamBaseCommit": { "$ref": "#/$defs/sha1" },
+    "upstreamFixCommit": { "$ref": "#/$defs/sha1" },
+    "upstreamBaseReachable": { "const": true },
+    "upstreamFixReachable": { "const": true },
+    "seedOverlayPath": { "type": ["string", "null"] },
+    "seedOverlaySha256": { "type": ["string", "null"], "pattern": "^[0-9a-f]{64}$" },
+    "sealedSeedCommit": { "$ref": "#/$defs/sha1" },
+    "sealedSeedGitTree": { "$ref": "#/$defs/sha1" },
+    "sealedSeedTreeSha256": { "$ref": "#/$defs/sha256" },
+    "taskBriefSha256": { "$ref": "#/$defs/sha256" },
+    "hiddenOracleSha256": { "$ref": "#/$defs/sha256" },
+    "legacyV3SeedCommit": { "$ref": "#/$defs/sha1" },
+    "legacyV3SeedTreeSha256": { "$ref": "#/$defs/sha256" },
+    "legacyV3SeedTreeHashReproduced": { "type": "boolean" },
+    "reconstruction": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "mode",
+        "overlayApplied",
+        "sealedCommitStableAcrossTwoReconstructions",
+        "sealedGitTreeStableAcrossTwoReconstructions",
+        "sealedTreeSha256StableAcrossTwoReconstructions",
+        "status"
+      ],
+      "properties": {
+        "mode": { "const": "upstream-base-plus-reviewed-overlay" },
+        "overlayApplied": { "type": "boolean" },
+        "overlayPaths": { "type": "array", "items": { "type": "string" } },
+        "sealedCommitStableAcrossTwoReconstructions": { "const": true },
+        "sealedGitTreeStableAcrossTwoReconstructions": { "const": true },
+        "sealedTreeSha256StableAcrossTwoReconstructions": { "const": true },
+        "status": { "const": "PASS" }
+      }
+    }
+  },
+  "$defs": {
+    "sha1": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" }
+  }
+}

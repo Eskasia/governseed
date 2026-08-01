@@ -1,0 +1,16 @@
+{
+  "schemaVersion": 5,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-03",
+  "upstreamBaseCommit": "efa194a6df72572e5245a25794bdad7ad34bea2d",
+  "upstreamFixCommit": "b829329e0acf3e00d0d5f0f1afd9e714a66f0a7c",
+  "exactShaFetchVerified": true,
+  "reconstructions": [
+    {"ordinal": 1, "sealedSeedCommit": "672d8d324fde3a0d874ee752ab8e1ef4751972bb", "sealedSeedGitTree": "ac7ff80f13a48e911da363c5a14269b5e9c3111d", "sealedSeedTreeSha256": "5fdbf067da484e3778a1345297a33d984779be73c020ded93198a1c84f5a07ca"},
+    {"ordinal": 2, "sealedSeedCommit": "672d8d324fde3a0d874ee752ab8e1ef4751972bb", "sealedSeedGitTree": "ac7ff80f13a48e911da363c5a14269b5e9c3111d", "sealedSeedTreeSha256": "5fdbf067da484e3778a1345297a33d984779be73c020ded93198a1c84f5a07ca"}
+  ],
+  "legacyV3GitTreeEqual": true,
+  "legacyV3TreeHashReproduced": true,
+  "status": "PASS"
+}

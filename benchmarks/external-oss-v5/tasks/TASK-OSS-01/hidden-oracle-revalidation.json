@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 5,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-01",
+  "oracleSha256": "bc20c7b7821138e733a2aadbaf48397b0e3840c6cdb3c27bb8ae8a4c963ee6c3",
+  "commandIdentitySha256": "48051be552b46260645bd3449a7916f6ff828b0ea71ba189070fe44e0cb456fd",
+  "parent": {"exitCode": 1, "status": "FAIL_EXPECTED"},
+  "fix": {"exitCode": 0, "status": "PASS"},
+  "status": "PASS",
+  "claimBoundary": "The hidden oracle was executed outside the agent workspace with a reviewed local Vitest alias configuration; no oracle source or expected result was exposed to a coding agent."
+}

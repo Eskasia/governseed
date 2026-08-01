@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 5,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-09",
+  "repository": "paperless-ngx/paperless-ngx",
+  "upstreamRepositoryUrl": "https://github.com/paperless-ngx/paperless-ngx.git",
+  "upstreamBaseCommit": "fb3816486cf9fac6bcc23a82200f632a6f1b6ce8",
+  "upstreamFixCommit": "92c016ce473a27cfbf015eeaec4cfbde37c85e8e",
+  "upstreamBaseReachable": true,
+  "upstreamFixReachable": true,
+  "seedOverlayPath": null,
+  "seedOverlaySha256": null,
+  "sealedSeedCommit": "17562a35c7b3ebf87e0c960306af6de39c79248b",
+  "sealedSeedGitTree": "e555d1a1cdcc53b05f0fa1ecce36c996dd203ac2",
+  "sealedSeedTreeSha256": "64d046e9abad54f4f10d2e489d4385e5ca6df1e0d5b8d67ecf48ad560bf4ad42",
+  "taskBriefSha256": "59c0898106338adce0c2489e1213ba67e7c0549a90f4c8208ab581c54046e719",
+  "hiddenOracleSha256": "34c3f64aebd45be29fd0b1033e3649025a2c93b2c153178ecb124c086d368f2c",
+  "legacyV3SeedCommit": "5f5ab1beea4feaaecee7131b4b36185f09e2f53c",
+  "legacyV3SeedTreeSha256": "64d046e9abad54f4f10d2e489d4385e5ca6df1e0d5b8d67ecf48ad560bf4ad42",
+  "legacyV3SeedTreeHashReproduced": true,
+  "reconstruction": {
+    "mode": "upstream-base-plus-reviewed-overlay",
+    "overlayApplied": false,
+    "overlayPaths": [],
+    "sealedCommitStableAcrossTwoReconstructions": true,
+    "sealedGitTreeStableAcrossTwoReconstructions": true,
+    "sealedTreeSha256StableAcrossTwoReconstructions": true,
+    "status": "PASS"
+  }
+}

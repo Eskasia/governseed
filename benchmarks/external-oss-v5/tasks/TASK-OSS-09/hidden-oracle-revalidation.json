@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 5,
+  "benchmarkId": "GS-OSS-2026-08-01-V5",
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-09",
+  "oracleSha256": "34c3f64aebd45be29fd0b1033e3649025a2c93b2c153178ecb124c086d368f2c",
+  "commandIdentitySha256": "8763b0cf0fe09dcd235f0ddc6ee555c073831193b20c41d16a0ce1d59a0ed8e3",
+  "parent": {"exitCode": 1, "status": "FAIL_EXPECTED"},
+  "fix": {"exitCode": 0, "status": "PASS"},
+  "status": "PASS",
+  "testEnvironment": "synthetic fixed test settings plus the locally built libmagic 5.46 toolchain; no credential was used",
+  "claimBoundary": "The hidden oracle was executed outside the agent workspace against synthetic UTF-16 input; no oracle source or expected result was exposed to a coding agent."
+}
