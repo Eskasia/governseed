@@ -7,14 +7,13 @@
   "repository": "Eskasia/governseed",
   "branch": "benchmark/v5-g1-cwd-fix",
   "baseCommit": "188df340b67d70a3fa32d30ce3e1761fcdb1ec7b",
-  "headCommit": "188df340b67d70a3fa32d30ce3e1761fcdb1ec7b",
+  "headCommit": "efcd6ba546351fff03401e865ad1011e8e254227",
   "repairScope": "Minimal workflow cwd repair only; final repair commit is reported with the pushed handoff.",
   "filesChanged": [
     ".github/workflows/external-oss-v5-dependency-cache.yml",
     "benchmarks/external-oss-v5/tests/dependency-cache-workflow-validation.mjs",
     "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1.json",
     "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-unreviewed.json",
-    "benchmarks/external-oss-v5/control/G1/dispatch-attempt-1-reviewed.json",
     "benchmarks/external-oss-v5/control/G1/receipt-review-input.json",
     "benchmarks/external-oss-v5/control/G1/dispatch-sol-verdict.json",
     "benchmarks/external-oss-v5/control/G1/dispatch-sol-review-evidence.json",
@@ -47,10 +46,10 @@
     "TASK-OSS-03 npm ci now runs inside sealed_root.",
     "TASK-OSS-09 uv sync --group testing now runs inside sealed_root.",
     "Static regression mutations reject each preparation install outside sealed_root and accept the sealed-root form.",
-    "Original dispatch-attempt-1.json bytes are preserved and duplicated as dispatch-attempt-1-unreviewed.json; reviewed classification is in dispatch-attempt-1-reviewed.json."
+    "Superseded dispatch-attempt-1 wording is preserved as dispatch-attempt-1-unreviewed.json; dispatch-attempt-1.json is the corrected HARNESS_DEFECT evidence."
   ],
-  "prStatus": "NOT_CREATED_YET",
-  "checks": "LOCAL_VALIDATION_PASS; GitHub PR checks not yet available",
+  "prStatus": "PR_CREATED; https://github.com/Eskasia/governseed/pull/49",
+  "checks": "PR checks observed IN_PROGRESS before this handoff correction; final check result is recorded in the completion report",
   "knownLimitations": [
     "Run 30711805623 remains unchanged historical FAILURE evidence.",
     "No artifacts were downloaded in this repair step and no cache archives or receipts are created.",
