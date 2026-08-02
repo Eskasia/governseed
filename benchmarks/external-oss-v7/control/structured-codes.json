@@ -9,7 +9,16 @@
     "RUNTIME_IMAGE_ARCHIVE_HASH_MISMATCH",
     "DEPENDENCY_CACHE_INCOMPLETE",
     "OFFLINE_SMOKE_FAILED",
-    "CACHE_RECEIPT_INVALID"
+    "CACHE_RECEIPT_INVALID",
+    "WORKSPACE_TRAVERSE_DENIED",
+    "HARNESS_EXECUTION_DENIED",
+    "CACHE_READ_DENIED",
+    "CACHE_WRITE_ALLOWED",
+    "RUNTIME_BINARY_EXECUTION_DENIED",
+    "WORKING_DIRECTORY_DENIED",
+    "HOME_NOT_WRITABLE",
+    "TMP_NOT_WRITABLE",
+    "OFFLINE_PERMISSION_CAUSE_UNKNOWN"
   ],
   "claimBoundary": "Codes classify measured harness observations; they do not create a runtime result without an emitted receipt."
 }

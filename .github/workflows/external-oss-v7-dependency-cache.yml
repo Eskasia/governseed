@@ -88,8 +88,6 @@ jobs:
     name: Build V7 runtime images
     needs: qualify-seed-identity
     uses: ./.github/workflows/external-oss-v7-runtime-image.yml
-    with:
-      task_id: ALL
 
   prepare-dependency-cache:
     name: Prepare V7 dependency cache (${{ matrix.task_id }})
@@ -108,21 +106,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
-      - name: Set up Node runtime
-        if: matrix.task_id == 'TASK-OSS-01' || matrix.task_id == 'TASK-OSS-03'
-        uses: actions/setup-node@v4
-        with:
-          node-version: 26.3.0
-      - name: Set up Python runtime
-        if: matrix.task_id == 'TASK-OSS-09'
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.14
-      - name: Set up uv
-        if: matrix.task_id == 'TASK-OSS-09'
-        uses: astral-sh/setup-uv@v6
-        with:
-          version: 0.11.8
       - name: Download exact V7 runtime image
         uses: actions/download-artifact@v4
         with:
@@ -188,9 +171,14 @@ jobs:
           test -z "$(git -C "$sealed_root" remote)"
           case "$TASK_ID" in
             TASK-OSS-01)
-              corepack enable
-              corepack prepare pnpm@10.6.2 --activate
-              ( cd "$sealed_root"; pnpm install --frozen-lockfile --ignore-scripts; pnpm --filter @immich/sdk run build )
+              docker run --rm --network bridge --user "$(id -u):$(id -g)" \
+                --mount "type=bind,src=$sealed_root,dst=/workspace" --workdir /workspace \
+                "$runtime_tag" sh -ceu '
+                  export HOME=/tmp/home NPM_CONFIG_CACHE=/tmp/npm-cache
+                  mkdir -p "$HOME" "$NPM_CONFIG_CACHE"
+                  npm exec --yes --package=pnpm@10.6.2 -- pnpm install --frozen-lockfile --ignore-scripts
+                  npm exec --yes --package=pnpm@10.6.2 -- pnpm --filter @immich/sdk run build
+                '
               test -z "$(git -C "$sealed_root" status --porcelain -- pnpm-lock.yaml)"
               docker run --rm --network bridge --user "$(id -u):$(id -g)" \
                 --mount "type=bind,src=$sealed_root,dst=/workspace" --workdir /workspace/packages/cli \
@@ -199,7 +187,13 @@ jobs:
               printf '%s\n' packages/sdk/build >> "$artifact/cache-roots.txt"
               ;;
             TASK-OSS-03)
-              ( cd "$sealed_root"; npm ci --no-audit --no-fund )
+              docker run --rm --network bridge --user "$(id -u):$(id -g)" \
+                --mount "type=bind,src=$sealed_root,dst=/workspace" --workdir /workspace \
+                "$runtime_tag" sh -ceu '
+                  export HOME=/tmp/home NPM_CONFIG_CACHE=/tmp/npm-cache
+                  mkdir -p "$HOME" "$NPM_CONFIG_CACHE"
+                  npm ci --no-audit --no-fund
+                '
               test -z "$(git -C "$sealed_root" status --porcelain -- package-lock.json)"
               docker run --rm --network bridge --user "$(id -u):$(id -g)" \
                 --mount "type=bind,src=$sealed_root,dst=/workspace" --workdir /workspace \
@@ -207,11 +201,14 @@ jobs:
               printf '%s\n' node_modules > "$artifact/cache-roots.txt"
               ;;
             TASK-OSS-09)
-              uv_binary=$(command -v uv)
               docker run --rm --network bridge --user "$(id -u):$(id -g)" \
                 --mount "type=bind,src=$sealed_root,dst=/workspace" \
-                --mount "type=bind,src=$uv_binary,dst=/usr/local/bin/uv,readonly" \
-                --workdir /workspace "$runtime_tag" /usr/local/bin/uv sync --group testing --directory /workspace
+                --workdir /workspace "$runtime_tag" sh -ceu '
+                  export HOME=/tmp/home PIP_CACHE_DIR=/tmp/pip-cache
+                  mkdir -p "$HOME" "$PIP_CACHE_DIR"
+                  python -m pip install --disable-pip-version-check --no-cache-dir --prefix /tmp/uv uv==0.11.8
+                  /tmp/uv/bin/uv sync --group testing --directory /workspace
+                '
               test -z "$(git -C "$sealed_root" status --porcelain -- uv.lock)"
               docker run --rm --network bridge --user "$(id -u):$(id -g)" \
                 --mount "type=bind,src=$sealed_root,dst=/workspace" --workdir /workspace \
@@ -363,7 +360,7 @@ jobs:
           chmod -R a-w "$cache_root"
           cp -a "$cache_root/." "$negative_cache/"
           chmod -R u+rwX "$negative_cache"
-          case "$TASK_ID" in TASK-OSS-01|TASK-OSS-03) required_path=node_modules;; TASK-OSS-09) required_path=.venv/bin/python;; *) exit 2;; esac
+          case "$TASK_ID" in TASK-OSS-01) required_path=packages/cli/node_modules;; TASK-OSS-03) required_path=node_modules;; TASK-OSS-09) required_path=.venv/bin/python;; *) exit 2;; esac
           test -e "$negative_cache/$required_path"
           rm -rf "$negative_cache/$required_path"
           test ! -e "$negative_cache/$required_path"

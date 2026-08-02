@@ -74,6 +74,13 @@ for (const taskId of tasks) require(dependencyWorkflow.includes(`task_id: ${task
 require((dependencyWorkflow.match(/task_id: TASK-OSS-\d+/gu) ?? []).length === 9, 'V7 matrix scope is not exactly three tasks in three matrix jobs');
 require(dependencyWorkflow.includes('uses: ./.github/workflows/external-oss-v7-runtime-image.yml'), 'dependency workflow calls V7 image workflow');
 require(dependencyWorkflow.includes('external-oss-v7-runtime-image-${{ matrix.task_id }}'), 'exact runtime image artifact per task');
+require(dependencyWorkflow.includes('npm exec --yes --package=pnpm@10.6.2'), 'Immich preparation runs pnpm inside runtime image');
+require(dependencyWorkflow.includes('npm ci --no-audit --no-fund'), 'Uptime preparation command remains fixed');
+require(dependencyWorkflow.includes('python -m pip install --disable-pip-version-check --no-cache-dir --prefix /tmp/uv uv==0.11.8'), 'Paperless preparation installs userland uv inside runtime image');
+require(!dependencyWorkflow.includes('uv_binary=$(command -v uv)'), 'host uv injection removed');
+require(!dependencyWorkflow.includes('uses: actions/setup-node@v4'), 'host Node setup removed from measured preparation');
+require(!dependencyWorkflow.includes('uses: actions/setup-python@v5'), 'host Python setup removed from measured preparation');
+require(!dependencyWorkflow.includes('uses: astral-sh/setup-uv@v6'), 'host uv setup removed from measured preparation');
 require(dependencyWorkflow.includes('docker load --input "$artifact/runtime-image.tgz"'), 'prepared cache loads exact image archive');
 require(dependencyWorkflow.includes('runtimeImageArchiveHashRecomputed: true'), 'runtime archive hash is recomputed');
 require(dependencyWorkflow.includes('runtimeImageIdentityPass: true'), 'runtime image identity receipt');
@@ -95,6 +102,7 @@ const offline = section(dependencyWorkflow, '  verify-dependency-cache-offline:'
 for (const literal of ['--network none', '--read-only', '--cap-drop=ALL', '--security-opt no-new-privileges:true', '--user 65532:65532', '--pids-limit 256', '--cpus 4', '--memory 15g', 'dst=/workspace', 'dst=/cache,readonly', 'dst=/harness,readonly', 'dst=/home/benchmark', 'dst=/tmp']) require(offline.includes(literal), `offline containment literal: ${literal}`);
 for (const code of structuredCodes.codes) require(structuredCodes.codes.includes(code), `structured code registry: ${code}`);
 require(offline.includes('rm -rf "$negative_cache/$required_path"'), 'negative test removes actual required path');
+require(dependencyWorkflow.includes('TASK-OSS-01) required_path=packages/cli/node_modules'), 'Immich negative test removes the task-local required cache entry');
 require(offline.includes('grep -Fq DEPENDENCY_CACHE_INCOMPLETE'), 'negative test checks structured block');
 require(offline.includes('test "$negative_rc" -eq 42'), 'negative test checks exit 42');
 require(offline.includes('measuredNetworkUsed: false'), 'offline measured network false');

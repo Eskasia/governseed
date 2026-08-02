@@ -2,23 +2,7 @@ name: External OSS V7 runtime image
 
 on:
   workflow_call:
-    inputs:
-      task_id:
-        required: false
-        type: string
-        default: ALL
   workflow_dispatch:
-    inputs:
-      task_id:
-        description: Build one task image or ALL three task images
-        required: true
-        type: choice
-        default: ALL
-        options:
-          - ALL
-          - TASK-OSS-01
-          - TASK-OSS-03
-          - TASK-OSS-09
 
 permissions:
   contents: read
@@ -30,7 +14,6 @@ env:
 jobs:
   build-runtime-image:
     name: Build V7 runtime image (${{ matrix.task_id }})
-    if: inputs.task_id == 'ALL' || inputs.task_id == matrix.task_id
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:

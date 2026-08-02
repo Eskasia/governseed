@@ -9,6 +9,7 @@ const errors = [];
 const require = (condition, message) => { if (!condition) errors.push(message); };
 
 require(workflow.includes('BASE_IMAGE'), 'runtime build receives an explicit base image');
+require(!workflow.includes('if: inputs.task_id'), 'runtime image dispatch does not filter matrix before matrix evaluation');
 require(workflow.includes('base_digest'), 'runtime receipt records base digest');
 require(workflow.includes('imageArchiveSha256'), 'runtime receipt records archive hash');
 require(workflow.includes('imageId'), 'runtime receipt records image ID');
