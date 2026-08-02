@@ -102,7 +102,7 @@ const offline = section(dependencyWorkflow, '  verify-dependency-cache-offline:'
 for (const literal of ['--network none', '--read-only', '--cap-drop=ALL', '--security-opt no-new-privileges:true', '--user 65532:65532', '--pids-limit 256', '--cpus 4', '--memory 15g', 'dst=/workspace', 'dst=/cache,readonly', 'dst=/harness,readonly', 'dst=/home/benchmark', 'dst=/tmp']) require(offline.includes(literal), `offline containment literal: ${literal}`);
 require(new Set(structuredCodes.codes).size === structuredCodes.codes.length, 'structured code registry has unique codes');
 require(structuredCodes.codes.every((code) => /^[A-Z][A-Z0-9_]+$/u.test(code)), 'structured code registry uses stable uppercase identifiers');
-for (const code of ['WORKSPACE_TRAVERSE_DENIED', 'HARNESS_EXECUTION_DENIED', 'CACHE_READ_DENIED', 'RUNTIME_BINARY_EXECUTION_DENIED', 'WORKING_DIRECTORY_DENIED', 'HOME_NOT_WRITABLE', 'TMP_NOT_WRITABLE', 'DEPENDENCY_CACHE_INCOMPLETE', 'OFFLINE_SMOKE_FAILED', 'OFFLINE_PERMISSION_CAUSE_UNKNOWN']) {
+for (const code of ['WORKSPACE_TRAVERSE_DENIED', 'HARNESS_EXECUTION_DENIED', 'CACHE_WRITE_ALLOWED', 'RUNTIME_BINARY_EXECUTION_DENIED', 'WORKING_DIRECTORY_DENIED', 'HOME_NOT_WRITABLE', 'TMP_NOT_WRITABLE', 'DEPENDENCY_CACHE_INCOMPLETE', 'OFFLINE_SMOKE_FAILED', 'OFFLINE_PERMISSION_CAUSE_UNKNOWN']) {
   require(offline.includes(code), `offline workflow emits registered code: ${code}`);
 }
 require(offline.includes('rm -rf "$negative_cache/$required_path"'), 'negative test removes actual required path');

@@ -395,7 +395,7 @@ jobs:
           test -e "/cache/$2" || fail DEPENDENCY_CACHE_INCOMPLETE 42
           test -r "/cache/$2" || fail DEPENDENCY_CACHE_INCOMPLETE 42
           test -x "/cache/$2" || fail RUNTIME_BINARY_EXECUTION_DENIED
-          if touch /cache/.v7-cache-write-test 2>/dev/null; then fail CACHE_READ_DENIED; fi
+          if touch /cache/.v7-cache-write-test 2>/dev/null; then fail CACHE_WRITE_ALLOWED; fi
           case "$1" in
             TASK-OSS-01) cd /workspace/packages/cli 2>/dev/null || fail WORKING_DIRECTORY_DENIED; ./node_modules/.bin/vitest --run src/commands/asset.spec.ts 2>/dev/null || fail OFFLINE_SMOKE_FAILED ;;
             TASK-OSS-03) cd /workspace 2>/dev/null || fail WORKING_DIRECTORY_DENIED; TEST_BACKEND=1 node --test --test-reporter=spec test/backend-test/test-status-page.js 2>/dev/null || fail OFFLINE_SMOKE_FAILED ;;
