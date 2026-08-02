@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V7",
+  "codes": [
+    "LIBMAGIC_SHARED_LIBRARY_MISSING",
+    "LIBMAGIC_DATABASE_MISSING",
+    "PYTHON_MAGIC_IMPORT_FAILED",
+    "RUNTIME_IMAGE_IDENTITY_MISMATCH",
+    "RUNTIME_IMAGE_ARCHIVE_HASH_MISMATCH",
+    "DEPENDENCY_CACHE_INCOMPLETE",
+    "OFFLINE_SMOKE_FAILED",
+    "CACHE_RECEIPT_INVALID"
+  ],
+  "claimBoundary": "Codes classify measured harness observations; they do not create a runtime result without an emitted receipt."
+}

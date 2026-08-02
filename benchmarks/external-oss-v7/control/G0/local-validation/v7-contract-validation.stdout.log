@@ -1,0 +1,1 @@
+{"schemaVersion":1,"benchmarkId":"GS-OSS-2026-08-02-V7","status":"PASS","checks":["V7 inherited evidence hashes","V7 workflow boundary","runtime image contract","offline negative boundary"],"errors":[]}

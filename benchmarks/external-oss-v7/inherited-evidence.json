@@ -1,0 +1,106 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V7",
+  "evidenceClass": "external-observational",
+  "baseCommit": "0f4b844673af47d654a1e84ba5463ac21bd09cba",
+  "v6Identity": {
+    "benchmarkId": "GS-OSS-2026-08-02-V6",
+    "mergedMainCommit": "0f4b844673af47d654a1e84ba5463ac21bd09cba",
+    "failedRunId": "30726888838",
+    "failureEvidenceCommit": "3ff3273eff5d1165d9d7b694fc9eb8eedf72e603",
+    "status": "HARD_BLOCKED",
+    "repairBudget": {
+      "maximum": 4,
+      "consumed": 4,
+      "resetForV7": true
+    }
+  },
+  "immutableBoundary": {
+    "readOnly": [
+      "benchmarks/external-oss-v2/",
+      "benchmarks/external-oss-v3/",
+      "benchmarks/external-oss-v4/",
+      "benchmarks/external-oss-v5/",
+      "benchmarks/external-oss-v6/",
+      "V5/V6 task facts",
+      "sealed seed identity",
+      "hidden oracle",
+      "public acceptance criteria",
+      "V6 run 30726888838 failure evidence",
+      "V6 Luna handoff, diagnostics, and Sol verdict"
+    ],
+    "v7Scope": "Only benchmarks/external-oss-v7/ and the two V7 workflow files may change. V7 repairs the runtime image contract only.",
+    "claimBoundary": "Inherited V6 evidence establishes provenance and the first failure only. It does not establish a V7 image, cache, offline, or G1 result."
+  },
+  "sources": [
+    {
+      "path": "benchmarks/external-oss-v6/control/G1/repair-4/run-30726888838-failure.json",
+      "sourceCommit": "3ff3273eff5d1165d9d7b694fc9eb8eedf72e603",
+      "sha256": "56ccaf244a2da0d6cb6d9a0c74d28340641082b6b67471beb65dce1dc8276f52",
+      "role": "immutable V6 first failure evidence",
+      "verification": "git show origin/benchmark/v6-offline-permission-fix-r4:benchmarks/external-oss-v6/control/G1/repair-4/run-30726888838-failure.json"
+    },
+    {
+      "path": ".github/workflows/external-oss-v6-dependency-cache.yml",
+      "sourceCommit": "0f4b844673af47d654a1e84ba5463ac21bd09cba",
+      "sha256": "95490ed0c68b45aa1e3d9b1f431f1a62e1d45b415135a9ddcd1f78cf3de419ce",
+      "role": "V6 runtime and containment contract"
+    },
+    {
+      "path": "benchmarks/external-oss-v6/control/G1/repair-4/implementation-handoff.json",
+      "sourceCommit": "0f4b844673af47d654a1e84ba5463ac21bd09cba",
+      "sha256": "ea522fc734bf73a051b1519dbc317e91f4858f8e221ceb7eeb9f82bf5bd53055",
+      "role": "V6 repair-4 runtime identity handoff"
+    },
+    {
+      "path": "benchmarks/external-oss-v6/control/G1/repair-4/run-30725930464-failure.json",
+      "sourceCommit": "0f4b844673af47d654a1e84ba5463ac21bd09cba",
+      "sha256": "acce345c732f13a6348addcfba52cd7b58a5669974799162d2990ff69d484299",
+      "role": "V6 prior failure evidence, preserved for separation of defects"
+    },
+    {
+      "path": "benchmarks/external-oss-v6/control/G1/repair-4/local-validation.json",
+      "sourceCommit": "0f4b844673af47d654a1e84ba5463ac21bd09cba",
+      "sha256": "079e3095123a4ff431710fdee55297ba3e98e7e71d5eb3276e19c27c5dc2a6b0",
+      "role": "V6 local/static validation boundary"
+    },
+    {
+      "path": "benchmarks/external-oss-v6/control/G1/repair-4/luna-handoff.json",
+      "sourceCommit": "0f4b844673af47d654a1e84ba5463ac21bd09cba",
+      "sha256": "5b9a334c1113c32e88eb257d4188d0b2cd775619522d617faa99d252744507ed",
+      "role": "V6 execution-layer handoff"
+    },
+    {
+      "path": "benchmarks/external-oss-v6/control/G1/sol-verdict.json",
+      "sourceCommit": "0f4b844673af47d654a1e84ba5463ac21bd09cba",
+      "sha256": "13eb9df65bb00a9c2007b80ed9877e103fafd6267e4795415cf9f5870aea9082",
+      "role": "V6 independent Sol review boundary"
+    }
+  ],
+  "taskIdentitySources": [
+    {
+      "path": "benchmarks/external-oss-v5/tasks/TASK-OSS-01/task-seed-identity.json",
+      "sha256": "07a38afcdc6cd46b1509df0bccb3d6941f3a95e137aa2de1f6293b3b91d73887",
+      "role": "fixed task seed identity"
+    },
+    {
+      "path": "benchmarks/external-oss-v5/tasks/TASK-OSS-03/task-seed-identity.json",
+      "sha256": "6ca94ddef9e6f2e8a7acaa5da7733aacddd426e6313b4bf800d8cd68a35ead15",
+      "role": "fixed task seed identity"
+    },
+    {
+      "path": "benchmarks/external-oss-v5/tasks/TASK-OSS-09/task-seed-identity.json",
+      "sha256": "9735771f442b4962b83c8c7323c2707f30e570f27202ac86d4db810876cd98d3",
+      "role": "fixed task seed identity"
+    }
+  ],
+  "sanitization": {
+    "rawLogs": "not copied",
+    "cacheArchives": "not copied",
+    "virtualenvs": "not copied",
+    "externalClones": "not created",
+    "credentials": "not read or recorded",
+    "codex": "not executed",
+    "hiddenOracle": "not copied"
+  }
+}

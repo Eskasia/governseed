@@ -1,0 +1,5 @@
+
+> agent-governance-starter@0.1.1 validate
+> node scripts/validate-starter.mjs .
+
+Starter validation passed.

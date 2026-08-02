@@ -1,0 +1,1115 @@
+
+> agent-governance-starter@0.1.1 ci
+> npm run check && npm run validate && npm run validate:runtime-proof && npm run test:governance && npm run test:brand && npm run test:decision-role && npm run test:policy-compiler && npm run test:governance-impact && npm run test:privacy && npm run validate:governance-impact && npm run eval:governance && npm run runtime:proof:mock && npm run smoke:base && npm run smoke:fullstack && npm run smoke:antigravity && npm run smoke:package && npm run fixtures
+
+
+> agent-governance-starter@0.1.1 check
+> node --check scripts/init.mjs && node --check scripts/doctor.mjs && node --check scripts/agent-governance.mjs && node --check scripts/validate-starter.mjs && node --check scripts/smoke-base.mjs && node --check scripts/smoke-fullstack.mjs && node --check scripts/smoke-antigravity.mjs && node --check scripts/smoke-package.mjs && node --check scripts/fixtures-check.mjs && node --check scripts/validate-runtime-proof.mjs && node --check scripts/assert-claude-first-response.mjs && node --check scripts/runtime-smoke-codex.mjs && node --check scripts/runtime-smoke-claude.mjs && node --check scripts/runtime-smoke-antigravity.mjs && node --check scripts/runtime-proof-mock.mjs && node --check scripts/governance-impact-eval.mjs && node --check scripts/lib/governance-checks.mjs && node --check scripts/lib/governance-artifacts.mjs && node --check scripts/lib/decision-role-core.mjs && node --check scripts/lib/decision-role-doctor.mjs && node --check scripts/lib/target-registry.mjs && node --check scripts/lib/claude-policy-adapter.mjs && node --check scripts/lib/policy-compiler-core.mjs && node --check scripts/lib/policy-compiler-project.mjs && node --check scripts/lib/codex-policy-adapter.mjs && node --check scripts/lib/claude-target-materializer.mjs && node --check scripts/lib/codex-target-materializer.mjs && node --check scripts/lib/target-attest.mjs && node --check scripts/lib/policy-compiler-doctor.mjs && node --check scripts/lib/governance-impact-core.mjs && node --check scripts/lib/governance-impact-adapters.mjs && node --check scripts/lib/source-freshness.mjs && node --check scripts/verify-sources.mjs
+
+
+> agent-governance-starter@0.1.1 validate
+> node scripts/validate-starter.mjs .
+
+Starter validation passed.
+
+> agent-governance-starter@0.1.1 validate:runtime-proof
+> node scripts/validate-runtime-proof.mjs .
+
+Runtime proof validation passed.
+
+> agent-governance-starter@0.1.1 test:governance
+> node --test tests/governance/antigravity-runtime.test.mjs tests/governance/doctor-governance.test.mjs tests/governance/rule-lifecycle.test.mjs tests/governance/traceability.test.mjs tests/governance/core-release-boundary.test.mjs tests/governance/package-surface.test.mjs tests/governance/vocabulary-consistency.test.mjs tests/governance/source-freshness.test.mjs tests/governance/template-language.test.mjs
+
+✔ the antigravity fixture ships the runtime files the adapter is read from (2.237667ms)
+✔ every shipped SKILL.md carries frontmatter the runtime can route on (1.575625ms)
+✔ the antigravity adapter defers to the canonical rules (0.20625ms)
+✔ Core scripts never import the experimental containment surface (14.366667ms)
+✔ the experimental containment surface is absent from Core scripts (0.312208ms)
+✔ Core refuses run and points at the experimental entry (0.607667ms)
+✔ Core refuses preflight and points at the experimental entry (0.196208ms)
+✔ every unfilled conditional template is reported field by field (3.0195ms)
+✔ the filled fullstack fixture passes every field-level check (0.579584ms)
+✔ absent conditional documents are not field-checked (1.599417ms)
+✔ a removed section is reported as missing, not as unfilled (0.964042ms)
+✔ a filled example carries every section of the template it was filled from (10.806958ms)
+✔ dropping the eval claim boundary is reported as missing (1.465875ms)
+✔ dropping the runtime evidence-persistence rules is reported as missing (2.909625ms)
+✔ a table row with an empty governed cell does not count as coverage (0.330709ms)
+✔ reports conflicting route modes (0.55075ms)
+✔ reports placeholders as unfilled decisions (0.123792ms)
+✔ reports route decisions that require rechecking (0.100958ms)
+✔ rejects governance-file symlinks without reading the target (4.922083ms)
+✔ allows only contained governance paths (0.825958ms)
+✔ blocks oversized and invalid UTF-8 governance files without echoing bytes (4.506584ms)
+✔ blocks a regular-file swap immediately before open without reading replacement bytes (1.1125ms)
+✔ doctor preserves schema version 1 and strict warning semantics (103.948584ms)
+✔ doctor distinguishes research template presence from confirmed activation (384.768958ms)
+✔ doctor fails closed on a symlinked governance file without leaking its target (86.00075ms)
+✔ doctor fails non-strict for a blocked optional file without calling it missing (110.800041ms)
+✔ doctor fails non-strict for a blocked conditional file and preserves blocked state (98.559791ms)
+✔ the tarball ships nothing outside the files whitelist (488.865666ms)
+✔ the directories kept out of the release unit never ship (380.99075ms)
+✔ the shipped base project does not drift from the example it stands in for (1.211042ms)
+✔ the published surface the brand test pins is still shipped (375.579542ms)
+✔ delivery audit status is explicit and limited to PASS or BLOCKED (2.724417ms)
+✔ governance-impact execution is confined to credential-free preflight and approved real workflows (0.78975ms)
+✔ rejects a duplicate gate ID inside one canonical ledger (0.470708ms)
+✔ rejects a gate defined by two canonical owners (0.153625ms)
+✔ rejects a gate status outside active or suspended (0.115167ms)
+✔ rejects a canonical ledger without the complete lifecycle header (0.109167ms)
+✔ requires a CHANGELOG retirement tombstone when a historical gate leaves the ledger (0.194209ms)
+✔ allows a suspended canonical gate after every consumer removes its reference (0.198792ms)
+✔ rejects a stale consumer reference to a suspended gate when validators are composed (0.187958ms)
+✔ requires every active gate ID in a runtime entry adapter (0.115416ms)
+✔ does not require every active gate ID in a non-runtime workflow consumer (0.099042ms)
+✔ rejects an adapter that restates a full gate row (0.108167ms)
+✔ requires a present mandatory workflow to be tracked in a git repository (111.418084ms)
+✔ does not require git tracking outside a git repository (1.065042ms)
+✔ requires every present release artifact to match HEAD, not only exist in the index (543.312292ms)
+✔ a git that cannot run is reported once, never blamed on a file (1.736209ms)
+✔ starter validator keeps the public CI workflow in the committed release unit (10501.772667ms)
+✔ starter validator requires deterministic LF checkouts (366.495166ms)
+✔ requires the mandatory workflow in every routing index (0.131291ms)
+✔ starter validator checks an undefined gate ID in a workflow consumer (363.165333ms)
+✔ starter validator discovers a newly added workflow consumer by its gate reference (367.732542ms)
+✔ starter validator checks a suspended gate reference in a workflow consumer (358.311375ms)
+✔ starter validator checks a structured gate-row copy in a workflow consumer (366.105667ms)
+✔ starter validator fails closed when CHANGELOG.md is missing (354.576792ms)
+✔ starter validator does not require all active IDs in a startup workflow consumer (370.259208ms)
+✔ product route workflow cites lifecycle fields without copying fallback or review events (0.305167ms)
+✔ bootstrap closeout routes only an actual durable-rule proposal (0.247833ms)
+✔ generated canonical ledger and runtime adapters satisfy the reference boundary (75.537666ms)
+✔ extractCitedPages resolves slugs against the declared base and collects full urls (1.958834ms)
+✔ a slug citation without a declared base url is an extraction failure, not a guess (0.285625ms)
+✔ two conflicting base urls are an extraction failure (0.114333ms)
+✔ normalizeText strips markup so an excerpt matches the rendered sentence (0.118292ms)
+✔ a verified source whose load-bearing sentence is still present is FRESH (0.876458ms)
+✔ a verified source whose sentence disappeared is DRIFTED (0.061209ms)
+✔ a failed fetch is UNREACHABLE, not a drift verdict (0.046083ms)
+✔ an UNVERIFIABLE source stays UNVERIFIABLE regardless of fetch output (0.049041ms)
+✔ coverage is bidirectional between cited pages and the lock (0.109333ms)
+✔ strict mode fails on drift or coverage gaps but not on unreachable sources (0.112209ms)
+✔ every page cited by the real matrices is locked, and every locked source is cited (1.260875ms)
+✔ the declared matrix list matches the capability matrices on disk (0.188833ms)
+✔ the committed lock is well-formed: excerpts non-empty, statuses closed, notes on the unverifiable (0.237ms)
+✔ every shipped template and example is English-only (29.201542ms)
+✔ accepts a complete SRC to EVD chain (22.497541ms)
+✔ accepts a complete CRLF SRC to EVD chain (1.034916ms)
+✔ rejects a requirement without a source (2.968834ms)
+✔ rejects a requirement whose source is not confirmed (0.7725ms)
+✔ keeps the old revision but activates only its replacement (14.640375ms)
+✔ rejects a forward supersedes reference (0.585416ms)
+✔ rejects a cyclic supersedes graph (0.634ms)
+✔ rejects a supersedes reference to another requirement ID (0.534208ms)
+✔ rejects an acceptance criterion bound to a superseded revision (0.495ms)
+✔ rejects an active requirement without an acceptance criterion (0.679042ms)
+✔ rejects an acceptance criterion without explicit yes and no outcomes (0.61225ms)
+✔ rejects an active requirement without task coverage (0.456125ms)
+✔ rejects a completed task without passing evidence (0.451833ms)
+✔ allows an unfinished task pair to wait for evidence (0.418416ms)
+✔ accepts privacy-safe opaque private attestations (0.551333ms)
+✔ blocks unsafe private source locators without reflecting their values (2.599917ms)
+✔ scans complete raw ledger rows before semantic rejection without reflecting canaries (4.3905ms)
+✔ rejects digest and masked opaque-pointer suffixes without reflecting their values (3.131333ms)
+✔ does not parse four-backtick code samples closed by three backticks on every ledger surface (2.821125ms)
+✔ blocks high-confidence privacy patterns and personal identity labels without reflection (5.72175ms)
+✔ blocks standalone or human-context Latin name-shaped identities without reflection (9.096292ms)
+✔ allows non-human Titlecase pairs outside human identity context (9.7855ms)
+✔ blocks Chinese identity values only when standalone or identity-context shaped (7.18275ms)
+✔ blocks masked and excerpt labels across English and Chinese variants (1.157ms)
+✔ blocks Taiwan landline and existing international phone formats without reflection (1.920042ms)
+✔ preserves non-personal role and opaque-pointer controls (1.427667ms)
+✔ rejects redundant tasks with invalid status, verification, or duplicate references (1.546125ms)
+✔ rejects redundant tasks with empty requirement or acceptance reference sets (1.391625ms)
+✔ validates UTC calendar dates and blocks private EVD date cells without reflection (1.930291ms)
+✔ uses only stable filenames and IDs in findings (0.415333ms)
+✔ fails closed when any required lineage ledger is missing or empty (3.596708ms)
+✔ fails closed on wrong-width rows in every lineage ledger (2.43125ms)
+✔ ignores commented and fenced ledger samples and rejects duplicate active ledgers (2.016042ms)
+✔ does not bind an exact ledger placed under the wrong section (0.338542ms)
+✔ rejects an empty open-loop ledger even when all requirements are withdrawn (0.38575ms)
+✔ applies one non-reflective privacy boundary to every lineage free-text surface (5.714917ms)
+✔ requires safe resolution and confirmation metadata before accepting lineage state (0.905167ms)
+✔ requires conservative role labels and exact SRC-to-REQ confirmer binding (1.852834ms)
+✔ enforces the source class, trace mode, and source ref matrix (3.075ms)
+✔ accepts only allowlisted evidence locator forms (4.423792ms)
+✔ requires matching route evidence in PROJECT_BRIEF and TECH_STACK (1.089167ms)
+✔ rejects route evidence with missing, pending, malformed, or inactive IDs (1.897541ms)
+✔ requires every AC, TASK requirement, and EVD to share a canonical pair (1.726416ms)
+✔ accepts multiple AC pairs only when tasks and passing evidence cover each pair (0.474875ms)
+✔ valid withdraw deactivates a requirement without demanding downstream coverage (0.866542ms)
+✔ rejects withdrawn revisions when route evidence still cites them (0.711875ms)
+✔ withdrawn-only graphs do not excuse missing downstream ledgers (0.383083ms)
+✔ rejects requirement resurrection after a valid withdraw (0.639042ms)
+✔ the ambiguous governance term materialized is always qualified (135.891459ms)
+✔ both explicit terms are defined by their canonical owner (0.287792ms)
+✔ the superseded four-level naming no longer stands unqualified (0.13875ms)
+✔ the published enforcement boundary names the schema-reserved level (0.116333ms)
+✔ the published claim surface covers every materializable target (0.198417ms)
+✔ no public document describes materialize as agent-self-bootstrappable (0.464542ms)
+ℹ tests 127
+ℹ suites 0
+ℹ pass 127
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13939.452583
+
+> agent-governance-starter@0.1.1 test:brand
+> node --test tests/brand/brand-compatibility.test.mjs
+
+✔ public brand surfaces identify GovernSeed (3.684583ms)
+✔ generated projects and CLI help display GovernSeed without renaming commands (302.167834ms)
+✔ legacy package, generator, schema, and fixture machine identifiers stay stable (2.755333ms)
+✔ every retained legacy brand token has an explicit compatibility class (36.636209ms)
+✔ the transition document classifies exactly the occurrences the repository retains (14.443833ms)
+✔ package dry run contains required governance surfaces and excludes local artifacts (357.460042ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 808.92625
+
+> agent-governance-starter@0.1.1 test:decision-role
+> node --test tests/decision-role/artifact-safety.test.mjs tests/decision-role/schema-contracts.test.mjs tests/decision-role/cli-contracts.test.mjs tests/decision-role/doctor-contracts.test.mjs
+
+✔ RED prerequisite: governance artifact safety module exports the contract (1.058833ms)
+✔ canonical JSON and project-local writes are deterministic (14.63475ms)
+▶ fatal UTF-8 and exact JSON reject BOM, NUL, and decoded duplicate keys
+  ✔ invalid UTF-8 (1.188125ms)
+  ✔ UTF-8 BOM (0.8225ms)
+  ✔ NUL (0.986542ms)
+  ✔ escape-equivalent duplicate key (0.882833ms)
+✔ fatal UTF-8 and exact JSON reject BOM, NUL, and decoded duplicate keys (7.143667ms)
+✔ exact JSON enforces 64-depth and 10,000-member bounds (21.648041ms)
+✔ reader is descriptor-bounded at 1 MiB plus one and accepts LF or CRLF (3.470583ms)
+✔ portable path policy rejects traversal and POSIX, macOS, Windows, home, or UNC absolutes (1.389416ms)
+✔ file and parent-directory symlinks fail closed for reads and writes (2.462083ms)
+✔ hard-linked files cannot import content from outside the project boundary (1.533917ms)
+✔ write rejects a deterministic parent identity swap before commit (5.582542ms)
+▶ privacy scanning blocks private fields and secrets without reflection
+  ✔ raw prompt (0.090083ms)
+  ✔ provider cookie (0.045459ms)
+  ✔ API key (0.0425ms)
+  ✔ secret query (0.364166ms)
+✔ privacy scanning blocks private fields and secrets without reflection (0.749959ms)
+✔ local ignore boundary is verified without scanning local contents (1.865042ms)
+✔ RED prerequisite: umbrella CLI entrypoint exists (0.853042ms)
+✔ assess derives low and high risk only from declared fields (189.633167ms)
+✔ assess returns needs-input without guessing unknown risk facts (88.837791ms)
+✔ deliberate plan writes a deterministic metadata-only four-seat four-round graph (201.661834ms)
+✔ deliberate plan records not-required without writing a plan (92.888167ms)
+✔ deliberate import always imports without approving or editing canonical documents (96.717125ms)
+▶ deliberate import fails closed on graph, source, decision, and lineage hash mismatch
+  ✔ graph id (91.157292ms)
+  ✔ graph version (88.899958ms)
+  ✔ source revision (86.604167ms)
+  ✔ decision (83.652ms)
+  ✔ decision hash (86.761959ms)
+  ✔ plan hash (85.170625ms)
+✔ deliberate import fails closed on graph, source, decision, and lineage hash mismatch (535.581375ms)
+▶ deliberate import rejects external human-confirmed or confirmation-like claims
+  ✔ human-confirmed status (82.960459ms)
+  ✔ embedded confirmation (85.330541ms)
+✔ deliberate import rejects external human-confirmed or confirmation-like claims (173.362958ms)
+✔ deliberate confirm stores an independent declared confirmation bound to decision and result hashes (453.339667ms)
+✔ roles assign selects the minimum bounded responsibilities with explainable separation (299.980792ms)
+▶ roles assign maps UI accessibility and schema migration surfaces to independent domain review
+  ✔ ui-accessibility (99.769542ms)
+  ✔ schema-migration (97.3655ms)
+✔ roles assign maps UI accessibility and schema migration surfaces to independent domain review (200.92175ms)
+✔ roles assign blocks a catalog that requests capabilities above the project ceiling (89.19825ms)
+✔ roles assign persists an exact external catalog path that strict doctor can revalidate (196.969417ms)
+✔ roles assign applies active Pack restrictions to the effective permission ceiling (103.543917ms)
+✔ roles human override appends one revision and identical replay is byte-stable (297.706333ms)
+✔ roles override recomputes separation of duties for an added verifier (210.106875ms)
+✔ pack list is deterministic, read-only, local, and writes no user-global state (173.301291ms)
+▶ JSON mode uses one stdout object and stable exit codes 0 through 5
+  ✔ 0 success (89.727125ms)
+  ✔ 1 needs input (87.832167ms)
+  ✔ 2 usage (82.039125ms)
+  ✔ 3 schema validation (85.445ms)
+  ✔ 4 fail-closed mismatch (90.078083ms)
+  ✔ 5 bounded local I/O (85.992458ms)
+✔ JSON mode uses one stdout object and stable exit codes 0 through 5 (532.060333ms)
+✔ normal CLI operation attempts no network, child process, or user-global write (105.355ms)
+✔ RED prerequisite: Milestone 1 doctor bridge exists (0.865125ms)
+▶ doctor emits every requested stable Milestone 1 finding code
+  ✔ RISK_INPUT_MISSING (106.766833ms)
+  ✔ RISK_PROFILE_INVALID (93.059917ms)
+  ✔ DECISION_REFERENCE_MISSING (99.34775ms)
+  ✔ DELIBERATION_REQUIRED (97.57175ms)
+  ✔ DELIBERATION_RESULT_INVALID (96.977834ms)
+  ✔ DELIBERATION_VERSION_MISMATCH (99.245833ms)
+  ✔ DELIBERATION_NOT_HUMAN_CONFIRMED (99.144041ms)
+  ✔ TASK_REFERENCE_MISSING (102.423542ms)
+  ✔ ROLE_ASSIGNMENT_MISSING (94.659ms)
+  ✔ ROLE_CATALOG_INVALID (96.317708ms)
+  ✔ ROLE_PRIVILEGE_EXPANSION (95.729667ms)
+  ✔ ROLE_SEPARATION_VIOLATION (95.9285ms)
+  ✔ SOURCE_REVISION_UNPINNED (95.06675ms)
+  ✔ SOURCE_LICENSE_MISSING (98.37725ms)
+  ✔ PRIVATE_CONTENT_BLOCKED (101.467792ms)
+  ✔ PATH_ESCAPE_BLOCKED (93.981791ms)
+  ✔ SYMLINK_BLOCKED (89.89725ms)
+  ✔ SECRET_VALUE_BLOCKED (96.138167ms)
+✔ doctor emits every requested stable Milestone 1 finding code (1790.263583ms)
+✔ normal doctor warns while strict doctor fails for missing high-risk assignment (189.405542ms)
+✔ normal doctor warns while strict doctor fails for imported but unconfirmed deliberation (198.199708ms)
+✔ strict doctor accepts a hash-bound declared confirmation without claiming identity proof (197.125917ms)
+✔ doctor applies active Pack restrictions when checking persisted role grants (196.940208ms)
+▶ privacy, path, symlink, and secret violations fail in normal and strict mode
+  ✔ PRIVATE_CONTENT_BLOCKED (196.107792ms)
+  ✔ PATH_ESCAPE_BLOCKED (195.207ms)
+  ✔ SYMLINK_BLOCKED (183.446125ms)
+  ✔ SECRET_VALUE_BLOCKED (197.048709ms)
+✔ privacy, path, symlink, and secret violations fail in normal and strict mode (781.211083ms)
+✔ invalid external source warns normally and fails strict doctor (197.691375ms)
+✔ legacy projects without .agent-governance keep normal and strict compatibility (173.682875ms)
+✔ seven public schemas are closed JSON Schema draft 2020-12 contracts (2.381833ms)
+✔ the separate CLI-output schema validates one closed stdout object (3.584583ms)
+✔ the six named fixtures exist and cover every public schema positively (2.523917ms)
+✔ canonical JSON and cross-file hashes are deterministic and content-bound (0.264834ms)
+✔ every public schema rejects an unknown schema version (1.273625ms)
+✔ duplicate stable IDs fail closed across lock, catalog, and deliberation graph (0.46ms)
+✔ external source provenance requires pinned revision, license, and hash (0.317667ms)
+✔ reader accepts UTF-8 and CRLF or LF without changing parsed meaning (3.292292ms)
+✔ reader blocks traversal, absolute home paths, and symlink escape (2.179125ms)
+✔ reader rejects invalid UTF-8, duplicate keys, and files over one MiB (2.235167ms)
+✔ reader blocks raw provider content, credentials, cookies, and secret query strings (0.929917ms)
+✔ catalog requests cannot expand the project permission ceiling (0.536083ms)
+✔ external-catalog assignments exact-match catalog provenance and role identity (0.470917ms)
+✔ built-in responsibility provenance hash is bound to the declared roles hash scope (0.145541ms)
+✔ state transitions, decision references, and task references are validated semantically (0.504917ms)
+✔ replay and content hash mismatches fail closed (2.367667ms)
+✔ human-confirmed requires a separate exact confirmation record (1.055875ms)
+ℹ tests 102
+ℹ suites 0
+ℹ pass 102
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4145.20175
+
+> agent-governance-starter@0.1.1 test:policy-compiler
+> node --test tests/policy-compiler/artifact-safety.test.mjs tests/policy-compiler/attest-contracts.test.mjs tests/policy-compiler/attest-schema-contracts.test.mjs tests/policy-compiler/claude-attest-contracts.test.mjs tests/policy-compiler/claude-compile-contracts.test.mjs tests/policy-compiler/claude-materialize-contracts.test.mjs tests/policy-compiler/cli-contracts.test.mjs tests/policy-compiler/codex-output-identity.test.mjs tests/policy-compiler/core.test.mjs tests/policy-compiler/doctor-contracts.test.mjs tests/policy-compiler/fixture-contracts.test.mjs tests/policy-compiler/materialize-contracts.test.mjs tests/policy-compiler/schema-contracts.test.mjs
+
+▶ compiler rejects symlink and hardlink inputs
+  ✔ symlink (155.439208ms)
+  ✔ hardlink (136.196167ms)
+  ✔ AGENTS hardlink (125.221083ms)
+  ✔ dry-run output parent symlink (158.83325ms)
+✔ compiler rejects symlink and hardlink inputs (586.386958ms)
+▶ compiler rejects traversal, secret-like content, invalid UTF-8, and 1 MiB input
+  ✔ traversal (139.424458ms)
+  ✔ ignored local Pack input (145.880208ms)
+  ✔ secret (111.517417ms)
+  ✔ url-userinfo (129.227ms)
+  ✔ github-fine-grained-token (121.572792ms)
+  ✔ url-secret-fragment (125.508459ms)
+  ✔ oauth-client-secret-query (128.626041ms)
+  ✔ oauth-refresh-token-fragment (141.869334ms)
+  ✔ invalid-utf8 (162.740291ms)
+  ✔ oversized (133.608208ms)
+✔ compiler rejects traversal, secret-like content, invalid UTF-8, and 1 MiB input (1369.276583ms)
+✔ transaction rolls back created artifacts when receipt commit fails (36.405458ms)
+✔ rollback never deletes output replaced with unknown content (25.406584ms)
+✔ rollback preserves identical output created by another compiler (25.854125ms)
+✔ receipt publication rechecks newly written policy bytes (23.502459ms)
+✔ unchanged outputs are rechecked during commit (41.886292ms)
+✔ commit rejects an output parent symlink inserted after prepare (15.851209ms)
+✔ transaction detects a parent directory identity swap before commit (11.008333ms)
+✔ artifact publication rolls back a parent swapped during the final link (12.960208ms)
+✔ artifact replacement restores prior bytes when its parent is swapped (19.789958ms)
+✔ input reads reject a parent directory swap before descriptor open (19.973084ms)
+✔ attest reports the project layer and never claims runtime enforcement (492.759458ms)
+✔ the reachable level is materialized-unverified and no argument can raise it (1116.82025ms)
+✔ caveats and known limitations are populated, not placeholders (491.3805ms)
+✔ the classification breakdown comes from the compiled adapter (385.626ms)
+✔ counts are defined: declared, target-materialized and project-layer observed (358.572208ms)
+✔ a hand edit to the target file is drift, not a silent rewrite (370.58475ms)
+✔ a removed target file is drift (365.088875ms)
+✔ a policy compiled after materialize is stale, not silently accepted (479.851875ms)
+✔ a nearer config file added after materialize is reported as shadowing (343.742375ms)
+✔ a permission profile added after materialize is reported as a model conflict (337.58725ms)
+✔ attest without a materialize receipt needs input (219.711625ms)
+✔ attest without a compiled policy needs input (96.177667ms)
+✔ a tampered receipt is invalid rather than trusted (325.116291ms)
+✔ attest rejects a non-codex target (310.74175ms)
+✔ attest is read-only: two runs leave the project byte-identical (417.820208ms)
+✔ both new schemas exist and are closed everywhere (1.363334ms)
+✔ a valid attest output passes its schema (3.40875ms)
+✔ levels above the project layer are unrepresentable, not blacklisted (1.854291ms)
+✔ trustStateObserved admits only unknown in both schemas (1.181167ms)
+✔ project-layer-observed cannot be paired with an admissible trust state (0.136125ms)
+✔ the claim is a schema constant (0.194541ms)
+✔ empty precedenceCaveat or knownLimitations fails validation (0.172333ms)
+✔ classificationSourceDivergence may be empty but never omitted (0.162ms)
+✔ the receipt schema requires modeCoverage on every target-materialized control (0.173083ms)
+✔ materializationStatus is a three-value enum and adds no classification (0.172708ms)
+✔ the receipt status enum covers exactly the two transaction outcomes (0.1295ms)
+✔ both schemas are reachable from the CLI output envelope (0.159584ms)
+✔ attest reports the claude project layer and never claims runtime enforcement (482.615333ms)
+✔ no argument or environment variable can raise the claude level (747.615292ms)
+✔ the claude precedence caveat states the documented layer order (494.865917ms)
+✔ the classification breakdown comes from the compiled claude adapter (454.109666ms)
+✔ a removed required deny or ask entry is drift (408.050958ms)
+✔ extra deny entries are additional restrictions, not drift, and are never removed (377.589208ms)
+✔ a changed governed scalar is drift (382.75775ms)
+✔ an unrelated key added by a human is neither drift nor an observation (374.85325ms)
+✔ a removed settings file is drift (367.836ms)
+✔ an unparseable settings file is drift, not a silent pass (335.502792ms)
+✔ a policy compiled after materialize is stale, not silently accepted (454.676125ms)
+✔ a planted settings.local.json is reported as shadowing the governed scalars only (324.458833ms)
+✔ a settings.local.json that overrides a governed scalar is drift (318.906833ms)
+✔ attest without a claude materialize receipt needs input (210.893875ms)
+✔ a codex receipt is not accepted as a claude attestation (419.607667ms)
+✔ attest is read-only: two claude runs leave the project byte-identical (409.293917ms)
+✔ compile accepts the claude target (211.404042ms)
+✔ the claude adapter lands in its own target directory (182.642125ms)
+✔ the claude adapter reports root-write and network as unsupported (196.877875ms)
+✔ compiling for claude does not disturb the codex adapter directory (357.412ms)
+✔ the shared schemas admit every registered target (0.457334ms)
+✔ every target the registry advertises as materializable actually materializes (724.107584ms)
+✔ materialize writes .claude/settings.json and a receipt for the claude target (361.648916ms)
+✔ the emitted settings file is restriction-only and grants nothing (358.226125ms)
+✔ ownership is recorded in the receipt and never as a marker key in the file (363.819625ms)
+✔ a second materialize run writes nothing and produces no second receipt (481.25025ms)
+✔ dry-run performs every check and writes nothing at all (477.346875ms)
+✔ hand-written deny entries in an existing settings file are all preserved (291.879041ms)
+✔ a conflicting scalar fails closed and names both values (243.345583ms)
+✔ an unparseable existing settings file is refused, never replaced (250.445375ms)
+✔ materialize writes only the project settings file, never the local or user-global scope (266.0265ms)
+✔ an existing settings.local.json is never read as ownership and never written (249.729833ms)
+✔ materialize refuses a settings path that is a symlink (246.927083ms)
+✔ a sandbox-protected .claude directory is a named refusal (245.750167ms)
+✔ the network control is deferred with a reason, never approximated as a Bash deny (250.916417ms)
+✔ a codex materialization and a claude materialization coexist untouched (471.750375ms)
+✔ materialize without a compiled claude policy needs input rather than guessing (227.742458ms)
+✔ CRLF governed input produces byte-identical claude settings output (449.174458ms)
+✔ a tampered receipt at the same identity is invalid rather than trusted (324.305625ms)
+✔ compile creates canonical policy, Codex adapter, and receipt locally (222.439875ms)
+▶ compile validates proposed decisions and retains active confirmed decisions as provenance
+  ✔ proposed decision is valid but inactive (138.374ms)
+  ✔ active confirmed decision is retained (216.975333ms)
+✔ compile validates proposed decisions and retains active confirmed decisions as provenance (363.409166ms)
+✔ second compile produces zero filesystem diff and reports unchanged files (347.678875ms)
+✔ dry-run returns the complete change plan without mutating the filesystem (284.439958ms)
+✔ compile revalidates an external specialist catalog referenced by an assignment (599.168042ms)
+▶ compiler requires explicit Pack and source locks
+  ✔ .agent-governance/packs.lock.json (137.081834ms)
+  ✔ .agent-governance/source-lock.json (138.046583ms)
+✔ compiler requires explicit Pack and source locks (279.383584ms)
+✔ source lock always participates in the policy identity (244.345916ms)
+▶ Pack lock status and source lock paths use closed portable contracts
+  ✔ invalid Pack status (97.894416ms)
+  ✔ Windows-style imported file (96.774542ms)
+  ✔ Windows-style Pack artifact path (100.620084ms)
+✔ Pack lock status and source lock paths use closed portable contracts (303.139125ms)
+✔ restricted data remains visibly non-enforced in the Codex adapter (143.038708ms)
+✔ publish approval is preserved as human review guidance (128.283166ms)
+✔ malicious Pack expansion blocks without leaving outputs (110.341667ms)
+✔ compile preserves active Pack checks as effective evidence obligations (128.757708ms)
+▶ role scope and capability requests cannot exceed the active task
+  ✔ unrelated-scope (105.882625ms)
+  ✔ undeclared-capability (104.910708ms)
+✔ role scope and capability requests cannot exceed the active task (214.073625ms)
+✔ malformed role assignment is classified as invalid input (114.210333ms)
+✔ high-risk role separation must reference selected canonical reviewers (112.470542ms)
+✔ generated-artifact deny permits preview but blocks commit (210.787958ms)
+✔ missing or unresolved risk input returns needs-input with no partial output (109.210666ms)
+✔ owner conflict fails closed and preserves the non-owned file (217.222166ms)
+✔ CRLF and LF inputs produce the same manifest and adapter bytes (249.783791ms)
+✔ unsupported target and malformed option use stable usage contracts (181.565334ms)
+✔ the codex policy artifact is byte-identical to the pinned baseline (198.526709ms)
+✔ the codex adapter artifact is byte-identical to the pinned baseline (178.77625ms)
+✔ content-addressed identities still resolve to the same artifacts (171.602459ms)
+✔ the target-materialized codex config is byte-identical to the pinned baseline (360.171792ms)
+✔ the codex materialize receipt keeps its identity and its content (329.1735ms)
+✔ the codex attestation output is unchanged (491.6015ms)
+✔ canonical manifest is deterministic and keeps time out of the policy hash (9.708042ms)
+✔ permission merge uses the most restrictive meet and a Pack may narrow (1.818333ms)
+✔ Pack and role permission expansion fail closed (1.278375ms)
+✔ role capabilities are intersected and unsupported controls stay explicit (0.895541ms)
+✔ selected-role requests and grants are part of the permission meet (0.664959ms)
+✔ role requests must stay within the assigned active task contract (1.404875ms)
+✔ Pack scope, checks, and network-derived content remain explicit (2.024208ms)
+✔ Packs cannot widen fixed controls, invent capabilities, or collide IDs (0.627417ms)
+✔ portable path normalization is platform-independent and rejects escape (0.145167ms)
+✔ portable input paths reject case-fold collisions (0.186625ms)
+✔ legacy project without policy artifacts remains doctor-compatible (322.268542ms)
+✔ compiled low-risk project passes strict doctor with honest warnings only (378.643333ms)
+✔ stale source hash is a strict failure (542.796084ms)
+✔ source lock drift is detected even when no Pack is active (359.943709ms)
+▶ output drift and partial compile fail strict doctor
+  ✔ drift (315.331042ms)
+  ✔ byte-only drift (375.646042ms)
+  ✔ partial (218.398417ms)
+✔ output drift and partial compile fail strict doctor (931.2295ms)
+✔ high-risk publish policy without approval evidence fails strict doctor (270.66375ms)
+✔ destructive work without approval evidence fails strict doctor (268.63475ms)
+✔ owner conflict and invalid adapter have stable doctor findings (220.604958ms)
+✔ strict doctor rejects a hash-consistent adapter that misstates the manifest mapping (272.800334ms)
+✔ strict doctor rejects AGENTS hardlink drift after compile (237.788667ms)
+✔ strict doctor rejects a second current-input compile transaction (250.498292ms)
+✔ policy compiler fixture: cross-platform-paths (153.6515ms)
+✔ policy compiler fixture: dry-run (154.228625ms)
+✔ policy compiler fixture: low-risk-codex (551.837209ms)
+✔ policy compiler fixture: malicious-pack-expansion (152.081ms)
+✔ policy compiler fixture: owner-conflict (285.598708ms)
+✔ policy compiler fixture: publish-approval-codex (380.795542ms)
+✔ policy compiler fixture: restricted-data-codex (164.606292ms)
+✔ policy compiler fixture: stale-policy (307.752625ms)
+✔ materialize writes one project-local target file and a receipt (317.205458ms)
+✔ the emitted target file is restriction-only for the base policy (274.246375ms)
+✔ a second materialize run writes nothing and reports no change (367.264667ms)
+✔ materializeId is derived from the compiled policy, never from the emitted bytes (372.758584ms)
+✔ dry-run performs every check and writes nothing at all (240.034334ms)
+✔ a foreign target file is an owner conflict and is left byte-identical (252.445291ms)
+✔ re-materializing over GovernSeed-owned bytes from an earlier policy updates them (481.306791ms)
+✔ unsupported and deferred controls are reported, never silently dropped (240.351333ms)
+✔ a deny control target-materialized as an approval gate says so in machine-readable output (235.052541ms)
+✔ a policy that would widen a key fails closed and writes nothing (346.936333ms)
+✔ a project-tree permission profile blocks materialize before any write (216.629834ms)
+✔ a [permissions table anywhere in the project tree also blocks materialize (222.757542ms)
+✔ a nearer config file blocks materialize instead of producing an inert file (220.619834ms)
+✔ a sandbox-protected target path is a named refusal, not a generic I/O error (217.07675ms)
+✔ materialize refuses a target path that is a symlink (215.027791ms)
+✔ materialize without a compiled policy needs input rather than guessing (95.868125ms)
+✔ materialize rejects an unregistered target and any level argument (284.249833ms)
+✔ materialize writes nothing outside the project root, including user-global config (232.3065ms)
+✔ materialize never writes the paths ADR-004 keeps closed (227.269792ms)
+✔ CRLF governed input produces byte-identical target output (435.046916ms)
+✔ the emitted table is present only when the sandbox mode uses it (219.107875ms)
+✔ an absolute or traversing project argument cannot escape into the filesystem (253.326625ms)
+✔ compile still leaves the target file absent (119.35325ms)
+✔ three policy compiler schemas are closed Draft 2020-12 contracts (1.409959ms)
+✔ positive policy, Codex adapter, and receipt samples validate (19.462666ms)
+✔ policy transactions reject incomplete derived claims and forged links (7.638917ms)
+✔ policy schemas reject unknown versions, secrets, home paths, and open objects (3.324375ms)
+✔ unsupported control lists cannot claim target enforcement (2.015917ms)
+✔ manifest rejects duplicate hash paths, control IDs, and capabilities (1.710542ms)
+✔ Codex adapter rejects duplicate mappings and invalid generated files (2.258292ms)
+✔ compile receipt rejects duplicate paths, state overlap, and partial outputs (3.570542ms)
+✔ CLI output schema accepts a compile receipt as the single result object (1.461459ms)
+ℹ tests 191
+ℹ suites 0
+ℹ pass 191
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8044.987333
+
+> agent-governance-starter@0.1.1 test:governance-impact
+> node --test tests/governance-impact/scorer.test.mjs tests/governance-impact/scenario-schema.test.mjs tests/governance-impact/cli.test.mjs tests/governance-impact/runner.test.mjs
+
+✔ CLI grammar accepts only the frozen commands and options (2.22475ms)
+✔ CLI grammar accepts the credential-free OCI preflight contract (0.409041ms)
+✔ CLI grammar accepts the reviewed OCI provenance tuple for real Codex runs (0.778666ms)
+✔ CLI grammar rejects ["unknown"] (0.122209ms)
+✔ CLI grammar rejects ["run","--scenario","scenario"] (0.082833ms)
+✔ CLI grammar rejects ["validate","--unknown","x","--scenario","scenario"] (0.040542ms)
+✔ CLI grammar rejects ["validate","--scenario","a","--scenario","b"] (0.038459ms)
+✔ CLI grammar rejects ["run","--scenario","/absolute","--manifest","m","--policy","p","--attempt-id","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","--output","o"] (0.051458ms)
+✔ CLI grammar rejects ["run","--scenario","s","--manifest","m","--policy","p","--attempt-id","ABC","--output","o"] (0.068583ms)
+✔ CLI grammar rejects ["run","--scenario","s","--manifest","m","--policy","p","--attempt-id","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","--output","o","--timeout-ms","0"] (0.115458ms)
+✔ CLI grammar rejects ["run","--scenario","s","--manifest","m","--policy","p","--attempt-id","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","--output","o","--timeout-ms","600001"] (0.06625ms)
+✔ CLI grammar rejects ["run","--scenario","s","--manifest","m","--policy","p","--attempt-id","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","--output","o","--runtime-image","registry/repo:latest"] (0.055625ms)
+✔ CLI grammar rejects ["run","--scenario","s","--manifest","m","--policy","p","--attempt-id","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","--output","o","--runtime-image","registry/repo@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","--codex-version","codex\nsecret"] (0.045666ms)
+✔ CLI grammar rejects ["run","--scenario","s","--manifest","m","--policy","p","--attempt-id","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","--output","o","--runtime-image","registry/repo@sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","--codex-version","codex/secret"] (0.037959ms)
+✔ CLI grammar rejects ["run","--scenario","s","--manifest","m","--policy","p","--attempt-id","aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","--output","o","--codex-binary-sha256","ABC"] (0.037541ms)
+✔ default command runs fixed offline controls and never resolves a runtime (7.517ms)
+✔ run refuses non-exact real opt-in undefined (0.162917ms)
+✔ run refuses non-exact real opt-in 0 (0.068375ms)
+✔ run refuses non-exact real opt-in true (0.058708ms)
+✔ missing executable exits 4 with no mock artifact or reflected path (0.177208ms)
+✔ installed unsafe runtime refusal is exit 2 before spawn (0.131125ms)
+✔ fatal errors use exactly one closed stderr envelope and stable exit (0.104709ms)
+✔ post-launch safety errors are explicitly fail-closed and never claim-evaluated (0.102417ms)
+✔ RUNTIME_CREDENTIAL_UNAVAILABLE retains its canonical terminal contract (0.117792ms)
+✔ EXECUTION_BOUNDARY_MISMATCH retains its canonical terminal contract (0.069834ms)
+✔ OCI_CGROUP_V2_UNAVAILABLE retains its canonical terminal contract (0.05975ms)
+✔ OCI_RECONCILIATION_UNCERTAIN retains its canonical terminal contract (0.06125ms)
+✔ OCI_BOUNDARY_PROOF_UNAVAILABLE retains its canonical terminal contract (0.053ms)
+✔ OCI_PROXY_ATTEMPT_UNSAFE retains its canonical terminal contract (0.053875ms)
+✔ OCI_CLEANUP_UNCERTAIN retains its canonical terminal contract (0.087ms)
+✔ OCI_PLATFORM_UNSUPPORTED is not collapsed into a generic terminal error (0.132708ms)
+✔ OCI_PROVENANCE_INVALID is not collapsed into a generic terminal error (0.049833ms)
+✔ OCI_IMAGE_IDENTITY_MISMATCH is not collapsed into a generic terminal error (0.10875ms)
+✔ OCI_RUNTIME_BINARY_INVALID is not collapsed into a generic terminal error (0.077458ms)
+✔ OCI_RUNTIME_BINARY_MISMATCH is not collapsed into a generic terminal error (0.077875ms)
+✔ OCI_RUNTIME_VERSION_INVALID is not collapsed into a generic terminal error (0.057458ms)
+✔ OCI_RUNTIME_VERSION_MISMATCH is not collapsed into a generic terminal error (0.059833ms)
+✔ OCI_HARDENING_MISMATCH is not collapsed into a generic terminal error (0.114792ms)
+✔ OCI_IMAGE_FILE_INVALID is not collapsed into a generic terminal error (0.0495ms)
+✔ OCI_IMAGE_INSPECTION_UNCERTAIN is not collapsed into a generic terminal error (0.054167ms)
+✔ OCI_PROXY_UNAVAILABLE is not collapsed into a generic terminal error (0.046625ms)
+✔ OCI_PREFLIGHT_CLEANUP_UNCERTAIN is not collapsed into a generic terminal error (0.043667ms)
+✔ OCI_PREFLIGHT_UNCERTAIN is not collapsed into a generic terminal error (0.044041ms)
+✔ OCI_PREFLIGHT_RECEIPT_INVALID is not collapsed into a generic terminal error (0.046208ms)
+✔ OCI_PREFLIGHT_RECEIPT_MISMATCH is not collapsed into a generic terminal error (0.046042ms)
+✔ EVIDENCE_NOT_COMMITTED is not collapsed into a generic terminal error (0.046ms)
+✔ OCI_PREFLIGHT_REQUIRED is not collapsed into a generic terminal error (0.064584ms)
+✔ OCI_ARM_INPUT_INVALID is not collapsed into a generic terminal error (0.05275ms)
+✔ OCI_RESPONSE_SCHEMA_UNSTABLE is not collapsed into a generic terminal error (0.051291ms)
+✔ OCI_ARM_OPEN_UNCERTAIN is not collapsed into a generic terminal error (0.049ms)
+✔ OCI_PROXY_POLICY_MISMATCH is not collapsed into a generic terminal error (0.055292ms)
+✔ OCI_PROXY_RELAY_UNAVAILABLE is not collapsed into a generic terminal error (0.051125ms)
+✔ OCI_INIT_PID_UNAVAILABLE is not collapsed into a generic terminal error (0.05ms)
+✔ OCI_CGROUP_PATH_UNAVAILABLE is not collapsed into a generic terminal error (0.052541ms)
+✔ OCI_EXECUTION_UNCERTAIN is not collapsed into a generic terminal error (0.245666ms)
+✔ OCI_RESPONSE_SCHEMA_DRIFT is not collapsed into a generic terminal error (0.108292ms)
+✔ OCI_SESSION_STATE_INVALID is not collapsed into a generic terminal error (0.056208ms)
+✔ OCI_CONTAINER_ENV_INVALID is not collapsed into a generic terminal error (0.047333ms)
+✔ OCI_FIFO_CREATE_FAILED is not collapsed into a generic terminal error (0.044083ms)
+✔ OCI_RUNTIME_SURFACE_FAILED is not collapsed into a generic terminal error (0.092167ms)
+✔ PROXY_ATTEMPT_UNSAFE is not collapsed into a generic terminal error (0.085625ms)
+✔ PROXY_CLEANUP_UNPROVEN is not collapsed into a generic terminal error (0.053791ms)
+✔ aggregate handler receives policy bootstrap seed and normalized manifest inputs (0.152834ms)
+✔ replay recomputes all hashes before scoring and persists only scored evidence (0.774083ms)
+✔ replay refuses an output parent symlink that escapes the repository (2.400208ms)
+✔ aggregate refuses an output parent escape without publishing a report (1.185083ms)
+✔ validate rejects policy without a manifest (0.173958ms)
+✔ validate proves the scenario is tracked and clean before reporting success (0.220292ms)
+✔ v2 evidence verifier requires manifest, policy, and receipt to match HEAD (807.648333ms)
+✔ tracked committed JSON binds loaded bytes to HEAD content (257.508583ms)
+✔ validate requires every scenario descendant to be tracked and clean (1905.676541ms)
+✔ aggregate calls core seam with policy seed and normalized manifest (0.463125ms)
+✔ gate calls evaluateGate with report, policy, and raw runs in order (0.143125ms)
+✔ gate rejection is stdout data with exit 1 (0.087042ms)
+✔ runtime support matrix refuses every unsafe real launch (1.670875ms)
+✔ linux Codex real command is refused before launch construction (0.24375ms)
+✔ darwin Codex real command is refused before launch construction (0.057334ms)
+✔ win32 Codex real command is refused before launch construction (0.057292ms)
+✔ Codex pure command builder keeps the frozen safe argv contract unit-testable (0.145209ms)
+✔ Windows Codex real command remains refused with Windows-shaped paths (0.592583ms)
+✔ minimal POSIX environment is an exact allowlist with no inherited secret (0.119208ms)
+✔ minimal Windows fake-runtime environment is closed and omits ComSpec (0.089625ms)
+✔ executable resolution treats BIN as one token and never invokes a shell (0.177792ms)
+✔ missing direct executable resolves to null without a mock fallback (0.114875ms)
+✔ Windows executable resolution accepts only native files compatible with shell false (0.286834ms)
+✔ deterministic arm order is domain-separated from input enumeration (0.507875ms)
+✔ artifact hash purpose domain uses only the frozen canonical entry payload (3.994083ms)
+✔ runChildSafely always launches executable plus argv with shell false (0.328541ms)
+✔ combined child output accepts 65535 bytes (73.852833ms)
+✔ combined child output accepts 65536 bytes (72.171834ms)
+✔ combined child output rejects the 65,537th byte before decode (172.669291ms)
+✔ thousands of small chunks cannot evade the aggregate output cap (170.645333ms)
+✔ malformed UTF-8 is fatal and raw bytes are not reflected (71.01625ms)
+✔ non-zero child status remains safe evidence (72.413ms)
+✔ timeout terminates and reaps the child as evidence (133.924916ms)
+✔ privacy canary blocks output without reflecting the canary (72.10575ms)
+✔ production privacy scanner maps child canaries to post-launch exit 3 (72.722583ms)
+✔ POSIX timeout reaps descendants before returning (456.948292ms)
+✔ a group reaped just after the kill grace window is not called unreapable (0.341125ms)
+✔ a group that never exits still fails closed (0.946875ms)
+✔ a probe that cannot signal fails closed without waiting out the deadline (0.203208ms)
+✔ POSIX completed leader exit reaps its surviving process group before return (495.978792ms)
+✔ POSIX failed leader exit reaps its surviving process group before return (495.247ms)
+✔ Codex capability stays closed because a POSIX setsid descendant escapes process-group proof (424.204708ms)
+✔ a refused process-group probe stays fail-closed and reports a missing capability (281.830167ms)
+✔ a probe that fails for any other reason stays an unqualified cleanup failure (300.407625ms)
+✔ exact JSON parser rejects duplicate keys and trailing content (1.264209ms)
+✔ exact JSON stable-open rejects swap after lstat before descriptor read (3.10425ms)
+✔ exact JSON input cap accepts the boundary and rejects cap plus one (42.806333ms)
+✔ exact JSON rejects initial symlinks and parent-containment escapes (2.006666ms)
+✔ privacy scanner rejects private markers before artifact hashing (2.5485ms)
+✔ lstat/open identity swap is blocked before target bytes or hashing (2.477083ms)
+✔ workspace copy consumes stable-open bytes and never path-raced copyFileSync bytes (13.040792ms)
+✔ v2 OCI workspace is writable by the fixed non-root container only inside its private root (13.15925ms)
+✔ workspace preparation removes its unique root when materialization fails (3.933042ms)
+✔ workspace preparation refuses a symlinked base that escapes the repository (1.883459ms)
+✔ workspace snapshot rejects a file swapped after lstat and before open (1.884ms)
+✔ oracle executes a pinned entrypoint despite a transient source swap (91.719375ms)
+✔ pinned oracle preserves scenario-relative access to the verified seed (100.48675ms)
+✔ oracle result rejects malformed arrays, missing IDs, and critical drift with oracle code (44.710792ms)
+✔ runner-owned trusted response schema does not depend on a scenario schema file (12.596292ms)
+✔ runner-owned response schema identity and digest are verified after execution (16.47025ms)
+✔ oracle entrypoint outside oracleDir is refused before child launch (1.467ms)
+✔ required manifest pin rejects null or absent policy hash (0.729917ms)
+✔ atomic persistence refuses output collisions without overwrite (2.420583ms)
+✔ atomic persistence publishes one synced closed JSON artifact (6.412208ms)
+✔ paired runner executes oracle after nonzero and timeout before cleanup/score/persist (2.842833ms)
+✔ OCI arm sessions prove the boundary empty before oracle and clean per arm before scoring (0.773834ms)
+✔ OCI boundary uncertainty cleans the session and workspace without oracle, score, or artifact (0.245625ms)
+✔ OCI proxy safety failure is preserved after cleanup and cannot publish evidence (0.248208ms)
+✔ cleanup failure discards candidate before score and persistence (0.137875ms)
+✔ all governance impact schemas are draft 2020-12 closed contracts (1.8075ms)
+✔ every distributed synthetic scenario validates and matches its pinned artifact hashes (6.4775ms)
+✔ every distributed schema regex compiles under Node.js (0.45775ms)
+✔ run schema closes runtime and starter commit label ambiguity (0.081125ms)
+✔ schemas require immutable artifacts, raw scenario identity, repetition identity, and privacy evidence (0.097708ms)
+✔ v2 schemas require a Codex execution boundary without widening v1 controls (0.100875ms)
+✔ raw and scored boundary evidence schemas are identical closed proof contracts (0.188125ms)
+✔ preflight receipt is a closed non-claim artifact with bounded timeout and provenance (0.05425ms)
+✔ all raw controls and recomputed results match the schemas exact object surfaces (2.538334ms)
+✔ telemetry schemas encode available/null states and JavaScript safe integer limits (0.109542ms)
+✔ telemetry oneOf schemas and manual scoring accept and reject the same edge cases (2.624833ms)
+✔ execution error codes are stable schema/manual identifiers, never raw messages or paths (1.370208ms)
+✔ schema bounds and manual scoring both reject unsafe seeds (0.298083ms)
+✔ schema relative paths use the same normalized POSIX semantics as validation (0.236958ms)
+✔ valid scenario returns a canonical scenario hash without absolute paths (0.188541ms)
+✔ artifact digest schema and manual validation fail closed on missing or invalid hashes (0.181125ms)
+✔ scenario validation enforces exact required and allowed keys (0.120458ms)
+✔ scenario validation enforces enums and relative POSIX paths (0.126917ms)
+✔ oracle command must be an argv array rather than a shell command string (0.115709ms)
+✔ scenario schema and manual validation both reject edge whitespace paths and NUL argv (0.115375ms)
+✔ fact parity is exact and cannot add governed requirements (0.072708ms)
+✔ checks and oracle entries must reference declared IDs (0.074417ms)
+✔ scenario contracts require every scoreable kind before scoreRun (0.330209ms)
+✔ scenario contracts bind acceptance and prohibition checks to complete fact coverage (0.15675ms)
+✔ scenario contracts reserve scope evidence for canonical path contracts (0.067791ms)
+✔ scenario validation is total across malformed nested surfaces (1.2685ms)
+✔ baseline control selects baseline (3.262291ms)
+✔ governed control selects governed (0.469833ms)
+✔ equivalent passing arms tie even when time and token totals differ (1.040833ms)
+✔ forbidden change fails even when acceptance passes (0.483542ms)
+✔ delivery score uses the preregistered weighted formula (0.388667ms)
+✔ delivery score remains unrounded and the one-point boundary is exact (3.78775ms)
+✔ unavailable token data remains null and does not choose a winner (0.302208ms)
+✔ winner precedence is pass, score delta, repair rounds, then tie (0.23025ms)
+✔ canonical SHA-256 is stable across object key order (0.08475ms)
+✔ canonical SHA-256 rejects unsupported, cyclic, and sparse values without collisions (0.924083ms)
+✔ Task 5 identity helpers expose the exact attempt and manifest contract (0.392333ms)
+✔ v1 synthetic attempt, manifest, raw, and scored hashes remain byte-compatible (0.336916ms)
+✔ v2 attempt and canonical manifest identities include executionBoundaryId (0.330208ms)
+✔ v2 scoring preserves closed boundary evidence in both scored arms (0.423083ms)
+✔ v2 scoring rejects different execution boundaries and boundary observations across arms (1.055042ms)
+✔ v2 boundary evidence is complete, closed, safe, and affirmative (3.615125ms)
+✔ v2 aggregate accepts only the preregistered execution boundary (1.010292ms)
+✔ scoring rejects runtime labels outside the preregistered adapter set (0.170458ms)
+✔ scoring rejects ambiguous starter commit lengths (0.160292ms)
+✔ aggregate counts distinct preregistered scenarios and keeps unavailable metrics null (11.61575ms)
+✔ release gate requires samples, completeness, confidence, and no regressions (15.367042ms)
+✔ release gate cannot make telemetry claims below coverage threshold (7.605959ms)
+✔ an improves policy cannot weaken the public evidence thresholds (1.085667ms)
+✔ aggregate accepts only raw evidence and requires a preregistered manifest (0.35675ms)
+✔ manifest is the completeness denominator and cloned run IDs do not add repetitions (0.7ms)
+✔ manifest closes unknown keys and duplicate scenario repetition identities (0.254375ms)
+✔ aggregate rejects a run outside the manifest cohort instead of pooling it (0.780333ms)
+✔ scoreRun binds artifact digests, evidence IDs, critical flags, and scope rules (0.7635ms)
+✔ raw scoring fails closed on missing privacy evidence and unknown keys (0.432792ms)
+✔ seeded aggregate is invariant to raw input permutation (8.404834ms)
+✔ each aggregate metric has an independent deterministic bootstrap stream (8.471625ms)
+✔ public gate rejects non-finite/inconsistent reports and unknown policy fields (12.294625ms)
+✔ public gate enforces the exact report shape and arithmetic invariants (43.438667ms)
+✔ swapping identical arm evidence inverts every directional outcome exactly (0.523166ms)
+✔ artifact and attempt identity tampering cannot escape a pinned manifest (1.127708ms)
+✔ public improves gate requires a pinned manifest hash and blocks rejected evidence (23.720292ms)
+✔ public gate recomputes the report from committed accepted raw runs (17.221792ms)
+ℹ tests 194
+ℹ suites 0
+ℹ pass 194
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3926.128417
+
+> agent-governance-starter@0.1.1 test:privacy
+> node --test tests/privacy/doctor-negative.test.mjs tests/privacy/eval-negative.test.mjs tests/privacy/runtime-proof-negative.test.mjs
+
+✔ doctor blocks private source patterns without reflecting matched values (555.316417ms)
+✔ doctor refuses a governance symlink to an environment file without reading it (83.813167ms)
+✔ evaluator scanner rejects encoded, Unicode, and private-source canaries (3.508291ms)
+✔ evaluator scanner failure is a stable fail-closed code (0.146625ms)
+✔ private scenario bytes are rejected before any artifact hash is computed (3.266833ms)
+✔ a linked environment file is rejected without reading or reflecting it (1.756333ms)
+✔ CLI privacy failure emits one closed envelope and no artifact (1.299708ms)
+✔ evaluator has no HMAC fallback or secret-key environment contract (0.456959ms)
+✔ importing runtime smoke modules has no console or filesystem side effect (82.756583ms)
+✔ all runtime smoke modules export main and exclude shell child runners (2.127333ms)
+✔ all three real-path seams use the shared runner, direct resolver, and minimal environment (18.776334ms)
+✔ mock mode is deterministic and never resolves or invokes a real runtime (31.435209ms)
+✔ a concurrent publisher loser never removes the winner artifact (6.112917ms)
+✔ closed parsers reject extra JSON fields and text sections without an artifact (6.789208ms)
+✔ raw stdout and stderr privacy canaries are blocked without reflection or temp persistence (3.121625ms)
+✔ invalid UTF-8 and combined output overflow fail closed through the shared runner (709.720833ms)
+✔ linked output roots and linked raw workspaces are rejected without reading environment data (2.599666ms)
+✔ cleanup uncertainty prevents a new artifact (2.236167ms)
+✔ missing runtime preserves prior canonical evidence and skips capabilities and children (1.727334ms)
+✔ workspace cleanup failure preserves prior canonical evidence after the expected child (2.520292ms)
+✔ differing, private, and oversized prior artifacts fail closed without mutation (20.385334ms)
+✔ lock cleanup removes only canonical output created by the current attempt (12.561833ms)
+✔ production real mode never falls back and refuses every unresolved containment residual (2.83ms)
+✔ standalone runtime-proof validator requires the exact forced-mock public entrypoint (803.729208ms)
+ℹ tests 24
+ℹ suites 0
+ℹ pass 24
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1873.045084
+
+> agent-governance-starter@0.1.1 validate:governance-impact
+> node --test tests/governance-impact/scenario-schema.test.mjs
+
+✔ all governance impact schemas are draft 2020-12 closed contracts (1.826625ms)
+✔ every distributed synthetic scenario validates and matches its pinned artifact hashes (6.580167ms)
+✔ every distributed schema regex compiles under Node.js (0.456ms)
+✔ run schema closes runtime and starter commit label ambiguity (0.078625ms)
+✔ schemas require immutable artifacts, raw scenario identity, repetition identity, and privacy evidence (0.09575ms)
+✔ v2 schemas require a Codex execution boundary without widening v1 controls (0.107833ms)
+✔ raw and scored boundary evidence schemas are identical closed proof contracts (0.170625ms)
+✔ preflight receipt is a closed non-claim artifact with bounded timeout and provenance (0.052583ms)
+✔ all raw controls and recomputed results match the schemas exact object surfaces (2.496084ms)
+✔ telemetry schemas encode available/null states and JavaScript safe integer limits (0.109834ms)
+✔ telemetry oneOf schemas and manual scoring accept and reject the same edge cases (1.230208ms)
+✔ execution error codes are stable schema/manual identifiers, never raw messages or paths (1.415209ms)
+✔ schema bounds and manual scoring both reject unsafe seeds (0.315792ms)
+✔ schema relative paths use the same normalized POSIX semantics as validation (0.178458ms)
+✔ valid scenario returns a canonical scenario hash without absolute paths (0.196125ms)
+✔ artifact digest schema and manual validation fail closed on missing or invalid hashes (0.185292ms)
+✔ scenario validation enforces exact required and allowed keys (0.129542ms)
+✔ scenario validation enforces enums and relative POSIX paths (0.072209ms)
+✔ oracle command must be an argv array rather than a shell command string (0.062584ms)
+✔ scenario schema and manual validation both reject edge whitespace paths and NUL argv (0.0895ms)
+✔ fact parity is exact and cannot add governed requirements (0.055833ms)
+✔ checks and oracle entries must reference declared IDs (0.072291ms)
+✔ scenario contracts require every scoreable kind before scoreRun (0.302292ms)
+✔ scenario contracts bind acceptance and prohibition checks to complete fact coverage (0.214458ms)
+✔ scenario contracts reserve scope evidence for canonical path contracts (0.092333ms)
+✔ scenario validation is total across malformed nested surfaces (1.256458ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 121.999833
+
+> agent-governance-starter@0.1.1 eval:governance
+> node scripts/governance-impact-eval.mjs
+
+{"schemaVersion":1,"ok":true,"command":"controls","code":"OK","artifact":null,"summary":{"controls":["baseline-wins","governed-wins","tie","missing-telemetry","forbidden-change"],"passed":5}}
+
+> agent-governance-starter@0.1.1 runtime:proof:mock
+> npm run validate:runtime-proof && node scripts/runtime-proof-mock.mjs
+
+
+> agent-governance-starter@0.1.1 validate:runtime-proof
+> node scripts/validate-runtime-proof.mjs .
+
+Runtime proof validation passed.
+codex runtime smoke: PASS
+claude runtime smoke: PASS
+antigravity runtime smoke: PASS
+
+> agent-governance-starter@0.1.1 smoke:base
+> node scripts/smoke-base.mjs
+
+Created directory: /Users/william/governseed-v7-runtime-image/.tmp/base
+  COPY PROJECT_BRIEF.md
+  COPY SPEC.md
+  COPY CONTEXT.md
+  COPY TASK_CONTRACT.md
+  COPY OPEN_LOOPS.md
+  COPY TECH_STACK.md
+  GEN  START_HERE.md
+  GEN  .agent-governance.json
+  GEN  README.md
+  GEN  AGENTS.md
+
+Done. Copied 6 template file(s), generated 4 file(s), skipped 0 existing file(s).
+
+Next steps:
+  1. Fill PROJECT_BRIEF.md with the one-line project direction, target user, and product shape decision.
+  2. Fill TECH_STACK.md with the user-declared or AI-recommended technology route.
+  3. Ask the agent to read START_HERE.md and its runtime instruction file.
+  4. Run: agent-governance-doctor <target-directory> when installed from npm,
+     or node governseed/scripts/doctor.mjs <target-directory> from a clone.
+Created directory: /Users/william/governseed-v7-runtime-image/.tmp/base-all
+  COPY AGENT_RUNTIME.md
+  COPY AI_SECURITY_REVIEW.md
+  COPY API_CONTRACT.md
+  COPY CONTEXT.md
+  COPY DATA_MODEL.md
+  COPY DESIGN_REVIEW.md
+  COPY DESIGN_SYSTEM.md
+  COPY ENV_CHECKLIST.md
+  COPY EVAL_PLAN.md
+  COPY MACOS_RELEASE_CHECKLIST.md
+  COPY OPEN_LOOPS.md
+  COPY PRESENTATION_BRIEF.md
+  COPY PROJECT_BRIEF.md
+  COPY RAG_DESIGN.md
+  COPY RESEARCH_SYNTHESIS.md
+  COPY SPEC.md
+  COPY TASK_CONTRACT.md
+  COPY TECH_STACK.md
+  COPY TESTER_HANDOFF.md
+  COPY UI_SPEC.md
+  GEN  START_HERE.md
+  GEN  .agent-governance.json
+  GEN  README.md
+  GEN  AGENTS.md
+
+Done. Copied 20 template file(s), generated 4 file(s), skipped 0 existing file(s).
+
+Next steps:
+  1. Fill PROJECT_BRIEF.md with the one-line project direction, target user, and product shape decision.
+  2. Fill TECH_STACK.md with the user-declared or AI-recommended technology route.
+  3. Ask the agent to read START_HERE.md and its runtime instruction file.
+  4. Run: agent-governance-doctor <target-directory> when installed from npm,
+     or node governseed/scripts/doctor.mjs <target-directory> from a clone.
+
+Project doctor: .tmp/base
+Profile: base
+
+Required documents:
+  OK README.md
+  OK PROJECT_BRIEF.md
+  OK SPEC.md
+  WARN Unfilled template: CONTEXT.md
+  OK TASK_CONTRACT.md
+  WARN Unfilled template: OPEN_LOOPS.md
+  OK AGENTS.md
+  OK TECH_STACK.md
+
+Conditional documents (not present - check if needed):
+  - UI_SPEC.md - needed if: Has UI / website / dashboard / landing page
+  - DESIGN_SYSTEM.md - needed if: Has screenshots / existing UI to extract design rules from
+  - DESIGN_REVIEW.md - needed if: Has UI review / beta / launch / visual QA
+  - DATA_MODEL.md - needed if: Has DB / Auth / tenant / permissions
+  - API_CONTRACT.md - needed if: Has API routes / server actions / webhooks
+  - ENV_CHECKLIST.md - needed if: Has deployment / third-party API keys
+  - PRESENTATION_BRIEF.md - needed if: Has presentation / slide deck / one-pager deliverable
+  - RESEARCH_SYNTHESIS.md - needed if: Has material evidence conflict / high-impact decision / multiple credible routes, and user confirms synthesis
+  - TESTER_HANDOFF.md - needed if: Has beta / tester handoff requirement
+  - MACOS_RELEASE_CHECKLIST.md - needed if: Has macOS app build / TCC / signing
+  - AGENT_RUNTIME.md - needed if: Has production-facing LLM agent / automation
+  - RAG_DESIGN.md - needed if: Has retrieval / knowledge base / document Q&A
+  - EVAL_PLAN.md - needed if: Has LLM/RAG/agent output needing regression testing
+  - AI_SECURITY_REVIEW.md - needed if: Has prompt injection / tenant data / PII risks
+
+Warnings:
+  WARN [UNFILLED_TEMPLATE] CONTEXT.md: document appears to be an unfilled template
+  WARN [UNFILLED_TEMPLATE] OPEN_LOOPS.md: document appears to be an unfilled template
+  WARN [ROUTE_DECISION_INCOMPLETE] PROJECT_BRIEF.md: product shape decision should be documented
+  WARN [ROUTE_DECISION_INCOMPLETE] TECH_STACK.md: technology route decision should be documented
+  WARN [TRACE_SOURCE_MISSING] PROJECT_BRIEF.md: source attestation ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_REVISION_INVALID] SPEC.md: requirement revision ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_SOURCE_MISSING] PROJECT_BRIEF.md: route evidence must contain unique confirmed source IDs
+  WARN [TRACE_REVISION_INVALID] PROJECT_BRIEF.md: route evidence must contain unique active requirement revisions
+  WARN [TRACE_SOURCE_MISSING] TECH_STACK.md: route evidence must contain unique confirmed source IDs
+  WARN [TRACE_REVISION_INVALID] TECH_STACK.md: route evidence must contain unique active requirement revisions
+  WARN [TRACE_ACCEPTANCE_MISSING] SPEC.md: acceptance criteria ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_TASK_COVERAGE_MISSING] TASK_CONTRACT.md: task coverage ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_EVIDENCE_MISSING] TASK_CONTRACT.md: acceptance evidence ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_CONFIRMATION_MISSING] OPEN_LOOPS.md: open-loop lineage row is invalid
+
+Result: All required documents present. 14 warning(s) to review.
+
+> agent-governance-starter@0.1.1 smoke:fullstack
+> node scripts/smoke-fullstack.mjs
+
+Created directory: /Users/william/governseed-v7-runtime-image/.tmp/fullstack
+  COPY PROJECT_BRIEF.md
+  COPY SPEC.md
+  COPY CONTEXT.md
+  COPY TASK_CONTRACT.md
+  COPY OPEN_LOOPS.md
+  COPY TECH_STACK.md
+  COPY DATA_MODEL.md
+  COPY API_CONTRACT.md
+  COPY ENV_CHECKLIST.md
+  COPY AGENT_RUNTIME.md
+  COPY RAG_DESIGN.md
+  COPY EVAL_PLAN.md
+  COPY AI_SECURITY_REVIEW.md
+  GEN  START_HERE.md
+  GEN  .agent-governance.json
+  GEN  README.md
+  GEN  AGENTS.md
+  GEN  CLAUDE.md
+  GEN  .agents/AGENTS.md
+  GEN  .agents/skills/bootstrap-intake/SKILL.md
+  GEN  .agents/skills/validation-gate/SKILL.md
+
+Done. Copied 13 template file(s), generated 8 file(s), skipped 0 existing file(s).
+
+Next steps:
+  1. Fill PROJECT_BRIEF.md with the one-line project direction, target user, and product shape decision.
+  2. Fill TECH_STACK.md with the user-declared or AI-recommended technology route.
+  3. Ask the agent to read START_HERE.md and its runtime instruction file.
+  4. Run: agent-governance-doctor <target-directory> when installed from npm,
+     or node governseed/scripts/doctor.mjs <target-directory> from a clone.
+
+Project doctor: .tmp/fullstack
+Profile: fullstack-ai
+
+Required documents:
+  OK README.md
+  OK PROJECT_BRIEF.md
+  OK SPEC.md
+  WARN Unfilled template: CONTEXT.md
+  OK TASK_CONTRACT.md
+  WARN Unfilled template: OPEN_LOOPS.md
+  OK AGENTS.md
+  OK TECH_STACK.md
+
+Profile documents (present):
+  OK DATA_MODEL.md
+  OK API_CONTRACT.md
+  OK ENV_CHECKLIST.md
+  OK AGENT_RUNTIME.md
+  OK RAG_DESIGN.md
+  OK EVAL_PLAN.md
+  OK AI_SECURITY_REVIEW.md
+
+Conditional documents (not present - check if needed):
+  - UI_SPEC.md - needed if: Has UI / website / dashboard / landing page
+  - DESIGN_SYSTEM.md - needed if: Has screenshots / existing UI to extract design rules from
+  - DESIGN_REVIEW.md - needed if: Has UI review / beta / launch / visual QA
+  - PRESENTATION_BRIEF.md - needed if: Has presentation / slide deck / one-pager deliverable
+  - RESEARCH_SYNTHESIS.md - needed if: Has material evidence conflict / high-impact decision / multiple credible routes, and user confirms synthesis
+  - TESTER_HANDOFF.md - needed if: Has beta / tester handoff requirement
+  - MACOS_RELEASE_CHECKLIST.md - needed if: Has macOS app build / TCC / signing
+
+Warnings:
+  WARN [UNFILLED_TEMPLATE] CONTEXT.md: document appears to be an unfilled template
+  WARN [UNFILLED_TEMPLATE] OPEN_LOOPS.md: document appears to be an unfilled template
+  WARN [ROUTE_DECISION_INCOMPLETE] PROJECT_BRIEF.md: product shape decision should be documented
+  WARN [ROUTE_DECISION_INCOMPLETE] TECH_STACK.md: technology route decision should be documented
+  WARN [TRACE_SOURCE_MISSING] PROJECT_BRIEF.md: source attestation ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_REVISION_INVALID] SPEC.md: requirement revision ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_SOURCE_MISSING] PROJECT_BRIEF.md: route evidence must contain unique confirmed source IDs
+  WARN [TRACE_REVISION_INVALID] PROJECT_BRIEF.md: route evidence must contain unique active requirement revisions
+  WARN [TRACE_SOURCE_MISSING] TECH_STACK.md: route evidence must contain unique confirmed source IDs
+  WARN [TRACE_REVISION_INVALID] TECH_STACK.md: route evidence must contain unique active requirement revisions
+  WARN [TRACE_ACCEPTANCE_MISSING] SPEC.md: acceptance criteria ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_TASK_COVERAGE_MISSING] TASK_CONTRACT.md: task coverage ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_EVIDENCE_MISSING] TASK_CONTRACT.md: acceptance evidence ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_CONFIRMATION_MISSING] OPEN_LOOPS.md: open-loop lineage row is invalid
+  WARN [CONDITIONAL_FIELD_UNFILLED] AGENT_RUNTIME.md: "Tools" has no 權限 entry
+  WARN [CONDITIONAL_FIELD_UNFILLED] AGENT_RUNTIME.md: "Tools" has no 副作用 entry
+  WARN [CONDITIONAL_FIELD_UNFILLED] AGENT_RUNTIME.md: "Tools" has no rollback entry
+  WARN [CONDITIONAL_FIELD_UNFILLED] AGENT_RUNTIME.md: "Human Approval" leaves empty: actions that must ask a human, approver, fallback, timeout
+  WARN [CONDITIONAL_FIELD_UNFILLED] EVAL_PLAN.md: "Golden Set" leaves case empty for at least one entry
+  WARN [CONDITIONAL_FIELD_UNFILLED] EVAL_PLAN.md: "Golden Set" leaves input empty for at least one entry
+  WARN [CONDITIONAL_FIELD_UNFILLED] EVAL_PLAN.md: "Golden Set" leaves expected behavior empty for at least one entry
+  WARN [CONDITIONAL_FIELD_UNFILLED] EVAL_PLAN.md: "Regression Gate" leaves empty: blocking threshold, run when prompt changes, run when retriever / tool schema / model changes
+  WARN [CONDITIONAL_FIELD_UNFILLED] EVAL_PLAN.md: "Traces" leaves empty: approved prompt-template version, privacy-safe trace metadata
+  WARN [CONDITIONAL_FIELD_UNFILLED] AI_SECURITY_REVIEW.md: "Prompt Injection" leaves empty: external content source, system / developer policy boundary, test cases
+  WARN [CONDITIONAL_FIELD_UNFILLED] AI_SECURITY_REVIEW.md: "Tool Side Effects" has no permission entry
+  WARN [CONDITIONAL_FIELD_UNFILLED] AI_SECURITY_REVIEW.md: "Tool Side Effects" has no side effect entry
+  WARN [CONDITIONAL_FIELD_UNFILLED] AI_SECURITY_REVIEW.md: "Tool Side Effects" has no human approval entry
+  WARN [CONDITIONAL_FIELD_UNFILLED] AI_SECURITY_REVIEW.md: "Tool Side Effects" has no rollback entry
+  WARN [CONDITIONAL_FIELD_UNFILLED] AI_SECURITY_REVIEW.md: "Data Leakage" leaves empty: approved prompt-template version, context minimization, pii / tenant data, secret handling
+  WARN [CONDITIONAL_FIELD_UNFILLED] AI_SECURITY_REVIEW.md: "Tenant / Access Isolation" is present but says nothing
+  WARN [CONDITIONAL_FIELD_UNFILLED] AI_SECURITY_REVIEW.md: "Kill Switch" is present but says nothing
+
+Result: All required documents present. 31 warning(s) to review.
+
+> agent-governance-starter@0.1.1 smoke:antigravity
+> node scripts/smoke-antigravity.mjs
+
+Created directory: /Users/william/governseed-v7-runtime-image/.tmp/antigravity
+  COPY PROJECT_BRIEF.md
+  COPY SPEC.md
+  COPY CONTEXT.md
+  COPY TASK_CONTRACT.md
+  COPY OPEN_LOOPS.md
+  COPY TECH_STACK.md
+  GEN  START_HERE.md
+  GEN  .agent-governance.json
+  GEN  README.md
+  GEN  AGENTS.md
+  GEN  .agents/AGENTS.md
+  GEN  .agents/skills/bootstrap-intake/SKILL.md
+  GEN  .agents/skills/validation-gate/SKILL.md
+
+Done. Copied 6 template file(s), generated 7 file(s), skipped 0 existing file(s).
+
+Next steps:
+  1. Fill PROJECT_BRIEF.md with the one-line project direction, target user, and product shape decision.
+  2. Fill TECH_STACK.md with the user-declared or AI-recommended technology route.
+  3. Ask the agent to read START_HERE.md and its runtime instruction file.
+  4. Run: agent-governance-doctor <target-directory> when installed from npm,
+     or node governseed/scripts/doctor.mjs <target-directory> from a clone.
+Created directory: /Users/william/governseed-v7-runtime-image/.tmp/antigravity-codex
+  COPY PROJECT_BRIEF.md
+  COPY SPEC.md
+  COPY CONTEXT.md
+  COPY TASK_CONTRACT.md
+  COPY OPEN_LOOPS.md
+  COPY TECH_STACK.md
+  GEN  START_HERE.md
+  GEN  .agent-governance.json
+  GEN  README.md
+  GEN  AGENTS.md
+
+Done. Copied 6 template file(s), generated 4 file(s), skipped 0 existing file(s).
+
+Next steps:
+  1. Fill PROJECT_BRIEF.md with the one-line project direction, target user, and product shape decision.
+  2. Fill TECH_STACK.md with the user-declared or AI-recommended technology route.
+  3. Ask the agent to read START_HERE.md and its runtime instruction file.
+  4. Run: agent-governance-doctor <target-directory> when installed from npm,
+     or node governseed/scripts/doctor.mjs <target-directory> from a clone.
+
+Project doctor: .tmp/antigravity
+Profile: base
+
+Required documents:
+  OK README.md
+  OK PROJECT_BRIEF.md
+  OK SPEC.md
+  WARN Unfilled template: CONTEXT.md
+  OK TASK_CONTRACT.md
+  WARN Unfilled template: OPEN_LOOPS.md
+  OK AGENTS.md
+  OK TECH_STACK.md
+
+Conditional documents (not present - check if needed):
+  - UI_SPEC.md - needed if: Has UI / website / dashboard / landing page
+  - DESIGN_SYSTEM.md - needed if: Has screenshots / existing UI to extract design rules from
+  - DESIGN_REVIEW.md - needed if: Has UI review / beta / launch / visual QA
+  - DATA_MODEL.md - needed if: Has DB / Auth / tenant / permissions
+  - API_CONTRACT.md - needed if: Has API routes / server actions / webhooks
+  - ENV_CHECKLIST.md - needed if: Has deployment / third-party API keys
+  - PRESENTATION_BRIEF.md - needed if: Has presentation / slide deck / one-pager deliverable
+  - RESEARCH_SYNTHESIS.md - needed if: Has material evidence conflict / high-impact decision / multiple credible routes, and user confirms synthesis
+  - TESTER_HANDOFF.md - needed if: Has beta / tester handoff requirement
+  - MACOS_RELEASE_CHECKLIST.md - needed if: Has macOS app build / TCC / signing
+  - AGENT_RUNTIME.md - needed if: Has production-facing LLM agent / automation
+  - RAG_DESIGN.md - needed if: Has retrieval / knowledge base / document Q&A
+  - EVAL_PLAN.md - needed if: Has LLM/RAG/agent output needing regression testing
+  - AI_SECURITY_REVIEW.md - needed if: Has prompt injection / tenant data / PII risks
+
+Warnings:
+  WARN [UNFILLED_TEMPLATE] CONTEXT.md: document appears to be an unfilled template
+  WARN [UNFILLED_TEMPLATE] OPEN_LOOPS.md: document appears to be an unfilled template
+  WARN [ROUTE_DECISION_INCOMPLETE] PROJECT_BRIEF.md: product shape decision should be documented
+  WARN [ROUTE_DECISION_INCOMPLETE] TECH_STACK.md: technology route decision should be documented
+  WARN [TRACE_SOURCE_MISSING] PROJECT_BRIEF.md: source attestation ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_REVISION_INVALID] SPEC.md: requirement revision ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_SOURCE_MISSING] PROJECT_BRIEF.md: route evidence must contain unique confirmed source IDs
+  WARN [TRACE_REVISION_INVALID] PROJECT_BRIEF.md: route evidence must contain unique active requirement revisions
+  WARN [TRACE_SOURCE_MISSING] TECH_STACK.md: route evidence must contain unique confirmed source IDs
+  WARN [TRACE_REVISION_INVALID] TECH_STACK.md: route evidence must contain unique active requirement revisions
+  WARN [TRACE_ACCEPTANCE_MISSING] SPEC.md: acceptance criteria ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_TASK_COVERAGE_MISSING] TASK_CONTRACT.md: task coverage ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_EVIDENCE_MISSING] TASK_CONTRACT.md: acceptance evidence ledger is missing, empty, duplicated, or malformed
+  WARN [TRACE_CONFIRMATION_MISSING] OPEN_LOOPS.md: open-loop lineage row is invalid
+
+Result: All required documents present. 14 warning(s) to review.
+smoke:antigravity passed: 3 runtime files match the fixture.
+
+> agent-governance-starter@0.1.1 smoke:package
+> node scripts/smoke-package.mjs
+
+smoke:package passed: 1 shipped test(s) and 3 bin(s) run from an install.
+
+> agent-governance-starter@0.1.1 fixtures
+> node scripts/fixtures-check.mjs
+
+Fixture doctor JSON and governance mutation checks passed.

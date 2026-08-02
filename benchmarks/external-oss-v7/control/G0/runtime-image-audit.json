@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V7",
+  "evidenceClass": "external-observational",
+  "phase": "G0",
+  "status": "NOT_RUN_LOCAL",
+  "runtimeWorkflow": ".github/workflows/external-oss-v7-runtime-image.yml",
+  "docker": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+  "requiredArtifacts": [
+    "runtime-image.tgz",
+    "runtime-image-receipt.json",
+    "package-inventory.txt",
+    "sbom.json",
+    "added-packages.txt"
+  ],
+  "requiredChecks": [
+    "digest-locked base image",
+    "image archive SHA-256 recomputation",
+    "x86_64 architecture",
+    "no unreported package inventory entries",
+    "Paperless libmagic shared library",
+    "Paperless magic database",
+    "Paperless python-magic import and functional smoke",
+    "no credentials, Codex, or hidden oracle"
+  ],
+  "claimBoundary": "No V7 runtime image is READY until the GitHub Actions image-build workflow emits and hashes the archive and receipt."
+}

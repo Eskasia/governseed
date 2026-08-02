@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V7",
+  "evidenceClass": "external-observational",
+  "platform": "linux/amd64",
+  "architecture": "x86_64",
+  "baseImages": {
+    "node": {
+      "v6Reference": "node:26.3.0-bookworm",
+      "lockedReference": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+      "digest": "sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+      "declaredAddedPackages": []
+    },
+    "paperless": {
+      "v6Reference": "python:3.14.6-slim-bookworm",
+      "lockedReference": "python@sha256:f70215e5dbe2a47dee6d23f9c6d358bf3c148f59cce2fd165b61118e9d80f2bb",
+      "digest": "sha256:f70215e5dbe2a47dee6d23f9c6d358bf3c148f59cce2fd165b61118e9d80f2bb",
+      "declaredAddedPackages": ["libmagic1", "libmagic-mgc"]
+    }
+  },
+  "runtimeChange": {
+    "confirmedCause": "LIBMAGIC_SHARED_LIBRARY_MISSING",
+    "directInstall": "libmagic1",
+    "runtimeDatabasePackage": "libmagic-mgc",
+    "measuredJobDynamicSystemPackageInstall": false
+  }
+}
