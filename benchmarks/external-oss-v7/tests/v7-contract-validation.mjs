@@ -91,7 +91,13 @@ require(dependencyWorkflow.includes('manifest.sha256'), 'manifest hash');
 require(dependencyWorkflow.includes('remote set-url --push origin no_push://disabled'), 'external push disabled');
 require(dependencyWorkflow.match(/GIT_AUTHOR_DATE=2026-08-01T00:00:00Z/g)?.length === 2, 'fixed seed author date');
 require(dependencyWorkflow.match(/GIT_COMMITTER_DATE=2026-08-01T00:00:00Z/g)?.length === 2, 'fixed seed committer date');
-require(dependencyWorkflow.includes('setfacl'), 'workspace uses bounded UID-specific ACL rather than chmod 777');
+const disposableWritableMounts = [
+  'type=tmpfs,dst=/workspace,tmpfs-mode=0777',
+  'type=tmpfs,dst=/home/benchmark,tmpfs-mode=0777',
+  'type=tmpfs,dst=/tmp,tmpfs-mode=0777',
+].every((literal) => dependencyWorkflow.includes(literal));
+require(disposableWritableMounts, 'offline writable paths use disposable tmpfs mounts');
+require(!dependencyWorkflow.includes('setfacl'), 'offline workflow does not depend on an unqualified host ACL utility');
 require(!dependencyWorkflow.includes('sudo'), 'V7 workflow does not use sudo');
 require(!dependencyWorkflow.includes('chmod 777'), 'V7 workflow does not use chmod 777');
 require(!dependencyWorkflow.includes('--user 0'), 'offline workflow contains no root container');
@@ -106,6 +112,9 @@ for (const code of ['WORKSPACE_TRAVERSE_DENIED', 'HARNESS_EXECUTION_DENIED', 'CA
   require(offline.includes(code), `offline workflow emits registered code: ${code}`);
 }
 require(offline.includes('rm -rf "$negative_cache/$required_path"'), 'negative test removes actual required path');
+require(offline.includes('test -e "$negative_cache/$required_path" || test -L "$negative_cache/$required_path"'), 'negative test accepts dangling required cache symlinks');
+require(offline.includes('test ! -e "$negative_cache/$required_path"'), 'negative test removes required cache entries');
+require(offline.includes('test ! -L "$negative_cache/$required_path"'), 'negative test removes dangling required cache symlinks');
 require(dependencyWorkflow.includes('TASK-OSS-01) required_path=packages/cli/node_modules'), 'Immich negative test removes the task-local required cache entry');
 require(offline.includes('grep -Fq DEPENDENCY_CACHE_INCOMPLETE'), 'negative test checks structured block');
 require(offline.includes('test "$negative_rc" -eq 42'), 'negative test checks exit 42');

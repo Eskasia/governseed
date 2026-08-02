@@ -305,7 +305,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
         include:
           - task_id: TASK-OSS-01
@@ -333,16 +333,20 @@ jobs:
           cache_root="$root/cache"
           negative_cache="$root/negative-cache"
           harness="$root/harness"
-          home_dir="$root/home"
-          tmp_dir="$root/tmp"
           out="$RUNNER_TEMP/v7-receipts/$TASK_ID"
-          mkdir -p "$workspace" "$cache_root" "$negative_cache" "$harness" "$home_dir" "$tmp_dir" "$out"
+          mkdir -p "$workspace" "$cache_root" "$negative_cache" "$harness" "$out"
+          failure_stage=bootstrap
+          failure_code=OFFLINE_PERMISSION_CAUSE_UNKNOWN
+          trap 'rc=$?; if test "$rc" -ne 0; then printf "{\"schemaVersion\":1,\"benchmarkId\":\"%s\",\"evidenceClass\":\"%s\",\"taskId\":\"%s\",\"status\":\"FAILURE\",\"code\":\"%s\",\"stage\":\"%s\",\"exitCode\":%s}\n" "$BENCHMARK_ID" "$EVIDENCE_CLASS" "$TASK_ID" "$failure_code" "$failure_stage" "$rc" > "$out/diagnostics.json"; fi; exit "$rc"' EXIT
+          failure_stage=validate-input
+          failure_code=RUNTIME_IMAGE_ARCHIVE_HASH_MISMATCH
           test -f "$input/runtime-image.tgz"
           test "$(sha256sum "$input/runtime-image.tgz" | awk '{print $1}')" = "$(node --input-type=module - "$input/cache-manifest.json" <<'NODE'
           import { readFileSync } from 'node:fs';
           console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).runtimeImageArchiveSha256);
           NODE
           )"
+          failure_code=CACHE_RECEIPT_INVALID
           test "$(sha256sum "$input/cache.tgz" | awk '{print $1}')" = "$(node --input-type=module - "$input/cache-manifest.json" <<'NODE'
           import { readFileSync } from 'node:fs';
           console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).cacheSha256);
@@ -350,6 +354,7 @@ jobs:
           )"
           docker load --input "$input/runtime-image.tgz" >/dev/null
           runtime_tag="governseed-v7-runtime:$TASK_ID"
+          failure_code=RUNTIME_IMAGE_IDENTITY_MISMATCH
           test "$(docker image inspect "$runtime_tag" --format '{{.Id}}')" = "$(node --input-type=module - "$input/runtime-image-receipt.json" <<'NODE'
           import { readFileSync } from 'node:fs';
           console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).imageId);
@@ -357,28 +362,30 @@ jobs:
           )"
           tar -xzf "$input/seed.tgz" -C "$workspace"
           tar -xzf "$input/cache.tgz" -C "$cache_root"
+          failure_stage=prepare-cache
+          failure_code=CACHE_RECEIPT_INVALID
           chmod -R a-w "$cache_root"
           cp -a "$cache_root/." "$negative_cache/"
           chmod -R u+rwX "$negative_cache"
           case "$TASK_ID" in TASK-OSS-01) required_path=packages/cli/node_modules;; TASK-OSS-03) required_path=node_modules;; TASK-OSS-09) required_path=.venv/bin/python;; *) exit 2;; esac
-          test -e "$negative_cache/$required_path"
+          failure_code=DEPENDENCY_CACHE_INCOMPLETE
+          test -e "$negative_cache/$required_path" || test -L "$negative_cache/$required_path"
           rm -rf "$negative_cache/$required_path"
           test ! -e "$negative_cache/$required_path"
+          test ! -L "$negative_cache/$required_path"
           chmod -R a-w "$negative_cache"
-          while IFS= read -r relative_root; do
-            test -n "$relative_root"
-            test -e "$cache_root/$relative_root"
-            mkdir -p "$workspace/$(dirname "$relative_root")"
-            ln -s "/cache/$relative_root" "$workspace/$relative_root"
-          done < "$input/cache-roots.txt"
-          command -v setfacl
-          find "$workspace" -type d -exec setfacl -m u:65532:rwx,d:u:65532:rwx {} +
-          find "$workspace" -type f -exec setfacl -m u:65532:rw {} +
-          setfacl -m u:65532:rwx "$home_dir" "$tmp_dir"
+          cp "$input/cache-roots.txt" "$harness/cache-roots.txt"
           cat > "$harness/offline-smoke.sh" <<'BASH'
           #!/usr/bin/env bash
           set -u
           fail() { echo "$1"; exit "${2:-41}"; }
+          cp -R --no-preserve=ownership /seed/. /workspace/ 2>/dev/null || fail OFFLINE_SMOKE_FAILED
+          while IFS= read -r relative_root; do
+            test -n "$relative_root" || fail OFFLINE_SMOKE_FAILED
+            test -e "/cache/$relative_root" || fail DEPENDENCY_CACHE_INCOMPLETE 42
+            mkdir -p "/workspace/$(dirname "$relative_root")" || fail OFFLINE_SMOKE_FAILED
+            ln -s "/cache/$relative_root" "/workspace/$relative_root" || fail OFFLINE_SMOKE_FAILED
+          done < /harness/cache-roots.txt
           test "$(id -u)" = 65532 || fail OFFLINE_PERMISSION_CAUSE_UNKNOWN
           test "$(awk '/^CapEff:/{print $2}' /proc/self/status)" = 0000000000000000 || fail OFFLINE_PERMISSION_CAUSE_UNKNOWN
           test "$(awk '/^NoNewPrivs:/{print $2}' /proc/self/status)" = 1 || fail OFFLINE_PERMISSION_CAUSE_UNKNOWN
@@ -405,15 +412,18 @@ jobs:
           echo PASS
           BASH
           chmod 0555 "$harness/offline-smoke.sh"
+          failure_stage=positive-container-create
+          failure_code=OFFLINE_SMOKE_FAILED
           test -x "$harness/offline-smoke.sh" || { echo HARNESS_EXECUTION_DENIED; exit 1; }
           docker create --name "v7-${TASK_ID,,}-positive" \
             --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true \
             --user 65532:65532 --pids-limit 256 --cpus 4 --memory 15g \
-            --mount "type=bind,src=$workspace,dst=/workspace" \
+            --mount "type=tmpfs,dst=/workspace,tmpfs-mode=0777" \
+            --mount "type=bind,src=$workspace,dst=/seed,readonly" \
             --mount "type=bind,src=$cache_root,dst=/cache,readonly" \
             --mount "type=bind,src=$harness,dst=/harness,readonly" \
-            --mount "type=bind,src=$home_dir,dst=/home/benchmark" \
-            --mount "type=bind,src=$tmp_dir,dst=/tmp" \
+            --mount "type=tmpfs,dst=/home/benchmark,tmpfs-mode=0777" \
+            --mount "type=tmpfs,dst=/tmp,tmpfs-mode=0777" \
             "$runtime_tag" /harness/offline-smoke.sh "$TASK_ID" "$required_path" > "$out/positive-container-id"
           positive_id=$(tail -n 1 "$out/positive-container-id")
           test "$(docker inspect "$positive_id" --format '{{.HostConfig.NetworkMode}}')" = none
@@ -428,6 +438,7 @@ jobs:
             actual_rw=$(docker inspect "$positive_id" --format '{{range .Mounts}}{{if eq .Destination "'"$destination"'"}}{{.RW}}{{end}}{{end}}')
             test "$actual_rw" = "$expected_rw"
           done
+          failure_stage=positive-smoke
           set +e
           docker start -a "$positive_id" > "$out/positive-output" 2>&1
           positive_rc=$?
@@ -438,13 +449,15 @@ jobs:
           docker create --name "v7-${TASK_ID,,}-negative" \
             --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true \
             --user 65532:65532 --pids-limit 256 --cpus 4 --memory 15g \
-            --mount "type=bind,src=$workspace,dst=/workspace" \
+            --mount "type=tmpfs,dst=/workspace,tmpfs-mode=0777" \
+            --mount "type=bind,src=$workspace,dst=/seed,readonly" \
             --mount "type=bind,src=$negative_cache,dst=/cache,readonly" \
             --mount "type=bind,src=$harness,dst=/harness,readonly" \
-            --mount "type=bind,src=$home_dir,dst=/home/benchmark" \
-            --mount "type=bind,src=$tmp_dir,dst=/tmp" \
+            --mount "type=tmpfs,dst=/home/benchmark,tmpfs-mode=0777" \
+            --mount "type=tmpfs,dst=/tmp,tmpfs-mode=0777" \
             "$runtime_tag" /harness/offline-smoke.sh "$TASK_ID" "$required_path" > "$out/negative-container-id"
           negative_id=$(tail -n 1 "$out/negative-container-id")
+          failure_stage=negative-smoke
           set +e
           docker start -a "$negative_id" > "$out/negative-output" 2>&1
           negative_rc=$?
@@ -452,6 +465,9 @@ jobs:
           docker rm -f "$negative_id" >/dev/null
           grep -Fq DEPENDENCY_CACHE_INCOMPLETE "$out/negative-output"
           test "$negative_rc" -eq 42
+          failure_stage=receipt
+          failure_code=CACHE_RECEIPT_INVALID
+          printf '{"schemaVersion":1,"benchmarkId":"%s","evidenceClass":"%s","taskId":"%s","status":"PASS","positiveSmoke":"PASS","negativeSmoke":"DEPENDENCY_CACHE_INCOMPLETE","negativeExitCode":42}\n' "$BENCHMARK_ID" "$EVIDENCE_CLASS" "$TASK_ID" > "$out/diagnostics.json"
           node --input-type=module - "$out/cache-receipt.json" <<'NODE'
           import { readFileSync, writeFileSync } from 'node:fs';
           const [out] = process.argv.slice(2);
