@@ -6,6 +6,7 @@ const workflow = readFileSync('.github/workflows/external-oss-v8-dependency-cach
 const runtimeScript = readFileSync('benchmarks/external-oss-v8/tests/v8-runtime-contract.sh', 'utf8');
 const offlineScript = readFileSync('benchmarks/external-oss-v8/tests/v8-offline-smoke.sh', 'utf8');
 const inherited = JSON.parse(readFileSync('benchmarks/external-oss-v8/inherited-evidence.json', 'utf8'));
+const inheritedVerification = JSON.parse(readFileSync('benchmarks/external-oss-v8/control/G0/inherited-source-verification.json', 'utf8'));
 const sha256 = (file) => createHash('sha256').update(readFileSync(file)).digest('hex');
 const errors = [];
 const requireText = (text, needle, label = needle) => {
@@ -57,11 +58,14 @@ requireText(workflow, "for spec in '/seed false'", 'bind mount inspection');
 
 for (const source of inherited.sources) {
   if (!/^[0-9a-f]{64}$/.test(source.sha256)) errors.push(`invalid inherited SHA-256: ${source.path}`);
-  if (!existsSync(source.path) && !/^https:\/\//.test(source.sourceLocator || '')) errors.push(`unresolvable inherited source: ${source.path}`);
+  if (!existsSync(source.path) && !/^https:\/\/raw\.githubusercontent\.com\/[^/]+\/[^/]+\/[0-9a-f]{40}\/.+/.test(source.sourceLocator || '')) errors.push(`unresolvable inherited source: ${source.path}`);
   if (existsSync(source.path)) {
     const actual = sha256(source.path);
     if (actual !== source.sha256) errors.push(`inherited SHA-256 mismatch: ${source.path}`);
   }
+}
+for (const source of inheritedVerification.sources) {
+  if (source.status !== 'PASS' || source.sha256 !== source.observedSha256 || !/^https:\/\/raw\.githubusercontent\.com\/[^/]+\/[^/]+\/[0-9a-f]{40}\/.+/.test(source.sourceLocator)) errors.push(`inherited source verification failed: ${source.path}`);
 }
 for (const contract of inherited.taskContracts) {
   if (!existsSync(contract.path)) errors.push(`missing task contract: ${contract.path}`);

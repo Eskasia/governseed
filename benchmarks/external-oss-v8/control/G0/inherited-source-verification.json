@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "evidenceClass": "external-observational",
+  "status": "PASS",
+  "verificationCommand": "curl --fail --silent --show-error --location <immutable raw URL> | shasum -a 256",
+  "verifiedAt": "2026-08-02T05:51:08Z",
+  "sources": [
+    {
+      "path": "benchmarks/external-oss-v7/control/G1/repair-3/run-30732978684-failure.json",
+      "sourceLocator": "https://raw.githubusercontent.com/Eskasia/governseed/b0f4122c830031ceec3e782cd01a5cb661af1915/benchmarks/external-oss-v7/control/G1/repair-3/run-30732978684-failure.json",
+      "sha256": "88dc1cac64226ab71c19b61f5de5ac6ddea3d3f17a39958fdc8d98dd0b456f62",
+      "observedSha256": "88dc1cac64226ab71c19b61f5de5ac6ddea3d3f17a39958fdc8d98dd0b456f62",
+      "status": "PASS"
+    }
+  ],
+  "claimBoundary": "Only the listed public V7 failure JSON was downloaded and hash-verified; no V7 source, cache archive, credentials, or review-only Sol record was copied."
+}

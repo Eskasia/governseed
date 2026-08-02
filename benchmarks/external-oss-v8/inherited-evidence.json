@@ -30,14 +30,8 @@
     {
       "path": "benchmarks/external-oss-v7/control/G1/repair-3/run-30732978684-failure.json",
       "sha256": "88dc1cac64226ab71c19b61f5de5ac6ddea3d3f17a39958fdc8d98dd0b456f62",
-      "sourceLocator": "https://github.com/Eskasia/governseed/blob/b0f4122c830031ceec3e782cd01a5cb661af1915/benchmarks/external-oss-v7/control/G1/repair-3/run-30732978684-failure.json",
+      "sourceLocator": "https://raw.githubusercontent.com/Eskasia/governseed/b0f4122c830031ceec3e782cd01a5cb661af1915/benchmarks/external-oss-v7/control/G1/repair-3/run-30732978684-failure.json",
       "role": "immutable V7 measured failure evidence"
-    },
-    {
-      "path": "benchmarks/external-oss-v7/control/G1/repair-4/sol-verdict.json",
-      "sha256": "0745f1134d3e652671ee36d1d8bf9013c8d878a4c200bdaaaed0ab630a3117e1",
-      "sourceLocator": "https://github.com/Eskasia/governseed/pull/65 (Sol review record for checked commit b0f4122c830031ceec3e782cd01a5cb661af1915)",
-      "role": "immutable V7 Sol REJECT and required exec-capable mount correction"
     },
     {
       "path": "benchmarks/external-oss-v7/runtime-image/image-lock.json",
@@ -50,6 +44,15 @@
     { "taskId": "TASK-OSS-03", "path": "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-03/cache-contract.json", "sha256": "fb57622c073fb2b09da44318920ba58833dc583d21669e7ef3f678462bafaa61" },
     { "taskId": "TASK-OSS-09", "path": "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-09/cache-contract.json", "sha256": "3d0183bd36b28b1c3a7afed183f2c36f13172499048ec6d98ce2e8b9c316e92e" }
   ],
+  "priorV7SolReview": {
+    "benchmarkId": "GS-OSS-2026-08-02-V7",
+    "checkedPR": 65,
+    "checkedCommit": "b0f4122c830031ceec3e782cd01a5cb661af1915",
+    "verdict": "REJECT",
+    "locator": "https://github.com/Eskasia/governseed/pull/65",
+    "representation": "review-only context; not treated as a V8 inherited byte source",
+    "sha256": "NOT_CLAIMED"
+  },
   "immutableBoundary": [
     "benchmarks/external-oss-v2/",
     "benchmarks/external-oss-v3/",
