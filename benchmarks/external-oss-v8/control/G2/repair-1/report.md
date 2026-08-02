@@ -6,7 +6,7 @@ Sol (`gpt-5.6-sol`) independently reviewed the repair worktree read-only and ret
 
 `ACCEPT — TECHNICALLY_ACCEPTABLE_FOR_HUMAN_REVIEW`
 
-The inherited 13 technical blockers are recorded as closed. The overall G2 gate remains `BLOCKED`: the inherited PR #73 REJECT evidence is preserved, no human approval exists, the exact measured model candidate remains `null`, and runtime identity is `NOT_RUN`.
+The inherited 13 technical blockers are recorded as closed. The overall G2 gate remains `BLOCKED`: the inherited evidence is preserved, `gpt-5.6-luna` is locked as the exact measured model candidate, no human approval exists, and runtime identity is `NOT_RUN`.
 
 ## Evidence
 
@@ -20,4 +20,4 @@ The inherited 13 technical blockers are recorded as closed. The overall G2 gate 
 
 ## Boundaries
 
-The repair proves only local synthetic proxy behavior: fixed OpenAI endpoint and POST method, exact startup model requirement without inventing the missing candidate, closed request/response contracts, host-only credential injection, four-variable container proxy surface, run-scoped UDS ownership/mode/identity, and fail-closed cleanup. It does not authorize provider access, human approval, runtime identity canary, task execution, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance.
+The repair proves only local synthetic proxy behavior: fixed OpenAI endpoint and POST method, exact `gpt-5.6-luna` startup model binding, closed request/response contracts, host-only credential injection, four-variable container proxy surface, run-scoped UDS ownership/mode/identity, and fail-closed cleanup. It does not authorize provider access, human approval, runtime identity canary, task execution, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance.

@@ -6,6 +6,7 @@ import test from 'node:test';
 
 import {
   CREDENTIAL_PROXY_ENDPOINT,
+  CREDENTIAL_PROXY_MODEL,
   CREDENTIAL_PROXY_REQUEST_LIMIT,
   CREDENTIAL_PROXY_TIMEOUT_MS,
   CREDENTIAL_PROXY_TOKEN_CEILING,
@@ -17,7 +18,7 @@ import {
 const BENCHMARK_ID = 'GS-OSS-2026-08-02-V8';
 const RUN_ID = 'facade-run';
 const TASK_ID = 'facade-task';
-const MODEL = 'gpt-synthetic-fixed';
+const MODEL = CREDENTIAL_PROXY_MODEL;
 const ATTEMPT_ID = 'a'.repeat(64);
 const UPSTREAM_KEY = 'synthetic-host-only-key';
 
@@ -99,6 +100,15 @@ test('facade policy is fixed and never exposes credential-shaped container env',
   assert.equal(JSON.stringify(environment).includes(UPSTREAM_KEY), false);
   await facade.closeAttempt(handle);
   await facade.proveClosed(handle);
+});
+
+test('facade rejects every non-exact model binding before proxy startup', (t) => {
+  for (const model of ['gpt-5.6', 'latest', 'gpt-5.6-luna-alias']) {
+    assert.throws(
+      () => createOciCredentialProxyFacade(facadeOptions(t, { model })),
+      (error) => error.code === 'PROXY_POLICY_INVALID',
+    );
+  }
 });
 
 test('attempt binds benchmark, run, task, model, and timeout before core start', async (t) => {

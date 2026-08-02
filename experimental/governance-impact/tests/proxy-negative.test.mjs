@@ -6,6 +6,7 @@ import test from 'node:test';
 
 import {
   CREDENTIAL_PROXY_ENDPOINT,
+  CREDENTIAL_PROXY_MODEL,
   CREDENTIAL_PROXY_PROVIDER,
   CREDENTIAL_PROXY_REQUEST_LIMIT,
   CREDENTIAL_PROXY_TIMEOUT_MS,
@@ -20,7 +21,7 @@ const POLICY = {
   runId: 'negative-run',
   taskId: 'negative-task',
   provider: CREDENTIAL_PROXY_PROVIDER,
-  model: 'gpt-synthetic-fixed',
+  model: CREDENTIAL_PROXY_MODEL,
   upstream: CREDENTIAL_PROXY_ENDPOINT,
   maxRequestBytes: 1_024,
   maxResponseBytes: 1_024,

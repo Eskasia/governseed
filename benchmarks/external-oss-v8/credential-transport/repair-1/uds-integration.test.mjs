@@ -8,6 +8,7 @@ import test from 'node:test';
 
 import {
   CREDENTIAL_PROXY_ENDPOINT,
+  CREDENTIAL_PROXY_MODEL,
   CREDENTIAL_PROXY_PROVIDER,
   CREDENTIAL_PROXY_REQUEST_LIMIT,
   CREDENTIAL_PROXY_TIMEOUT_MS,
@@ -18,7 +19,7 @@ import {
 const BENCHMARK_ID = 'GS-OSS-2026-08-02-V8';
 const RUN_ID = 'repair-1-run';
 const TASK_ID = 'repair-1-task';
-const MODEL = 'gpt-synthetic-repair-1';
+const MODEL = CREDENTIAL_PROXY_MODEL;
 const HOST_KEY = 'synthetic-host-only-key';
 const RESPONSE_FORMAT = {
   type: 'json_schema',
@@ -31,7 +32,7 @@ const RESPONSE_FORMAT = {
       required: ['id', 'model', 'output', 'usage'],
       properties: {
         id: { type: 'string' },
-        model: { type: 'string' },
+        model: { const: MODEL },
         output: { type: 'array' },
         usage: { type: 'object' },
       },

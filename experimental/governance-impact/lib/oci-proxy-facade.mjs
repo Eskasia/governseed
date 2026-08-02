@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 import {
   CREDENTIAL_PROXY_ENDPOINT,
+  CREDENTIAL_PROXY_MODEL,
   CREDENTIAL_PROXY_PROVIDER,
   CREDENTIAL_PROXY_REQUEST_LIMIT,
   CREDENTIAL_PROXY_TIMEOUT_MS,
@@ -189,7 +190,7 @@ export function createOciCredentialProxyFacade(options = {}) {
   const dependencies = normalizeDependencies(options);
 
   if (
-    !closedToken(model)
+    model !== CREDENTIAL_PROXY_MODEL
     || timeoutMs !== TIMEOUT_MS
     || benchmarkId !== BENCHMARK_ID
     || !closedToken(runId)
