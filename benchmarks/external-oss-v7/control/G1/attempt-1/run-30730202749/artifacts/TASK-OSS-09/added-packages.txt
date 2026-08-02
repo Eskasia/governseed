@@ -1,0 +1,2 @@
+libmagic-mgc	1:5.44-3
+libmagic1:amd64	1:5.44-3

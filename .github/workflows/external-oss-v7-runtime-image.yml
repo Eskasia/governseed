@@ -69,7 +69,7 @@ jobs:
           if test "$TASK_ID" != TASK-OSS-09; then
             test ! -s "$artifact/added-packages.txt"
           else
-            grep -E '^(libmagic1|libmagic-mgc)(:amd64)?\t' "$artifact/added-packages.txt" | sort -u > "$artifact/declared-added-packages.txt"
+            grep -E '^(libmagic1|libmagic-mgc)(:amd64)?[[:space:]]' "$artifact/added-packages.txt" | sort -u > "$artifact/declared-added-packages.txt"
             test "$(wc -l < "$artifact/declared-added-packages.txt" | tr -d ' ')" -eq 2
             test "$(wc -l < "$artifact/added-packages.txt" | tr -d ' ')" -eq 2
           fi
