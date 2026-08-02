@@ -1,0 +1,92 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "repair-1",
+  "evidenceClass": "external-observational",
+  "reviewer": {
+    "agent": "Sol",
+    "model": "gpt-5.6-sol",
+    "agentId": "019fc220-5327-7b81-bdd0-58bc830850e0",
+    "role": "independent read-only technical reviewer",
+    "reasoningEffort": "ultra"
+  },
+  "reviewedPaths": [
+    "benchmarks/external-oss-v8/credential-transport/repair-1/design.json",
+    "benchmarks/external-oss-v8/credential-transport/repair-1/request.schema.json",
+    "benchmarks/external-oss-v8/credential-transport/repair-1/response.schema.json",
+    "benchmarks/external-oss-v8/credential-transport/repair-1/review-packet.json",
+    "benchmarks/external-oss-v8/control/G2/repair-1/inherited-evidence.json",
+    "benchmarks/external-oss-v8/control/G2/repair-1/findings.json",
+    "experimental/governance-impact/lib/credential-proxy.mjs",
+    "experimental/governance-impact/lib/oci-proxy-facade.mjs",
+    "experimental/governance-impact/lib/oci-supervisor.mjs",
+    "experimental/governance-impact/uds-relay.mjs",
+    "experimental/governance-impact/tests/credential-proxy.test.mjs",
+    "experimental/governance-impact/tests/proxy-negative.test.mjs",
+    "experimental/governance-impact/tests/oci-proxy-facade.test.mjs",
+    "experimental/governance-impact/tests/oci-supervisor.test.mjs",
+    "benchmarks/external-oss-v8/credential-transport/repair-1/uds-integration.test.mjs",
+    "benchmarks/external-oss-v8/credential-transport/repair-1/validation.test.mjs",
+    "benchmarks/external-oss-v8/credential-transport/repair-1/secret-boundary.test.mjs"
+  ],
+  "hashVerification": {
+    "designSha256": "8174a23c84c1c5520e345d895f7d67587bd8d145f1258e917a60268a61eb155d",
+    "requestSchemaSha256": "8c0b9514e2fd7acb5d0599b0075f99c9de235c7391dee4d395bc43e087ce0ccd",
+    "responseSchemaSha256": "8bdf61685aa00102fdbcf3f05dcab32baff900e7e51b11c2c30c97d81dace2aa",
+    "proxySourceSha256": "ec818789e9f03fa56be2aae75eab88c4ee891d0338465d8f2dde414a84b6fde1",
+    "proxyFacadeSha256": "1089338b2c7e59dbd7003c6d57b2fa5e3007d8f8fe7e14447b7c51387cb14953",
+    "supervisorSourceSha256": "9e37e7ef72144c446a495eb1a42d126f94133b8310134fbd50f2eb9172622293",
+    "relaySourceSha256": "decd68ec23bb3232e49f7fd3036626fed55e973d7149c399e0eb3ac606eaeb40"
+  },
+  "commands": [
+    {
+      "command": "npm run check:experimental",
+      "tests": null,
+      "passed": null,
+      "failed": 0,
+      "status": "PASS",
+      "network": "none"
+    },
+    {
+      "command": "npm run test:experimental",
+      "tests": 103,
+      "passed": 103,
+      "failed": 0,
+      "status": "PASS",
+      "network": "none"
+    },
+    {
+      "command": "node --test benchmarks/external-oss-v8/credential-transport/repair-1/uds-integration.test.mjs benchmarks/external-oss-v8/credential-transport/repair-1/validation.test.mjs benchmarks/external-oss-v8/credential-transport/repair-1/secret-boundary.test.mjs",
+      "tests": 16,
+      "passed": 16,
+      "failed": 0,
+      "status": "PASS",
+      "network": "none"
+    },
+    {
+      "command": "docker version --format '{{.Client.Version}}|{{.Server.Version}}'",
+      "status": "NOT_RUN_DOCKER_UNAVAILABLE",
+      "detail": "Docker client was present but no daemon socket was available at /Users/william/.docker/run/docker.sock."
+    }
+  ],
+  "independentAssessment": {
+    "blockingDefects": [],
+    "closedInheritedBlockers": 13,
+    "remainingTechnicalBlockers": 0,
+    "providerRequests": 0,
+    "runtimeIdentity": "NOT_RUN",
+    "humanApproval": "PENDING_HUMAN_REVIEW",
+    "exactModelCandidate": null,
+    "noRealProviderTransport": true
+  },
+  "technicalDisposition": "TECHNICALLY_ACCEPTABLE_FOR_HUMAN_REVIEW",
+  "recommendation": "ACCEPT",
+  "authorization": {
+    "mergeAuthorized": false,
+    "providerRequestAuthorized": false,
+    "runtimeCanaryAuthorized": false,
+    "humanApprovalCreated": false
+  },
+  "claimBoundary": "Independent Sol read-only technical review only. This evidence does not authorize provider access, human approval, runtime identity canary, task execution, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance."
+}

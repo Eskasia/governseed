@@ -1,0 +1,171 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "repair-1",
+  "evidenceClass": "external-observational",
+  "status": "PENDING_HUMAN_REVIEW",
+  "technicalDisposition": "TECHNICALLY_ACCEPTABLE_FOR_HUMAN_REVIEW",
+  "parent": {
+    "pullRequest": 73,
+    "headCommit": "dd287a27b8ace8719f3af5727487bd4028cd9189",
+    "mergeCommit": "6f23e47c142cc9ba891976703fe01e96e9f74c44"
+  },
+  "repairBranch": "benchmark/v8-g2-transport-repair-1",
+  "oldEvidence": {
+    "reviewPacketPath": "benchmarks/external-oss-v8/credential-transport/review-packet.json",
+    "reviewPacketSha256": "7f4edc9344f980ecaaaa0256c4e81bea668b79cb3edfe047d895bbf480e9f758",
+    "solVerdictPath": "benchmarks/external-oss-v8/control/G2/sol-verdict.json",
+    "solVerdictSha256": "ea9aa6caa2c0d7ec43d22f12d24f9651f8f725e96d0ab1bc448e6ffd9832f7ac",
+    "findingsPath": "benchmarks/external-oss-v8/control/G2/credential-transport-findings.json",
+    "findingsSha256": "45f0bb14b8e7f4d5723db0309768dc3364e63e9dd2f67ce962a2e756c433228a",
+    "blockedCheckCount": 13,
+    "preservation": "Parent G2 REJECT evidence is immutable historical evidence and is not overwritten by repair-1."
+  },
+  "hashes": {
+    "designPath": "benchmarks/external-oss-v8/credential-transport/repair-1/design.json",
+    "designSha256": "8174a23c84c1c5520e345d895f7d67587bd8d145f1258e917a60268a61eb155d",
+    "requestSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-1/request.schema.json",
+    "requestSchemaSha256": "8c0b9514e2fd7acb5d0599b0075f99c9de235c7391dee4d395bc43e087ce0ccd",
+    "responseSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-1/response.schema.json",
+    "responseSchemaSha256": "8bdf61685aa00102fdbcf3f05dcab32baff900e7e51b11c2c30c97d81dace2aa",
+    "proxySourcePath": "experimental/governance-impact/lib/credential-proxy.mjs",
+    "proxySourceSha256": "ec818789e9f03fa56be2aae75eab88c4ee891d0338465d8f2dde414a84b6fde1",
+    "proxyFacadePath": "experimental/governance-impact/lib/oci-proxy-facade.mjs",
+    "proxyFacadeSha256": "1089338b2c7e59dbd7003c6d57b2fa5e3007d8f8fe7e14447b7c51387cb14953",
+    "supervisorSourcePath": "experimental/governance-impact/lib/oci-supervisor.mjs",
+    "supervisorSourceSha256": "9e37e7ef72144c446a495eb1a42d126f94133b8310134fbd50f2eb9172622293",
+    "relaySourcePath": "experimental/governance-impact/uds-relay.mjs",
+    "relaySourceSha256": "decd68ec23bb3232e49f7fd3036626fed55e973d7149c399e0eb3ac606eaeb40"
+  },
+  "contract": {
+    "provider": "OpenAI",
+    "method": "POST",
+    "endpoint": "https://api.openai.com/v1/responses",
+    "modelBinding": {
+      "candidateId": null,
+      "status": "PENDING_HUMAN_SELECTION",
+      "exact": true,
+      "aliasesForbidden": ["latest", "Luna", "Sol"],
+      "startupRule": "Proxy startup requires one exact non-alias model ID. The old packet has no measured candidate; repair-1 does not invent one. Synthetic tests use only test fixture model IDs."
+    },
+    "limits": {
+      "requestLimit": 1,
+      "timeoutMs": 30000,
+      "tokenCeiling": 8192,
+      "maxRequestBytes": 1048576,
+      "maxResponseBytes": 4194304
+    },
+    "containerEnvironment": {
+      "proxyVariables": [
+        "GOVERNSEED_PROXY_SOCKET",
+        "GOVERNSEED_BENCHMARK_ID",
+        "GOVERNSEED_RUN_ID",
+        "GOVERNSEED_TASK_ID"
+      ],
+      "forbiddenCredentialVariables": [
+        "OPENAI_API_KEY",
+        "OPENAI_BASE_URL",
+        "ANTHROPIC_API_KEY",
+        "GITHUB_TOKEN",
+        "GH_TOKEN"
+      ],
+      "credentialScope": "Host-side proxy secret only; no alias, file, mount, argv, or encoded value."
+    },
+    "request": {
+      "allowedFields": ["model", "input", "max_output_tokens", "response_format", "metadata"],
+      "metadataFields": ["benchmark_id", "run_id", "task_id"],
+      "forbiddenFields": ["tools", "tool_choice", "web_search", "file_search", "store", "background", "service_tier", "unknown", "user-provided-url", "user-provided-headers"],
+      "clientHeaders": ["content-type"],
+      "acceptedFramingHeaders": ["host", "content-length", "connection"],
+      "framingHeadersForwarded": [],
+      "forbiddenClientHeaders": ["authorization", "openai-organization", "openai-project", "x-*"]
+    },
+    "response": {
+      "successStatus": "2xx",
+      "contentType": "application/json",
+      "topLevelFields": ["id", "model", "output", "usage"],
+      "usageFields": ["input_tokens", "output_tokens", "total_tokens"],
+      "modelMustEqualStartupBinding": true,
+      "unknownTopLevelFieldsRejected": true,
+      "malformedRejected": true,
+      "oversizedRejected": true,
+      "secondResponseRejected": true
+    },
+    "retention": {
+      "allowed": ["requestSha256", "responseSha256", "requestBytes", "responseBytes", "modelId", "statusCode", "latencyMs", "tokenCounts", "providerRequestIdHash"],
+      "rawFieldsForbidden": ["input", "output", "authorization", "providerTrace", "rawCodexTranscript"]
+    },
+    "identity": {
+      "benchmarkIdBound": true,
+      "runIdBound": true,
+      "taskIdBound": true,
+      "singleUse": true
+    },
+    "socket": {
+      "path": "run-scoped unique temporary root/p.sock",
+      "containerPath": "/run/governance/proxy.sock",
+      "ownerUidGid": "explicit host UID/GID verified at start",
+      "mode": "0600",
+      "nonReuse": true
+    },
+    "cleanup": {
+      "automaticOn": ["client-crash", "client-disconnect", "timeout", "proxy-crash", "invalid-request", "second-client"],
+      "proof": ["server-closed", "socket-absent", "matching-process-absent", "run-root-clean"]
+    }
+  },
+  "evidence": {
+    "testCommands": [
+      {
+        "command": "npm run test:experimental",
+        "passed": 103,
+        "failed": 0,
+        "status": "PASS",
+        "network": "none"
+      },
+      {
+        "command": "node --test benchmarks/external-oss-v8/credential-transport/repair-1/uds-integration.test.mjs",
+        "passed": 10,
+        "failed": 0,
+        "status": "PASS",
+        "network": "none",
+        "providerRequests": 0
+      },
+      {
+        "command": "node --test benchmarks/external-oss-v8/credential-transport/repair-1/validation.test.mjs benchmarks/external-oss-v8/credential-transport/repair-1/secret-boundary.test.mjs",
+        "passed": 6,
+        "failed": 0,
+        "status": "PASS",
+        "network": "none"
+      }
+    ],
+    "localSyntheticRuntime": "PASS",
+    "dockerRuntime": "NOT_RUN_DOCKER_UNAVAILABLE",
+    "runtimeIdentity": "NOT_RUN",
+    "providerRequests": 0,
+    "npmCi": "NOT_APPLICABLE_NO_LOCKFILE"
+  },
+  "solReview": {
+    "status": "COMPLETE_READ_ONLY",
+    "model": "gpt-5.6-sol",
+    "verdict": "ACCEPT",
+    "technicalToken": "TECHNICALLY_ACCEPTABLE_FOR_HUMAN_REVIEW",
+    "evidencePath": "benchmarks/external-oss-v8/control/G2/repair-1/sol-review-evidence.json"
+  },
+  "humanApproval": {
+    "approvalStatus": "PENDING_HUMAN_REVIEW",
+    "approvedBy": null,
+    "approvedAt": null
+  },
+  "overallGate": "BLOCKED",
+  "knownLimitations": [
+    "No measured exact model candidate is present in the inherited packet; only a human may bind it.",
+    "Local UDS tests use synthetic fixture models and a mock upstream transport.",
+    "Docker and the real Linux Codex runtime identity path were unavailable and were not run.",
+    "No provider credential was read or used and no provider request was made."
+  ],
+  "prohibitedClaims": [
+    "No human approval, provider access, runtime identity, task execution, canary, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance is claimed."
+  ],
+  "claimBoundary": "Repair-1 is a local synthetic credential-transport technical package awaiting independent Sol review and human approval; G2 remains BLOCKED."
+}

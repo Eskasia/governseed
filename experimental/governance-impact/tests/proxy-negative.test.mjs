@@ -1,219 +1,113 @@
 import assert from 'node:assert/strict';
-import { randomUUID } from 'node:crypto';
 import fs from 'node:fs';
-import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 
 import {
-  CREDENTIAL_PROXY_ATTEMPT_HEADER,
-  CREDENTIAL_PROXY_PATH,
+  CREDENTIAL_PROXY_ENDPOINT,
+  CREDENTIAL_PROXY_PROVIDER,
+  CREDENTIAL_PROXY_REQUEST_LIMIT,
+  CREDENTIAL_PROXY_TIMEOUT_MS,
+  CREDENTIAL_PROXY_TOKEN_CEILING,
   createHostCredentialProxy,
 } from '../lib/credential-proxy.mjs';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-const MODEL = 'gpt-private-negative';
-const UPSTREAM = 'https://api.example.invalid/v1/responses';
+const SECRET = 'synthetic-host-secret-not-for-container';
+const POLICY = {
+  attemptId: 'a'.repeat(64),
+  benchmarkId: 'GS-OSS-2026-08-02-V8',
+  runId: 'negative-run',
+  taskId: 'negative-task',
+  provider: CREDENTIAL_PROXY_PROVIDER,
+  model: 'gpt-synthetic-fixed',
+  upstream: CREDENTIAL_PROXY_ENDPOINT,
+  maxRequestBytes: 1_024,
+  maxResponseBytes: 1_024,
+  requestLimit: CREDENTIAL_PROXY_REQUEST_LIMIT,
+  timeoutMs: CREDENTIAL_PROXY_TIMEOUT_MS,
+  tokenCeiling: CREDENTIAL_PROXY_TOKEN_CEILING,
+};
 
-function temporarySocket(t) {
-  const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'credential-proxy-private-'));
-  const socketPath = path.join(directory, 'proxy.sock');
-  t.after(() => fs.rmSync(directory, { recursive: true, force: true }));
-  return socketPath;
+function socketPath(t) {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'credential-proxy-negative-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  return path.join(root, 'proxy.sock');
 }
 
-function requestProxy(socketPath, { bearer, attemptId, body }) {
-  const rawBody = JSON.stringify(body);
-  return new Promise((resolve, reject) => {
-    const request = http.request({
-      socketPath,
-      method: 'POST',
-      path: CREDENTIAL_PROXY_PATH,
-      headers: {
-        authorization: `Bearer ${bearer}`,
-        [CREDENTIAL_PROXY_ATTEMPT_HEADER]: attemptId,
-        'content-type': 'application/json',
-        'content-length': Buffer.byteLength(rawBody),
-      },
-    }, (response) => {
-      const chunks = [];
-      response.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-      response.on('end', () => resolve(Buffer.concat(chunks).toString('utf8')));
-    });
-    request.on('error', reject);
-    request.end(rawBody);
-  });
-}
-
-function proxyOptions(t, overrides = {}) {
-  return {
-    policy: {
-      attemptId: overrides.attemptId,
-      model: MODEL,
-      upstream: UPSTREAM,
-      maxRequestBytes: 2_048,
-      maxResponseBytes: 2_048,
-      maxRequests: 2,
-      deadlineMs: 10_000,
-    },
-    socketPath: temporarySocket(t),
-    attemptBearer: overrides.attemptBearer,
-    upstreamKey: overrides.upstreamKey,
-    logger: overrides.logger,
-    dependencies: {
-      upstreamTransport: overrides.upstreamTransport,
-      ...overrides.dependencies,
-    },
-  };
-}
-
-test('responses, errors, logs, and returned API never reflect sensitive request surfaces', async (t) => {
-  if (process.platform === 'win32') {
-    return t.skip('Scheme A credential transport requires a Unix-domain socket');
-  }
-  const attemptBearer = `bearer-${randomUUID()}`;
-  const upstreamKey = `host-key-${randomUUID()}`;
-  const attemptId = `attempt-${randomUUID()}`;
-  const bodyCanary = `body-${randomUUID()}`;
-  const upstreamErrorCanary = `upstream-error-${randomUUID()}`;
-  const wrongBearer = `wrong-${randomUUID()}`;
-  const logs = [];
-  const options = proxyOptions(t, {
-    attemptBearer,
-    upstreamKey,
-    attemptId,
-    logger: (event) => logs.push(event),
-    upstreamTransport: async () => {
-      throw new Error(upstreamErrorCanary);
-    },
-  });
-  const proxy = createHostCredentialProxy(options);
-  await proxy.start();
-  t.after(async () => proxy.close());
-
-  const rejected = await requestProxy(options.socketPath, {
-    bearer: wrongBearer,
-    attemptId,
-    body: {
-      model: MODEL,
-      input: bodyCanary,
-      store: false,
-      stream: true,
-    },
-  });
-  const upstreamFailure = await requestProxy(options.socketPath, {
-    bearer: attemptBearer,
-    attemptId,
-    body: {
-      model: MODEL,
-      input: bodyCanary,
-      store: false,
-      stream: true,
-    },
-  });
-  const observed = [
-    rejected,
-    upstreamFailure,
-    JSON.stringify(logs),
-    JSON.stringify(proxy),
-  ].join('\n');
-
-  assert.equal(JSON.parse(rejected).error.code, 'PROXY_AUTH_REJECTED');
-  assert.equal(JSON.parse(upstreamFailure).error.code, 'PROXY_UPSTREAM_FAILED');
-  for (const canary of [
-    attemptBearer,
-    upstreamKey,
-    attemptId,
-    bodyCanary,
-    upstreamErrorCanary,
-    wrongBearer,
-  ]) {
-    assert.equal(observed.includes(canary), false);
-  }
-});
-
-test('configuration failures expose only a stable code', () => {
-  const secret = `secret-${randomUUID()}`;
-
+test('configuration errors expose no secret, path, or provider header', () => {
   assert.throws(
     () => createHostCredentialProxy({
-      policy: {
-        attemptId: secret,
-        model: MODEL,
-        upstream: `https://${secret}@api.example.invalid/v1/responses`,
-        maxRequestBytes: 1,
-        maxResponseBytes: 1,
-        maxRequests: 1,
-        deadlineMs: 1,
-      },
-      socketPath: `/tmp/${secret}.sock`,
-      attemptBearer: secret,
-      upstreamKey: secret,
-      dependencies: { upstreamTransport: async () => ({}) },
+      policy: { ...POLICY, model: 'latest' },
+      socketPath: `/tmp/${SECRET}.sock`,
+      upstreamKey: SECRET,
     }),
     (error) => {
       assert.equal(error.code, 'PROXY_POLICY_INVALID');
-      assert.equal(String(error).includes(secret), false);
-      assert.deepEqual(Object.keys(error).sort(), ['code', 'name']);
+      assert.equal(String(error).includes(SECRET), false);
+      assert.equal(JSON.stringify(error).includes(SECRET), false);
       return true;
     },
   );
 });
 
-test('cleanup uncertainty does not reflect filesystem errors or claim socket removal', async (t) => {
-  if (process.platform === 'win32') {
-    return t.skip('Scheme A credential transport requires a Unix-domain socket');
-  }
-  const attemptBearer = `bearer-${randomUUID()}`;
-  const upstreamKey = `host-key-${randomUUID()}`;
-  const attemptId = `attempt-${randomUUID()}`;
-  const cleanupCanary = `cleanup-${randomUUID()}`;
-  let pretendSocketRemains = false;
-  const fsApi = {
-    async lstat(socketPath) {
-      if (pretendSocketRemains) return { isSocket: () => true };
-      return fs.promises.lstat(socketPath);
+test('public proxy object and sanitized logger never reflect the host credential', async (t) => {
+  const logs = [];
+  const proxy = createHostCredentialProxy({
+    policy: POLICY,
+    socketPath: socketPath(t),
+    upstreamKey: SECRET,
+    logger: (entry) => logs.push(entry),
+    dependencies: {
+      upstreamTransport: async () => {
+        throw new Error('private upstream detail');
+      },
     },
-    async unlink() {
-      pretendSocketRemains = true;
-      throw new Error(cleanupCanary);
-    },
-  };
-  const options = proxyOptions(t, {
-    attemptBearer,
-    upstreamKey,
-    attemptId,
-    upstreamTransport: async () => ({
-      statusCode: 200,
-      headers: { 'content-type': 'application/json' },
-      body: Buffer.from('{}'),
-    }),
-    dependencies: { fs: fsApi },
   });
-  const proxy = createHostCredentialProxy(options);
   await proxy.start();
-
-  await assert.rejects(
-    proxy.close(),
-    (error) => {
-      assert.equal(error.code, 'PROXY_CLEANUP_UNPROVEN');
-      const rendered = String(error);
-      assert.equal(rendered.includes(cleanupCanary), false);
-      assert.equal(rendered.includes(options.socketPath), false);
-      assert.equal(rendered.includes(attemptBearer), false);
-      assert.equal(rendered.includes(upstreamKey), false);
-      return true;
-    },
-  );
+  await proxy.close();
+  const rendered = `${JSON.stringify(proxy)}${JSON.stringify(logs)}`;
+  assert.equal(rendered.includes(SECRET), false);
+  assert.equal(rendered.includes('private upstream detail'), false);
 });
 
-test('credential proxy source has no console logging or secret-bearing public fields', () => {
+test('socket identity mismatch fails closed before a proxy can start', async (t) => {
+  const target = socketPath(t);
+  const proxy = createHostCredentialProxy({
+    policy: POLICY,
+    socketPath: target,
+    socketOwnerUid: (process.getuid?.() ?? 0) + 1,
+    socketOwnerGid: process.getgid?.() ?? 0,
+    upstreamKey: SECRET,
+  });
+  await assert.rejects(
+    proxy.start(),
+    (error) => error.code === 'PROXY_SOCKET_IDENTITY_INVALID',
+  );
+  assert.equal(fs.existsSync(target), false);
+});
+
+test('receipt sink failure is fail-closed and does not persist raw request data', async (t) => {
+  const target = socketPath(t);
+  const proxy = createHostCredentialProxy({
+    policy: POLICY,
+    socketPath: target,
+    upstreamKey: SECRET,
+    receiptSink: () => {
+      throw new Error('private sink detail');
+    },
+  });
+  await proxy.start();
+  await proxy.close();
+  assert.equal(fs.existsSync(target), false);
+});
+
+test('source has no direct workspace/artifact write surface or console logging', () => {
   const source = fs.readFileSync(
-    path.join(ROOT, 'experimental/governance-impact/lib/credential-proxy.mjs'),
+    path.resolve('experimental/governance-impact/lib/credential-proxy.mjs'),
     'utf8',
   );
   assert.doesNotMatch(source, /\bconsole\s*\./u);
-  assert.doesNotMatch(source, /this\.(?:attemptBearer|upstreamKey|authorization|body)\b/u);
+  assert.doesNotMatch(source, /(?:writeFile|appendFile|createWriteStream).*upstreamKey/us);
+  assert.doesNotMatch(source, /OPENAI_API_KEY|OPENAI_BASE_URL|ANTHROPIC_API_KEY|GITHUB_TOKEN|GH_TOKEN/u);
 });

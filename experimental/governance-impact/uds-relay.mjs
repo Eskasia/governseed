@@ -2,7 +2,6 @@
 
 import http from 'node:http';
 import path from 'node:path';
-import { timingSafeEqual } from 'node:crypto';
 
 const REQUEST_PATH = '/v1/responses';
 const MAX_REQUEST_BYTES = 1_048_576;
@@ -15,6 +14,7 @@ const STATUS_BY_CODE = Object.freeze({
   PROXY_METHOD_REJECTED: 405,
   PROXY_PATH_REJECTED: 404,
   PROXY_CONTENT_TYPE_REJECTED: 415,
+  PROXY_HEADER_REJECTED: 400,
   PROXY_REQUEST_TOO_LARGE: 413,
   PROXY_BODY_INVALID: 400,
   PROXY_UPSTREAM_FAILED: 502,
@@ -33,29 +33,24 @@ function loadConfiguration(value) {
     value === null
     || typeof value !== 'object'
     || Array.isArray(value)
-    || Object.keys(value).sort().join(',')
-      !== 'attemptId,bearer,port,socketPath'
+    || Object.keys(value).sort().join(',') !== 'port,socketPath'
   ) {
     return null;
   }
   const {
     socketPath,
-    bearer,
-    attemptId,
     port,
   } = value;
   if (
     !closedToken(socketPath)
     || !path.isAbsolute(socketPath)
-    || !closedToken(bearer)
-    || !closedToken(attemptId)
     || !Number.isSafeInteger(port)
     || port < 1
     || port > 65_535
   ) {
     return null;
   }
-  return Object.freeze({ socketPath, bearer, attemptId, port });
+  return Object.freeze({ socketPath, port });
 }
 
 function readConfiguration(input) {
@@ -113,14 +108,6 @@ function singleHeader(request, name) {
     : null;
 }
 
-function secretMatches(actual, expected) {
-  if (typeof actual !== 'string') return false;
-  const actualBytes = Buffer.from(actual);
-  const expectedBytes = Buffer.from(expected);
-  return actualBytes.length === expectedBytes.length
-    && timingSafeEqual(actualBytes, expectedBytes);
-}
-
 function sendError(response, code) {
   if (response.destroyed || response.writableEnded) return;
   const body = Buffer.from(JSON.stringify({ error: { code } }));
@@ -152,34 +139,7 @@ async function boundedBody(stream, maximum, tooLargeCode) {
 function responseContentType(value) {
   const normalized = typeof value === 'string' ? value.toLowerCase() : '';
   if (normalized.startsWith('application/json')) return 'application/json';
-  if (normalized.startsWith('text/event-stream')) return 'text/event-stream';
   return 'application/octet-stream';
-}
-
-function writeWithBackpressure(response, bytes) {
-  if (response.write(bytes)) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    const cleanup = () => {
-      response.off('drain', onDrain);
-      response.off('close', onClose);
-      response.off('error', onError);
-    };
-    const onDrain = () => {
-      cleanup();
-      resolve();
-    };
-    const onClose = () => {
-      cleanup();
-      reject(new Error('PROXY_UPSTREAM_FAILED'));
-    };
-    const onError = () => {
-      cleanup();
-      reject(new Error('PROXY_UPSTREAM_FAILED'));
-    };
-    response.once('drain', onDrain);
-    response.once('close', onClose);
-    response.once('error', onError);
-  });
 }
 
 const configuration = await readConfiguration(process.stdin);
@@ -247,12 +207,21 @@ if (!configuration) {
         rejectPolicy(response, 'PROXY_PATH_REJECTED');
         return;
       }
-      if (!secretMatches(
-        singleHeader(request, 'authorization'),
-        `Bearer ${configuration.bearer}`,
-      )) {
-        rejectPolicy(response, 'PROXY_AUTH_REJECTED');
-        return;
+      const rawHeaders = Array.isArray(request.rawHeaders)
+        ? request.rawHeaders
+        : [];
+      for (let index = 0; index < rawHeaders.length; index += 2) {
+        const name = String(rawHeaders[index]).toLowerCase();
+        if (
+          name === 'authorization'
+          || name === 'openai-organization'
+          || name === 'openai-project'
+          || name.startsWith('x-')
+          || !new Set(['content-type', 'host', 'content-length', 'connection']).has(name)
+        ) {
+          rejectPolicy(response, 'PROXY_HEADER_REJECTED');
+          return;
+        }
       }
       const contentType = singleHeader(request, 'content-type');
       if (contentType?.toLowerCase() !== 'application/json') {
@@ -308,12 +277,10 @@ if (!configuration) {
           agent: false,
           setHost: false,
           headers: {
-            accept: 'application/json, text/event-stream',
-            authorization: `Bearer ${configuration.bearer}`,
+            accept: 'application/json',
             'content-type': 'application/json',
             'content-length': requestBody.length,
             host: 'localhost',
-            'x-governance-attempt-id': configuration.attemptId,
           },
         }, async (upstreamResponse) => {
           try {
@@ -323,40 +290,10 @@ if (!configuration) {
             if (
               !Number.isInteger(upstreamResponse.statusCode)
               || upstreamResponse.statusCode < 200
-              || upstreamResponse.statusCode > 599
+              || upstreamResponse.statusCode > 299
+              || contentType !== 'application/json'
             ) {
               failUpstream();
-              return;
-            }
-            if (contentType === 'text/event-stream') {
-              if (settled || response.destroyed || response.writableEnded) return;
-              settled = true;
-              response.writeHead(upstreamResponse.statusCode, {
-                'content-type': contentType,
-                'cache-control': 'no-store',
-                connection: 'close',
-              });
-              let size = 0;
-              try {
-                for await (const chunk of upstreamResponse) {
-                  const bytes = Buffer.isBuffer(chunk)
-                    ? chunk
-                    : Buffer.from(chunk);
-                  size += bytes.length;
-                  if (size > MAX_RESPONSE_BYTES) {
-                    const error = new Error('PROXY_RESPONSE_TOO_LARGE');
-                    error.code = 'PROXY_RESPONSE_TOO_LARGE';
-                    throw error;
-                  }
-                  await writeWithBackpressure(response, bytes);
-                }
-                response.end();
-              } catch {
-                upstreamResponse.destroy();
-                response.destroy();
-                shutdown(70);
-              }
-              resolve();
               return;
             }
             const body = await boundedBody(
@@ -385,10 +322,12 @@ if (!configuration) {
         });
         activeUpstream.add(upstream);
         upstream.once('close', () => activeUpstream.delete(upstream));
-        upstream.once('error', () => failUpstream());
+        upstream.once('error', (error) => {
+          failUpstream();
+        });
         upstream.end(requestBody);
       });
-    } catch {
+    } catch (error) {
       rejectPolicy(response, 'PROXY_UPSTREAM_FAILED');
     }
   });

@@ -334,9 +334,15 @@ function makeHarness(overrides = {}) {
         throw new Error('private proxy environment detail');
       }
       return overrides.proxyEnvironment ?? Object.freeze({
-        OPENAI_API_KEY: `attempt-token-${proxyHandleIds.get(handle).replace('proxy-', '')}`,
-        OPENAI_BASE_URL: 'http://127.0.0.1:43127/v1',
+        GOVERNSEED_PROXY_SOCKET: '/run/governance/proxy.sock',
+        GOVERNSEED_BENCHMARK_ID: 'GS-OSS-2026-08-02-V8',
+        GOVERNSEED_RUN_ID: `fixture-run-${proxyHandleIds.get(handle).replace('proxy-', '')}`,
+        GOVERNSEED_TASK_ID: 'fixture-task',
       });
+    },
+    async getSocketPath(handle) {
+      events.push(`proxy.socket:${proxyHandleIds.get(handle)}`);
+      return `/tmp/proxy-${proxyHandleIds.get(handle)}.sock`;
     },
     async attachAttempt(handle, input) {
       events.push(`proxy.attach:${proxyHandleIds.get(handle)}:${input.initPid}`);
@@ -419,12 +425,15 @@ async function openArm(harness, arm = 'baseline') {
   return harness.supervisor.openArm({
     arm,
     attemptId: 'b'.repeat(64),
+    benchmarkId: 'GS-OSS-2026-08-02-V8',
+    runId: `fixture-run-${arm}`,
+    taskId: 'fixture-task',
     command: {
       args: ['exec', '--ephemeral', '--cd', '/workspace', '-'],
       stdin: 'Complete the synthetic task.',
     },
     responseSchema: '/tmp/runner-owned-response.schema.json',
-    timeoutMs: 2_000,
+    timeoutMs: 30_000,
     workspace: `/tmp/${arm}-workspace`,
   });
 }
@@ -695,8 +704,10 @@ test('openArm creates the exact hardened private container and does not start it
     CODEX_HOME: '/tmp/home/.codex',
     TMPDIR: '/tmp',
     NO_COLOR: '1',
-    OPENAI_API_KEY: 'attempt-token-baseline',
-    OPENAI_BASE_URL: 'http://127.0.0.1:43127/v1',
+    GOVERNSEED_PROXY_SOCKET: '/run/governance/proxy.sock',
+    GOVERNSEED_BENCHMARK_ID: 'GS-OSS-2026-08-02-V8',
+    GOVERNSEED_RUN_ID: 'fixture-run-baseline',
+    GOVERNSEED_TASK_ID: 'fixture-task',
   });
   assert.deepEqual(armSpec.tmpfs, {
     '/tmp': 'rw,noexec,nosuid,nodev,size=67108864,mode=1777',
@@ -715,8 +726,12 @@ test('openArm creates the exact hardened private container and does not start it
     && mount.readOnly === true
   )), true);
   assert.equal(
-    armSpec.mounts.some((mount) => mount.target === '/run/governance/proxy.sock'),
-    false,
+    armSpec.mounts.some((mount) => (
+      mount.target === '/run/governance/proxy.sock'
+      && mount.source === '/tmp/proxy-proxy-baseline.sock'
+      && mount.readOnly === false
+    )),
+    true,
   );
   assert.equal(armSpec.mounts.some((mount) => (
     mount.target === '/run/governance/response.schema.json'
@@ -732,17 +747,23 @@ test('openArm creates the exact hardened private container and does not start it
 test('openArm rejects a proxy environment outside the exact opaque facade contract', async () => {
   for (const proxyEnvironment of [
     {
-      OPENAI_API_KEY: 'attempt-token-baseline',
-      OPENAI_BASE_URL: 'http://127.0.0.1:43127/v1',
+      GOVERNSEED_PROXY_SOCKET: '/run/governance/proxy.sock',
+      GOVERNSEED_BENCHMARK_ID: 'GS-OSS-2026-08-02-V8',
+      GOVERNSEED_RUN_ID: 'fixture-run-baseline',
+      GOVERNSEED_TASK_ID: 'fixture-task',
       UNREVIEWED: 'blocked',
     },
     {
-      OPENAI_API_KEY: 'attempt-token-baseline',
-      OPENAI_BASE_URL: 'http://127.0.0.1:9999/v1',
+      GOVERNSEED_PROXY_SOCKET: '/run/governance/wrong.sock',
+      GOVERNSEED_BENCHMARK_ID: 'GS-OSS-2026-08-02-V8',
+      GOVERNSEED_RUN_ID: 'fixture-run-baseline',
+      GOVERNSEED_TASK_ID: 'fixture-task',
     },
     {
-      OPENAI_API_KEY: 'line\nbreak',
-      OPENAI_BASE_URL: 'http://127.0.0.1:43127/v1',
+      GOVERNSEED_PROXY_SOCKET: '/run/governance/proxy.sock',
+      GOVERNSEED_BENCHMARK_ID: 'GS-OSS-2026-08-02-V8',
+      GOVERNSEED_RUN_ID: 'line\nbreak',
+      GOVERNSEED_TASK_ID: 'fixture-task',
     },
   ]) {
     const harness = makeHarness({ proxyEnvironment });
@@ -751,9 +772,12 @@ test('openArm rejects a proxy environment outside the exact opaque facade contra
       () => harness.supervisor.openArm({
         arm: 'baseline',
         attemptId: 'c'.repeat(64),
+        benchmarkId: 'GS-OSS-2026-08-02-V8',
+        runId: 'fixture-run-baseline',
+        taskId: 'fixture-task',
         command: { args: ['exec', '-'], stdin: 'baseline' },
         responseSchema: '/tmp/runner-owned-response.schema.json',
-        timeoutMs: 2_000,
+        timeoutMs: 30_000,
         workspace: '/tmp/baseline-workspace',
       }),
       (error) => error.code === 'OCI_PROXY_POLICY_MISMATCH'
@@ -998,17 +1022,23 @@ test('both arms receive one identical executionBoundaryId from actual canonical 
   const baseline = await harness.supervisor.openArm({
     arm: 'baseline',
     attemptId: 'c'.repeat(64),
+    benchmarkId: 'GS-OSS-2026-08-02-V8',
+    runId: 'fixture-run-baseline',
+    taskId: 'fixture-task',
     command: { args: ['exec', '-'], stdin: 'baseline' },
     responseSchema: '/tmp/runner-owned-response.schema.json',
-    timeoutMs: 2_000,
+    timeoutMs: 30_000,
     workspace: '/tmp/baseline-workspace',
   });
   const governed = await harness.supervisor.openArm({
     arm: 'governed',
     attemptId: 'c'.repeat(64),
+    benchmarkId: 'GS-OSS-2026-08-02-V8',
+    runId: 'fixture-run-governed',
+    taskId: 'fixture-task',
     command: { args: ['exec', '-'], stdin: 'governed' },
     responseSchema: '/tmp/runner-owned-response.schema.json',
-    timeoutMs: 2_000,
+    timeoutMs: 30_000,
     workspace: '/tmp/governed-workspace',
   });
 

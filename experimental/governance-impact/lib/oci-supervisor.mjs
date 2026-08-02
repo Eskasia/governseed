@@ -4,8 +4,13 @@ import nodeFs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
+import {
+  CREDENTIAL_PROXY_TIMEOUT_MS,
+} from './credential-proxy.mjs';
+
 export const OCI_RUNTIME_PATH = '/opt/governance/runtime/codex';
-export const OCI_PROXY_BASE_URL = 'http://127.0.0.1:43127/v1';
+export const OCI_PROXY_CONTAINER_SOCKET = '/run/governance/proxy.sock';
+const BENCHMARK_ID = 'GS-OSS-2026-08-02-V8';
 
 const MANAGED_LABEL = 'org.openai.governance-impact.managed';
 const DIGEST_REFERENCE = /^[^\s/@\0]+(?:\/[^\s/@\0]+)+@sha256:([a-f0-9]{64})$/u;
@@ -76,6 +81,10 @@ const CONTAINMENT_POLICY = Object.freeze({
       target: '/run/governance/response.schema.json',
       readOnly: true,
     }),
+    proxySocket: Object.freeze({
+      target: OCI_PROXY_CONTAINER_SOCKET,
+      readOnly: false,
+    }),
     lifeline: Object.freeze({ target: '/run/governance/lifeline', readOnly: true }),
   }),
 });
@@ -84,7 +93,7 @@ const NETWORK_POLICY = Object.freeze({
   schemaVersion: 1,
   networkMode: 'none',
   arbitraryEgress: false,
-  proxyTransport: 'host-netns-relay-to-unix-domain-socket',
+  proxyTransport: 'run-scoped-unix-domain-socket-bind',
 });
 
 const CLOSED_HARDENING = Object.freeze({
@@ -215,6 +224,15 @@ function validateArmInput(input) {
     fail('OCI_ARM_INPUT_INVALID', 'arm-open', 'BLOCKED');
   }
   if (!HEX_64.test(input.attemptId)) fail('OCI_ARM_INPUT_INVALID', 'arm-open', 'BLOCKED');
+  if (input.benchmarkId !== BENCHMARK_ID) {
+    fail('OCI_ARM_INPUT_INVALID', 'arm-open', 'BLOCKED');
+  }
+  if (
+    !nonEmptySingleLine(input.runId)
+    || !nonEmptySingleLine(input.taskId)
+  ) {
+    fail('OCI_ARM_INPUT_INVALID', 'arm-open', 'BLOCKED');
+  }
   requireAbsolutePath(input.workspace);
   requireAbsolutePath(input.responseSchema);
   if (
@@ -881,12 +899,16 @@ export function createLinuxCodexOciSupervisor(options = {}) {
       proxyHandle = await proxy.openAttempt({
         arm: input.arm,
         attemptId: input.attemptId,
-        deadlineMs: input.timeoutMs,
+        benchmarkId: input.benchmarkId,
+        runId: input.runId,
+        taskId: input.taskId,
+        timeoutMs: CREDENTIAL_PROXY_TIMEOUT_MS,
       });
       if (
         !proxyHandle
         || hashPolicy(proxyHandle.policy) !== preflightState.proxyPolicyHash
         || typeof proxy.getContainerEnvironment !== 'function'
+        || typeof proxy.getSocketPath !== 'function'
       ) {
         fail('OCI_PROXY_POLICY_MISMATCH', 'arm-open', 'FAIL-CLOSED');
       }
@@ -896,12 +918,20 @@ export function createLinuxCodexOciSupervisor(options = {}) {
         || typeof proxyEnvironment !== 'object'
         || Array.isArray(proxyEnvironment)
         || Object.keys(proxyEnvironment).sort().join(',')
-          !== 'OPENAI_API_KEY,OPENAI_BASE_URL'
-        || !nonEmptySingleLine(proxyEnvironment.OPENAI_API_KEY)
-        || proxyEnvironment.OPENAI_BASE_URL !== OCI_PROXY_BASE_URL
+          !== 'GOVERNSEED_BENCHMARK_ID,GOVERNSEED_PROXY_SOCKET,GOVERNSEED_RUN_ID,GOVERNSEED_TASK_ID'
+        || proxyEnvironment.GOVERNSEED_PROXY_SOCKET !== OCI_PROXY_CONTAINER_SOCKET
+        || proxyEnvironment.GOVERNSEED_BENCHMARK_ID !== input.benchmarkId
+        || proxyEnvironment.GOVERNSEED_RUN_ID !== input.runId
+        || proxyEnvironment.GOVERNSEED_TASK_ID !== input.taskId
+        || !nonEmptySingleLine(proxyEnvironment.GOVERNSEED_PROXY_SOCKET)
+        || !nonEmptySingleLine(proxyEnvironment.GOVERNSEED_BENCHMARK_ID)
+        || !nonEmptySingleLine(proxyEnvironment.GOVERNSEED_RUN_ID)
+        || !nonEmptySingleLine(proxyEnvironment.GOVERNSEED_TASK_ID)
       ) {
         fail('OCI_PROXY_POLICY_MISMATCH', 'arm-open', 'FAIL-CLOSED');
       }
+      const proxySocketPath = await proxy.getSocketPath(proxyHandle);
+      requireAbsolutePath(proxySocketPath, 'OCI_PROXY_POLICY_MISMATCH');
       const containerEnvironment = {
         ...BASE_CONTAINER_ENVIRONMENT,
         ...proxyEnvironment,
@@ -936,6 +966,11 @@ export function createLinuxCodexOciSupervisor(options = {}) {
             source: stagedResponseSchema.path,
             target: '/run/governance/response.schema.json',
             readOnly: true,
+          },
+          {
+            source: proxySocketPath,
+            target: OCI_PROXY_CONTAINER_SOCKET,
+            readOnly: false,
           },
         ],
       });

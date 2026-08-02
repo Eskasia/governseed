@@ -1,53 +1,65 @@
-import { createHash, timingSafeEqual } from 'node:crypto';
+import { createHash } from 'node:crypto';
 import fs from 'node:fs';
 import { createServer as createNodeServer } from 'node:http';
 import path from 'node:path';
 
 export const CREDENTIAL_PROXY_PATH = '/v1/responses';
-export const CREDENTIAL_PROXY_ATTEMPT_HEADER = 'x-governance-attempt-id';
+export const CREDENTIAL_PROXY_PROVIDER = 'OpenAI';
+export const CREDENTIAL_PROXY_ENDPOINT = 'https://api.openai.com/v1/responses';
+export const CREDENTIAL_PROXY_REQUEST_LIMIT = 1;
+export const CREDENTIAL_PROXY_TIMEOUT_MS = 30_000;
+export const CREDENTIAL_PROXY_TOKEN_CEILING = 8_192;
 
 const CREDENTIAL_PROXY_METHOD = 'POST';
-const CLIENT_EXECUTED_TOOL_TYPES = new Set([
-  'function',
-  'custom',
-  'local_shell',
-  'apply_patch',
-  'tool_search',
-]);
-const SERVER_STATE_FIELDS = Object.freeze([
-  'previous_response_id',
-  'conversation',
-  'prompt',
-]);
-const SERVER_STATE_REFERENCE_FIELDS = new Set([
-  'container_id',
-  'file_id',
-  'response_id',
-]);
-const SERVER_STATE_REFERENCE_ITEM_TYPES = new Set([
-  'container_reference',
-  'item_reference',
-]);
-const REMOTE_INPUT_URL_FIELDS = new Set([
-  'file_url',
-  'image_url',
-]);
-const CLIENT_IDENTIFIER_FIELDS = Object.freeze([
-  'client_metadata',
+const REQUEST_FIELDS = Object.freeze([
+  'model',
+  'input',
+  'max_output_tokens',
+  'response_format',
   'metadata',
-  'prompt_cache_key',
-  'prompt_cache_retention',
-  'safety_identifier',
-  'user',
 ]);
+const REQUEST_METADATA_FIELDS = Object.freeze([
+  'benchmark_id',
+  'run_id',
+  'task_id',
+]);
+const RESPONSE_FIELDS = Object.freeze(['id', 'model', 'output', 'usage']);
+const RESPONSE_USAGE_FIELDS = Object.freeze([
+  'input_tokens',
+  'output_tokens',
+  'total_tokens',
+]);
+const FIXED_RESPONSE_FORMAT = Object.freeze({
+  type: 'json_schema',
+  json_schema: Object.freeze({
+    name: 'governseed_response',
+    strict: true,
+    schema: Object.freeze({
+      type: 'object',
+      additionalProperties: false,
+      required: ['id', 'model', 'output', 'usage'],
+      properties: Object.freeze({
+        id: Object.freeze({ type: 'string' }),
+        model: Object.freeze({ type: 'string' }),
+        output: Object.freeze({ type: 'array' }),
+        usage: Object.freeze({ type: 'object' }),
+      }),
+    }),
+  }),
+});
 const POLICY_KEYS = new Set([
   'attemptId',
+  'benchmarkId',
+  'runId',
+  'taskId',
+  'provider',
   'model',
   'upstream',
   'maxRequestBytes',
   'maxResponseBytes',
-  'maxRequests',
-  'deadlineMs',
+  'requestLimit',
+  'timeoutMs',
+  'tokenCeiling',
 ]);
 
 const STATUS_BY_CODE = Object.freeze({
@@ -56,6 +68,7 @@ const STATUS_BY_CODE = Object.freeze({
   PROXY_METHOD_REJECTED: 405,
   PROXY_PATH_REJECTED: 404,
   PROXY_CONTENT_TYPE_REJECTED: 415,
+  PROXY_HEADER_REJECTED: 400,
   PROXY_REQUEST_TOO_LARGE: 413,
   PROXY_BODY_INVALID: 400,
   PROXY_BODY_MISMATCH: 400,
@@ -63,11 +76,14 @@ const STATUS_BY_CODE = Object.freeze({
   PROXY_DEADLINE_EXCEEDED: 408,
   PROXY_CONCURRENCY_EXCEEDED: 429,
   PROXY_UPSTREAM_FAILED: 502,
+  PROXY_RESPONSE_INVALID: 502,
   PROXY_RESPONSE_TOO_LARGE: 502,
+  PROXY_RECEIPT_FAILED: 502,
   PROXY_CLOSED: 503,
 });
 
 const defaultFs = Object.freeze({
+  chmod: (value, mode) => fs.promises.chmod(value, mode),
   lstat: (value) => fs.promises.lstat(value),
   unlink: (value) => fs.promises.unlink(value),
 });
@@ -124,6 +140,8 @@ function normalizeUpstream(value) {
   }
   if (
     parsed.protocol !== 'https:'
+    || parsed.hostname !== 'api.openai.com'
+    || parsed.port !== ''
     || parsed.username !== ''
     || parsed.password !== ''
     || parsed.search !== ''
@@ -149,12 +167,31 @@ function normalizePolicy(value) {
   try {
     return Object.freeze({
       attemptId: requireClosedToken(value.attemptId),
-      model: requireClosedToken(value.model),
+      benchmarkId: requireClosedToken(value.benchmarkId),
+      runId: requireClosedToken(value.runId),
+      taskId: requireClosedToken(value.taskId),
+      provider: value.provider === CREDENTIAL_PROXY_PROVIDER
+        ? CREDENTIAL_PROXY_PROVIDER
+        : fail('PROXY_POLICY_INVALID'),
+      model: (() => {
+        const normalized = requireClosedToken(value.model);
+        if (['latest', 'Luna', 'Sol'].includes(normalized)) {
+          fail('PROXY_POLICY_INVALID');
+        }
+        return normalized;
+      })(),
       upstream: normalizeUpstream(value.upstream),
       maxRequestBytes: requirePositiveInteger(value.maxRequestBytes),
       maxResponseBytes: requirePositiveInteger(value.maxResponseBytes),
-      maxRequests: requirePositiveInteger(value.maxRequests),
-      deadlineMs: requirePositiveInteger(value.deadlineMs),
+      requestLimit: value.requestLimit === CREDENTIAL_PROXY_REQUEST_LIMIT
+        ? CREDENTIAL_PROXY_REQUEST_LIMIT
+        : fail('PROXY_POLICY_INVALID'),
+      timeoutMs: value.timeoutMs === CREDENTIAL_PROXY_TIMEOUT_MS
+        ? CREDENTIAL_PROXY_TIMEOUT_MS
+        : fail('PROXY_POLICY_INVALID'),
+      tokenCeiling: value.tokenCeiling === CREDENTIAL_PROXY_TOKEN_CEILING
+        ? CREDENTIAL_PROXY_TOKEN_CEILING
+        : fail('PROXY_POLICY_INVALID'),
     });
   } catch (error) {
     if (error instanceof CredentialProxyError) throw error;
@@ -172,29 +209,47 @@ function canonicalJson(value) {
 
 function durablePolicyDescriptor(policy) {
   return Object.freeze({
-    schemaVersion: 2,
+    schemaVersion: 3,
+    provider: CREDENTIAL_PROXY_PROVIDER,
     method: CREDENTIAL_PROXY_METHOD,
     path: CREDENTIAL_PROXY_PATH,
     model: policy.model,
     upstream: policy.upstream,
     maxRequestBytes: policy.maxRequestBytes,
     maxResponseBytes: policy.maxResponseBytes,
-    maxRequests: policy.maxRequests,
-    deadlineMs: policy.deadlineMs,
+    requestLimit: CREDENTIAL_PROXY_REQUEST_LIMIT,
+    timeoutMs: CREDENTIAL_PROXY_TIMEOUT_MS,
+    tokenCeiling: CREDENTIAL_PROXY_TOKEN_CEILING,
     maxConcurrency: 1,
     request: Object.freeze({
-      store: false,
-      stream: true,
-      background: false,
-      continuationMode: 'client-replay',
-      serverStateFields: Object.freeze([]),
-      serverStateReferenceFields: Object.freeze([]),
-      remoteInputUrls: false,
-      toolSearchExecution: 'client',
-      allowedToolTypes: Object.freeze(
-        [...CLIENT_EXECUTED_TOOL_TYPES].sort(),
-      ),
-      strippedIdentifierFields: Object.freeze([...CLIENT_IDENTIFIER_FIELDS]),
+      allowedFields: Object.freeze([...REQUEST_FIELDS]),
+      metadataFields: Object.freeze([...REQUEST_METADATA_FIELDS]),
+      fixedResponseFormat: FIXED_RESPONSE_FORMAT,
+      forwardedHeaders: Object.freeze([
+        'accept',
+        'authorization',
+        'content-type',
+      ]),
+      rejectedClientHeaders: Object.freeze([
+        'authorization',
+        'openai-organization',
+        'openai-project',
+        'host',
+        'content-length',
+        'x-*',
+      ]),
+    }),
+    identityBinding: Object.freeze({
+      benchmarkId: true,
+      runId: true,
+      taskId: true,
+      singleUse: true,
+    }),
+    response: Object.freeze({
+      allowedFields: Object.freeze([...RESPONSE_FIELDS]),
+      usageFields: Object.freeze([...RESPONSE_USAGE_FIELDS]),
+      contentType: 'application/json',
+      successStatus: '2xx',
     }),
   });
 }
@@ -205,7 +260,7 @@ export function describeCredentialProxyPolicy(value) {
 
 function hashNormalizedPolicy(policy) {
   return createHash('sha256')
-    .update('governance-impact-credential-proxy-policy-v2\0')
+    .update('governance-impact-credential-proxy-policy-v3\0')
     .update(canonicalJson(durablePolicyDescriptor(policy)))
     .digest('hex');
 }
@@ -251,6 +306,7 @@ function normalizeDependencies(value = {}) {
   return Object.freeze({
     createServer: requireFunction(value.createServer ?? createNodeServer),
     fs: Object.freeze({
+      chmod: requireFunction(fsApi?.chmod),
       lstat: requireFunction(fsApi?.lstat),
       unlink: requireFunction(fsApi?.unlink),
     }),
@@ -295,24 +351,25 @@ function singleHeader(request, name) {
   return matches.length === 1 && typeof matches[0] === 'string' ? matches[0] : null;
 }
 
-function secretMatches(actual, expected) {
-  if (typeof actual !== 'string') return false;
-  const actualBytes = Buffer.from(actual);
-  const expectedBytes = Buffer.from(expected);
-  return actualBytes.length === expectedBytes.length
-    && timingSafeEqual(actualBytes, expectedBytes);
-}
-
-function assertRequestHeaders(request, policy, attemptBearer) {
-  const authorization = singleHeader(request, 'authorization');
-  if (!secretMatches(authorization, `Bearer ${attemptBearer}`)) {
-    fail('PROXY_AUTH_REJECTED');
-  }
-  if (!secretMatches(singleHeader(request, CREDENTIAL_PROXY_ATTEMPT_HEADER), policy.attemptId)) {
-    fail('PROXY_ATTEMPT_REJECTED');
-  }
+function assertRequestHeaders(request, policy) {
   if (request.method !== CREDENTIAL_PROXY_METHOD) fail('PROXY_METHOD_REJECTED');
   if (request.url !== CREDENTIAL_PROXY_PATH) fail('PROXY_PATH_REJECTED');
+
+  const rawHeaders = Array.isArray(request.rawHeaders)
+    ? request.rawHeaders
+    : Object.entries(request.headers ?? {}).flat();
+  for (let index = 0; index < rawHeaders.length; index += 2) {
+    const name = String(rawHeaders[index]).toLowerCase();
+    if (
+      name === 'authorization'
+      || name === 'openai-organization'
+      || name === 'openai-project'
+      || name.startsWith('x-')
+      || !new Set(['content-type', 'host', 'content-length', 'connection']).has(name)
+    ) {
+      fail('PROXY_HEADER_REJECTED');
+    }
+  }
   const contentType = singleHeader(request, 'content-type');
   if (contentType?.toLowerCase() !== 'application/json') {
     fail('PROXY_CONTENT_TYPE_REJECTED');
@@ -327,10 +384,18 @@ function assertRequestHeaders(request, policy, attemptBearer) {
   }
 }
 
-async function readRequestBody(request, limit) {
+async function readRequestBody(request, limit, signal) {
   const chunks = [];
   let total = 0;
   let tooLarge = false;
+  const onAbort = () => {
+    try {
+      request.destroy?.();
+    } catch {
+      // The request is already unusable; the controller owns the error code.
+    }
+  };
+  signal?.addEventListener('abort', onAbort, { once: true });
   try {
     for await (const chunk of request) {
       const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
@@ -343,13 +408,44 @@ async function readRequestBody(request, limit) {
       }
     }
   } catch {
-    fail('PROXY_BODY_INVALID');
+    if (!signal?.aborted) fail('PROXY_BODY_INVALID');
+  } finally {
+    signal?.removeEventListener('abort', onAbort);
   }
   if (tooLarge) fail('PROXY_REQUEST_TOO_LARGE');
   return Buffer.concat(chunks, total);
 }
 
-function validateBody(bytes, model) {
+function validateInput(value) {
+  const pending = [value];
+  while (pending.length > 0) {
+    const current = pending.pop();
+    if (Array.isArray(current)) {
+      pending.push(...current);
+      continue;
+    }
+    if (!isPlainObject(current)) {
+      if (typeof current === 'string' && /^https?:\/\//iu.test(current)) {
+        fail('PROXY_BODY_MISMATCH');
+      }
+      continue;
+    }
+    for (const [key, nested] of Object.entries(current)) {
+      if (
+        (key === 'url' || key.endsWith('_url') || key.endsWith('_uri'))
+        && typeof nested === 'string'
+      ) {
+        fail('PROXY_BODY_MISMATCH');
+      }
+      if (nested !== null && typeof nested === 'object') pending.push(nested);
+      if (typeof nested === 'string' && /^https?:\/\//iu.test(nested)) {
+        fail('PROXY_BODY_MISMATCH');
+      }
+    }
+  }
+}
+
+function validateBody(bytes, policy) {
   let body;
   try {
     body = JSON.parse(bytes.toString('utf8'));
@@ -357,63 +453,33 @@ function validateBody(bytes, model) {
     fail('PROXY_BODY_INVALID');
   }
   if (!isPlainObject(body)) fail('PROXY_BODY_INVALID');
+  if (Object.keys(body).sort().join(',') !== REQUEST_FIELDS.slice().sort().join(',')) {
+    fail('PROXY_BODY_MISMATCH');
+  }
+  if (body.model !== policy.model) fail('PROXY_BODY_MISMATCH');
+  if (body.max_output_tokens !== policy.tokenCeiling) {
+    fail('PROXY_BODY_MISMATCH');
+  }
+  if (canonicalJson(body.response_format) !== canonicalJson(FIXED_RESPONSE_FORMAT)) {
+    fail('PROXY_BODY_MISMATCH');
+  }
+  if (!isPlainObject(body.metadata)) fail('PROXY_BODY_MISMATCH');
   if (
-    body.model !== model
-    || body.store !== false
-    || body.stream !== true
-    || body.background === true
-    || SERVER_STATE_FIELDS.some((field) => Object.hasOwn(body, field))
+    Object.keys(body.metadata).sort().join(',')
+      !== REQUEST_METADATA_FIELDS.slice().sort().join(',')
+    || body.metadata.benchmark_id !== policy.benchmarkId
+    || body.metadata.run_id !== policy.runId
+    || body.metadata.task_id !== policy.taskId
   ) {
     fail('PROXY_BODY_MISMATCH');
   }
-  if (body.tools !== undefined) {
-    if (
-      !Array.isArray(body.tools)
-      || body.tools.some((tool) => (
-        !isPlainObject(tool)
-        || typeof tool.type !== 'string'
-        || !CLIENT_EXECUTED_TOOL_TYPES.has(tool.type)
-        || (
-          tool.type === 'tool_search'
-          && tool.execution !== 'client'
-        )
-      ))
-    ) {
-      fail('PROXY_BODY_MISMATCH');
-    }
+  if (
+    typeof body.input !== 'string'
+    && !Array.isArray(body.input)
+  ) {
+    fail('PROXY_BODY_MISMATCH');
   }
-  const pending = [body.input];
-  while (pending.length > 0) {
-    const value = pending.pop();
-    if (Array.isArray(value)) {
-      pending.push(...value);
-      continue;
-    }
-    if (!isPlainObject(value)) continue;
-    if (
-      SERVER_STATE_REFERENCE_ITEM_TYPES.has(value.type)
-      || (
-        value.type === 'tool_search_call'
-        && value.execution !== 'client'
-      )
-    ) {
-      fail('PROXY_BODY_MISMATCH');
-    }
-    for (const [key, nested] of Object.entries(value)) {
-      if (
-        SERVER_STATE_REFERENCE_FIELDS.has(key)
-        || (
-          REMOTE_INPUT_URL_FIELDS.has(key)
-          && typeof nested === 'string'
-          && /^https?:\/\//iu.test(nested)
-        )
-      ) {
-        fail('PROXY_BODY_MISMATCH');
-      }
-      if (nested !== null && typeof nested === 'object') pending.push(nested);
-    }
-  }
-  for (const field of CLIENT_IDENTIFIER_FIELDS) delete body[field];
+  validateInput(body.input);
   return Buffer.from(JSON.stringify(body));
 }
 
@@ -451,7 +517,6 @@ function responseContentType(headers) {
   if (typeof value !== 'string') return 'application/octet-stream';
   const normalized = value.toLowerCase();
   if (normalized.startsWith('application/json')) return 'application/json';
-  if (normalized.startsWith('text/event-stream')) return 'text/event-stream';
   return 'application/octet-stream';
 }
 
@@ -492,76 +557,6 @@ function sendUpstreamResponse(response, upstreamResponse) {
   response.end(upstreamResponse.body);
 }
 
-function waitForDrain(response, signal) {
-  return new Promise((resolve, reject) => {
-    const cleanup = () => {
-      response.off('drain', onDrain);
-      response.off('close', onClose);
-      signal.removeEventListener('abort', onAbort);
-    };
-    const onDrain = () => {
-      cleanup();
-      resolve();
-    };
-    const onClose = () => {
-      cleanup();
-      reject(new CredentialProxyError('PROXY_UPSTREAM_FAILED'));
-    };
-    const onAbort = () => {
-      cleanup();
-      reject(new CredentialProxyError('PROXY_DEADLINE_EXCEEDED'));
-    };
-    response.once('drain', onDrain);
-    response.once('close', onClose);
-    signal.addEventListener('abort', onAbort, { once: true });
-  });
-}
-
-async function streamUpstreamResponse(response, upstreamResponse, limit, signal) {
-  const body = upstreamResponse.body;
-  const staticBody = (
-    typeof body === 'string'
-    || Buffer.isBuffer(body)
-    || body instanceof Uint8Array
-  );
-  if (
-    body !== null
-    && body !== undefined
-    && !staticBody
-    && typeof body[Symbol.asyncIterator] !== 'function'
-  ) {
-    fail('PROXY_UPSTREAM_FAILED');
-  }
-
-  try {
-    response.writeHead(upstreamResponse.statusCode, {
-      'content-type': 'text/event-stream',
-      'cache-control': 'no-store',
-    });
-    let total = 0;
-    const chunks = staticBody
-      ? [body]
-      : (body ?? []);
-    for await (const chunk of chunks) {
-      if (signal.aborted) fail('PROXY_DEADLINE_EXCEEDED');
-      const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk);
-      total += bytes.length;
-      if (total > limit) fail('PROXY_RESPONSE_TOO_LARGE');
-      if (!response.write(bytes)) await waitForDrain(response, signal);
-    }
-    if (signal.aborted) fail('PROXY_DEADLINE_EXCEEDED');
-    response.end();
-  } catch (error) {
-    try {
-      if (!response.writableEnded && !response.destroyed) response.destroy();
-    } catch {
-      // The response is already unusable.
-    }
-    if (error instanceof CredentialProxyError) throw error;
-    fail('PROXY_UPSTREAM_FAILED');
-  }
-}
-
 function listen(server, socketPath) {
   return new Promise((resolve, reject) => {
     const onListening = () => {
@@ -588,7 +583,11 @@ function closeServer(server) {
   if (!server) return Promise.resolve(true);
   return new Promise((resolve) => {
     try {
-      server.close((error) => resolve(error === undefined));
+      server.closeIdleConnections?.();
+      server.closeAllConnections?.();
+      server.close((error) => resolve(
+        error === undefined || error?.code === 'ERR_SERVER_NOT_RUNNING',
+      ));
     } catch {
       resolve(false);
     }
@@ -615,12 +614,66 @@ async function removeOwnedSocket(fsApi, socketPath) {
   return absent && !unlinkFailed;
 }
 
+function hashBytes(value) {
+  return createHash('sha256').update(value).digest('hex');
+}
+
+function responseHeader(headers, name) {
+  if (headers && typeof headers.get === 'function') return headers.get(name);
+  if (!headers || typeof headers !== 'object') return null;
+  return headers[name] ?? headers[name.toLowerCase()] ?? null;
+}
+
+function validateResponseBody(bytes, policy) {
+  let body;
+  try {
+    body = JSON.parse(bytes.toString('utf8'));
+  } catch {
+    fail('PROXY_RESPONSE_INVALID');
+  }
+  if (!isPlainObject(body)) fail('PROXY_RESPONSE_INVALID');
+  if (Object.keys(body).sort().join(',') !== RESPONSE_FIELDS.slice().sort().join(',')) {
+    fail('PROXY_RESPONSE_INVALID');
+  }
+  if (
+    typeof body.id !== 'string'
+    || body.id.length === 0
+    || body.id.length > 256
+    || body.model !== policy.model
+    || !Array.isArray(body.output)
+    || body.output.length > 256
+    || !isPlainObject(body.usage)
+    || Object.keys(body.usage).sort().join(',')
+      !== RESPONSE_USAGE_FIELDS.slice().sort().join(',')
+  ) {
+    fail('PROXY_RESPONSE_INVALID');
+  }
+  for (const field of RESPONSE_USAGE_FIELDS) {
+    if (!Number.isSafeInteger(body.usage[field]) || body.usage[field] < 0) {
+      fail('PROXY_RESPONSE_INVALID');
+    }
+  }
+  if (
+    body.usage.total_tokens !== body.usage.input_tokens + body.usage.output_tokens
+    || body.usage.total_tokens > policy.tokenCeiling
+  ) {
+    fail('PROXY_RESPONSE_INVALID');
+  }
+  return Object.freeze({
+    id: body.id,
+    model: body.model,
+    inputTokens: body.usage.input_tokens,
+    outputTokens: body.usage.output_tokens,
+    totalTokens: body.usage.total_tokens,
+  });
+}
+
 function validateUpstreamResponse(response) {
   if (
     !response
     || !Number.isInteger(response.statusCode)
     || response.statusCode < 200
-    || response.statusCode > 599
+    || response.statusCode > 299
   ) {
     fail('PROXY_UPSTREAM_FAILED');
   }
@@ -630,10 +683,26 @@ export function createHostCredentialProxy(options) {
   if (!isPlainObject(options)) fail('PROXY_POLICY_INVALID');
   const policy = normalizePolicy(options.policy);
   const socketPath = normalizeSocketPath(options.socketPath);
-  const attemptBearer = requireSecret(options.attemptBearer);
   const upstreamKey = requireSecret(options.upstreamKey);
   const dependencies = normalizeDependencies(options.dependencies);
   const logger = options.logger === undefined ? () => {} : requireFunction(options.logger);
+  const receiptSink = options.receiptSink === undefined
+    ? () => {}
+    : requireFunction(options.receiptSink);
+  const socketOwnerUid = options.socketOwnerUid
+    ?? (typeof process.getuid === 'function' ? process.getuid() : 0);
+  const socketOwnerGid = options.socketOwnerGid
+    ?? (typeof process.getgid === 'function' ? process.getgid() : 0);
+  const socketMode = options.socketMode ?? 0o600;
+  if (
+    !Number.isSafeInteger(socketOwnerUid)
+    || socketOwnerUid < 0
+    || !Number.isSafeInteger(socketOwnerGid)
+    || socketOwnerGid < 0
+    || socketMode !== 0o600
+  ) {
+    fail('PROXY_POLICY_INVALID');
+  }
   const policyHash = hashNormalizedPolicy(policy);
 
   let server = null;
@@ -645,6 +714,7 @@ export function createHostCredentialProxy(options) {
   let closeInFlight = null;
   let closeProof = null;
   let attemptUnsafe = false;
+  let closeProxy = null;
   const activeControllers = new Set();
 
   const safeLog = (event, code) => {
@@ -655,6 +725,14 @@ export function createHostCredentialProxy(options) {
       logger(entry);
     } catch {
       // Logging is intentionally best-effort and receives sanitized fields only.
+    }
+  };
+
+  const recordReceipt = (value) => {
+    try {
+      receiptSink(Object.freeze(value));
+    } catch {
+      fail('PROXY_RECEIPT_FAILED');
     }
   };
 
@@ -677,6 +755,10 @@ export function createHostCredentialProxy(options) {
         abortCode = 'PROXY_CLOSED';
         controller.abort();
       },
+      abortForClient() {
+        abortCode = 'PROXY_CLOSED';
+        controller.abort();
+      },
     });
     activeControllers.add(controllerEntry);
     try {
@@ -695,12 +777,12 @@ export function createHostCredentialProxy(options) {
     }
   };
 
-  const callUpstream = async (body, signal, response) => {
+  const callUpstream = async (body, signal) => {
     const upstreamResponse = await dependencies.upstreamTransport({
-      url: policy.upstream,
+      url: CREDENTIAL_PROXY_ENDPOINT,
       method: CREDENTIAL_PROXY_METHOD,
       headers: {
-        accept: 'application/json, text/event-stream',
+        accept: 'application/json',
         authorization: `Bearer ${upstreamKey}`,
         'content-type': 'application/json',
       },
@@ -708,44 +790,100 @@ export function createHostCredentialProxy(options) {
       signal,
     });
     validateUpstreamResponse(upstreamResponse);
-    const contentType = responseContentType(upstreamResponse.headers);
-    if (contentType === 'text/event-stream') {
-      await streamUpstreamResponse(
-        response,
-        upstreamResponse,
-        policy.maxResponseBytes,
-        signal,
-      );
-      return { streamed: true };
+    if (responseContentType(upstreamResponse.headers) !== 'application/json') {
+      fail('PROXY_RESPONSE_INVALID');
     }
+    const responseBody = await readResponseBody(
+      upstreamResponse.body,
+      policy.maxResponseBytes,
+    );
+    const responseShape = validateResponseBody(responseBody, policy);
     return {
       statusCode: upstreamResponse.statusCode,
-      contentType,
-      body: await readResponseBody(upstreamResponse.body, policy.maxResponseBytes),
-      streamed: false,
+      contentType: 'application/json',
+      body: responseBody,
+      responseShape,
+      providerRequestIdHash: (() => {
+        const requestId = responseHeader(upstreamResponse.headers, 'x-request-id')
+          ?? responseHeader(upstreamResponse.headers, 'request-id');
+        return typeof requestId === 'string' && requestId.length > 0
+          ? hashBytes(Buffer.from(requestId))
+          : null;
+      })(),
     };
   };
 
+  const abortForClient = (request, response) => {
+    if (response.writableEnded) return;
+    attemptUnsafe = true;
+    for (const entry of activeControllers) entry.abortForClient();
+    try {
+      request.destroy?.();
+    } catch {
+      // The connection is already closing.
+    }
+    if (typeof closeProxy === 'function') {
+      void closeProxy().catch(() => {});
+    }
+  };
+
   const handleRequest = async (request, response) => {
+    const onRequestAborted = () => abortForClient(request, response);
+    const onRequestClose = () => {
+      if (request.aborted === true || request.complete !== true) {
+        abortForClient(request, response);
+      }
+    };
+    const onResponseClose = () => {
+      if (!response.writableEnded && !response.writableFinished) {
+        abortForClient(request, response);
+      }
+    };
+    request.once?.('aborted', onRequestAborted);
+    request.once?.('close', onRequestClose);
+    response.once?.('close', onResponseClose);
     try {
       if (state !== 'started') fail('PROXY_CLOSED');
-      assertRequestHeaders(request, policy, attemptBearer);
+      assertRequestHeaders(request, policy);
       if (dependencies.clock.now() >= deadlineAt) fail('PROXY_DEADLINE_EXCEEDED');
       if (activeRequest) fail('PROXY_CONCURRENCY_EXCEEDED');
-      if (requestCount >= policy.maxRequests) fail('PROXY_REQUEST_QUOTA_EXCEEDED');
+      if (requestCount >= policy.requestLimit) fail('PROXY_REQUEST_QUOTA_EXCEEDED');
 
       requestCount += 1;
       activeRequest = true;
+      const requestStartedAt = dependencies.clock.now();
       try {
         const upstreamResponse = await withDeadline(async (signal) => {
-          const body = await readRequestBody(request, policy.maxRequestBytes);
+          const body = await readRequestBody(
+            request,
+            policy.maxRequestBytes,
+            signal,
+          );
           if (signal.aborted) fail('PROXY_DEADLINE_EXCEEDED');
-          const sanitizedBody = validateBody(body, policy.model);
-          return callUpstream(sanitizedBody, signal, response);
+          const sanitizedBody = validateBody(body, policy);
+          return {
+            rawRequestBody: sanitizedBody,
+            upstream: await callUpstream(sanitizedBody, signal),
+          };
         });
-        if (!upstreamResponse.streamed) {
-          sendUpstreamResponse(response, upstreamResponse);
-        }
+        const { rawRequestBody, upstream } = upstreamResponse;
+        recordReceipt({
+          schemaVersion: 1,
+          requestSha256: hashBytes(rawRequestBody),
+          responseSha256: hashBytes(upstream.body),
+          requestBytes: rawRequestBody.length,
+          responseBytes: upstream.body.length,
+          modelId: upstream.responseShape.model,
+          statusCode: upstream.statusCode,
+          latencyMs: Math.max(0, dependencies.clock.now() - requestStartedAt),
+          tokenCounts: {
+            input: upstream.responseShape.inputTokens,
+            output: upstream.responseShape.outputTokens,
+            total: upstream.responseShape.totalTokens,
+          },
+          providerRequestIdHash: upstream.providerRequestIdHash,
+        });
+        sendUpstreamResponse(response, upstream);
         safeLog('PROXY_REQUEST_COMPLETED');
       } finally {
         activeRequest = false;
@@ -757,6 +895,13 @@ export function createHostCredentialProxy(options) {
       attemptUnsafe = true;
       safeLog('PROXY_REQUEST_REJECTED', code);
       sendError(response, code);
+      if (typeof closeProxy === 'function') {
+        void closeProxy().catch(() => {});
+      }
+    } finally {
+      request.off?.('aborted', onRequestAborted);
+      request.off?.('close', onRequestClose);
+      response.off?.('close', onResponseClose);
     }
   };
 
@@ -785,25 +930,36 @@ export function createHostCredentialProxy(options) {
       server.on('error', () => {
         attemptUnsafe = true;
         safeLog('PROXY_SERVER_ERROR', 'PROXY_SERVER_FAILED');
-        if (state === 'started') {
-          state = 'failed';
-          for (const entry of activeControllers) entry.abortForClose();
-        }
+        if (typeof closeProxy === 'function') void closeProxy().catch(() => {});
       });
       server.on('clientError', () => {
         attemptUnsafe = true;
         safeLog('PROXY_REQUEST_REJECTED', 'PROXY_BODY_INVALID');
+        if (typeof closeProxy === 'function') void closeProxy().catch(() => {});
       });
       await listen(server, socketPath);
       ownsSocket = true;
-      if (await pathState(dependencies.fs, socketPath) !== 'socket') {
-        fail('PROXY_START_FAILED');
+      await dependencies.fs.chmod(socketPath, socketMode);
+      const entry = await dependencies.fs.lstat(socketPath);
+      if (
+        entry?.isSocket?.() !== true
+        || (entry.mode & 0o777) !== socketMode
+        || entry.uid !== socketOwnerUid
+        || entry.gid !== socketOwnerGid
+      ) {
+        fail('PROXY_SOCKET_IDENTITY_INVALID');
       }
-      deadlineAt = dependencies.clock.now() + policy.deadlineMs;
+      deadlineAt = dependencies.clock.now() + policy.timeoutMs;
       if (!Number.isSafeInteger(deadlineAt)) fail('PROXY_POLICY_INVALID');
       state = 'started';
       safeLog('PROXY_STARTED');
-      return Object.freeze({ socketPath, policyHash });
+      return Object.freeze({
+        socketPath,
+        policyHash,
+        socketOwnerUid,
+        socketOwnerGid,
+        socketMode: '0600',
+      });
     } catch (error) {
       const serverClosed = await closeServer(server);
       const socketRemoved = ownsSocket
@@ -845,6 +1001,7 @@ export function createHostCredentialProxy(options) {
       closeInFlight = null;
     }
   };
+  closeProxy = close;
 
   const proveSafe = async () => {
     if (!closeProof || state !== 'closed') fail('PROXY_LIFECYCLE_INVALID');

@@ -270,7 +270,10 @@ test('OCI preflight publishes one closed receipt without reading the runtime cre
     createOciProxyFacade(options) {
       assert.deepEqual(options, {
         model: 'gpt-5.6-codex',
-        deadlineMs: 300_000,
+        timeoutMs: 30_000,
+        benchmarkId: 'GS-OSS-2026-08-02-V8',
+        runId: 'preflight',
+        taskId: 'preflight',
       });
       return proxy;
     },
@@ -478,7 +481,10 @@ test('v2 Linux Codex routes through OCI provenance without host binary or CODEX_
       events.push('create-proxy');
       assert.equal(options.attemptId, attempt.attemptId);
       assert.equal(options.model, cohort.model);
-      assert.equal(options.deadlineMs, 300_000);
+      assert.equal(options.timeoutMs, 30_000);
+      assert.equal(options.benchmarkId, 'GS-OSS-2026-08-02-V8');
+      assert.equal(options.runId, attempt.attemptId);
+      assert.equal(options.taskId, scenario.id);
       assert.equal(typeof options.getUpstreamKey, 'function');
       getUpstreamKey = options.getUpstreamKey;
       return proxy;

@@ -41,8 +41,12 @@ import {
 import {
   createOciCredentialProxyFacade,
 } from './lib/oci-proxy-facade.mjs';
+import {
+  CREDENTIAL_PROXY_TIMEOUT_MS,
+} from './lib/credential-proxy.mjs';
 
 const HEX_64 = /^[a-f0-9]{64}$/;
+const BENCHMARK_ID = 'GS-OSS-2026-08-02-V8';
 const OCI_RESPONSE_SCHEMA_PATH = '/run/governance/response.schema.json';
 
 const PREFLIGHT_EVIDENCE_KEYS = Object.freeze([
@@ -190,7 +194,10 @@ async function handlePreflight(options, deps) {
   if (typeof createProxy !== 'function') fail('OCI_PROXY_UNAVAILABLE');
   const proxy = createProxy({
     model: options.model,
-    deadlineMs: options['timeout-ms'],
+    timeoutMs: CREDENTIAL_PROXY_TIMEOUT_MS,
+    benchmarkId: BENCHMARK_ID,
+    runId: 'preflight',
+    taskId: 'preflight',
   });
   const createSupervisor =
     deps.createOciSupervisor ?? createLinuxCodexOciSupervisor;
@@ -330,7 +337,10 @@ async function handleRun(options, deps) {
     )({
       attemptId: attempt.attemptId,
       model: normalized.manifest.cohort.model,
-      deadlineMs: timeoutMs,
+      timeoutMs: CREDENTIAL_PROXY_TIMEOUT_MS,
+      benchmarkId: BENCHMARK_ID,
+      runId: attempt.attemptId,
+      taskId: loaded.scenario.id,
       getUpstreamKey,
     });
     const supervisor = (
@@ -385,6 +395,9 @@ async function handleRun(options, deps) {
         return supervisor.openArm({
           arm: context.arm,
           attemptId: attempt.attemptId,
+          benchmarkId: BENCHMARK_ID,
+          runId: attempt.attemptId,
+          taskId: loaded.scenario.id,
           command: {
             args: command.args,
             stdin: command.stdin,

@@ -1,0 +1,89 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "repair-1",
+  "evidenceClass": "external-observational",
+  "parentVerdict": "REJECT",
+  "checks": [
+    {
+      "id": "credential-not-in-container-environment",
+      "result": "CLOSED",
+      "evidence": "Facade and supervisor expose only the four GOVERNSEED proxy identity variables; forbidden provider and Git credential variables are excluded from the measured proxy environment."
+    },
+    {
+      "id": "arbitrary-endpoint-rejects",
+      "result": "CLOSED",
+      "evidence": "Proxy policy accepts only OpenAI HTTPS endpoint https://api.openai.com/v1/responses."
+    },
+    {
+      "id": "model-override-rejects",
+      "result": "CLOSED",
+      "evidence": "Proxy startup and request validation require one exact non-alias model; request model must equal the startup binding."
+    },
+    {
+      "id": "unknown-header-rejects",
+      "result": "CLOSED",
+      "evidence": "Unknown, x-*, Authorization, OpenAI-Organization, and OpenAI-Project client headers are rejected; framing headers are accepted locally and never forwarded."
+    },
+    {
+      "id": "authorization-host-injected",
+      "result": "CLOSED",
+      "evidence": "Only host proxy transport constructs the upstream Authorization header; receipts and logs receive no authorization value."
+    },
+    {
+      "id": "unknown-json-field-rejects",
+      "result": "CLOSED",
+      "evidence": "Request top-level and metadata field sets are exact; forbidden tool, URL, background, store, and service-tier fields are not accepted."
+    },
+    {
+      "id": "run-id-mismatch-rejects",
+      "result": "CLOSED",
+      "evidence": "Request metadata run_id must equal the run binding captured at proxy startup."
+    },
+    {
+      "id": "benchmark-id-mismatch-rejects",
+      "result": "CLOSED",
+      "evidence": "Request metadata benchmark_id must equal GS-OSS-2026-08-02-V8 captured at proxy startup."
+    },
+    {
+      "id": "socket-owner-and-mode-correct",
+      "result": "CLOSED",
+      "evidence": "Synthetic UDS start verifies socket type, explicit UID/GID, and mode 0600 on a run-scoped unique path."
+    },
+    {
+      "id": "proxy-crash-fails-closed",
+      "result": "CLOSED",
+      "evidence": "Synthetic server error removes the socket and an in-flight client observes a failed connection."
+    },
+    {
+      "id": "client-disconnect-cleans-up",
+      "result": "CLOSED",
+      "evidence": "Partial-body disconnect and child-process crash trigger proxy close, abort upstream work, and remove the socket."
+    },
+    {
+      "id": "timeout-cleans-up",
+      "result": "CLOSED",
+      "evidence": "Synthetic clock timeout aborts pending upstream work, closes the proxy, and removes the socket."
+    },
+    {
+      "id": "facade-limit-drift",
+      "result": "CLOSED",
+      "evidence": "Repair source, schemas, tests, and packet use requestLimit 1 and proxy timeoutMs 30000; runtime execution timeout remains a separately bounded container wait input."
+    }
+  ],
+  "summary": {
+    "total": 13,
+    "closed": 13,
+    "remainingTechnicalBlockers": 0,
+    "providerRequests": 0
+  },
+  "gaps": [
+    "Exact measured model candidate remains pending human selection.",
+    "Docker runtime identity and real provider transport were not run.",
+    "Human approval remains pending."
+  ],
+  "technicalDisposition": "TECHNICALLY_ACCEPTABLE_FOR_HUMAN_REVIEW",
+  "solVerdictPath": "benchmarks/external-oss-v8/control/G2/repair-1/sol-verdict.json",
+  "claimBoundary": "Synthetic local proxy evidence closes the inherited technical blockers but does not establish provider access, runtime identity, task execution, G3, Pilot, scoring, or benchmark acceptance."
+}
