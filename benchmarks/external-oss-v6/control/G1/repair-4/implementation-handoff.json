@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "evidenceClass": "external-observational",
+  "repair": "repair-4",
+  "implementationStatus": "READY_FOR_SOL_REVIEW",
+  "rootCause": "TASK-OSS-09 cache preparation created .venv on the GitHub runner, so .venv/bin/python could resolve to a host-specific absolute interpreter path that is absent from the declared public runtime image.",
+  "fix": "Prepare and smoke-test the Paperless virtualenv inside the declared runtime image, mounting only the sealed source and a readonly uv binary; preserve the offline cache as readonly.",
+  "securityPreserved": [
+    "offline verification remains --network none",
+    "offline cache remains readonly",
+    "offline root filesystem remains readonly",
+    "offline container remains UID/GID 65532:65532",
+    "no credentials, Codex, hidden oracle, or V5 mutation"
+  ],
+  "tests": [
+    "benchmarks/external-oss-v6/tests/v6-runtime-identity-regression.mjs",
+    "benchmarks/external-oss-v6/tests/v6-contract-validation.mjs"
+  ],
+  "runtimeEvidenceRequired": [
+    "new workflow run ID",
+    "three seed identity receipts",
+    "three cache preparation receipts",
+    "three permission diagnostics",
+    "three offline smoke and negative receipts",
+    "independent Sol acceptance"
+  ]
+}

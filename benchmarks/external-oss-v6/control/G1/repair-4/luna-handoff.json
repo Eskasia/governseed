@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "evidenceClass": "external-observational",
+  "repair": "repair-4",
+  "role": "Luna execution handoff",
+  "baseCommit": "208528d9d8f8d6f7eb12e74b0ab0226ad76185ed",
+  "branch": "benchmark/v6-offline-permission-fix-r4",
+  "status": "READY_FOR_SOL_REVIEW",
+  "runtimeFailure": "run-30725930464 failed first at TASK-OSS-09 with DEPENDENCY_CACHE_INCOMPLETE because host-created Python virtualenv identity was not portable into the declared runtime image.",
+  "fixSummary": "Paperless dependency synchronization and public smoke now run inside the declared runtime image with a readonly uv tool mount; offline containment remains unchanged.",
+  "files": [
+    {"path":".github/workflows/external-oss-v6-dependency-cache.yml","sha256":"95490ed0c68b45aa1e3d9b1f431f1a62e1d45b415135a9ddcd1f78cf3de419ce"},
+    {"path":"benchmarks/external-oss-v6/tests/v6-contract-validation.mjs","sha256":"50395af91b8c470f51caca4b176f9c626ac255e0a80cd283a0c1abf8817b45d8"},
+    {"path":"benchmarks/external-oss-v6/tests/v6-runtime-identity-regression.mjs","sha256":"43868d8a28debb74423d3b793e368f73f73f05d0e17518e5709e6484883e4040"},
+    {"path":"benchmarks/external-oss-v6/control/G1/repair-4/run-30725930464-failure.json","sha256":"acce345c732f13a6348addcfba52cd7b58a5669974799162d2990ff69d484299"},
+    {"path":"benchmarks/external-oss-v6/control/G1/repair-4/implementation-handoff.json","sha256":"ea522fc734bf73a051b1519dbc317e91f4858f8e221ceb7eeb9f82bf5bd53055"},
+    {"path":"benchmarks/external-oss-v6/control/G1/repair-4/local-validation.json","sha256":"079e3095123a4ff431710fdee55297ba3e98e7e71d5eb3276e19c27c5dc2a6b0"}
+  ],
+  "validation": {
+    "npmRunCheck": "PASS",
+    "npmRunValidate": "PASS",
+    "npmRunCi": "PASS",
+    "npmRunCiExperimental": "PASS",
+    "focusedV6": "PASS",
+    "jsonYamlBash": "PASS",
+    "localDocker": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE"
+  },
+  "claimBoundary": "Static and repository validation only; no runtime READY or G1 acceptance claim. Sol must independently review and authorize the PR before merge or dispatch."
+}

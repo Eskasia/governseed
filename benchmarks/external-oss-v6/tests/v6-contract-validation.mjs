@@ -57,6 +57,11 @@ require(workflow.match(/GIT_COMMITTER_DATE=2026-08-01T00:00:00Z/g)?.length === 2
 require(!workflow.includes('GIT_AUTHOR_DATE=2026-08-02T00:00:00Z'), 'V6 seed identity must not drift from V5 date');
 require(prepare.includes('preparationNetworkUsed'), 'preparation provenance');
 require(prepare.includes('measuredNetworkUsed'), 'measured provenance');
+require(prepare.includes('docker run --rm --network bridge'), 'Python cache is prepared in the public runtime image');
+require(prepare.includes('--mount "type=bind,src=$uv_binary,dst=/usr/local/bin/uv,readonly"'), 'runtime image receives uv as a readonly preparation tool');
+require(prepare.includes('/usr/local/bin/uv sync --group testing --directory /workspace'), 'Python dependency sync uses the runtime image interpreter');
+require(prepare.includes('/workspace/.venv/bin/python -m pytest'), 'Python public smoke uses the runtime image virtualenv');
+require(!prepare.match(/\n\s*uv sync --group testing --directory "\$sealed_root"/u), 'host uv must not create the portable Python cache');
 require(prepare.includes('chmod -R a-w "$cache_root"'), 'source cache is made readonly before archive');
 const requireOrder = (block, needles, label) => {
   let previous = -1;
