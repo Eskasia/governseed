@@ -336,14 +336,17 @@ jobs:
           out="$RUNNER_TEMP/v7-receipts/$TASK_ID"
           mkdir -p "$workspace" "$cache_root" "$negative_cache" "$harness" "$out"
           failure_stage=bootstrap
-          trap 'rc=$?; if test "$rc" -ne 0; then printf "{\"schemaVersion\":1,\"benchmarkId\":\"%s\",\"evidenceClass\":\"%s\",\"taskId\":\"%s\",\"status\":\"FAILURE\",\"code\":\"OFFLINE_PERMISSION_CAUSE_UNKNOWN\",\"stage\":\"%s\",\"exitCode\":%s}\n" "$BENCHMARK_ID" "$EVIDENCE_CLASS" "$TASK_ID" "$failure_stage" "$rc" > "$out/diagnostics.json"; fi; exit "$rc"' EXIT
+          failure_code=OFFLINE_PERMISSION_CAUSE_UNKNOWN
+          trap 'rc=$?; if test "$rc" -ne 0; then printf "{\"schemaVersion\":1,\"benchmarkId\":\"%s\",\"evidenceClass\":\"%s\",\"taskId\":\"%s\",\"status\":\"FAILURE\",\"code\":\"%s\",\"stage\":\"%s\",\"exitCode\":%s}\n" "$BENCHMARK_ID" "$EVIDENCE_CLASS" "$TASK_ID" "$failure_code" "$failure_stage" "$rc" > "$out/diagnostics.json"; fi; exit "$rc"' EXIT
           failure_stage=validate-input
+          failure_code=RUNTIME_IMAGE_ARCHIVE_HASH_MISMATCH
           test -f "$input/runtime-image.tgz"
           test "$(sha256sum "$input/runtime-image.tgz" | awk '{print $1}')" = "$(node --input-type=module - "$input/cache-manifest.json" <<'NODE'
           import { readFileSync } from 'node:fs';
           console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).runtimeImageArchiveSha256);
           NODE
           )"
+          failure_code=CACHE_RECEIPT_INVALID
           test "$(sha256sum "$input/cache.tgz" | awk '{print $1}')" = "$(node --input-type=module - "$input/cache-manifest.json" <<'NODE'
           import { readFileSync } from 'node:fs';
           console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).cacheSha256);
@@ -351,6 +354,7 @@ jobs:
           )"
           docker load --input "$input/runtime-image.tgz" >/dev/null
           runtime_tag="governseed-v7-runtime:$TASK_ID"
+          failure_code=RUNTIME_IMAGE_IDENTITY_MISMATCH
           test "$(docker image inspect "$runtime_tag" --format '{{.Id}}')" = "$(node --input-type=module - "$input/runtime-image-receipt.json" <<'NODE'
           import { readFileSync } from 'node:fs';
           console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).imageId);
@@ -359,13 +363,16 @@ jobs:
           tar -xzf "$input/seed.tgz" -C "$workspace"
           tar -xzf "$input/cache.tgz" -C "$cache_root"
           failure_stage=prepare-cache
+          failure_code=CACHE_RECEIPT_INVALID
           chmod -R a-w "$cache_root"
           cp -a "$cache_root/." "$negative_cache/"
           chmod -R u+rwX "$negative_cache"
           case "$TASK_ID" in TASK-OSS-01) required_path=packages/cli/node_modules;; TASK-OSS-03) required_path=node_modules;; TASK-OSS-09) required_path=.venv/bin/python;; *) exit 2;; esac
-          test -e "$negative_cache/$required_path"
+          failure_code=DEPENDENCY_CACHE_INCOMPLETE
+          test -e "$negative_cache/$required_path" || test -L "$negative_cache/$required_path"
           rm -rf "$negative_cache/$required_path"
           test ! -e "$negative_cache/$required_path"
+          test ! -L "$negative_cache/$required_path"
           chmod -R a-w "$negative_cache"
           cp "$input/cache-roots.txt" "$harness/cache-roots.txt"
           cat > "$harness/offline-smoke.sh" <<'BASH'
@@ -406,6 +413,7 @@ jobs:
           BASH
           chmod 0555 "$harness/offline-smoke.sh"
           failure_stage=positive-container-create
+          failure_code=OFFLINE_SMOKE_FAILED
           test -x "$harness/offline-smoke.sh" || { echo HARNESS_EXECUTION_DENIED; exit 1; }
           docker create --name "v7-${TASK_ID,,}-positive" \
             --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true \
@@ -458,6 +466,7 @@ jobs:
           grep -Fq DEPENDENCY_CACHE_INCOMPLETE "$out/negative-output"
           test "$negative_rc" -eq 42
           failure_stage=receipt
+          failure_code=CACHE_RECEIPT_INVALID
           printf '{"schemaVersion":1,"benchmarkId":"%s","evidenceClass":"%s","taskId":"%s","status":"PASS","positiveSmoke":"PASS","negativeSmoke":"DEPENDENCY_CACHE_INCOMPLETE","negativeExitCode":42}\n' "$BENCHMARK_ID" "$EVIDENCE_CLASS" "$TASK_ID" > "$out/diagnostics.json"
           node --input-type=module - "$out/cache-receipt.json" <<'NODE'
           import { readFileSync, writeFileSync } from 'node:fs';

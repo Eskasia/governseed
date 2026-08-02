@@ -6,7 +6,7 @@
   "headSha": "2757c0480c54b78ac8b88b32ce64392329940b22",
   "workflow": "External OSS V7 dependency cache",
   "result": "failure",
-  "failureClass": "pending-triage",
+  "failureClass": "harness-defect",
   "repairCycle": 2,
   "jobs": {
     "seedIdentity": {
@@ -32,15 +32,17 @@
     "aggregate": { "jobId": "91450868443", "conclusion": "failure", "reason": "fewer than three READY receipts" }
   },
   "firstFailedStep": "Run permission diagnostics, offline containment, positive smoke, and negative smoke",
-  "firstFailingCommand": null,
+  "firstFailingCommand": "test -e \"$negative_cache/$required_path\" (TASK-OSS-09; host-side negative-cache entry assertion)",
   "failureCode": null,
+  "diagnosedHarnessDefect": "HOST_NEGATIVE_ENTRY_TEST_DEREFERENCES_DANGLING_VENV_SYMLINK",
   "observations": [
     "All three seed identity jobs passed.",
     "All three digest-locked runtime image jobs passed.",
     "All three dependency cache preparation jobs passed.",
-    "TASK-OSS-03 produced a READY receipt with positive smoke PASS and negative DEPENDENCY_CACHE_INCOMPLETE exit 42.",
+    "An uploaded TASK-OSS-03 receipt declares READY with positive smoke PASS and negative DEPENDENCY_CACHE_INCOMPLETE exit 42, but its matrix job conclusion was cancelled and it is not counted as a completed task result.",
     "TASK-OSS-09 offline verification exited 1 before creating an offline receipt; the upload step reported no files found.",
-    "TASK-OSS-01 and TASK-OSS-03 offline verification did not execute because the matrix used fail-fast.",
+    "TASK-OSS-01 and TASK-OSS-03 offline verification did not complete because the matrix used fail-fast.",
+    "The Paperless negative cache entry is a venv python symlink whose target is container-specific; host test -e dereferenced it and exited before Docker execution. The repair must accept test -L and assert both -e and -L are absent after removal.",
     "No G1 3/3 offline or dependency-cache READY claim is made by this evidence."
   ],
   "artifacts": {
