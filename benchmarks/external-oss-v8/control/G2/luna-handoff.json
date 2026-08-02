@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "role": "Luna implementation and evidence assembly",
+  "requestedModel": "gpt-5.6-luna",
+  "executionModel": "primary fallback; exact deployed model identifier is not exposed by the tool context",
+  "fallbackUsed": true,
+  "worktree": "/Users/william/governseed-v8-g2",
+  "branch": "benchmark/v8-g2-runtime-identity",
+  "sourceCommit": "46e7a1a16c0b28614ed4e73147f93ffad2330e23",
+  "generatedArtifacts": [
+    "benchmarks/external-oss-v8/credential-transport/design.json",
+    "benchmarks/external-oss-v8/credential-transport/design.md",
+    "benchmarks/external-oss-v8/credential-transport/request.schema.json",
+    "benchmarks/external-oss-v8/credential-transport/response.schema.json",
+    "benchmarks/external-oss-v8/credential-transport/human-approval.schema.json",
+    "benchmarks/external-oss-v8/runtime-identity/canary-response.schema.json",
+    "benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.schema.json",
+    "benchmarks/external-oss-v8/control/G2/credential-transport-findings.json",
+    "benchmarks/external-oss-v8/control/G2/inherited-evidence.json",
+    "benchmarks/external-oss-v8/control/G2/sol-review-evidence.json",
+    "benchmarks/external-oss-v8/control/G2/sol-verdict.json",
+    "benchmarks/external-oss-v8/tests/g2-credential-transport.test.mjs",
+    "benchmarks/external-oss-v8/tests/g2-schema-validation.mjs"
+  ],
+  "validation": {
+    "g1InheritedEvidence": "PASS: 31/31 source hashes match; immutable G1 evidence unchanged",
+    "proxyTests": "PASS: 125/125",
+    "g2TestsBeforeSolFollowup": "PASS: 28/28",
+    "g2TestsCurrent": "PASS: 31/31",
+    "repoCi": "PASS",
+    "providerRequests": 0,
+    "runtimeCanary": "NOT_RUN"
+  },
+  "humanApproval": {
+    "path": "benchmarks/external-oss-v8/credential-transport/human-approval.json",
+    "present": false,
+    "stopCode": "CREDENTIAL_TRANSPORT_HUMAN_APPROVAL_REQUIRED"
+  },
+  "sol": {
+    "model": "gpt-5.6-sol",
+    "verdict": "REJECT",
+    "evidencePath": "benchmarks/external-oss-v8/control/G2/sol-review-evidence.json"
+  },
+  "disposition": "HARD_BLOCKED",
+  "claimBoundary": "The handoff records static/offline G2 implementation and evidence work only. It does not approve credential transport or claim runtime identity, agent compliance, Pilot readiness, scoring, formal lock, or G3 readiness."
+}
