@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "evidenceClass": "external-observational",
+  "runId": 30738110739,
+  "repairCycle": 2,
+  "headSha": "3148e3edc4900330c25377c7c5049a697f31a44c",
+  "workflow": ".github/workflows/external-oss-v8-dependency-cache.yml",
+  "status": "completed",
+  "conclusion": "failure",
+  "startedAt": "2026-08-02T07:35:39Z",
+  "endedAt": "2026-08-02T07:40:09Z",
+  "url": "https://github.com/Eskasia/governseed/actions/runs/30738110739",
+  "passedPrerequisiteJobs": {
+    "seedIdentity": 3,
+    "runtimeImage": 3,
+    "dependencyCache": 3
+  },
+  "failedJobs": [
+    {
+      "taskId": "TASK-OSS-01",
+      "jobId": 91470698880,
+      "step": "Execute workspace mount and binary probes",
+      "exitCode": 1,
+      "observedContainerOutput": "SYMLINK_TARGET_EXECUTION_DENIED",
+      "jobLogSha256": "1392b23186ab72fc119f36b1e16de4c5d27e61c3d98905a814b5fd007a7edda4",
+      "artifactFiles": {
+        "container-id": "70018b36e078a3922a2ea9767ee789a5c8f18d52d7994cf6d055c0c5dd69566a",
+        "container-output": "37cfbef4b20a7cb1ed5dd42f224981f691c7efad86f51aeed36b09d66d5aa33e"
+      }
+    },
+    {
+      "taskId": "TASK-OSS-03",
+      "jobId": 91470698882,
+      "step": "Execute workspace mount and binary probes",
+      "exitCode": 1,
+      "observedContainerOutput": "PASS",
+      "hostFailure": "test -f workspace-exec-receipt.json after docker cp export",
+      "jobLogSha256": "fcd625153ee54eef0631d8be9cf52b22bb79624b47f5ad41fd6a4b52cdf387e3",
+      "artifactFiles": {
+        "container-id": "c033cc9d4cd7a1068ae8d05e98e0ca4dd081dc6436e9b7d63ef9d230915daf9d",
+        "container-output": "c26de83abdc9496cd1301470918ec39ecca1cf389ef0ae1c6504da1800d1c431"
+      }
+    },
+    {
+      "taskId": "TASK-OSS-09",
+      "jobId": 91470698881,
+      "step": "Execute workspace mount and binary probes",
+      "exitCode": 1,
+      "observedContainerOutput": "PASS",
+      "hostFailure": "test -f workspace-exec-receipt.json after docker cp export",
+      "jobLogSha256": "054a6dcec730d5c0499e37f77b8df40619c2d12ba816357f54bc67d2158b1b67",
+      "artifactFiles": {
+        "container-id": "0429b3ed106871d8149ec0adece6bbab42d51bdd9ff017a8bc79774f1e79e061",
+        "container-output": "c26de83abdc9496cd1301470918ec39ecca1cf389ef0ae1c6504da1800d1c431"
+      }
+    },
+    {
+      "taskId": "ALL",
+      "jobId": 91470827450,
+      "step": "Require three fully qualified caches",
+      "exitCode": 1,
+      "failure": "Receipt directory was absent because workspace execution jobs failed",
+      "jobLogSha256": "8e4f9b2928d91071fb4d13adfd1896fe2d63f4b0f9c5457bd60830b8620823ac"
+    }
+  ],
+  "offlineSmoke": "SKIPPED: workspace-exec prerequisite failure",
+  "aggregateQualification": "FAILED: receipt directory absent after workspace-exec failures",
+  "claimBoundary": "Immutable G1 run failure evidence only; no workspace execution acceptance, offline smoke, negative cache PASS, G1 acceptance, G2, Pilot, scoring, or benchmark outcome claim."
+}

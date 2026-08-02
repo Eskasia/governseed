@@ -3,6 +3,7 @@ import { spawnSync } from 'node:child_process';
 
 const files = [
   'benchmarks/external-oss-v8/minimal-noexec-reproducer.sh',
+  'benchmarks/external-oss-v8/tests/v8-container-wrapper.sh',
   'benchmarks/external-oss-v8/tests/v8-runtime-contract.sh',
   'benchmarks/external-oss-v8/tests/v8-offline-smoke.sh'
 ];
