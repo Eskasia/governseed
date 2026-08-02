@@ -215,10 +215,16 @@ jobs:
           test -f "$source/seed.tgz"
           test -f "$source/cache-roots.txt"
           cache_sha=$(sha256sum "$source/cache.tgz" | awk '{print $1}')
+          seed_sha=$(sha256sum "$source/seed.tgz" | awk '{print $1}')
           manifest_sha=$(sha256sum "$source/cache-manifest.json" | awk '{print $1}')
           test "$cache_sha" = "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'
           import { readFileSync } from 'node:fs';
           console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).cacheSha256);
+          NODE
+          )"
+          test "$seed_sha" = "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).seedArchiveSha256);
           NODE
           )"
           test "$manifest_sha" = "$(awk '{print $1}' "$source/manifest.sha256")"
@@ -339,7 +345,22 @@ jobs:
           test "$(docker inspect "$container_id" --format '{{.Config.User}}')" = 65532:65532
           test "$(docker inspect "$container_id" --format '{{json .HostConfig.CapDrop}}')" = '["ALL"]'
           docker inspect "$container_id" --format '{{json .HostConfig.SecurityOpt}}' | grep -Fq no-new-privileges:true
-          for spec in '/workspace true' '/seed false' '/cache false' '/harness false'; do
+          tmpfs_json=$(docker inspect "$container_id" --format '{{json .HostConfig.Tmpfs}}')
+          TMPFS_JSON="$tmpfs_json" node --input-type=module - <<'NODE'
+          const tmpfs = JSON.parse(process.env.TMPFS_JSON);
+          const required = {
+            '/workspace': ['rw', 'exec', 'nosuid', 'nodev', 'size=8g', 'uid=65532', 'gid=65532', 'mode=0750'],
+            '/home/benchmark': ['rw', 'noexec', 'nosuid', 'nodev', 'size=1g', 'uid=65532', 'gid=65532', 'mode=0700'],
+            '/tmp': ['rw', 'noexec', 'nosuid', 'nodev', 'size=2g', 'uid=65532', 'gid=65532', 'mode=1770']
+          };
+          const aliases = { 'size=8g': ['size=8g', 'size=8388608k'], 'size=1g': ['size=1g', 'size=1048576k'], 'size=2g': ['size=2g', 'size=2097152k'], 'mode=0750': ['mode=0750', 'mode=750'], 'mode=0700': ['mode=0700', 'mode=700'], 'mode=1770': ['mode=1770'] };
+          for (const [destination, tokens] of Object.entries(required)) {
+            const options = String(tmpfs[destination] || '').split(',');
+            if (!options.length || tokens.some((token) => !(aliases[token] || [token]).some((candidate) => options.includes(candidate)))) process.exit(1);
+            if (destination === '/workspace' && options.includes('noexec')) process.exit(1);
+          }
+          NODE
+          for spec in '/seed false' '/cache false' '/harness false'; do
             destination=${spec% *}; expected_rw=${spec#* }
             count=$(docker inspect "$container_id" --format '{{range .Mounts}}{{println .Destination}}{{end}}' | grep -Fxc "$destination")
             test "$count" -eq 1
@@ -350,7 +371,7 @@ jobs:
           docker start -a "$container_id" > "$out/container-output" 2>&1
           rc=$?
           set -e
-          for file in workspace-exec-receipt.json mountinfo.txt workspace-mount.txt cache-mount.txt home-mount.txt tmp-mount.txt vitest-resolved-path.txt vitest-symlink.txt vitest-version.txt runner-probe.txt python-version.txt pytest-version.txt; do
+          for file in workspace-exec-receipt.json mountinfo.txt workspace-mount.txt cache-mount.txt home-mount.txt tmp-mount.txt vitest-resolved-path.txt vitest-symlink.txt vitest-version.txt runner-probe.txt python-version.txt pytest-version.txt libmagic-library-path.txt libmagic-database-path.txt libmagic-probe.txt; do
             docker cp "$container_id:/workspace/$file" "$out/$file" 2>/dev/null || true
           done
           test "$rc" -eq 0
@@ -436,13 +457,28 @@ jobs:
             test "$(docker inspect "$id" --format '{{.Config.User}}')" = 65532:65532
             test "$(docker inspect "$id" --format '{{json .HostConfig.CapDrop}}')" = '["ALL"]'
             docker inspect "$id" --format '{{json .HostConfig.SecurityOpt}}' | grep -Fq no-new-privileges:true
+            tmpfs_json=$(docker inspect "$id" --format '{{json .HostConfig.Tmpfs}}')
+            TMPFS_JSON="$tmpfs_json" node --input-type=module - <<'NODE'
+            const tmpfs = JSON.parse(process.env.TMPFS_JSON);
+            const required = {
+              '/workspace': ['rw', 'exec', 'nosuid', 'nodev', 'size=8g', 'uid=65532', 'gid=65532', 'mode=0750'],
+              '/home/benchmark': ['rw', 'noexec', 'nosuid', 'nodev', 'size=1g', 'uid=65532', 'gid=65532', 'mode=0700'],
+              '/tmp': ['rw', 'noexec', 'nosuid', 'nodev', 'size=2g', 'uid=65532', 'gid=65532', 'mode=1770']
+            };
+            const aliases = { 'size=8g': ['size=8g', 'size=8388608k'], 'size=1g': ['size=1g', 'size=1048576k'], 'size=2g': ['size=2g', 'size=2097152k'], 'mode=0750': ['mode=0750', 'mode=750'], 'mode=0700': ['mode=0700', 'mode=700'], 'mode=1770': ['mode=1770'] };
+            for (const [destination, tokens] of Object.entries(required)) {
+              const options = String(tmpfs[destination] || '').split(',');
+              if (!options.length || tokens.some((token) => !(aliases[token] || [token]).some((candidate) => options.includes(candidate)))) process.exit(1);
+              if (destination === '/workspace' && options.includes('noexec')) process.exit(1);
+            }
+            NODE
             set +e
             docker start -a "$id" > "$output_file" 2>&1
             rc=$?
             set -e
             printf '%s\n' "$id" > "$id_file"
             if test "$name" = "v8-${TASK_ID,,}-positive"; then
-              for file in cache-receipt.json workspace-exec-receipt.json mountinfo.txt workspace-mount.txt cache-mount.txt home-mount.txt tmp-mount.txt vitest-resolved-path.txt vitest-symlink.txt vitest-version.txt runner-probe.txt python-version.txt pytest-version.txt; do
+              for file in cache-receipt.json workspace-exec-receipt.json mountinfo.txt workspace-mount.txt cache-mount.txt home-mount.txt tmp-mount.txt vitest-resolved-path.txt vitest-symlink.txt vitest-version.txt runner-probe.txt python-version.txt pytest-version.txt libmagic-library-path.txt libmagic-database-path.txt libmagic-probe.txt; do
                 docker cp "$id:/workspace/$file" "$out/$file" 2>/dev/null || true
               done
             fi
@@ -481,7 +517,6 @@ jobs:
             codexIncluded: false,
             hiddenOracleIncluded: false
           });
-          if (receipt.taskId === 'TASK-OSS-09') Object.assign(receipt, { libmagicLibraryObserved: true, libmagicDatabaseObserved: true, pythonMagicImportPass: true, pythonMagicFunctionalSmokePass: true });
           writeFileSync(out, JSON.stringify(receipt, null, 2) + '\n');
           NODE
           node benchmarks/external-oss-v8/tests/v8-schema-validation.mjs "$out/cache-receipt.json"

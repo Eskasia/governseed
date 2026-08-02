@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "evidenceClass": "external-observational",
+  "checkedPR": 66,
+  "checkedCommit": "31605751677791ccccac4e00d090793b81747eb9",
+  "verdict": "REJECT",
+  "mergeAuthorized": false,
+  "dispatchAuthorized": false,
+  "checks": {
+    "run": 30734358665,
+    "ubuntu": "PASS",
+    "macOS": "PASS",
+    "windows": "PASS",
+    "scope": "npm run ci/static validation only; no V8 Docker runtime execution"
+  },
+  "blockingFindings": [
+    "inherited-evidence.json declared V7 evidence paths that did not exist in the reviewed commit and did not validate inherited paths or hashes",
+    "seed.tgz was extracted without recomputing its SHA-256 against seedArchiveSha256",
+    "legacy --tmpfs configuration was incorrectly inspected through .Mounts instead of HostConfig.Tmpfs",
+    "runtime mount assertions did not fail closed on all required nosuid, nodev, size, uid, gid, and mode options",
+    "Paperless libmagic library/database fields were hardcoded true and libmagic probe evidence was not retained"
+  ],
+  "requiredRepair": [
+    "make inherited evidence references resolvable and hash-verified without editing V7",
+    "verify seed archive SHA-256",
+    "inspect HostConfig.Tmpfs separately from bind mounts",
+    "fail closed on required mount options",
+    "derive and retain explicit Paperless libmagic observations"
+  ],
+  "claimBoundary": "PR #66 read-only review only; no V8 runtime, offline, G1, Pilot, scoring, or readiness claim."
+}

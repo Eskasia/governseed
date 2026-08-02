@@ -29,4 +29,5 @@ if (receipt.measuredNetworkUsed !== false || receipt.workspaceMountExec !== true
 if (receipt.negativeCode !== 'DEPENDENCY_CACHE_INCOMPLETE' || receipt.negativeExitCode !== 42) throw new Error('negative cache contract failed');
 if (receipt.cacheBinaryCommitted !== false || receipt.credentialIncluded !== false || receipt.codexIncluded !== false || receipt.hiddenOracleIncluded !== false) throw new Error('artifact containment contract failed');
 if (receipt.taskId === 'TASK-OSS-01' && (!receipt.vitestResolvedPath || receipt.vitestVersionProbePass !== true || receipt.vitestSmokePass !== true)) throw new Error('Immich executable contract failed');
+if (receipt.taskId === 'TASK-OSS-09' && (receipt.libmagicLibraryObserved !== true || receipt.libmagicDatabaseObserved !== true || receipt.pythonMagicImportPass !== true || receipt.pythonMagicFunctionalSmokePass !== true)) throw new Error('Paperless libmagic contract failed');
 console.log(JSON.stringify({ schemaVersion: 1, status: 'PASS', file }));

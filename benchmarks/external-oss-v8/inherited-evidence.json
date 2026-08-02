@@ -30,11 +30,13 @@
     {
       "path": "benchmarks/external-oss-v7/control/G1/repair-3/run-30732978684-failure.json",
       "sha256": "88dc1cac64226ab71c19b61f5de5ac6ddea3d3f17a39958fdc8d98dd0b456f62",
+      "sourceLocator": "https://github.com/Eskasia/governseed/blob/b0f4122c830031ceec3e782cd01a5cb661af1915/benchmarks/external-oss-v7/control/G1/repair-3/run-30732978684-failure.json",
       "role": "immutable V7 measured failure evidence"
     },
     {
       "path": "benchmarks/external-oss-v7/control/G1/repair-4/sol-verdict.json",
       "sha256": "0745f1134d3e652671ee36d1d8bf9013c8d878a4c200bdaaaed0ab630a3117e1",
+      "sourceLocator": "https://github.com/Eskasia/governseed/pull/65 (Sol review record for checked commit b0f4122c830031ceec3e782cd01a5cb661af1915)",
       "role": "immutable V7 Sol REJECT and required exec-capable mount correction"
     },
     {

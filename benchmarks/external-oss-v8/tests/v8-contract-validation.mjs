@@ -1,9 +1,12 @@
-import { readFileSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, statSync } from 'node:fs';
+import { createHash } from 'node:crypto';
 import { execFileSync } from 'node:child_process';
 
 const workflow = readFileSync('.github/workflows/external-oss-v8-dependency-cache.yml', 'utf8');
 const runtimeScript = readFileSync('benchmarks/external-oss-v8/tests/v8-runtime-contract.sh', 'utf8');
 const offlineScript = readFileSync('benchmarks/external-oss-v8/tests/v8-offline-smoke.sh', 'utf8');
+const inherited = JSON.parse(readFileSync('benchmarks/external-oss-v8/inherited-evidence.json', 'utf8'));
+const sha256 = (file) => createHash('sha256').update(readFileSync(file)).digest('hex');
 const errors = [];
 const requireText = (text, needle, label = needle) => {
   if (!text.includes(needle)) errors.push(`missing ${label}`);
@@ -43,6 +46,30 @@ requireText(workflow, 'cacheReadOnlyObserved');
 requireText(workflow, 'readonlyRootObserved');
 requireText(workflow, 'vitestVersionProbePass');
 requireText(workflow, 'vitestSmokePass');
+requireText(workflow, 'seedArchiveSha256');
+requireText(workflow, '.HostConfig.Tmpfs');
+requireText(workflow, 'size=8g');
+requireText(workflow, 'mode=0750');
+requireText(workflow, 'libmagic-library-path.txt');
+requireText(workflow, 'libmagic-database-path.txt');
+forbidText(workflow, "for spec in '/workspace true'", 'tmpfs treated as .Mounts bind entry');
+requireText(workflow, "for spec in '/seed false'", 'bind mount inspection');
+
+for (const source of inherited.sources) {
+  if (!/^[0-9a-f]{64}$/.test(source.sha256)) errors.push(`invalid inherited SHA-256: ${source.path}`);
+  if (!existsSync(source.path) && !/^https:\/\//.test(source.sourceLocator || '')) errors.push(`unresolvable inherited source: ${source.path}`);
+  if (existsSync(source.path)) {
+    const actual = sha256(source.path);
+    if (actual !== source.sha256) errors.push(`inherited SHA-256 mismatch: ${source.path}`);
+  }
+}
+for (const contract of inherited.taskContracts) {
+  if (!existsSync(contract.path)) errors.push(`missing task contract: ${contract.path}`);
+  else {
+    const actual = sha256(contract.path);
+    if (actual !== contract.sha256) errors.push(`task contract SHA-256 mismatch: ${contract.path}`);
+  }
+}
 
 for (const [text, label] of [[runtimeScript, 'runtime script']]) {
   requireText(text, 'cat /proc/self/mountinfo', `${label} mountinfo capture`);
