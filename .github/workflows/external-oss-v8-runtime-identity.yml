@@ -103,6 +103,34 @@ jobs:
           const packet = readJson('benchmarks/external-oss-v8/credential-transport/repair-2/review-packet.json');
           const currentDesignSha256 = sha256(designPath);
           const currentProxySha256 = sha256(proxyPath);
+          const expectedArtifactPaths = {
+            designPath,
+            requestSchemaPath: 'benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json',
+            responseSchemaPath: 'benchmarks/external-oss-v8/credential-transport/repair-2/response.schema.json',
+            proxySourcePath: proxyPath,
+            canaryClientPath: 'benchmarks/external-oss-v8/control/G2/runtime-canary-prep/canary-client.mjs',
+            workflowPath: '.github/workflows/external-oss-v8-runtime-identity.yml',
+            proxyFacadePath: 'experimental/governance-impact/lib/oci-proxy-facade.mjs',
+            supervisorSourcePath: 'experimental/governance-impact/lib/oci-supervisor.mjs',
+            relaySourcePath: 'experimental/governance-impact/uds-relay.mjs',
+          };
+          const packetPathsMatch = Object.entries(expectedArtifactPaths).every(([key, value]) => (
+            packet.hashes[key] === value
+          ));
+          const artifactHashKeys = {
+            designPath: 'designSha256',
+            requestSchemaPath: 'requestSchemaSha256',
+            responseSchemaPath: 'responseSchemaSha256',
+            proxySourcePath: 'proxySourceSha256',
+            canaryClientPath: 'canaryClientSha256',
+            workflowPath: 'workflowSha256',
+            proxyFacadePath: 'proxyFacadeSha256',
+            supervisorSourcePath: 'supervisorSourceSha256',
+            relaySourcePath: 'relaySourceSha256',
+          };
+          const packetHashesMatch = Object.entries(artifactHashKeys).every(([pathKey, hashKey]) => {
+            return sha256(packet.hashes[pathKey]) === packet.hashes[hashKey];
+          });
           const actualCommit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
           let parentIsAncestor = true;
           try {
@@ -139,6 +167,8 @@ jobs:
             pending.approvedProxySha256 === currentProxySha256,
             packet.hashes.designSha256 === currentDesignSha256,
             packet.hashes.proxySourceSha256 === currentProxySha256,
+            packetPathsMatch,
+            packetHashesMatch,
           ];
           if (structuralChecks.includes(false)) {
             setFailure('binding-validation', 'REPAIRED_BINDING_INVALID', {

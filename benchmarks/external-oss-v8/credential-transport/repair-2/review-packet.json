@@ -32,7 +32,7 @@
     "canaryClientPath": "benchmarks/external-oss-v8/control/G2/runtime-canary-prep/canary-client.mjs",
     "canaryClientSha256": "c98d2c27ecd9e4538a6a15fd4a070a8e69f3eb56d2b207f22102e153ebc3ca79",
     "workflowPath": ".github/workflows/external-oss-v8-runtime-identity.yml",
-    "workflowSha256": "914badc0465fb1175def2b71fa9460c91179759ae5a56a2a7c51413e7169f96e",
+    "workflowSha256": "27fca389575c7d32e12fa19881ff669781301d9ed091fd0482a61d10f5a6ca3b",
     "proxyFacadePath": "experimental/governance-impact/lib/oci-proxy-facade.mjs",
     "proxyFacadeSha256": "463346868d6ab92357d88696b44356998b8ad32703a7b9095dc3dcb51b2fbdfe",
     "supervisorSourcePath": "experimental/governance-impact/lib/oci-supervisor.mjs",

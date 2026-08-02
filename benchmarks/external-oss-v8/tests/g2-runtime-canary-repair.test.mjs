@@ -242,6 +242,16 @@ test('the workflow cannot dispatch with the old approval after a binding change'
   assert.match(workflow, /HUMAN_REAPPROVAL_REQUIRED/);
   assert.match(workflow, /approvedDesignSha256/);
   assert.match(workflow, /approvedProxySha256/);
+  for (const field of [
+    'requestSchemaPath',
+    'requestSchemaSha256',
+    'responseSchemaPath',
+    'responseSchemaSha256',
+    'canaryClientPath',
+    'canaryClientSha256',
+    'workflowPath',
+    'workflowSha256',
+  ]) assert.match(workflow, new RegExp(field));
   assert.match(workflow, /providerRequests?\s*==?\s*0|providerRequestCount.*0/s);
 });
 
