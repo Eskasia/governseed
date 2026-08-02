@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V7",
+  "evidenceClass": "external-observational",
+  "reviewer": {
+    "model": "gpt-5.6-sol",
+    "agentId": "019fc05c-c904-70b1-af7b-a27f71b2de91",
+    "reviewedAt": "2026-08-02T03:08:12Z"
+  },
+  "checkedCommit": "374a0e8cddebf28ff2b34034b5c156328a6bbda0",
+  "checkedPullRequest": 59,
+  "checksRun": {
+    "workflowRun": "30729948952",
+    "ubuntu": "PASS",
+    "macos": "PASS",
+    "windows": "PASS"
+  },
+  "priorBlockerResolved": {
+    "issue": "dpkg-query format placeholders were exposed to inner sh expansion",
+    "resolution": "runtime image workflow passes escaped placeholders so dpkg-query receives literal format tokens",
+    "regression": "v7-runtime-image-static.mjs rejects the unsafe inventory form and requires the escaped form"
+  },
+  "reviewScope": [
+    "V7 runtime image workflow and image identity semantics",
+    "dependency preparation image portability",
+    "offline containment and non-root execution",
+    "task and cache-root mapping",
+    "Paperless libmagic checks",
+    "V2-V6 immutability",
+    "credentials, Codex, hidden oracle and dispatch boundaries"
+  ],
+  "diagnosticCorrection": {
+    "issue": "readonly cache write probe used the wrong diagnostic code",
+    "resolution": "unexpected cache write now emits CACHE_WRITE_ALLOWED and the contract test requires that code"
+  },
+  "verdict": "ACCEPT",
+  "mergeAuthorized": true,
+  "dispatchAuthorized": false,
+  "blockingFindings": [],
+  "nonBlockingFindings": [],
+  "claimBoundary": "Acceptance authorizes merging only checked commit 374a0e8cddebf28ff2b34034b5c156328a6bbda0. Docker/runtime G1 qualification was not run locally and is not claimed."
+}
