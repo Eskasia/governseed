@@ -10,6 +10,10 @@ const require = (condition, message) => { if (!condition) errors.push(message); 
 
 require(workflow.includes('BASE_IMAGE'), 'runtime build receives an explicit base image');
 require(!workflow.includes('if: inputs.task_id'), 'runtime image dispatch does not filter matrix before matrix evaluation');
+const safeDpkgInventory = String.raw`dpkg-query -W -f="\${binary:Package}\t\${Version}\n" | sort -u`;
+const unsafeDpkgInventory = 'dpkg-query -W -f="${binary:Package}\\t${Version}\\n" | sort -u';
+require(workflow.includes(safeDpkgInventory), 'dpkg inventory protects format placeholders from shell expansion');
+require(!workflow.includes(unsafeDpkgInventory), 'dpkg inventory does not expose format placeholders to shell expansion');
 require(workflow.includes('base_digest'), 'runtime receipt records base digest');
 require(workflow.includes('imageArchiveSha256'), 'runtime receipt records archive hash');
 require(workflow.includes('imageId'), 'runtime receipt records image ID');

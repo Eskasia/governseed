@@ -405,6 +405,7 @@ jobs:
           echo PASS
           BASH
           chmod 0555 "$harness/offline-smoke.sh"
+          test -x "$harness/offline-smoke.sh" || { echo HARNESS_EXECUTION_DENIED; exit 1; }
           docker create --name "v7-${TASK_ID,,}-positive" \
             --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true \
             --user 65532:65532 --pids-limit 256 --cpus 4 --memory 15g \

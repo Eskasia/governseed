@@ -61,10 +61,10 @@ jobs:
           base_inventory="$artifact/base-package-inventory.txt"
           image_inventory="$artifact/package-inventory.txt"
           docker run --rm --network none --read-only "$base_image" sh -ceu \
-            'dpkg-query -W -f="${binary:Package}\t${Version}\n" | sort -u' > "$base_inventory"
+            'dpkg-query -W -f="\${binary:Package}\t\${Version}\n" | sort -u' > "$base_inventory"
           docker run --rm --network none --read-only --cap-drop=ALL \
             --security-opt no-new-privileges:true --user 65532:65532 "$runtime_tag" sh -ceu \
-            'dpkg-query -W -f="${binary:Package}\t${Version}\n" | sort -u' > "$image_inventory"
+            'dpkg-query -W -f="\${binary:Package}\t\${Version}\n" | sort -u' > "$image_inventory"
           comm -13 "$base_inventory" "$image_inventory" > "$artifact/added-packages.txt"
           if test "$TASK_ID" != TASK-OSS-09; then
             test ! -s "$artifact/added-packages.txt"
