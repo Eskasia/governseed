@@ -5,7 +5,7 @@
   "repair": "repair-1",
   "agent": "Sol",
   "model": "gpt-5.6-sol",
-  "agentId": "019fc220-5327-7b81-bdd0-58bc830850e0",
+  "agentId": "019fc248-7a45-70c3-b311-af54cdaf09b9",
   "verdict": "ACCEPT",
   "technicalToken": "TECHNICALLY_ACCEPTABLE_FOR_HUMAN_REVIEW",
   "closedBlockers": 13,
