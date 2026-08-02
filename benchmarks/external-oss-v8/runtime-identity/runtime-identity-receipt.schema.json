@@ -37,7 +37,7 @@
     "codexVersion": { "type": "string", "minLength": 1 },
     "codexBinarySha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "codexPackageIdentity": { "type": "string", "minLength": 1 },
-    "modelId": { "type": "string", "minLength": 1 },
+    "modelId": { "const": "gpt-5.6-luna" },
     "proxySha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "credentialDesignSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "humanApprovalSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },

@@ -6,6 +6,7 @@ import path from 'node:path';
 export const CREDENTIAL_PROXY_PATH = '/v1/responses';
 export const CREDENTIAL_PROXY_PROVIDER = 'OpenAI';
 export const CREDENTIAL_PROXY_ENDPOINT = 'https://api.openai.com/v1/responses';
+export const CREDENTIAL_PROXY_MODEL = 'gpt-5.6-luna';
 export const CREDENTIAL_PROXY_REQUEST_LIMIT = 1;
 export const CREDENTIAL_PROXY_TIMEOUT_MS = 30_000;
 export const CREDENTIAL_PROXY_TOKEN_CEILING = 8_192;
@@ -40,7 +41,7 @@ const FIXED_RESPONSE_FORMAT = Object.freeze({
       required: ['id', 'model', 'output', 'usage'],
       properties: Object.freeze({
         id: Object.freeze({ type: 'string' }),
-        model: Object.freeze({ type: 'string' }),
+        model: Object.freeze({ const: CREDENTIAL_PROXY_MODEL }),
         output: Object.freeze({ type: 'array' }),
         usage: Object.freeze({ type: 'object' }),
       }),
@@ -175,7 +176,7 @@ function normalizePolicy(value) {
         : fail('PROXY_POLICY_INVALID'),
       model: (() => {
         const normalized = requireClosedToken(value.model);
-        if (['latest', 'Luna', 'Sol'].includes(normalized)) {
+        if (normalized !== CREDENTIAL_PROXY_MODEL) {
           fail('PROXY_POLICY_INVALID');
         }
         return normalized;

@@ -14,11 +14,18 @@
   "runtimeIdentity": "NOT_RUN",
   "dockerRuntime": "NOT_RUN_DOCKER_UNAVAILABLE",
   "humanApproval": "PENDING_HUMAN_REVIEW",
-  "exactModelCandidate": null,
+  "exactModelCandidate": "gpt-5.6-luna",
+  "modelBinding": {
+    "provider": "OpenAI",
+    "modelId": "gpt-5.6-luna",
+    "aliasAllowed": false,
+    "fallbackAllowed": false
+  },
+  "reviewPacketSha256": "abdc79db5ccac1c1592447847110cc4abb53bba9dc59a9f607983be0ff83c3e8",
   "technicalReviewEvidencePath": "benchmarks/external-oss-v8/control/G2/repair-1/sol-review-evidence.json",
   "mergeAuthorized": false,
   "providerRequestAuthorized": false,
   "runtimeCanaryAuthorized": false,
   "humanApprovalCreated": false,
-  "claimBoundary": "ACCEPT is a technical repair verdict only. G2 remains BLOCKED pending a human approval record and exact measured model selection; no provider request, runtime identity, G3, Pilot, scoring, formal benchmark lock, or acceptance is authorized."
+  "claimBoundary": "ACCEPT is a technical repair verdict only. gpt-5.6-luna is locked as the exact candidate, but G2 remains BLOCKED pending a human approval record; no provider request, runtime identity, G3, Pilot, scoring, formal benchmark lock, or acceptance is authorized."
 }

@@ -7,11 +7,11 @@
   "status": "PENDING_HUMAN_REVIEW",
   "technicalDisposition": "TECHNICALLY_ACCEPTABLE_FOR_HUMAN_REVIEW",
   "parent": {
-    "pullRequest": 73,
-    "headCommit": "dd287a27b8ace8719f3af5727487bd4028cd9189",
-    "mergeCommit": "6f23e47c142cc9ba891976703fe01e96e9f74c44"
+    "pullRequest": 74,
+    "headCommit": "0a9c8d3adea2eda1d5f2931cdbd8509ca1060d9b",
+    "mergeCommit": "c0ac44426a2593b3db8433c97b6d51774ede33e1"
   },
-  "repairBranch": "benchmark/v8-g2-transport-repair-1",
+  "repairBranch": "benchmark/v8-g2-model-approval-prep",
   "oldEvidence": {
     "reviewPacketPath": "benchmarks/external-oss-v8/credential-transport/review-packet.json",
     "reviewPacketSha256": "7f4edc9344f980ecaaaa0256c4e81bea668b79cb3edfe047d895bbf480e9f758",
@@ -24,15 +24,15 @@
   },
   "hashes": {
     "designPath": "benchmarks/external-oss-v8/credential-transport/repair-1/design.json",
-    "designSha256": "8174a23c84c1c5520e345d895f7d67587bd8d145f1258e917a60268a61eb155d",
+    "designSha256": "7974cae887830af31da8245569b106ec97509a1d65a1d9a7668b17b18741e9a0",
     "requestSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-1/request.schema.json",
-    "requestSchemaSha256": "8c0b9514e2fd7acb5d0599b0075f99c9de235c7391dee4d395bc43e087ce0ccd",
+    "requestSchemaSha256": "ef900421bc69efb718952f9204990d656981893afeb9ec77a20e6268df24015e",
     "responseSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-1/response.schema.json",
-    "responseSchemaSha256": "8bdf61685aa00102fdbcf3f05dcab32baff900e7e51b11c2c30c97d81dace2aa",
+    "responseSchemaSha256": "e0e781bcad97ec7a9a00f84bec593d4926e1b3fda40ec40d43f2d79a38e96556",
     "proxySourcePath": "experimental/governance-impact/lib/credential-proxy.mjs",
-    "proxySourceSha256": "ec818789e9f03fa56be2aae75eab88c4ee891d0338465d8f2dde414a84b6fde1",
+    "proxySourceSha256": "07d0b6b6f37254dd81215f7e3e3b07336af6428f96f057e6bc5192f26870b8b1",
     "proxyFacadePath": "experimental/governance-impact/lib/oci-proxy-facade.mjs",
-    "proxyFacadeSha256": "1089338b2c7e59dbd7003c6d57b2fa5e3007d8f8fe7e14447b7c51387cb14953",
+    "proxyFacadeSha256": "463346868d6ab92357d88696b44356998b8ad32703a7b9095dc3dcb51b2fbdfe",
     "supervisorSourcePath": "experimental/governance-impact/lib/oci-supervisor.mjs",
     "supervisorSourceSha256": "9e37e7ef72144c446a495eb1a42d126f94133b8310134fbd50f2eb9172622293",
     "relaySourcePath": "experimental/governance-impact/uds-relay.mjs",
@@ -43,11 +43,14 @@
     "method": "POST",
     "endpoint": "https://api.openai.com/v1/responses",
     "modelBinding": {
-      "candidateId": null,
-      "status": "PENDING_HUMAN_SELECTION",
+      "provider": "OpenAI",
+      "modelId": "gpt-5.6-luna",
+      "aliasAllowed": false,
+      "fallbackAllowed": false,
       "exact": true,
-      "aliasesForbidden": ["latest", "Luna", "Sol"],
-      "startupRule": "Proxy startup requires one exact non-alias model ID. The old packet has no measured candidate; repair-1 does not invent one. Synthetic tests use only test fixture model IDs."
+      "status": "LOCKED_PENDING_HUMAN_APPROVAL",
+      "aliasesForbidden": ["latest", "gpt-5.6", "Luna", "Sol"],
+      "startupRule": "Proxy startup requires the exact measured model ID gpt-5.6-luna; aliases and fallback models are rejected."
     },
     "limits": {
       "requestLimit": 1,
@@ -118,7 +121,7 @@
     "testCommands": [
       {
         "command": "npm run test:experimental",
-        "passed": 103,
+        "passed": 104,
         "failed": 0,
         "status": "PASS",
         "network": "none"
@@ -132,8 +135,8 @@
         "providerRequests": 0
       },
       {
-        "command": "node --test benchmarks/external-oss-v8/credential-transport/repair-1/validation.test.mjs benchmarks/external-oss-v8/credential-transport/repair-1/secret-boundary.test.mjs",
-        "passed": 6,
+        "command": "node --test benchmarks/external-oss-v8/credential-transport/repair-1/validation.test.mjs benchmarks/external-oss-v8/credential-transport/repair-1/secret-boundary.test.mjs benchmarks/external-oss-v8/credential-transport/repair-1/model-binding-consistency.test.mjs",
+        "passed": 7,
         "failed": 0,
         "status": "PASS",
         "network": "none"
@@ -148,6 +151,7 @@
   "solReview": {
     "status": "COMPLETE_READ_ONLY",
     "model": "gpt-5.6-sol",
+    "exactModelCandidate": "gpt-5.6-luna",
     "verdict": "ACCEPT",
     "technicalToken": "TECHNICALLY_ACCEPTABLE_FOR_HUMAN_REVIEW",
     "evidencePath": "benchmarks/external-oss-v8/control/G2/repair-1/sol-review-evidence.json"
@@ -159,13 +163,13 @@
   },
   "overallGate": "BLOCKED",
   "knownLimitations": [
-    "No measured exact model candidate is present in the inherited packet; only a human may bind it.",
-    "Local UDS tests use synthetic fixture models and a mock upstream transport.",
+    "The exact measured model candidate is locked to gpt-5.6-luna for human approval; no approved record exists yet.",
+    "Local UDS tests use the locked exact model ID with a synthetic mock upstream transport.",
     "Docker and the real Linux Codex runtime identity path were unavailable and were not run.",
     "No provider credential was read or used and no provider request was made."
   ],
   "prohibitedClaims": [
     "No human approval, provider access, runtime identity, task execution, canary, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance is claimed."
   ],
-  "claimBoundary": "Repair-1 is a local synthetic credential-transport technical package awaiting independent Sol review and human approval; G2 remains BLOCKED."
+  "claimBoundary": "This is a local synthetic credential-transport approval-prep package with gpt-5.6-luna locked as the exact candidate; it awaits independent Sol review and human approval, and G2 remains BLOCKED."
 }

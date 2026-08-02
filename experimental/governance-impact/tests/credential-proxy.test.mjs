@@ -7,6 +7,7 @@ import test from 'node:test';
 
 import {
   CREDENTIAL_PROXY_ENDPOINT,
+  CREDENTIAL_PROXY_MODEL,
   CREDENTIAL_PROXY_PROVIDER,
   CREDENTIAL_PROXY_REQUEST_LIMIT,
   CREDENTIAL_PROXY_TIMEOUT_MS,
@@ -20,7 +21,7 @@ const ATTEMPT_ID = 'a'.repeat(64);
 const BENCHMARK_ID = 'GS-OSS-2026-08-02-V8';
 const RUN_ID = 'synthetic-run-1';
 const TASK_ID = 'synthetic-task-1';
-const MODEL = 'gpt-synthetic-fixed';
+const MODEL = CREDENTIAL_PROXY_MODEL;
 const UPSTREAM_KEY = 'synthetic-host-only-key';
 const RESPONSE_FORMAT = {
   type: 'json_schema',
@@ -33,7 +34,7 @@ const RESPONSE_FORMAT = {
       required: ['id', 'model', 'output', 'usage'],
       properties: {
         id: { type: 'string' },
-        model: { type: 'string' },
+        model: { const: MODEL },
         output: { type: 'array' },
         usage: { type: 'object' },
       },
@@ -182,10 +183,12 @@ test('policy descriptor fixes provider, endpoint, one request, 30 seconds, and i
   }));
 });
 
-test('arbitrary endpoint, model alias, request limit, and timeout are rejected', () => {
+test('arbitrary endpoint, non-exact model, request limit, and timeout are rejected', () => {
   for (const overrides of [
     { upstream: 'https://example.invalid/v1/responses' },
     { model: 'latest' },
+    { model: 'gpt-5.6' },
+    { model: 'gpt-5.6-luna-alias' },
     { requestLimit: 2 },
     { timeoutMs: 1 },
     { benchmarkId: undefined },

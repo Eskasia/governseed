@@ -79,7 +79,7 @@
     "providerRequests": 0
   },
   "gaps": [
-    "Exact measured model candidate remains pending human selection.",
+    "Exact measured model candidate is locked to gpt-5.6-luna; human approval remains pending.",
     "Docker runtime identity and real provider transport were not run.",
     "Human approval remains pending."
   ],

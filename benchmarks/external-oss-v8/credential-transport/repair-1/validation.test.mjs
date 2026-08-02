@@ -25,6 +25,9 @@ test('repair-1 packet, schemas, immutable evidence, and source contract are cons
   const design = readJson('benchmarks/external-oss-v8/credential-transport/repair-1/design.json');
   const requestSchema = readJson('benchmarks/external-oss-v8/credential-transport/repair-1/request.schema.json');
   const responseSchema = readJson('benchmarks/external-oss-v8/credential-transport/repair-1/response.schema.json');
+  const approvalSchema = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.schema.json');
+  const approvalTemplate = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.template.json');
+  const receiptSchema = readJson('benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.schema.json');
   const inherited = readJson('benchmarks/external-oss-v8/control/G2/repair-1/inherited-evidence.json');
   const findings = readJson('benchmarks/external-oss-v8/control/G2/repair-1/findings.json');
   const solEvidence = readJson('benchmarks/external-oss-v8/control/G2/repair-1/sol-review-evidence.json');
@@ -51,9 +54,12 @@ test('repair-1 packet, schemas, immutable evidence, and source contract are cons
   assert.equal(packet.contract.endpoint, 'https://api.openai.com/v1/responses');
   assert.equal(packet.contract.limits.requestLimit, 1);
   assert.equal(packet.contract.limits.timeoutMs, 30_000);
-  assert.equal(packet.contract.modelBinding.candidateId, null);
+  assert.equal(packet.contract.modelBinding.provider, 'OpenAI');
+  assert.equal(packet.contract.modelBinding.modelId, 'gpt-5.6-luna');
+  assert.equal(packet.contract.modelBinding.aliasAllowed, false);
+  assert.equal(packet.contract.modelBinding.fallbackAllowed, false);
   assert.equal(packet.contract.modelBinding.exact, true);
-  assert.equal(packet.contract.modelBinding.status, 'PENDING_HUMAN_SELECTION');
+  assert.equal(packet.contract.modelBinding.status, 'LOCKED_PENDING_HUMAN_APPROVAL');
   assert.deepEqual(packet.contract.request.allowedFields, [
     'model',
     'input',
@@ -74,6 +80,10 @@ test('repair-1 packet, schemas, immutable evidence, and source contract are cons
   ]);
   assert.equal(requestSchema.additionalProperties, false);
   assert.equal(responseSchema.additionalProperties, false);
+  assert.equal(requestSchema.properties.model.const, 'gpt-5.6-luna');
+  assert.equal(responseSchema.properties.model.const, 'gpt-5.6-luna');
+  assert.equal(approvalSchema.properties.approvedModelId.const, 'gpt-5.6-luna');
+  assert.equal(receiptSchema.properties.modelId.const, 'gpt-5.6-luna');
   assert.equal(requestSchema.properties.max_output_tokens.const, 8192);
   assert.deepEqual(requestSchema.properties.metadata.required, [
     'benchmark_id',
@@ -96,6 +106,12 @@ test('repair-1 packet, schemas, immutable evidence, and source contract are cons
   assert.equal(solVerdict.technicalToken, 'TECHNICALLY_ACCEPTABLE_FOR_HUMAN_REVIEW');
   assert.equal(solVerdict.providerRequestCount, 0);
   assert.equal(solVerdict.runtimeIdentity, 'NOT_RUN');
+  assert.equal(solVerdict.exactModelCandidate, 'gpt-5.6-luna');
+  assert.equal(approvalTemplate.approvalStatus, 'PENDING_HUMAN_REVIEW');
+  assert.equal(approvalTemplate.approvedBy, null);
+  assert.equal(approvalTemplate.approvedAt, null);
+  assert.equal(approvalTemplate.approvedModelId, 'gpt-5.6-luna');
+  assert.equal(approvalTemplate.limitationsAcknowledged, false);
   assert.equal(inherited.parent.pullRequest, 73);
   assert.equal(inherited.inheritedFindings.oldVerdict, 'REJECT');
   assert.equal(inherited.inheritedFindings.oldSummary.blocked, 13);
@@ -131,4 +147,5 @@ test('repair-1 packet, schemas, immutable evidence, and source contract are cons
   assert.doesNotMatch(source, /Bearer\s+[A-Za-z0-9_-]{32,}/u);
   assert.equal(fs.existsSync(path.join(repairRoot, 'human-approval.json')), false);
   assert.equal(fs.existsSync(path.join(controlRoot, 'human-approval.json')), false);
+  assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.json')), false);
 });

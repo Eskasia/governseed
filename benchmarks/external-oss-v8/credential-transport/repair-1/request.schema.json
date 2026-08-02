@@ -6,7 +6,7 @@
   "additionalProperties": false,
   "required": ["model", "input", "max_output_tokens", "response_format", "metadata"],
   "properties": {
-    "model": { "type": "string", "minLength": 1, "maxLength": 256 },
+    "model": { "const": "gpt-5.6-luna" },
     "input": {
       "type": ["string", "array"],
       "maxLength": 1048576
