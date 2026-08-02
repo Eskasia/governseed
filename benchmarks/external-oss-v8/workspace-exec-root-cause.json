@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "evidenceClass": "external-observational",
+  "status": "ROOT_CAUSE_CONFIRMED_FROM_V7_SOL_REVIEW",
+  "v7RunId": "30732978684",
+  "v7Failure": {
+    "taskId": "TASK-OSS-01",
+    "stage": "positive-smoke",
+    "code": "OFFLINE_SMOKE_FAILED",
+    "observedError": "./node_modules/.bin/vitest: Permission denied"
+  },
+  "confirmedCause": {
+    "workspaceMount": "tmpfs",
+    "mountFlag": "noexec",
+    "chmodChangesModeBits": true,
+    "testXProvesExecution": false,
+    "requiredV8Fix": "explicit tmpfs exec mount plus an actual executable probe"
+  },
+  "localReproduction": {
+    "status": "BLOCKED",
+    "code": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+    "reason": "Docker daemon socket was unavailable on the local host; no result was synthesized.",
+    "script": "benchmarks/external-oss-v8/minimal-noexec-reproducer.sh"
+  },
+  "claimBoundary": "V7 evidence and local reproducer design only; no V8 runtime, cache, offline-smoke, G1, or G2 claim."
+}

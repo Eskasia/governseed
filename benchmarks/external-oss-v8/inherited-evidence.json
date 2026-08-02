@@ -1,0 +1,72 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "evidenceClass": "external-observational",
+  "baseCommit": "0d9faea60b8c2034a2e10621155f4dd3a6a91b2d",
+  "sourceRun": {
+    "benchmarkId": "GS-OSS-2026-08-02-V7",
+    "runId": "30732978684",
+    "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30732978684",
+    "headSha": "0d9faea60b8c2034a2e10621155f4dd3a6a91b2d",
+    "artifactIds": {
+      "seedIdentity": {
+        "TASK-OSS-01": 8828570956,
+        "TASK-OSS-03": 8828569177,
+        "TASK-OSS-09": 8828569941
+      },
+      "runtimeImage": {
+        "TASK-OSS-01": 8828584364,
+        "TASK-OSS-03": 8828585310,
+        "TASK-OSS-09": 8828575381
+      },
+      "dependencyCache": {
+        "TASK-OSS-01": 8828607861,
+        "TASK-OSS-03": 8828599733,
+        "TASK-OSS-09": 8828608344
+      }
+    }
+  },
+  "sources": [
+    {
+      "path": "benchmarks/external-oss-v7/control/G1/repair-3/run-30732978684-failure.json",
+      "sha256": "88dc1cac64226ab71c19b61f5de5ac6ddea3d3f17a39958fdc8d98dd0b456f62",
+      "sourceLocator": "https://raw.githubusercontent.com/Eskasia/governseed/b0f4122c830031ceec3e782cd01a5cb661af1915/benchmarks/external-oss-v7/control/G1/repair-3/run-30732978684-failure.json",
+      "role": "immutable V7 measured failure evidence"
+    },
+    {
+      "path": "benchmarks/external-oss-v7/runtime-image/image-lock.json",
+      "sha256": "7df73f95356525d6f8085caf71387f673e62b61e6d1b19e72e1d5db2c89e9b03",
+      "role": "immutable runtime base image identity"
+    }
+  ],
+  "taskContracts": [
+    { "taskId": "TASK-OSS-01", "path": "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-01/cache-contract.json", "sha256": "55c86a04f19a5cb2d481379cf79c076cf111fcaf78c6f14be3c26ddc1f6f607d" },
+    { "taskId": "TASK-OSS-03", "path": "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-03/cache-contract.json", "sha256": "fb57622c073fb2b09da44318920ba58833dc583d21669e7ef3f678462bafaa61" },
+    { "taskId": "TASK-OSS-09", "path": "benchmarks/external-oss-v5/dependency-cache/TASK-OSS-09/cache-contract.json", "sha256": "3d0183bd36b28b1c3a7afed183f2c36f13172499048ec6d98ce2e8b9c316e92e" }
+  ],
+  "priorV7SolReview": {
+    "benchmarkId": "GS-OSS-2026-08-02-V7",
+    "checkedPR": 65,
+    "checkedCommit": "b0f4122c830031ceec3e782cd01a5cb661af1915",
+    "verdict": "REJECT",
+    "locator": "https://github.com/Eskasia/governseed/pull/65",
+    "representation": "review-only context; not treated as a V8 inherited byte source",
+    "sha256": "NOT_CLAIMED"
+  },
+  "immutableBoundary": [
+    "benchmarks/external-oss-v2/",
+    "benchmarks/external-oss-v3/",
+    "benchmarks/external-oss-v4/",
+    "benchmarks/external-oss-v5/",
+    "benchmarks/external-oss-v6/",
+    "benchmarks/external-oss-v7/",
+    "V7 workflow run evidence",
+    "task facts",
+    "sealed seeds",
+    "hidden oracles",
+    "public acceptance criteria",
+    "cache identities",
+    "runtime image identity"
+  ],
+  "claimBoundary": "V8 inherits only V7 paths and SHA-256 identities. It does not copy cache archives, external clones, credentials, Codex/provider execution, hidden oracle data, or V7 results into Git."
+}

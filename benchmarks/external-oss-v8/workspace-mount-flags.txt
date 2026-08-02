@@ -1,0 +1,3 @@
+EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE
+docker info failed to connect to unix:///Users/william/.docker/run/docker.sock: daemon unavailable
+No local /proc/self/mountinfo or findmnt output was generated.
