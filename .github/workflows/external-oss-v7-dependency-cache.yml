@@ -409,7 +409,7 @@ jobs:
           test -x "/cache/$2" || fail RUNTIME_BINARY_EXECUTION_DENIED
           if touch /cache/.v7-cache-write-test 2>/dev/null; then fail CACHE_WRITE_ALLOWED; fi
           case "$1" in
-            TASK-OSS-01) cd /workspace/packages/cli 2>/dev/null || fail WORKING_DIRECTORY_DENIED; ./node_modules/.bin/vitest --run src/commands/asset.spec.ts || fail OFFLINE_SMOKE_FAILED:immich-public-test ;;
+            TASK-OSS-01) cd /workspace/packages/cli 2>/dev/null || fail WORKING_DIRECTORY_DENIED; test -e ./node_modules/.bin/vitest || fail OFFLINE_SMOKE_FAILED:immich-test-permissions; chmod u+x ./node_modules/.bin/vitest 2>/dev/null || fail OFFLINE_SMOKE_FAILED:immich-test-permissions; test -x ./node_modules/.bin/vitest || fail OFFLINE_SMOKE_FAILED:immich-test-permissions; ./node_modules/.bin/vitest --run src/commands/asset.spec.ts || fail OFFLINE_SMOKE_FAILED:immich-public-test ;;
             TASK-OSS-03) cd /workspace 2>/dev/null || fail WORKING_DIRECTORY_DENIED; TEST_BACKEND=1 node --test --test-reporter=spec test/backend-test/test-status-page.js || fail OFFLINE_SMOKE_FAILED:uptime-public-test ;;
             TASK-OSS-09) cd /workspace 2>/dev/null || fail WORKING_DIRECTORY_DENIED; PAPERLESS_SECRET_KEY=synthetic-test-only-value PAPERLESS_DISABLE_DBHANDLER=true PAPERLESS_CACHE_BACKEND=django.core.cache.backends.locmem.LocMemCache PAPERLESS_CHANNELS_BACKEND=channels.layers.InMemoryChannelLayer /cache/.venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py || fail OFFLINE_SMOKE_FAILED:paperless-public-test ;;
             *) fail OFFLINE_PERMISSION_CAUSE_UNKNOWN ;;

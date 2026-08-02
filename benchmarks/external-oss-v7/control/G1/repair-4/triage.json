@@ -1,0 +1,21 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V7",
+  "evidenceClass": "external-observational",
+  "runId": "30732978684",
+  "repairCycle": 4,
+  "failureClass": "harness-defect-confirmed",
+  "taskId": "TASK-OSS-01",
+  "firstObservedFailureStage": "positive-smoke",
+  "firstObservedFailureCode": "OFFLINE_SMOKE_FAILED",
+  "firstFailingOperation": "./node_modules/.bin/vitest executable launch",
+  "observedError": "Permission denied",
+  "confirmedBoundary": "The copy-based path-preserving workspace materialization and all containment checks completed far enough to launch the public command; the disposable workspace copy did not have an executable test launcher mode.",
+  "repairAction": "Before the unchanged public command, assert the copied launcher exists, restore only its user executable bit in writable /workspace, and assert test -x; keep /cache read-only and never chmod the cache source.",
+  "supportingEvidence": [
+    "Immich diagnostics.json reports OFFLINE_SMOKE_FAILED at positive-smoke with exit code 1.",
+    "Immich positive-output reports /harness/offline-smoke.sh: line 34: ./node_modules/.bin/vitest: Permission denied followed by OFFLINE_SMOKE_FAILED:immich-public-test.",
+    "Uptime Kuma and Paperless-ngx both produced READY receipts in the same run, including negative cache miss exit 42; Paperless libmagic checks passed."
+  ],
+  "claimBoundary": "Repair-4 harness rationale only; no G1 readiness or benchmark acceptance claim."
+}
