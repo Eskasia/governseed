@@ -1,0 +1,2 @@
+TARGET     FSTYPE OPTIONS
+/workspace tmpfs  rw,nosuid,nodev,relatime,size=8388608k,mode=750,uid=65532,gid=65532,inode64

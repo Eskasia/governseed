@@ -1,0 +1,76 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "evidenceClass": "external-observational",
+  "runId": 30738733647,
+  "repairCycle": 3,
+  "headSha": "c47cb33f590d9d95c25cfa386925954f49a5b0c0",
+  "workflow": ".github/workflows/external-oss-v8-dependency-cache.yml",
+  "status": "completed",
+  "conclusion": "failure",
+  "createdAt": "2026-08-02T07:55:05Z",
+  "startedAt": "2026-08-02T07:55:05Z",
+  "endedAt": "2026-08-02T08:00:32Z",
+  "url": "https://github.com/Eskasia/governseed/actions/runs/30738733647",
+  "passedPrerequisiteJobs": {
+    "seedIdentity": 3,
+    "runtimeImage": 3,
+    "dependencyCache": 3
+  },
+  "passedWorkspaceJobs": {
+    "TASK-OSS-01": {
+      "jobId": 91472398048,
+      "workspaceExecReceipt": "PASS",
+      "jobLogSha256": "9240455dd56e1dc7caeab91b8013c677171b0143451b349ae7a74fd2be9573a1"
+    },
+    "TASK-OSS-03": {
+      "jobId": 91472398035,
+      "workspaceExecReceipt": "PASS",
+      "jobLogSha256": "76538f3865269d8faac28df303fb3ec800d8f03a80ebfcd539f1c6769d4c7724"
+    },
+    "TASK-OSS-09": {
+      "jobId": 91472398054,
+      "workspaceExecReceipt": "PASS",
+      "jobLogSha256": "5d031290fd8887cc6e4f98ad79d1751f7656fc0598fdca72d3551a9ed8e3417a"
+    }
+  },
+  "failedJobs": [
+    {
+      "taskId": "TASK-OSS-01",
+      "jobId": 91472509261,
+      "step": "Run V8 offline positive and negative tests",
+      "exitCode": 2,
+      "failure": "Generated Bash script ended with syntax error: unexpected end of file at line 122 before any offline container test.",
+      "jobLogSha256": "77db5051fbcb01f175738c1bffb29263bff6f963f613bab295e0746e6f745660b"
+    },
+    {
+      "taskId": "TASK-OSS-03",
+      "jobId": 91472509310,
+      "step": "Run V8 offline positive and negative tests",
+      "exitCode": 2,
+      "failure": "Generated Bash script ended with syntax error: unexpected end of file at line 122 before any offline container test.",
+      "jobLogSha256": "c95237c838eda1d7a2b37fd14b1b78f964ce535a36220c655c3a11602c10a967"
+    },
+    {
+      "taskId": "TASK-OSS-09",
+      "jobId": 91472509267,
+      "step": "Run V8 offline positive and negative tests",
+      "exitCode": 2,
+      "failure": "Generated Bash script ended with syntax error: unexpected end of file at line 122 before any offline container test.",
+      "jobLogSha256": "e33586ab18b8cba3d6c23342c3b3d2ce277f615111f7624d8d709b5dda423657"
+    },
+    {
+      "taskId": "ALL",
+      "jobId": 91472628007,
+      "step": "Require three fully qualified caches",
+      "exitCode": 1,
+      "failure": "Offline receipt directory was absent because all three offline jobs failed shell parsing.",
+      "jobLogSha256": "2cc2b8ce2695110ad2c7df4a57a9752e15186c6068e4d27a46db69f1bffbfbfb"
+    }
+  ],
+  "offlineSmoke": "FAILED: 0/3; all three offline jobs stopped before container execution",
+  "negativeCacheTests": "NOT_RUN: offline shell parse failure",
+  "aggregateQualification": "FAILED: no offline receipts",
+  "rootCause": "The offline run block's first nested Node heredoc used a NODE delimiter indented two spaces beyond the YAML run-block baseline. GitHub Actions generated a Bash script with an unterminated heredoc, producing syntax error: unexpected end of file.",
+  "claimBoundary": "Immutable G1 run failure evidence only; workspace execution PASS is observed, but offline smoke, negative cache PASS, G1 acceptance, G2, Pilot, scoring, and benchmark outcome are not claimed."
+}

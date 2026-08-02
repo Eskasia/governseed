@@ -60,6 +60,8 @@ requireText(workflow, 'size=8g');
 requireText(workflow, 'mode=0750');
 requireText(workflow, 'libmagic-library-path.txt');
 requireText(workflow, 'libmagic-database-path.txt');
+const nodeDelimiters = workflow.split('\n').filter((line) => line.trim() === 'NODE');
+if (nodeDelimiters.some((line) => line !== '          NODE')) errors.push('workflow heredoc delimiter has invalid indentation');
 forbidText(workflow, "for spec in '/workspace true'", 'tmpfs treated as .Mounts bind entry');
 requireText(workflow, "for spec in '/seed false'", 'bind mount inspection');
 
