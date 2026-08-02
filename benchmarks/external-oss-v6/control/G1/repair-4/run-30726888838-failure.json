@@ -1,0 +1,45 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "evidenceClass": "external-observational",
+  "runId": "30726888838",
+  "headSha": "0f4b844673af47d654a1e84ba5463ac21bd09cba",
+  "workflow": ".github/workflows/external-oss-v6-dependency-cache.yml",
+  "status": "FAILURE",
+  "stage": "prepare-dependency-cache",
+  "observed": {
+    "seedIdentity": "3/3 PASS",
+    "taskResults": {
+      "TASK-OSS-01": "CANCELLED_AFTER_TASK_OSS_09_PREPARATION_FAILURE",
+      "TASK-OSS-03": "CANCELLED_AFTER_TASK_OSS_09_PREPARATION_FAILURE",
+      "TASK-OSS-09": {
+        "status": "FAILURE",
+        "operation": "runtime-image public smoke",
+        "errorClass": "ImportError",
+        "message": "failed to find libmagic"
+      }
+    },
+    "offlinePermissions": "NOT_RUN",
+    "offlineSmoke": "NOT_RUN",
+    "negativeCacheTests": "NOT_RUN",
+    "dependencyCaches": "0/3 READY",
+    "aggregate": "FAILURE_NO_RECEIPTS_DIRECTORY"
+  },
+  "firstFailingOperation": "/workspace/.venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py",
+  "rootCause": {
+    "candidate": "Declared public runtime image lacks the system libmagic library required by the fixed Paperless public test",
+    "status": "CONFIRMED_AS_HARNESS_RUNTIME_IMAGE_DEFECT",
+    "evidence": [
+      "GitHub Actions preparation log shows the runtime-image public smoke entered documents.data_models and python-magic",
+      "The same log ends with ImportError: failed to find libmagic. Check your installation",
+      "The failure occurred before cache archive publication and before offline jobs"
+    ]
+  },
+  "repairBudget": {
+    "maximum": 4,
+    "consumed": 4,
+    "nextRepair": "FORBIDDEN_BY_V6_PROTOCOL"
+  },
+  "finalState": "HARD_BLOCKED: V6_G1_REPAIR_LIMIT_EXCEEDED",
+  "claimBoundary": "No dependency cache READY, offline permission pass, offline smoke pass, negative cache pass, aggregate READY, or G1 acceptance claim. No repair-5 was attempted."
+}
