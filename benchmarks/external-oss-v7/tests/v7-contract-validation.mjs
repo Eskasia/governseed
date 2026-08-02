@@ -113,6 +113,7 @@ for (const code of ['WORKSPACE_TRAVERSE_DENIED', 'HARNESS_EXECUTION_DENIED', 'CA
 }
 require(offline.includes('rm -rf "$negative_cache/$required_path"'), 'negative test removes actual required path');
 require(offline.includes('test -e "$negative_cache/$required_path" || test -L "$negative_cache/$required_path"'), 'negative test accepts dangling required cache symlinks');
+require(offline.includes('test ! -e "$negative_cache/$required_path"'), 'negative test removes required cache entries');
 require(offline.includes('test ! -L "$negative_cache/$required_path"'), 'negative test removes dangling required cache symlinks');
 require(dependencyWorkflow.includes('TASK-OSS-01) required_path=packages/cli/node_modules'), 'Immich negative test removes the task-local required cache entry');
 require(offline.includes('grep -Fq DEPENDENCY_CACHE_INCOMPLETE'), 'negative test checks structured block');
