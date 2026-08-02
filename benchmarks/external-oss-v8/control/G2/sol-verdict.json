@@ -1,0 +1,24 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "agent": "Sol",
+  "model": "gpt-5.6-sol",
+  "agentId": "019fc1ba-57a4-7e92-8178-013633c69770",
+  "verdict": "REJECT",
+  "mergeAuthorized": false,
+  "providerRequestAuthorized": false,
+  "runtimeCanaryAuthorized": false,
+  "humanApprovalPresent": false,
+  "technicalReviewEvidencePath": "benchmarks/external-oss-v8/control/G2/sol-review-evidence.json",
+  "followUpG2Tests": "31/31 PASS",
+  "blockingFindings": [
+    "credential-shaped OPENAI_API_KEY is exposed in the measured container environment",
+    "endpoint, model, headers, and top-level JSON fields are not closed to the G2 contract",
+    "benchmark, run, and task identity binding is not implemented",
+    "measured facade limits are 32 requests and 300000ms rather than the proposed 1 request and 30000ms",
+    "human approval and runtime identity fields are absent"
+  ],
+  "authorizationBoundary": "REJECT is a technical review verdict only; it is not human approval and does not authorize merge, provider request, workflow dispatch, runtime canary, task execution, Pilot, scoring, or formal benchmark lock.",
+  "claimBoundary": "G2 remains HARD_BLOCKED pending a repaired transport contract, a new independent Sol review, and a valid non-model human approval record."
+}

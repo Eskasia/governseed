@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gs-oss-2026-08-02-v8-g2-request",
+  "title": "GovernSeed V8 G2 narrow proxy request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["model", "input", "store", "stream"],
+  "properties": {
+    "model": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 256
+    },
+    "input": {
+      "type": ["string", "array"],
+      "maxLength": 1048576,
+      "items": {
+        "type": "object",
+        "additionalProperties": false
+      }
+    },
+    "store": {
+      "const": false
+    },
+    "stream": {
+      "const": true
+    },
+    "tools": {
+      "type": "array",
+      "maxItems": 32,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["type"],
+        "properties": {
+          "type": {
+            "enum": ["function", "custom", "local_shell", "apply_patch", "tool_search"]
+          },
+          "name": {
+            "type": "string",
+            "maxLength": 256
+          },
+          "parameters": {
+            "type": "object"
+          },
+          "execution": {
+            "const": "client"
+          }
+        }
+      }
+    }
+  }
+}

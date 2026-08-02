@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gs-oss-2026-08-02-v8-g2-runtime-canary-response",
+  "title": "GovernSeed V8 G2 runtime identity canary response",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["runtime_canary"],
+  "properties": {
+    "runtime_canary": {
+      "const": "PASS"
+    }
+  }
+}

@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "evidenceClass": "external-observational",
+  "status": "HARD_BLOCKED",
+  "transport": {
+    "type": "host-side-narrow-credential-proxy",
+    "provider": "OpenAI",
+    "endpoint": "https://api.openai.com/v1/responses",
+    "method": "POST",
+    "requestSchemaPath": "benchmarks/external-oss-v8/credential-transport/request.schema.json",
+    "responseSchemaPath": "benchmarks/external-oss-v8/credential-transport/response.schema.json",
+    "allowedClientHeaders": ["content-type"],
+    "hostInjectedHeaders": ["accept", "authorization", "content-type"],
+    "maxRequestBytes": 1048576,
+    "maxResponseBytes": 4194304,
+    "requestTimeoutMs": 30000,
+    "maxRequestsPerRun": 1,
+    "maxTotalTokens": 8192,
+    "modelBinding": {
+      "source": "human-approval.json.approvedModelId",
+      "exact": true,
+      "candidate": null,
+      "selectionStatus": "PENDING_HUMAN_SELECTION",
+      "forbiddenValues": ["latest", "Luna", "Sol"]
+    },
+    "socket": {
+      "hostPathTemplate": "${RUNNER_TEMP}/gs-oss-v8/${BENCHMARK_ID}/${RUN_ID}/${TASK_ID}/proxy.sock",
+      "containerPath": "/run/governance/proxy.sock",
+      "containerUid": 65532,
+      "containerGid": 65532,
+      "hostOwnerUid": null,
+      "hostOwnerGid": null,
+      "mode": "0600",
+      "runIdBinding": true,
+      "benchmarkIdBinding": true,
+      "taskIdBinding": true,
+      "singleUse": true
+    },
+    "cleanup": {
+      "automatic": true,
+      "clientDisconnect": true,
+      "timeout": true,
+      "proxyCrash": true,
+      "socketAbsenceProof": true,
+      "processAbsenceProof": true,
+      "cgroupAbsenceProof": true
+    },
+    "retention": {
+      "allowed": [
+        "requestSha256",
+        "responseSha256",
+        "requestBytes",
+        "responseBytes",
+        "modelId",
+        "providerRequestIdHash",
+        "tokenCounts",
+        "statusCode",
+        "timestamps",
+        "latency",
+        "structuredFailureCode"
+      ],
+      "forbidden": [
+        "prompt",
+        "response",
+        "apiKey",
+        "authorizationHeader",
+        "refreshToken",
+        "sessionCookie",
+        "rawCodexTranscript",
+        "providerTrace"
+      ]
+    }
+  },
+  "humanApproval": {
+    "required": true,
+    "path": "benchmarks/external-oss-v8/credential-transport/human-approval.json",
+    "present": false,
+    "requiredScope": ["credential-transport", "runtime-identity-canary", "v8-pilot"]
+  },
+  "implementationUnderReview": {
+    "proxySourcePath": "experimental/governance-impact/lib/credential-proxy.mjs",
+    "proxyFacadePath": "experimental/governance-impact/lib/oci-proxy-facade.mjs",
+    "sourceCommit": "46e7a1a16c0b28614ed4e73147f93ffad2330e23",
+    "sourceSha256": null,
+    "existingTestCommand": "npm run test:experimental",
+    "existingTestCount": 125,
+    "existingTestResult": "PASS",
+    "g2QualificationStatus": "NOT_QUALIFIED",
+    "blockingGaps": [
+      "oci-proxy-facade exposes a proxy bearer as OPENAI_API_KEY in the measured container environment",
+      "proxy policy accepts arbitrary HTTPS hosts with the fixed path rather than pinning the OpenAI endpoint",
+      "proxy policy accepts a caller-selected model rather than binding to an approved exact model ID",
+      "unknown request headers are not rejected",
+      "unknown request JSON fields are not rejected",
+      "benchmark ID and run ID are not bound by the existing proxy contract",
+      "socket owner UID/GID are not fixed and observed by the existing proxy contract",
+      "token ceilings, request/response hashes, token counts, and provider request ID hashes are not implemented by the existing proxy contract"
+    ]
+  },
+  "claimBoundary": "Design and static/offline review only. No provider request, credential use, Codex measured run, runtime identity canary, Pilot, scoring, or formal benchmark lock is claimed."
+}

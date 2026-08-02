@@ -1,0 +1,136 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "evidenceClass": "external-observational",
+  "reviewer": {
+    "agent": "Sol",
+    "model": "gpt-5.6-sol",
+    "agentId": "019fc1ba-57a4-7e92-8178-013633c69770",
+    "role": "independent read-only technical reviewer",
+    "reasoningEffort": "ultra"
+  },
+  "reviewedCommit": "46e7a1a16c0b28614ed4e73147f93ffad2330e23",
+  "reviewedPaths": [
+    "benchmarks/external-oss-v8/credential-transport/design.json",
+    "benchmarks/external-oss-v8/credential-transport/request.schema.json",
+    "benchmarks/external-oss-v8/credential-transport/response.schema.json",
+    "benchmarks/external-oss-v8/credential-transport/review-packet.json",
+    "benchmarks/external-oss-v8/control/G2/credential-transport-findings.json",
+    "benchmarks/external-oss-v8/control/G2/inherited-evidence.json",
+    "benchmarks/external-oss-v8/tests/g2-credential-transport.test.mjs",
+    "benchmarks/external-oss-v8/tests/g2-schema-validation.mjs",
+    "experimental/governance-impact/lib/credential-proxy.mjs",
+    "experimental/governance-impact/lib/oci-proxy-facade.mjs",
+    "experimental/governance-impact/lib/oci-supervisor.mjs",
+    "experimental/governance-impact/uds-relay.mjs"
+  ],
+  "hashVerification": {
+    "designSha256": "f008088d354588319706156db7f06a01c87c0c85678b7b48441fdc3ea59e4395",
+    "requestSchemaSha256": "b78c2268ce8df35b88244aafeb58e56f4025732d102b8c010c3c08e81f322249",
+    "responseSchemaSha256": "40c068eadbc39a473ff91459adbf585db79b64a4e1e41cae7265b7086324a4b6",
+    "proxySourceSha256": "0a2102d972f00c5232b36c13ee1d5db388d6fe90b587055bd9fc739194bfbb06",
+    "proxyFacadeSha256": "20cb9b2ddc3d99338c0f89626c73bd76cc382e159922e278e539b1f62326fed3",
+    "inheritedG1SourceCount": 31,
+    "inheritedG1AllMatches": true
+  },
+  "commands": [
+    {
+      "command": "node --test benchmarks/external-oss-v8/tests/g2-credential-transport.test.mjs benchmarks/external-oss-v8/tests/g2-schema-validation.mjs",
+      "tests": 28,
+      "passed": 28,
+      "failed": 0,
+      "status": "PASS",
+      "network": "none"
+    },
+    {
+      "command": "npm run test:experimental",
+      "tests": 125,
+      "passed": 125,
+      "failed": 0,
+      "status": "PASS",
+      "network": "none"
+    }
+  ],
+  "followUp": {
+    "reviewedPaths": [
+      "benchmarks/external-oss-v8/credential-transport/human-approval.schema.json",
+      "benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.schema.json",
+      "benchmarks/external-oss-v8/credential-transport/review-packet.json",
+      "benchmarks/external-oss-v8/tests/g2-schema-validation.mjs"
+    ],
+    "g2Command": {
+      "command": "node --test benchmarks/external-oss-v8/tests/g2-credential-transport.test.mjs benchmarks/external-oss-v8/tests/g2-schema-validation.mjs",
+      "tests": 31,
+      "passed": 31,
+      "failed": 0,
+      "status": "PASS",
+      "network": "none"
+    },
+    "finalPacketStatus": "HARD_BLOCKED",
+    "finalPacketHumanApprovalPresent": false,
+    "finalPacketRecommendation": "REJECT",
+    "originalBlockersRemain": true,
+    "packetCountMismatchObserved": {
+      "packetDeclaredBeforeParentCorrection": 30,
+      "commandObserved": 31,
+      "parentCorrection": 31,
+      "parentRevalidation": "PASS"
+    }
+  },
+  "approvalAndIdentity": {
+    "humanApprovalPath": "benchmarks/external-oss-v8/credential-transport/human-approval.json",
+    "humanApprovalPresent": false,
+    "exactModelIdBound": false,
+    "codexVersionBound": false,
+    "codexBinarySha256Bound": false,
+    "runnerIdentityBound": false,
+    "runtimeImageIdentityBound": false,
+    "networkIdentityBound": false,
+    "containmentIdentityBound": false,
+    "runtimeWorkflowPresent": false,
+    "runtimeReceiptPresent": false,
+    "providerRequestCount": 0
+  },
+  "findings": [
+    {
+      "severity": "HIGH",
+      "id": "credential-in-container-environment",
+      "evidence": "oci-proxy-facade.mjs supplies OPENAI_API_KEY and OPENAI_BASE_URL to the measured container environment.",
+      "impact": "Container code can read or misuse the bearer; the no-credential-in-container claim is not satisfied."
+    },
+    {
+      "severity": "HIGH",
+      "id": "request-boundary-not-closed",
+      "evidence": "The proxy accepts arbitrary HTTPS hosts, caller-selected models, extra headers, and unknown top-level JSON fields; the facade does not bind benchmark, run, or task IDs.",
+      "impact": "The fixed endpoint, exact model, closed header/field, and identity binding requirements are not implemented."
+    },
+    {
+      "severity": "HIGH",
+      "id": "facade-limit-drift",
+      "evidence": "The proposed contract is one request and 30000ms, while the measured facade defaults to 32 requests and 300000ms.",
+      "impact": "A reviewer could overestimate the current request and timing exposure limits."
+    },
+    {
+      "severity": "MEDIUM",
+      "id": "approval-and-runtime-identities-unbound",
+      "evidence": "No human-approval record, exact model, Codex binary/version, runner, image, network, containment, canary, or runtime receipt is present.",
+      "impact": "The gate cannot advance to provider access or runtime identity qualification."
+    },
+    {
+      "severity": "LOW",
+      "id": "relay-path-correction",
+      "evidence": "The actual relay source is experimental/governance-impact/uds-relay.mjs; experimental/governance-impact/lib/uds-relay.mjs does not exist.",
+      "impact": "Review inputs must use the corrected path for reproducibility."
+    }
+  ],
+  "technicalDisposition": "NOT_TECHNICALLY_ACCEPTABLE_FOR_HUMAN_REVIEW",
+  "recommendation": "REJECT",
+  "authorization": {
+    "mergeAuthorized": false,
+    "providerRequestAuthorized": false,
+    "runtimeCanaryAuthorized": false,
+    "humanApprovalCreated": false
+  },
+  "claimBoundary": "Sol read-only static/offline review only. This evidence does not authorize provider access, a runtime canary, task execution, Pilot, scoring, formal benchmark lock, or G3 readiness."
+}

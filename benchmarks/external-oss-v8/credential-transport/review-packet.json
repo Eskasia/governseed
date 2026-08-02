@@ -1,0 +1,135 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "evidenceClass": "external-observational",
+  "status": "HARD_BLOCKED",
+  "designPath": "benchmarks/external-oss-v8/credential-transport/design.json",
+  "designSha256": "f008088d354588319706156db7f06a01c87c0c85678b7b48441fdc3ea59e4395",
+  "proxySourcePath": "experimental/governance-impact/lib/credential-proxy.mjs",
+  "proxySourceCommit": "46e7a1a16c0b28614ed4e73147f93ffad2330e23",
+  "proxySourceSha256": "0a2102d972f00c5232b36c13ee1d5db388d6fe90b587055bd9fc739194bfbb06",
+  "proxyFacadePath": "experimental/governance-impact/lib/oci-proxy-facade.mjs",
+  "proxyFacadeSha256": "20cb9b2ddc3d99338c0f89626c73bd76cc382e159922e278e539b1f62326fed3",
+  "proxyRelayPath": "experimental/governance-impact/uds-relay.mjs",
+  "proxyTest": {
+    "command": "npm run test:experimental",
+    "count": 125,
+    "passed": 125,
+    "failed": 0,
+    "status": "PASS",
+    "scope": "Existing synthetic/offline experimental proxy, relay, facade, and supervisor tests"
+  },
+  "g2Tests": {
+    "command": "node --test benchmarks/external-oss-v8/tests/g2-credential-transport.test.mjs benchmarks/external-oss-v8/tests/g2-schema-validation.mjs",
+    "proxyChecks": 22,
+    "schemaChecks": 9,
+    "passed": 31,
+    "failed": 0,
+    "status": "PASS",
+    "observedBlockedChecks": 13
+  },
+  "fixedProvider": "OpenAI",
+  "fixedEndpoint": "https://api.openai.com/v1/responses",
+  "fixedMethod": "POST",
+  "fixedModelCandidate": null,
+  "modelBinding": {
+    "source": "human-approval.json.approvedModelId",
+    "exact": true,
+    "status": "PENDING_HUMAN_SELECTION",
+    "forbiddenAliases": ["latest", "Luna", "Sol"]
+  },
+  "requestSchemaPath": "benchmarks/external-oss-v8/credential-transport/request.schema.json",
+  "requestSchemaSha256": "b78c2268ce8df35b88244aafeb58e56f4025732d102b8c010c3c08e81f322249",
+  "responseSchemaPath": "benchmarks/external-oss-v8/credential-transport/response.schema.json",
+  "responseSchemaSha256": "40c068eadbc39a473ff91459adbf585db79b64a4e1e41cae7265b7086324a4b6",
+  "headerAllowlist": {
+    "client": ["content-type"],
+    "hostInjected": ["accept", "authorization", "content-type"]
+  },
+  "byteLimits": {
+    "request": 1048576,
+    "response": 4194304
+  },
+  "timeoutMs": 30000,
+  "requestCountCeiling": 1,
+  "tokenCeiling": 8192,
+  "socketPathTemplate": "${RUNNER_TEMP}/gs-oss-v8/${BENCHMARK_ID}/${RUN_ID}/${TASK_ID}/proxy.sock",
+  "containerSocketPath": "/run/governance/proxy.sock",
+  "socketOwnerUidGid": {
+    "container": "65532:65532",
+    "host": null,
+    "status": "PENDING_RUNNER_OBSERVATION"
+  },
+  "socketMode": "0600",
+  "binding": {
+    "benchmarkId": true,
+    "runId": true,
+    "taskId": true,
+    "singleUse": true
+  },
+  "cleanupContract": {
+    "automatic": true,
+    "clientDisconnect": true,
+    "timeout": true,
+    "proxyCrash": true,
+    "socketAbsenceProof": true,
+    "processAbsenceProof": true,
+    "cgroupAbsenceProof": true
+  },
+  "retentionContract": {
+    "allowed": [
+      "requestSha256",
+      "responseSha256",
+      "requestBytes",
+      "responseBytes",
+      "modelId",
+      "providerRequestIdHash",
+      "tokenCounts",
+      "statusCode",
+      "timestamps",
+      "latency",
+      "structuredFailureCode"
+    ],
+    "forbidden": [
+      "prompt",
+      "response",
+      "apiKey",
+      "authorizationHeader",
+      "refreshToken",
+      "sessionCookie",
+      "rawCodexTranscript",
+      "providerTrace"
+    ]
+  },
+  "knownLimitations": [
+    "The existing facade exposes OPENAI_API_KEY in the measured container environment.",
+    "The existing proxy accepts arbitrary HTTPS hosts and caller-selected models.",
+    "Unknown headers and unknown top-level JSON fields are not rejected.",
+    "The existing contract binds only an attempt ID, not benchmark ID, run ID, or task ID.",
+    "The proposed one-request and 30000ms limits drift from the measured facade defaults of 32 requests and 300000ms.",
+    "Host socket owner UID/GID and runtime cleanup are not observed by this offline review.",
+    "The existing proxy has no token ceiling or hashed provider receipt contract.",
+    "No exact measured coding model ID is available for human approval.",
+    "No Codex binary, runner, OCI image, network, or containment identity is locked.",
+    "The correct relay source path is experimental/governance-impact/uds-relay.mjs; the non-existent lib/uds-relay.mjs path must not be used."
+  ],
+  "prohibitedClaims": [
+    "provider access",
+    "credential transport approval",
+    "Codex runtime identity",
+    "agent compliance",
+    "coding quality",
+    "Pilot readiness",
+    "scoring",
+    "formal benchmark lock"
+  ],
+  "humanApproval": {
+    "required": true,
+    "path": "benchmarks/external-oss-v8/credential-transport/human-approval.json",
+    "present": false,
+    "blockingCode": "CREDENTIAL_TRANSPORT_HUMAN_APPROVAL_REQUIRED"
+  },
+  "solTechnicalRecommendation": "REJECT",
+  "solReviewEvidencePath": "benchmarks/external-oss-v8/control/G2/sol-review-evidence.json",
+  "claimBoundary": "Review packet for static/offline human review. It does not authorize a provider request, workflow dispatch, runtime identity canary, task execution, Pilot, scoring, or formal benchmark lock."
+}
