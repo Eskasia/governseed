@@ -98,10 +98,14 @@ test('G2 human approval is required and is not fabricated', () => {
   assert.equal(design.humanApproval.present, false);
   assert.equal(design.transport.modelBinding.candidate, null);
   assert.equal(design.transport.modelBinding.selectionStatus, 'PENDING_HUMAN_SELECTION');
+  const approval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.json');
+  assert.equal(approval.approvalStatus, 'APPROVED');
+  assert.equal(approval.approvedBy, 'Eskasia');
+  assert.equal(approval.approvedModelId, 'gpt-5.6-luna');
   assert.equal(existsSync(path.join(
     ROOT,
     'benchmarks/external-oss-v8/credential-transport/human-approval.json',
-  )), false);
+  )), true);
 });
 
 test('review packet records the current G2 test count and Sol disposition', () => {
@@ -144,11 +148,11 @@ test('G1 inherited evidence is independently hash-revalidated', () => {
   }
 });
 
-test('runtime identity workflow and receipt are absent before human approval', () => {
+test('runtime identity workflow is manual prep and no runtime receipt exists yet', () => {
   assert.equal(existsSync(path.join(
     ROOT,
     '.github/workflows/external-oss-v8-runtime-identity.yml',
-  )), false);
+  )), true);
   assert.equal(existsSync(path.join(
     ROOT,
     'benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.json',

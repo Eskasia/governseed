@@ -26,6 +26,8 @@ const GOVERNANCE_IMPACT_REAL_WORKFLOW =
   '.github/workflows/governance-impact-real.yml';
 const GOVERNANCE_IMPACT_PREFLIGHT_WORKFLOW =
   '.github/workflows/governance-impact-preflight.yml';
+const GOVERNSEED_V8_RUNTIME_IDENTITY_WORKFLOW =
+  '.github/workflows/external-oss-v8-runtime-identity.yml';
 
 function normalizeWorkflowPath(value) {
   return String(value).replaceAll('\\', '/');
@@ -87,6 +89,48 @@ export function validateGovernanceImpactWorkflows(workflows = []) {
         || /^\s*environment\s*:/mu.test(content)
       ) {
         errors.push(`${workflowPath} must remain credential-free`);
+      }
+      continue;
+    }
+    if (workflowPath === GOVERNSEED_V8_RUNTIME_IDENTITY_WORKFLOW) {
+      const triggerKeys = workflowTriggerKeys(content);
+      if (
+        triggerKeys.length !== 1
+        || triggerKeys[0] !== 'workflow_dispatch'
+      ) {
+        errors.push(`${workflowPath} must be workflow_dispatch-only`);
+      }
+      if (!/^\s*runs-on\s*:\s*ubuntu-24\.04\s*$/mu.test(content)) {
+        errors.push(`${workflowPath} must use the reviewed ubuntu-24.04 runner`);
+      }
+      if (
+        !/^\s*environment\s*:\s*$/mu.test(content)
+        || !/^\s+name\s*:\s*governseed-v8-runtime\s*$/mu.test(content)
+      ) {
+        errors.push(`${workflowPath} must use the approval-gated environment governseed-v8-runtime`);
+      }
+      if (
+        !/^\s*permissions\s*:\s*$/mu.test(content)
+        || !/^\s*contents\s*:\s*read\s*$/mu.test(content)
+      ) {
+        errors.push(`${workflowPath} must keep job permissions at contents: read`);
+      }
+      const exactSecretReference = '${{ secrets.OPENAI_API_KEY }}';
+      const secretReferences = content.match(/\$\{\{[^}]*secrets\.[^}]*\}\}/gu) ?? [];
+      if (
+        secretReferences.length !== 1
+        || secretReferences[0] !== exactSecretReference
+        || !/^\s+OPENAI_API_KEY:\s*\$\{\{\s*secrets\.OPENAI_API_KEY\s*\}\}\s*$/mu.test(content)
+        || !content.includes('Start host-side credential proxy')
+      ) {
+        errors.push(`${workflowPath} must scope the one credential reference to the host-side proxy step`);
+      }
+      if (
+        content.includes('GOVERNANCE_IMPACT_REAL')
+        || /--(?:api-key|credential)\b/u.test(content)
+        || /\$\{\{[^}]*secrets\./u.test(content.replace(exactSecretReference, ''))
+      ) {
+        errors.push(`${workflowPath} must not expose the credential through real-evaluator or argv boundaries`);
       }
       continue;
     }

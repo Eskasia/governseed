@@ -20,6 +20,8 @@ test('G2 model binding is exact and consistent across the approval-prep surface'
   const packet = readJson('benchmarks/external-oss-v8/credential-transport/repair-1/review-packet.json');
   const approvalSchema = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.schema.json');
   const approvalTemplate = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.template.json');
+  const approval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.json');
+  const approvalSource = readJson('benchmarks/external-oss-v8/credential-transport/human-approval-source.json');
   const receiptSchema = readJson('benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.schema.json');
   const verdict = readJson('benchmarks/external-oss-v8/control/G2/repair-1/sol-verdict.json');
   const evidence = readJson('benchmarks/external-oss-v8/control/G2/repair-1/sol-review-evidence.json');
@@ -56,6 +58,14 @@ test('G2 model binding is exact and consistent across the approval-prep surface'
   assert.equal(approvalTemplate.approvedBy, null);
   assert.equal(approvalTemplate.approvedAt, null);
   assert.equal(approvalTemplate.limitationsAcknowledged, false);
+  assert.equal(approval.approvalStatus, 'APPROVED');
+  assert.equal(approval.approvedBy, 'Eskasia');
+  assert.equal(approval.approvedModelId, MODEL);
+  assert.equal(approval.approvedDesignSha256, sha256('benchmarks/external-oss-v8/credential-transport/repair-1/design.json'));
+  assert.equal(approval.approvedProxySha256, sha256('experimental/governance-impact/lib/credential-proxy.mjs'));
+  assert.equal(approvalSource.verificationStatus, 'VERIFIED');
+  assert.equal(approvalSource.commentId, 5157792741);
+  assert.equal(approvalSource.credentialPresent, false);
 
   assert.match(source, /CREDENTIAL_PROXY_MODEL\s*=\s*['"]gpt-5\.6-luna['"]/u);
   assert.doesNotMatch(source, /gpt-5\.6(?!-luna)/u);
@@ -79,6 +89,6 @@ test('G2 model binding is exact and consistent across the approval-prep surface'
   ));
   assert.equal(evidence.hashVerification.reviewPacketSha256, verdict.reviewPacketSha256);
 
-  assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/credential-transport/human-approval.json')), false);
+  assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/credential-transport/human-approval.json')), true);
   assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.json')), false);
 });

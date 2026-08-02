@@ -28,6 +28,8 @@ test('repair-1 packet, schemas, immutable evidence, and source contract are cons
   const approvalSchema = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.schema.json');
   const approvalTemplate = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.template.json');
   const receiptSchema = readJson('benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.schema.json');
+  const approval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.json');
+  const approvalSource = readJson('benchmarks/external-oss-v8/credential-transport/human-approval-source.json');
   const inherited = readJson('benchmarks/external-oss-v8/control/G2/repair-1/inherited-evidence.json');
   const findings = readJson('benchmarks/external-oss-v8/control/G2/repair-1/findings.json');
   const solEvidence = readJson('benchmarks/external-oss-v8/control/G2/repair-1/sol-review-evidence.json');
@@ -145,6 +147,13 @@ test('repair-1 packet, schemas, immutable evidence, and source contract are cons
   assert.doesNotMatch(source, /OPENAI_API_KEY|OPENAI_BASE_URL|ANTHROPIC_API_KEY|GITHUB_TOKEN|GH_TOKEN/u);
   assert.doesNotMatch(source, /sk-[A-Za-z0-9]{20,}/u);
   assert.doesNotMatch(source, /Bearer\s+[A-Za-z0-9_-]{32,}/u);
+  assert.equal(approval.approvalStatus, 'APPROVED');
+  assert.equal(approval.approvedBy, 'Eskasia');
+  assert.equal(approval.approvedModelId, 'gpt-5.6-luna');
+  assert.equal(approval.approvedDesignSha256, packet.hashes.designSha256);
+  assert.equal(approval.approvedProxySha256, packet.hashes.proxySourceSha256);
+  assert.equal(approvalSource.verificationStatus, 'VERIFIED');
+  assert.equal(approvalSource.credentialPresent, false);
   assert.equal(fs.existsSync(path.join(repairRoot, 'human-approval.json')), false);
   assert.equal(fs.existsSync(path.join(controlRoot, 'human-approval.json')), false);
   assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.json')), false);

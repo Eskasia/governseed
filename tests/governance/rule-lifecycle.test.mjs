@@ -100,6 +100,22 @@ jobs:
         env:
           GOVERNANCE_IMPACT_REAL: "1"
 `;
+  const v8RuntimeIdentity = `name: External OSS V8 Runtime Identity
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  runtime-identity:
+    runs-on: ubuntu-24.04
+    environment:
+      name: governseed-v8-runtime
+    steps:
+      - name: Start host-side credential proxy
+        env:
+          OPENAI_API_KEY: \${{ secrets.OPENAI_API_KEY }}
+        run: node benchmarks/external-oss-v8/control/G2/runtime-canary-prep/host-proxy.mjs
+`;
   assert.deepEqual(validateGovernanceImpactWorkflows([
     {
       path: '.github/workflows/validate-starter.yml',
@@ -112,6 +128,10 @@ jobs:
     {
       path: '.github/workflows/governance-impact-preflight.yml',
       content: preflight,
+    },
+    {
+      path: '.github/workflows/external-oss-v8-runtime-identity.yml',
+      content: v8RuntimeIdentity,
     },
   ]), []);
 
