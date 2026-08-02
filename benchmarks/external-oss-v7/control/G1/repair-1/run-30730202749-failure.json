@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V7",
+  "evidenceClass": "external-observational",
+  "phase": "G1",
+  "attempt": 1,
+  "runId": "30730202749",
+  "headSha": "93825fab9705e62648f6ec3a8e71661f3bfd839b",
+  "event": "workflow_dispatch",
+  "status": "FAIL",
+  "failureClass": "harness-defect",
+  "failureStep": "Build and audit digest-locked image (TASK-OSS-09)",
+  "rootCause": {
+    "classification": "PAPERLESS_ADDED_PACKAGE_ASSERTION_PATTERN",
+    "observed": "TASK-OSS-09 package-inventory.txt differs from base-package-inventory.txt by the expected libmagic-mgc and libmagic1:amd64 rows, but declared-added-packages.txt is empty.",
+    "mechanism": "GNU grep -E did not interpret the non-portable \\t escape in the ERE as a tab separator.",
+    "evidence": [
+      "control/G1/attempt-1/run-30730202749/artifacts/TASK-OSS-09/added-packages.txt",
+      "control/G1/attempt-1/run-30730202749/artifacts/TASK-OSS-09/declared-added-packages.txt",
+      "control/G1/attempt-1/run-30730202749/artifacts/TASK-OSS-09/base-package-inventory.txt",
+      "control/G1/attempt-1/run-30730202749/artifacts/TASK-OSS-09/package-inventory.txt"
+    ],
+    "workflowLiteral": "grep -E '^(libmagic1|libmagic-mgc)(:amd64)?\\t'"
+  },
+  "jobs": {
+    "seedIdentity": {
+      "TASK-OSS-01": "PASS",
+      "TASK-OSS-03": "PASS",
+      "TASK-OSS-09": "PASS"
+    },
+    "runtimeImage": {
+      "TASK-OSS-09": "FAIL",
+      "TASK-OSS-01": "CANCELLED_BY_FAIL_FAST",
+      "TASK-OSS-03": "CANCELLED_BY_FAIL_FAST"
+    },
+    "dependencyPreparation": "NOT_RUN",
+    "offlineVerification": "NOT_RUN",
+    "aggregate": "FAIL_NO_THREE_READY_RECEIPTS"
+  },
+  "jobIds": {
+    "seedIdentityTask01": "91449064906",
+    "seedIdentityTask03": "91449064925",
+    "seedIdentityTask09": "91449064866",
+    "runtimeTask01": "91449115193",
+    "runtimeTask03": "91449115187",
+    "runtimeTask09": "91449115191",
+    "aggregate": "91449166608"
+  },
+  "artifactHashes": {
+    "TASK-OSS-01/added-packages.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "TASK-OSS-01/base-package-inventory.txt": "90b007a3308c6185d1fd6fb3231028994d02ca5e4d6b55b3e9995f143b53b07f",
+    "TASK-OSS-01/package-inventory.txt": "90b007a3308c6185d1fd6fb3231028994d02ca5e4d6b55b3e9995f143b53b07f",
+    "TASK-OSS-01/runtime-probe.txt": "a73a5eace81208efe63124e50d504fa367f73d1e947535d69d2cb805d29b9387",
+    "TASK-OSS-01/runtime-image.tgz": "93c0890ae94e43baa42d9e1de93d94a8bccca4ec062dfc3cda34ea23f10da644",
+    "TASK-OSS-09/added-packages.txt": "a591e64ceb56e91b3c62c516f5a63c7f9d2f12e1fc23cf3e316aa7ec94f378d6",
+    "TASK-OSS-09/declared-added-packages.txt": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "TASK-OSS-09/base-package-inventory.txt": "5a364fb39bf637f98719a96fe405c4022727836807eadca612bb9b7b8b005121",
+    "TASK-OSS-09/package-inventory.txt": "afe439e6665e17c308a4c8ad5dfa06fc90d624a6ab04d32e8be8348c934801cf"
+  },
+  "runEvidence": {
+    "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30730202749",
+    "failedJobUrl": "https://github.com/Eskasia/governseed/actions/runs/30730202749/job/91449115191",
+    "aggregateFailureUrl": "https://github.com/Eskasia/governseed/actions/runs/30730202749/job/91449166608",
+    "failureLogObserved": "Process completed with exit code 1 after Paperless added-package assertion",
+    "aggregateLogObserved": "ENOENT: no such file or directory, scandir /home/runner/work/_temp/v7-receipts"
+  },
+  "repairDecision": {
+    "allowedChange": "benchmark harness defect only",
+    "plannedFix": "Replace the non-portable grep tab escape with a POSIX character class and add a regression assertion.",
+    "prohibited": [
+      "No GovernSeed production feature change",
+      "No task facts or thresholds change",
+      "No Pilot, scoring, credential, Codex, or provider execution",
+      "Do not rerun run 30730202749"
+    ],
+    "repairBudget": {
+      "used": 1,
+      "maximum": 4,
+      "resetForV7": true
+    }
+  },
+  "claimBoundary": "This is a preserved failed G1 runtime-image qualification attempt. It does not establish runtime-image readiness, dependency-cache readiness, offline smoke, G1 acceptance, Pilot, scoring, or any external OSS task outcome."
+}

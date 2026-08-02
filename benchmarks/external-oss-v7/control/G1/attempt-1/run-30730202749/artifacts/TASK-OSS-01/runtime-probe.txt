@@ -1,0 +1,9 @@
+os=debian-12
+architecture=x86_64
+node=v26.3.0
+python=
+libmagicLibraryObserved=true
+libmagicLibraryPath=/usr/lib/x86_64-linux-gnu/libmagic.so.1
+libmagicDatabaseObserved=true
+libmagicDatabasePath=/usr/share/misc/magic.mgc
+ldconfigLibmagicObserved=true
