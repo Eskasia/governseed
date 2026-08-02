@@ -1,0 +1,47 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "gate": "G1",
+  "repairCycle": 3,
+  "executionLayer": "primary-fallback",
+  "lunaExecution": "BLOCKED_USAGE_LIMIT",
+  "status": "READY_FOR_INDEPENDENT_REVIEW",
+  "baseCommit": "96796b69ee876df323958d14cc4a7e886643b40b",
+  "failedRunId": 30725214214,
+  "branch": "benchmark/v6-offline-permission-fix-r3",
+  "rootCause": "V6 reconstructed the correct sealed tree and tree SHA-256 but used 2026-08-02T00:00:00Z instead of the immutable V5 2026-08-01T00:00:00Z commit timestamp, producing different sealed commit IDs.",
+  "fix": "Reuse the V5 author and committer timestamp in both V6 seed reconstruction blocks and add a static date-drift regression.",
+  "preserved": [
+    "V6 run 30725214214 failure evidence",
+    "PR #54, #55, and #56 evidence and Sol verdicts",
+    "benchmarks/external-oss-v2/ through benchmarks/external-oss-v5/",
+    ".github/workflows/external-oss-v5-dependency-cache.yml",
+    "task facts, sealed seed identity, hidden oracle, and public criteria"
+  ],
+  "artifactHashes": [
+    {"path":".github/workflows/external-oss-v6-dependency-cache.yml","sha256":"a6f06837bff4b59d35d11656a951ef627a151cf99a4e8ef00a69e51695b42730"},
+    {"path":"benchmarks/external-oss-v6/tests/v6-contract-validation.mjs","sha256":"f7ca306d2b128bb200e1f41bbf4ef6a5d4f29fd74b028b1fd280ca586fed4919"},
+    {"path":"benchmarks/external-oss-v6/tests/v6-artifact-layout-regression.mjs","sha256":"993695502d46aa81d0ba0753f680a78c420d1b9e58e0971fb808f034eb1105c3"},
+    {"path":"benchmarks/external-oss-v6/control/G1/repair-3/run-30725214214-failure.json","sha256":"0d8e35ba26ff0e9cf1d022ae1dcf1f0995ada2339fbe4141441bd84640eb9524"},
+    {"path":"benchmarks/external-oss-v6/control/G1/repair-3/local-validation.json","sha256":"a9bbd68dde61fbfd345c4d91c1af5e4848d7a641c359d69da48769850995acd4"}
+  ],
+  "checks": {
+    "exactSeedReconstruction": "PASS_EXPECTED_COMMIT_TREE_HASH",
+    "seedDateRegression": "PASS",
+    "v6Contract": "PASS",
+    "v6Shell": "PASS",
+    "v6PermissionRegression": "PASS",
+    "v6ArtifactLayoutRegression": "PASS",
+    "npmRunCheck": "PASS",
+    "npmRunValidate": "PASS",
+    "npmRunTestGovernance": "PASS",
+    "npmRunTestPrivacy": "PASS",
+    "npmRunTestExperimental": "PASS",
+    "npmRunCi": "PASS",
+    "lockfile": "NOT_APPLICABLE_NO_LOCKFILE",
+    "v5Immutability": "PASS"
+  },
+  "docker": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+  "runtimeIntegration": "NOT_RUN_LOCALLY",
+  "claimBoundary": "Repair-3 seed-harness evidence and local/static validation only. No G1 runtime acceptance, cache receipt, cache READY, offline smoke, credentials, Codex, hidden oracle, Pilot, scoring, merge, or dispatch claim. Independent Sol review remains required; primary fallback is disclosed because Luna could not execute under the current usage limit."
+}

@@ -1,0 +1,75 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "evidenceClass": "external-observational",
+  "gate": "G1",
+  "repairCycle": 3,
+  "runId": 30725214214,
+  "headSha": "96796b69ee876df323958d14cc4a7e886643b40b",
+  "workflow": "External OSS V6 dependency cache",
+  "event": "workflow_dispatch",
+  "conclusion": "failure",
+  "jobs": {
+    "TASK-OSS-01-seed": {"jobId": 91435500857, "conclusion": "cancelled", "firstFailingStep": "Reconstruct exact inherited seed identity"},
+    "TASK-OSS-03-seed": {"jobId": 91435500877, "conclusion": "failure", "firstFailingStep": "Reconstruct exact inherited seed identity"},
+    "TASK-OSS-09-seed": {"jobId": 91435500889, "conclusion": "cancelled", "firstFailingStep": "Reconstruct exact inherited seed identity"},
+    "prepare-dependency-cache": {"jobId": 91435532607, "conclusion": "skipped"},
+    "diagnose-offline-permissions": {"jobId": 91435532969, "conclusion": "skipped"},
+    "verify-dependency-cache-offline": {"jobId": 91435533018, "conclusion": "skipped"},
+    "aggregate-cache-qualification": {"jobId": 91435532959, "conclusion": "failure", "cause": "no receipts because preparation was skipped"}
+  },
+  "observedFailure": {
+    "code": "SEED_IDENTITY_RECONSTRUCTION_MISMATCH",
+    "classification": "HARNESS_DEFECT",
+    "firstFailingOperation": "test actual sealed commit/tree/hash against inherited values",
+    "runtimePermissionReached": false,
+    "cachePreparationReached": false,
+    "offlineRuntimeReached": false
+  },
+  "independentReproduction": {
+    "method": "fresh public clone/archive/init/commit using the V6 reconstruction commands",
+    "commitDateUsedByV6": "2026-08-02T00:00:00Z",
+    "inheritedV5CommitDate": "2026-08-01T00:00:00Z",
+    "taskResults": [
+      {
+        "taskId": "TASK-OSS-01",
+        "expectedCommit": "15ba6bed78feebe392dfbe13cf0be4065b260af7",
+        "actualCommit": "cc21e7b021154bd4a27d22011bafcb8750251a41",
+        "treeMatch": true,
+        "treeSha256Match": true
+      },
+      {
+        "taskId": "TASK-OSS-03",
+        "expectedCommit": "672d8d324fde3a0d874ee752ab8e1ef4751972bb",
+        "actualCommit": "6631430cce142abd3c891984e0220d4485c3bd2b",
+        "treeMatch": true,
+        "treeSha256Match": true
+      },
+      {
+        "taskId": "TASK-OSS-09",
+        "expectedCommit": "17562a35c7b3ebf87e0c960306af6de39c79248b",
+        "actualCommit": "06b2da2c50fe8d65ce65efece44d5165b6f246f4",
+        "treeMatch": true,
+        "treeSha256Match": true
+      }
+    ],
+    "rootCause": "V6 used a different deterministic commit timestamp from the sealed V5 identity. Content identity was unchanged; commit identity drifted solely because the commit timestamp changed.",
+    "fixBoundary": "Reuse the immutable V5 2026-08-01T00:00:00Z author and committer timestamps; do not change task facts, seeds, overlays, oracle, or public criteria."
+  },
+  "sources": {
+    "workflowRun": "https://github.com/Eskasia/governseed/actions/runs/30725214214",
+    "failedJob": "https://github.com/Eskasia/governseed/actions/runs/30725214214/job/91435500877",
+    "aggregateJob": "https://github.com/Eskasia/governseed/actions/runs/30725214214/job/91435532959",
+    "localReproduction": "Primary worktree exact reconstruction; raw stderr/logs not committed"
+  },
+  "sanitization": {
+    "credentials": false,
+    "secrets": false,
+    "rawEnvironment": false,
+    "externalClones": false,
+    "cacheArchives": false,
+    "dependencyTrees": false,
+    "hiddenOracle": false
+  },
+  "claimBoundary": "Immutable V6 G1 run failure evidence only. This run did not reach cache preparation, Docker, offline permissions, smoke, negative cache tests, or cache READY. It is not a permission runtime result and does not authorize rerunning this run ID."
+}
