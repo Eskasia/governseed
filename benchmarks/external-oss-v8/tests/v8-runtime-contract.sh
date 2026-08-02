@@ -54,10 +54,10 @@ require_mount_alias() {
   fail "$failure"
 }
 
-workspace_options=$(mount_options /workspace /workspace-mount.txt)
-cache_options=$(mount_options /cache /cache-mount.txt)
-home_options=$(mount_options /home/benchmark /home-mount.txt)
-tmp_options=$(mount_options /tmp /tmp-mount.txt)
+workspace_options=$(mount_options /workspace /workspace/workspace-mount.txt)
+cache_options=$(mount_options /cache /workspace/cache-mount.txt)
+home_options=$(mount_options /home/benchmark /workspace/home-mount.txt)
+tmp_options=$(mount_options /tmp /workspace/tmp-mount.txt)
 root_options=$(findmnt -T / -no OPTIONS) || fail ROOT_MOUNT_FLAGS_UNAVAILABLE
 
 require_mount_option "$workspace_options" rw WORKSPACE_MOUNT_NOT_WRITABLE

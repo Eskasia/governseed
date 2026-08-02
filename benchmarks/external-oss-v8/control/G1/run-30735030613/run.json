@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "evidenceClass": "external-observational",
+  "runId": 30735030613,
+  "headSha": "5ee218065fa3eab2aff31e959c1383896ea2c3a9",
+  "workflow": ".github/workflows/external-oss-v8-dependency-cache.yml",
+  "status": "completed",
+  "conclusion": "failure",
+  "startedAt": "2026-08-02T05:57:44Z",
+  "endedAt": "2026-08-02T06:02:41Z",
+  "url": "https://github.com/Eskasia/governseed/actions/runs/30735030613",
+  "failedJobs": [
+    {
+      "taskId": "TASK-OSS-03",
+      "jobId": 91462481240,
+      "step": "Execute workspace mount and binary probes",
+      "exitCode": 1,
+      "artifact": "external-oss-v8-workspace-exec-TASK-OSS-03",
+      "artifactFiles": {
+        "container-id": "0e8905898054ff5ebc7b6a917c602c93c82e355ac809cb948a79ef0f8c359ffd",
+        "container-output": "3dd693bc43524221600fc6a94e6c911542a734f10ca08aa4c351315e3d61bd75"
+      }
+    },
+    {
+      "taskId": "TASK-OSS-01",
+      "jobId": 91462481241,
+      "step": "Execute workspace mount and binary probes",
+      "exitCode": 1,
+      "artifact": "external-oss-v8-workspace-exec-TASK-OSS-01",
+      "artifactFiles": {
+        "container-id": "5cafca3907cecaae934dc68ed3d35a5f76c96e9d1340a1efa1af9741d20e567f",
+        "container-output": "3dd693bc43524221600fc6a94e6c911542a734f10ca08aa4c351315e3d61bd75"
+      }
+    },
+    {
+      "taskId": "TASK-OSS-09",
+      "jobId": 91462481250,
+      "step": "Execute workspace mount and binary probes",
+      "exitCode": 1,
+      "artifact": "external-oss-v8-workspace-exec-TASK-OSS-09",
+      "artifactFiles": {
+        "container-id": "b03335093897957d0393abf01cd68f5069f1eb681d83b790e32ce84693890130",
+        "container-output": "3dd693bc43524221600fc6a94e6c911542a734f10ca08aa4c351315e3d61bd75"
+      }
+    }
+  ],
+  "passedPrerequisiteJobs": {
+    "seedIdentity": 3,
+    "runtimeImage": 3,
+    "dependencyCache": 3
+  },
+  "offlineSmoke": "NOT_RUN",
+  "aggregateQualification": "NOT_RUN",
+  "claimBoundary": "Immutable G1 run failure evidence only; no workspace execution, offline smoke, G1 acceptance, G2, Pilot, scoring, or benchmark outcome claim."
+}

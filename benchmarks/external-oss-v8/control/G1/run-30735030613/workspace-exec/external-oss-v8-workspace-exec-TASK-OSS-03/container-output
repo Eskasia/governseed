@@ -1,0 +1,5 @@
+/harness/v8-runtime-contract.sh: line 35: /workspace-mount.txt: Read-only file system
+/harness/v8-runtime-contract.sh: line 35: /cache-mount.txt: Read-only file system
+/harness/v8-runtime-contract.sh: line 35: /home-mount.txt: Read-only file system
+/harness/v8-runtime-contract.sh: line 35: /tmp-mount.txt: Read-only file system
+WORKSPACE_MOUNT_NOT_WRITABLE

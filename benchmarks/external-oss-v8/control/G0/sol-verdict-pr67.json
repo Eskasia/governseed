@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "evidenceClass": "external-observational",
+  "checkedPR": 67,
+  "checkedCommit": "570a9c90fa70e6baa7512e042b882a5885445215",
+  "verdict": "ACCEPT",
+  "mergeAuthorized": true,
+  "dispatchAuthorized": true,
+  "checks": {
+    "run": 30734900533,
+    "headSha": "570a9c90fa70e6baa7512e042b882a5885445215",
+    "ubuntu": "PASS",
+    "macOS": "PASS",
+    "windows": "PASS",
+    "mergeState": "CLEAN",
+    "remoteSourceHash": "PASS: 88dc1cac64226ab71c19b61f5de5ac6ddea3d3f17a39958fdc8d98dd0b456f62"
+  },
+  "blockingFindings": [],
+  "nonBlockingFindings": [
+    "Inherited and verification records are checked in separate loops rather than explicitly joined by path, locator, and digest.",
+    "Local validation logs contain absolute local paths but no credentials.",
+    "Docker/G1 execution remains pending."
+  ],
+  "claimBoundary": "PR #67 code and containment review only. No V8 G1 PASS, Pilot, scoring, or benchmark outcome claim."
+}
