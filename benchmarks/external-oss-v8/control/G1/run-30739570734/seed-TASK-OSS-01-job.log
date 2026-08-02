@@ -1,0 +1,238 @@
+﻿2026-08-02T08:20:06.7518659Z Current runner version: '2.336.0'
+2026-08-02T08:20:06.7544446Z ##[group]Runner Image Provisioner
+2026-08-02T08:20:06.7545322Z Hosted Compute Agent
+2026-08-02T08:20:06.7545914Z Version: 20260707.563
+2026-08-02T08:20:06.7546621Z Commit: 02667638d2b423fbc733a8e32a88b44996a3ba6e
+2026-08-02T08:20:06.7547398Z Build Date: 2026-07-07T19:33:50Z
+2026-08-02T08:20:06.7548078Z Worker ID: {beda46ae-a8fe-412a-98ca-cd70b3d82cdf}
+2026-08-02T08:20:06.7548931Z Azure Region: northcentralus
+2026-08-02T08:20:06.7549561Z ##[endgroup]
+2026-08-02T08:20:06.7550998Z ##[group]Operating System
+2026-08-02T08:20:06.7551699Z Ubuntu
+2026-08-02T08:20:06.7552237Z 24.04.4
+2026-08-02T08:20:06.7553045Z LTS
+2026-08-02T08:20:06.7553588Z ##[endgroup]
+2026-08-02T08:20:06.7554144Z ##[group]Runner Image
+2026-08-02T08:20:06.7554876Z Image: ubuntu-24.04
+2026-08-02T08:20:06.7555456Z Version: 20260720.247.2
+2026-08-02T08:20:06.7556818Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260720.247/images/ubuntu/Ubuntu2404-Readme.md
+2026-08-02T08:20:06.7558377Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260720.247
+2026-08-02T08:20:06.7559444Z ##[endgroup]
+2026-08-02T08:20:06.7560617Z ##[group]GITHUB_TOKEN Permissions
+2026-08-02T08:20:06.7562736Z Actions: read
+2026-08-02T08:20:06.7563609Z Contents: read
+2026-08-02T08:20:06.7564661Z Metadata: read
+2026-08-02T08:20:06.7565260Z ##[endgroup]
+2026-08-02T08:20:06.7567388Z Secret source: Actions
+2026-08-02T08:20:06.7568743Z Prepare workflow directory
+2026-08-02T08:20:06.8095217Z Prepare all required actions
+2026-08-02T08:20:06.8164129Z Getting action download info
+2026-08-02T08:20:07.0283338Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-08-02T08:20:07.3631698Z Download action repository 'actions/download-artifact@v4' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+2026-08-02T08:20:07.6801790Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-08-02T08:20:07.8982507Z Complete job name: Qualify V8 inherited seed identity (TASK-OSS-01)
+2026-08-02T08:20:07.9762524Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-02T08:20:07.9771512Z ##[group]Run actions/checkout@v4
+2026-08-02T08:20:07.9772265Z with:
+2026-08-02T08:20:07.9772722Z   fetch-depth: 1
+2026-08-02T08:20:07.9773430Z   repository: Eskasia/governseed
+2026-08-02T08:20:07.9777728Z   token: ***
+2026-08-02T08:20:07.9778248Z   ssh-strict: true
+2026-08-02T08:20:07.9778723Z   ssh-user: git
+2026-08-02T08:20:07.9779199Z   persist-credentials: true
+2026-08-02T08:20:07.9779717Z   clean: true
+2026-08-02T08:20:07.9780192Z   sparse-checkout-cone-mode: true
+2026-08-02T08:20:07.9780743Z   fetch-tags: false
+2026-08-02T08:20:07.9781239Z   show-progress: true
+2026-08-02T08:20:07.9781760Z   lfs: false
+2026-08-02T08:20:07.9782235Z   submodules: false
+2026-08-02T08:20:07.9782721Z   set-safe-directory: true
+2026-08-02T08:20:07.9783391Z   allow-unsafe-pr-checkout: false
+2026-08-02T08:20:07.9784170Z env:
+2026-08-02T08:20:07.9784630Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T08:20:07.9785243Z   EVIDENCE_CLASS: external-observational
+2026-08-02T08:20:07.9785839Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T08:20:07.9786360Z ##[endgroup]
+2026-08-02T08:20:08.0821102Z Syncing repository: Eskasia/governseed
+2026-08-02T08:20:08.0824181Z ##[group]Getting Git version info
+2026-08-02T08:20:08.0825472Z Working directory is '/home/runner/work/governseed/governseed'
+2026-08-02T08:20:08.0827269Z [command]/usr/bin/git version
+2026-08-02T08:20:08.0886079Z git version 2.54.0
+2026-08-02T08:20:08.0907104Z ##[endgroup]
+2026-08-02T08:20:08.0921508Z Temporarily overriding HOME='/home/runner/work/_temp/429f6fb0-3f02-4210-a829-951ec9dff64c' before making global git config changes
+2026-08-02T08:20:08.0924737Z Adding repository directory to the temporary git global config as a safe directory
+2026-08-02T08:20:08.0927077Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/governseed/governseed
+2026-08-02T08:20:08.0983278Z Deleting the contents of '/home/runner/work/governseed/governseed'
+2026-08-02T08:20:08.0987138Z ##[group]Initializing the repository
+2026-08-02T08:20:08.0991223Z [command]/usr/bin/git init /home/runner/work/governseed/governseed
+2026-08-02T08:20:08.1073814Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-08-02T08:20:08.1076147Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-08-02T08:20:08.1078022Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-08-02T08:20:08.1079420Z hint: call:
+2026-08-02T08:20:08.1080372Z hint:
+2026-08-02T08:20:08.1081332Z hint: 	git config --global init.defaultBranch <name>
+2026-08-02T08:20:08.1082413Z hint:
+2026-08-02T08:20:08.1083666Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-08-02T08:20:08.1085089Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-08-02T08:20:08.1086292Z hint:
+2026-08-02T08:20:08.1087019Z hint: 	git branch -m <name>
+2026-08-02T08:20:08.1087835Z hint:
+2026-08-02T08:20:08.1088914Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-08-02T08:20:08.1090505Z Initialized empty Git repository in /home/runner/work/governseed/governseed/.git/
+2026-08-02T08:20:08.1093563Z [command]/usr/bin/git remote add origin https://github.com/Eskasia/governseed
+2026-08-02T08:20:08.1137028Z ##[endgroup]
+2026-08-02T08:20:08.1138321Z ##[group]Disabling automatic garbage collection
+2026-08-02T08:20:08.1141124Z [command]/usr/bin/git config --local gc.auto 0
+2026-08-02T08:20:08.1175404Z ##[endgroup]
+2026-08-02T08:20:08.1176192Z ##[group]Setting up auth
+2026-08-02T08:20:08.1184177Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-08-02T08:20:08.1222585Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-08-02T08:20:08.1562989Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-08-02T08:20:08.1612564Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-08-02T08:20:08.1875787Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-08-02T08:20:08.1917201Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-08-02T08:20:08.2191263Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-08-02T08:20:08.2233554Z ##[endgroup]
+2026-08-02T08:20:08.2234498Z ##[group]Fetching the repository
+2026-08-02T08:20:08.2243247Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +38a19c8169ba16879b6fca1132f3bc0f5b6b3e85:refs/remotes/origin/main
+2026-08-02T08:20:10.8896223Z From https://github.com/Eskasia/governseed
+2026-08-02T08:20:10.8897152Z  * [new ref]         38a19c8169ba16879b6fca1132f3bc0f5b6b3e85 -> origin/main
+2026-08-02T08:20:10.8931735Z ##[endgroup]
+2026-08-02T08:20:10.8932473Z ##[group]Determining the checkout info
+2026-08-02T08:20:10.8935254Z ##[endgroup]
+2026-08-02T08:20:10.8941542Z [command]/usr/bin/git sparse-checkout disable
+2026-08-02T08:20:10.8991647Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-08-02T08:20:10.9025836Z ##[group]Checking out the ref
+2026-08-02T08:20:10.9030823Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-08-02T08:20:11.1469518Z Switched to a new branch 'main'
+2026-08-02T08:20:11.1470373Z branch 'main' set up to track 'origin/main'.
+2026-08-02T08:20:11.1523223Z ##[endgroup]
+2026-08-02T08:20:11.1581304Z [command]/usr/bin/git log -1 --format=%H
+2026-08-02T08:20:11.1609031Z 38a19c8169ba16879b6fca1132f3bc0f5b6b3e85
+2026-08-02T08:20:11.1837176Z ##[group]Run node benchmarks/external-oss-v8/tests/v8-contract-validation.mjs
+2026-08-02T08:20:11.1837870Z [36;1mnode benchmarks/external-oss-v8/tests/v8-contract-validation.mjs[0m
+2026-08-02T08:20:11.1838398Z [36;1mnode benchmarks/external-oss-v8/tests/v8-schema-validation.mjs[0m
+2026-08-02T08:20:11.1838911Z [36;1mnode benchmarks/external-oss-v8/tests/v8-runtime-shell-validation.mjs[0m
+2026-08-02T08:20:11.1892465Z shell: /usr/bin/bash -e {0}
+2026-08-02T08:20:11.1893144Z env:
+2026-08-02T08:20:11.1893376Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T08:20:11.1893676Z   EVIDENCE_CLASS: external-observational
+2026-08-02T08:20:11.1893961Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T08:20:11.1894242Z ##[endgroup]
+2026-08-02T08:20:11.3405189Z {"schemaVersion":1,"benchmarkId":"GS-OSS-2026-08-02-V8","status":"PASS","checks":["V8 mount contract","runtime probes","negative cache boundary","V7 immutability boundary"]}
+2026-08-02T08:20:11.3762225Z {"schemaVersion":1,"status":"PASS","schema":"benchmarks/external-oss-v8/schemas/cache-receipt.schema.json"}
+2026-08-02T08:20:11.4214734Z {"schemaVersion":1,"status":"PASS","files":["benchmarks/external-oss-v8/minimal-noexec-reproducer.sh","benchmarks/external-oss-v8/tests/v8-container-wrapper.sh","benchmarks/external-oss-v8/tests/v8-runtime-contract.sh","benchmarks/external-oss-v8/tests/v8-offline-smoke.sh"]}
+2026-08-02T08:20:11.4416326Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-02T08:20:11.4419050Z ##[group]Run actions/download-artifact@v4
+2026-08-02T08:20:11.4419547Z with:
+2026-08-02T08:20:11.4419973Z   name: external-oss-v7-seed-identity-TASK-OSS-01
+2026-08-02T08:20:11.4420476Z   run-id: 30732978684
+2026-08-02T08:20:11.4425742Z   github-token: ***
+2026-08-02T08:20:11.4426082Z   repository: Eskasia/governseed
+2026-08-02T08:20:11.4426392Z   path: /home/runner/work/_temp/v7-seed/TASK-OSS-01
+2026-08-02T08:20:11.4426708Z   merge-multiple: false
+2026-08-02T08:20:11.4426930Z env:
+2026-08-02T08:20:11.4427140Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T08:20:11.4427422Z   EVIDENCE_CLASS: external-observational
+2026-08-02T08:20:11.4427739Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T08:20:11.4427985Z ##[endgroup]
+2026-08-02T08:20:11.5917103Z Downloading single artifact
+2026-08-02T08:20:11.5990520Z (node:2428) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-08-02T08:20:11.5991656Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-08-02T08:20:11.6186972Z (node:2428) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-08-02T08:20:11.7900008Z Preparing to download the following artifacts:
+2026-08-02T08:20:11.7900999Z - external-oss-v7-seed-identity-TASK-OSS-01 (ID: 8828570956, Size: 396, Expected Digest: sha256:673aa26e595910489ca3f9104d4428ce394f29dd599662f17cc90e7576f5ebbf)
+2026-08-02T08:20:11.7952605Z Downloading artifact '8828570956' from 'Eskasia/governseed'
+2026-08-02T08:20:11.9236564Z Redirecting to blob download url: https://productionresultssa7.blob.core.windows.net/actions-results/894d70b7-a56f-4aa7-8975-13e0ab562337/workflow-job-run-38641842-6315-5e08-bf41-1003a5f2116e/artifacts/cb4b1d2b739fb3c1ebc9975e01d9784744510c915756e4224890c37011d31b8d.zip
+2026-08-02T08:20:11.9237879Z Starting download of artifact to: /home/runner/work/_temp/v7-seed/TASK-OSS-01
+2026-08-02T08:20:12.0302444Z (node:2428) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-08-02T08:20:12.0330773Z SHA256 digest of downloaded artifact is 673aa26e595910489ca3f9104d4428ce394f29dd599662f17cc90e7576f5ebbf
+2026-08-02T08:20:12.0331370Z Artifact download completed successfully.
+2026-08-02T08:20:12.0331678Z Total of 1 artifact(s) downloaded
+2026-08-02T08:20:12.0337643Z Download artifact has finished successfully
+2026-08-02T08:20:12.0450314Z ##[group]Run set -euo pipefail
+2026-08-02T08:20:12.0450659Z [36;1mset -euo pipefail[0m
+2026-08-02T08:20:12.0450992Z [36;1msource="$RUNNER_TEMP/v7-seed/$TASK_ID/seed-identity.json"[0m
+2026-08-02T08:20:12.0451500Z [36;1mcontract="benchmarks/external-oss-v5/tasks/$TASK_ID/task-seed-identity.json"[0m
+2026-08-02T08:20:12.0451943Z [36;1mtest -f "$source"[0m
+2026-08-02T08:20:12.0452256Z [36;1mtest "$(node --input-type=module - "$source" <<'NODE'[0m
+2026-08-02T08:20:12.0452639Z [36;1mimport { readFileSync } from 'node:fs';[0m
+2026-08-02T08:20:12.0453387Z [36;1mconst x = JSON.parse(readFileSync(process.argv[2], 'utf8'));[0m
+2026-08-02T08:20:12.0454143Z [36;1mif (x.benchmarkId !== 'GS-OSS-2026-08-02-V7' || x.evidenceClass !== 'external-observational') process.exit(1);[0m
+2026-08-02T08:20:12.0454675Z [36;1mconsole.log(x.sealedSeedCommit);[0m
+2026-08-02T08:20:12.0454966Z [36;1mNODE[0m
+2026-08-02T08:20:12.0455284Z [36;1m)" = "$(node --input-type=module - "$contract" <<'NODE'[0m
+2026-08-02T08:20:12.0455648Z [36;1mimport { readFileSync } from 'node:fs';[0m
+2026-08-02T08:20:12.0456106Z [36;1mconsole.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).sealedSeedCommit);[0m
+2026-08-02T08:20:12.0456521Z [36;1mNODE[0m
+2026-08-02T08:20:12.0456705Z [36;1m)"[0m
+2026-08-02T08:20:12.0456962Z [36;1mtest "$(node --input-type=module - "$source" <<'NODE'[0m
+2026-08-02T08:20:12.0457323Z [36;1mimport { readFileSync } from 'node:fs';[0m
+2026-08-02T08:20:12.0457705Z [36;1mconst x = JSON.parse(readFileSync(process.argv[2], 'utf8'));[0m
+2026-08-02T08:20:12.0458090Z [36;1mconsole.log(x.sealedSeedGitTree);[0m
+2026-08-02T08:20:12.0458361Z [36;1mNODE[0m
+2026-08-02T08:20:12.0458615Z [36;1m)" = "$(node --input-type=module - "$contract" <<'NODE'[0m
+2026-08-02T08:20:12.0458961Z [36;1mimport { readFileSync } from 'node:fs';[0m
+2026-08-02T08:20:12.0459411Z [36;1mconsole.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).sealedSeedGitTree);[0m
+2026-08-02T08:20:12.0459846Z [36;1mNODE[0m
+2026-08-02T08:20:12.0460044Z [36;1m)"[0m
+2026-08-02T08:20:12.0460285Z [36;1mmkdir -p "$RUNNER_TEMP/v8-seed/$TASK_ID"[0m
+2026-08-02T08:20:12.0460676Z [36;1msource_sha=$(sha256sum "$source" | awk '{print $1}')[0m
+2026-08-02T08:20:12.0461338Z [36;1mSOURCE_SHA="$source_sha" TASK_ID="$TASK_ID" node --input-type=module - "$RUNNER_TEMP/v8-seed/$TASK_ID/seed-identity.json" "$source" <<'NODE'[0m
+2026-08-02T08:20:12.0461988Z [36;1mimport { readFileSync, writeFileSync } from 'node:fs';[0m
+2026-08-02T08:20:12.0462377Z [36;1mconst [out, source] = process.argv.slice(2);[0m
+2026-08-02T08:20:12.0462744Z [36;1mconst x = JSON.parse(readFileSync(source, 'utf8'));[0m
+2026-08-02T08:20:12.0464800Z [36;1mwriteFileSync(out, JSON.stringify({ schemaVersion: 1, benchmarkId: process.env.BENCHMARK_ID, evidenceClass: process.env.EVIDENCE_CLASS, taskId: process.env.TASK_ID, sourceRunId: Number(process.env.V7_SOURCE_RUN_ID), sourceArtifact: `external-oss-v7-seed-identity-${process.env.TASK_ID}`, sourceReceiptSha256: process.env.SOURCE_SHA, sealedSeedCommit: x.sealedSeedCommit, sealedSeedGitTree: x.sealedSeedGitTree, sealedSeedTreeSha256: x.sealedSeedTreeSha256 }, null, 2) + '\n');[0m
+2026-08-02T08:20:12.0466513Z [36;1mNODE[0m
+2026-08-02T08:20:12.0515850Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T08:20:12.0516216Z env:
+2026-08-02T08:20:12.0516426Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T08:20:12.0516712Z   EVIDENCE_CLASS: external-observational
+2026-08-02T08:20:12.0517172Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T08:20:12.0517421Z   TASK_ID: TASK-OSS-01
+2026-08-02T08:20:12.0517635Z ##[endgroup]
+2026-08-02T08:20:12.2298805Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-02T08:20:12.2300065Z ##[group]Run actions/upload-artifact@v4
+2026-08-02T08:20:12.2300342Z with:
+2026-08-02T08:20:12.2300599Z   name: external-oss-v8-seed-identity-TASK-OSS-01
+2026-08-02T08:20:12.2301016Z   path: /home/runner/work/_temp/v8-seed/TASK-OSS-01/seed-identity.json
+2026-08-02T08:20:12.2301390Z   if-no-files-found: ignore
+2026-08-02T08:20:12.2301632Z   compression-level: 6
+2026-08-02T08:20:12.2301850Z   overwrite: false
+2026-08-02T08:20:12.2302070Z   include-hidden-files: false
+2026-08-02T08:20:12.2302325Z env:
+2026-08-02T08:20:12.2302525Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T08:20:12.2302981Z   EVIDENCE_CLASS: external-observational
+2026-08-02T08:20:12.2303288Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T08:20:12.2303526Z ##[endgroup]
+2026-08-02T08:20:12.4002998Z (node:2485) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-08-02T08:20:12.4004305Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-08-02T08:20:12.4080049Z With the provided path, there will be 1 file uploaded
+2026-08-02T08:20:12.4080670Z Artifact name is valid!
+2026-08-02T08:20:12.4080932Z Root directory input is valid!
+2026-08-02T08:20:12.5804311Z Beginning upload of artifact content to blob storage
+2026-08-02T08:20:12.5979294Z (node:2485) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-08-02T08:20:12.7028868Z Uploaded bytes 488
+2026-08-02T08:20:12.7396985Z Finished uploading artifact content to blob storage!
+2026-08-02T08:20:12.7398159Z SHA256 digest of uploaded artifact zip is baffe361f1b8d9ffef905a530a5dcbbae467a4fa3ea46fcd0be630e70f095017
+2026-08-02T08:20:12.7400384Z Finalizing artifact upload
+2026-08-02T08:20:12.9025484Z Artifact external-oss-v8-seed-identity-TASK-OSS-01.zip successfully finalized. Artifact ID 8830806457
+2026-08-02T08:20:12.9026813Z Artifact external-oss-v8-seed-identity-TASK-OSS-01 has been successfully uploaded! Final size is 488 bytes. Artifact ID is 8830806457
+2026-08-02T08:20:12.9034449Z Artifact download URL: https://github.com/Eskasia/governseed/actions/runs/30739570734/artifacts/8830806457
+2026-08-02T08:20:12.9256166Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-02T08:20:12.9257389Z Post job cleanup.
+2026-08-02T08:20:13.0116174Z [command]/usr/bin/git version
+2026-08-02T08:20:13.0157679Z git version 2.54.0
+2026-08-02T08:20:13.0226968Z Temporarily overriding HOME='/home/runner/work/_temp/a10f882c-291c-4f00-9765-bfbebd7a5459' before making global git config changes
+2026-08-02T08:20:13.0228322Z Adding repository directory to the temporary git global config as a safe directory
+2026-08-02T08:20:13.0231957Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/governseed/governseed
+2026-08-02T08:20:13.0275120Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-08-02T08:20:13.0314113Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-08-02T08:20:13.0592256Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-08-02T08:20:13.0620608Z http.https://github.com/.extraheader
+2026-08-02T08:20:13.0632742Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-08-02T08:20:13.0667982Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-08-02T08:20:13.0930393Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-08-02T08:20:13.0970060Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-08-02T08:20:13.1377701Z Cleaning up orphan processes
+2026-08-02T08:20:13.1696260Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/download-artifact@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

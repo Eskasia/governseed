@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "evidenceClass": "external-observational",
+  "status": "READY",
+  "dependencyCaches": "READY",
+  "cachesReady": "3/3",
+  "workspaceExec": "3/3",
+  "offlineSmoke": "3/3 PASS",
+  "negativeCacheTests": "3/3 BLOCKED with DEPENDENCY_CACHE_INCOMPLETE exit 42",
+  "claimBoundary": "V8 measured runtime-image inheritance, workspace mount execution, and dependency-cache qualification only; no credentials, Codex, formal lock, Pilot, scoring, or benchmark acceptance claim."
+}

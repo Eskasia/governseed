@@ -1,0 +1,22 @@
+PASS
+/workspace/.venv/lib/python3.14/site-packages/coverage/control.py:958: CoverageWarning: No data was collected. (no-data-collected); see https://coverage.readthedocs.io/en/7.13.2/messages.html#warning-no-data-collected
+  self._warn("No data was collected.", slug="no-data-collected")
+/workspace/.venv/lib/python3.14/site-packages/coverage/control.py:958: CoverageWarning: No data was collected. (no-data-collected); see https://coverage.readthedocs.io/en/7.13.2/messages.html#warning-no-data-collected
+  self._warn("No data was collected.", slug="no-data-collected")
+/workspace/.venv/lib/python3.14/site-packages/coverage/control.py:958: CoverageWarning: No data was collected. (no-data-collected); see https://coverage.readthedocs.io/en/7.13.2/messages.html#warning-no-data-collected
+  self._warn("No data was collected.", slug="no-data-collected")
+bringing up nodes...
+bringing up nodes...
+
+....                                                                     [100%]
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.14.6-final-0 ________________
+
+Coverage HTML written to dir htmlcov
+Coverage XML written to file coverage.xml
+============================= slowest 50 durations =============================
+
+(12 durations < 0.5s hidden.)
+4 passed in 12.85s
+PASS
+V8_CONTAINER_READY
