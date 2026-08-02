@@ -375,16 +375,33 @@ jobs:
           test ! -L "$negative_cache/$required_path"
           chmod -R a-w "$negative_cache"
           cp "$input/cache-roots.txt" "$harness/cache-roots.txt"
+          workspace_mount_args=()
+          negative_workspace_mount_root="$root/negative-workspace-mounts"
+          negative_workspace_mount_args=()
+          mkdir -p "$negative_workspace_mount_root"
+          while IFS= read -r relative_root; do
+            test -n "$relative_root"
+            case "$relative_root" in
+              /*|*../*) exit 2 ;;
+            esac
+            test -e "$cache_root/$relative_root"
+            workspace_mount_args+=(--mount "type=bind,src=$cache_root/$relative_root,dst=/workspace/$relative_root,readonly")
+            negative_source="$negative_cache/$relative_root"
+            if ! test -e "$negative_source" && ! test -L "$negative_source"; then
+              negative_source="$negative_workspace_mount_root/$relative_root"
+              mkdir -p "$negative_source"
+            fi
+            negative_workspace_mount_args+=(--mount "type=bind,src=$negative_source,dst=/workspace/$relative_root,readonly")
+          done < "$input/cache-roots.txt"
           cat > "$harness/offline-smoke.sh" <<'BASH'
           #!/usr/bin/env bash
           set -u
           fail() { echo "$1"; exit "${2:-41}"; }
-          cp -R --no-preserve=ownership /seed/. /workspace/ 2>/dev/null || fail OFFLINE_SMOKE_FAILED
+          cp -R --no-preserve=ownership /seed/. /workspace/ 2>/dev/null || fail OFFLINE_SMOKE_FAILED:seed-copy
           while IFS= read -r relative_root; do
-            test -n "$relative_root" || fail OFFLINE_SMOKE_FAILED
+            test -n "$relative_root" || fail OFFLINE_SMOKE_FAILED:cache-root-list
             test -e "/cache/$relative_root" || fail DEPENDENCY_CACHE_INCOMPLETE 42
-            mkdir -p "/workspace/$(dirname "$relative_root")" || fail OFFLINE_SMOKE_FAILED
-            ln -s "/cache/$relative_root" "/workspace/$relative_root" || fail OFFLINE_SMOKE_FAILED
+            test -e "/workspace/$relative_root" || fail OFFLINE_SMOKE_FAILED:workspace-cache-mount
           done < /harness/cache-roots.txt
           test "$(id -u)" = 65532 || fail OFFLINE_PERMISSION_CAUSE_UNKNOWN
           test "$(awk '/^CapEff:/{print $2}' /proc/self/status)" = 0000000000000000 || fail OFFLINE_PERMISSION_CAUSE_UNKNOWN
@@ -404,9 +421,9 @@ jobs:
           test -x "/cache/$2" || fail RUNTIME_BINARY_EXECUTION_DENIED
           if touch /cache/.v7-cache-write-test 2>/dev/null; then fail CACHE_WRITE_ALLOWED; fi
           case "$1" in
-            TASK-OSS-01) cd /workspace/packages/cli 2>/dev/null || fail WORKING_DIRECTORY_DENIED; ./node_modules/.bin/vitest --run src/commands/asset.spec.ts 2>/dev/null || fail OFFLINE_SMOKE_FAILED ;;
-            TASK-OSS-03) cd /workspace 2>/dev/null || fail WORKING_DIRECTORY_DENIED; TEST_BACKEND=1 node --test --test-reporter=spec test/backend-test/test-status-page.js 2>/dev/null || fail OFFLINE_SMOKE_FAILED ;;
-            TASK-OSS-09) cd /workspace 2>/dev/null || fail WORKING_DIRECTORY_DENIED; PAPERLESS_SECRET_KEY=synthetic-test-only-value PAPERLESS_DISABLE_DBHANDLER=true PAPERLESS_CACHE_BACKEND=django.core.cache.backends.locmem.LocMemCache PAPERLESS_CHANNELS_BACKEND=channels.layers.InMemoryChannelLayer /cache/.venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py 2>/dev/null || fail OFFLINE_SMOKE_FAILED ;;
+            TASK-OSS-01) cd /workspace/packages/cli 2>/dev/null || fail WORKING_DIRECTORY_DENIED; ./node_modules/.bin/vitest --run src/commands/asset.spec.ts || fail OFFLINE_SMOKE_FAILED:immich-public-test ;;
+            TASK-OSS-03) cd /workspace 2>/dev/null || fail WORKING_DIRECTORY_DENIED; TEST_BACKEND=1 node --test --test-reporter=spec test/backend-test/test-status-page.js || fail OFFLINE_SMOKE_FAILED:uptime-public-test ;;
+            TASK-OSS-09) cd /workspace 2>/dev/null || fail WORKING_DIRECTORY_DENIED; PAPERLESS_SECRET_KEY=synthetic-test-only-value PAPERLESS_DISABLE_DBHANDLER=true PAPERLESS_CACHE_BACKEND=django.core.cache.backends.locmem.LocMemCache PAPERLESS_CHANNELS_BACKEND=channels.layers.InMemoryChannelLayer /cache/.venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py || fail OFFLINE_SMOKE_FAILED:paperless-public-test ;;
             *) fail OFFLINE_PERMISSION_CAUSE_UNKNOWN ;;
           esac
           echo PASS
@@ -424,6 +441,7 @@ jobs:
             --mount "type=bind,src=$harness,dst=/harness,readonly" \
             --mount "type=tmpfs,dst=/home/benchmark,tmpfs-mode=0777" \
             --mount "type=tmpfs,dst=/tmp,tmpfs-mode=0777" \
+            "${workspace_mount_args[@]}" \
             "$runtime_tag" /harness/offline-smoke.sh "$TASK_ID" "$required_path" > "$out/positive-container-id"
           positive_id=$(tail -n 1 "$out/positive-container-id")
           test "$(docker inspect "$positive_id" --format '{{.HostConfig.NetworkMode}}')" = none
@@ -438,6 +456,12 @@ jobs:
             actual_rw=$(docker inspect "$positive_id" --format '{{range .Mounts}}{{if eq .Destination "'"$destination"'"}}{{.RW}}{{end}}{{end}}')
             test "$actual_rw" = "$expected_rw"
           done
+          while IFS= read -r relative_root; do
+            count=$(docker inspect "$positive_id" --format '{{range .Mounts}}{{println .Destination}}{{end}}' | grep -Fxc "/workspace/$relative_root")
+            test "$count" -eq 1
+            actual_rw=$(docker inspect "$positive_id" --format '{{range .Mounts}}{{if eq .Destination "/workspace/'"$relative_root"'"}}{{.RW}}{{end}}{{end}}')
+            test "$actual_rw" = false
+          done < "$harness/cache-roots.txt"
           failure_stage=positive-smoke
           set +e
           docker start -a "$positive_id" > "$out/positive-output" 2>&1
@@ -455,6 +479,7 @@ jobs:
             --mount "type=bind,src=$harness,dst=/harness,readonly" \
             --mount "type=tmpfs,dst=/home/benchmark,tmpfs-mode=0777" \
             --mount "type=tmpfs,dst=/tmp,tmpfs-mode=0777" \
+            "${negative_workspace_mount_args[@]}" \
             "$runtime_tag" /harness/offline-smoke.sh "$TASK_ID" "$required_path" > "$out/negative-container-id"
           negative_id=$(tail -n 1 "$out/negative-container-id")
           failure_stage=negative-smoke

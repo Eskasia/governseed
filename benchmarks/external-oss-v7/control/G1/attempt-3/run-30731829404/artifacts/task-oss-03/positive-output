@@ -1,0 +1,22 @@
+▶ StatusPage
+  ▶ getStatusDescription()
+    ✔ returns 'No Services' when status is -1 (0.842954ms)
+    ✔ returns 'All Systems Operational' when all services are up (0.226445ms)
+    ✔ returns 'Partially Degraded Service' when some services are down (0.181301ms)
+    ✔ returns 'Degraded Service' when all services are down (0.210406ms)
+    ✔ returns 'Under maintenance' when status page is in maintenance (0.138791ms)
+    ✔ returns '?' for unknown status values (0.118893ms)
+  ✔ getStatusDescription() (2.790096ms)
+  ▶ renderRSS()
+    ✔ pubDate uses UTC timezone for heartbeat.time without timezone info (2.497596ms)
+  ✔ renderRSS() (2.706609ms)
+✔ StatusPage (6.177826ms)
+ℹ tests 7
+ℹ suites 3
+ℹ pass 7
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1258.694437
+PASS

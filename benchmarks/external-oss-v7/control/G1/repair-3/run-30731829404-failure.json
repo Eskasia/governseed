@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V7",
+  "evidenceClass": "external-observational",
+  "runId": "30731829404",
+  "headSha": "d8179a2f10b0a130cc678300463a09e8884cab74",
+  "workflow": "External OSS V7 dependency cache",
+  "result": "failure",
+  "failureClass": "pending-triage",
+  "repairCycle": 3,
+  "jobs": {
+    "seedIdentity": {
+      "TASK-OSS-01": { "jobId": "91453434182", "conclusion": "success" },
+      "TASK-OSS-03": { "jobId": "91453434196", "conclusion": "success" },
+      "TASK-OSS-09": { "jobId": "91453434351", "conclusion": "success" }
+    },
+    "runtimeImage": {
+      "TASK-OSS-01": { "jobId": "91453469307", "conclusion": "success" },
+      "TASK-OSS-03": { "jobId": "91453469294", "conclusion": "success" },
+      "TASK-OSS-09": { "jobId": "91453469311", "conclusion": "success" }
+    },
+    "cachePreparation": {
+      "TASK-OSS-01": { "jobId": "91453599541", "conclusion": "success" },
+      "TASK-OSS-03": { "jobId": "91453599526", "conclusion": "success" },
+      "TASK-OSS-09": { "jobId": "91453599517", "conclusion": "success" }
+    },
+    "offlineVerification": {
+      "TASK-OSS-01": { "jobId": "91453851349", "conclusion": "failure" },
+      "TASK-OSS-03": { "jobId": "91453851345", "conclusion": "success" },
+      "TASK-OSS-09": { "jobId": "91453851328", "conclusion": "success" }
+    },
+    "aggregate": { "jobId": "91453961630", "conclusion": "failure", "reason": "Immich did not produce a READY receipt" }
+  },
+  "firstFailedStep": "Run permission diagnostics, offline containment, positive smoke, and negative smoke",
+  "firstObservedFailureStage": "positive-smoke",
+  "firstObservedFailureCode": "OFFLINE_SMOKE_FAILED",
+  "firstFailingOperation": null,
+  "observations": [
+    "All three seed identity jobs passed.",
+    "All three digest-locked runtime image jobs passed.",
+    "All three dependency cache preparation jobs passed.",
+    "Uptime Kuma produced a READY receipt: public smoke PASS, negative DEPENDENCY_CACHE_INCOMPLETE exit 42, network none, readonly cache, writable disposable mounts, non-root, and no credentials/Codex/oracle.",
+    "Paperless-ngx produced a READY receipt with libmagic library, database, Python import, and functional smoke all PASS.",
+    "Immich offline verification reached positive-smoke and exited 1; diagnostics.json reports OFFLINE_SMOKE_FAILED at stage positive-smoke.",
+    "Immich uploaded only diagnostics.json, positive-container-id, and positive-output; no negative test or READY receipt was produced.",
+    "Immich positive-output contains only the sanitized structured code OFFLINE_SMOKE_FAILED; the first failing operation inside the container is not yet distinguished.",
+    "No 3/3 offline smoke, 3/3 dependency-cache READY, or G1 acceptance claim is made by this evidence."
+  ],
+  "artifacts": {
+    "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30731829404",
+    "failedJobUrl": "https://github.com/Eskasia/governseed/actions/runs/30731829404/job/91453851349",
+    "downloadedFiles": {
+      "immich/diagnostics.json": "ee0a0ec965f17ed6c6a065fda24f76a66e63c8cf2054d3baf5728745acfe6177",
+      "immich/positive-container-id": "e22b0fd285f34a78b600576df28158453f6c7615a39358e5f00d36211f241ada",
+      "immich/positive-output": "8d7e89854e1cbb8ad3fd9f2d88460ff91609e87b964eef001aa0ae580f76242b",
+      "uptime/cache-receipt.json": "ee5dcd06746942c8f3c1d3f657795fe2c446286b75a11615373ce588c6fab0bd",
+      "paperless/cache-receipt.json": "ccb7592fd2bbb086f0dd8ec7f13566ed6987534a2252544e1966a1c9eca6ba7a"
+    }
+  },
+  "claimBoundary": "Immutable failure record only; no runtime-image, offline-smoke, dependency-cache, G1 acceptance, Pilot, scoring, credential, Codex, provider, or task-result claim."
+}
