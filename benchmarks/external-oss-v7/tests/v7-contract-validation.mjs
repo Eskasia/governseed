@@ -91,7 +91,13 @@ require(dependencyWorkflow.includes('manifest.sha256'), 'manifest hash');
 require(dependencyWorkflow.includes('remote set-url --push origin no_push://disabled'), 'external push disabled');
 require(dependencyWorkflow.match(/GIT_AUTHOR_DATE=2026-08-01T00:00:00Z/g)?.length === 2, 'fixed seed author date');
 require(dependencyWorkflow.match(/GIT_COMMITTER_DATE=2026-08-01T00:00:00Z/g)?.length === 2, 'fixed seed committer date');
-require(dependencyWorkflow.includes('setfacl'), 'workspace uses bounded UID-specific ACL rather than chmod 777');
+const disposableWritableMounts = [
+  'type=tmpfs,dst=/workspace,tmpfs-mode=0777',
+  'type=tmpfs,dst=/home/benchmark,tmpfs-mode=0777',
+  'type=tmpfs,dst=/tmp,tmpfs-mode=0777',
+].every((literal) => dependencyWorkflow.includes(literal));
+require(disposableWritableMounts, 'offline writable paths use disposable tmpfs mounts');
+require(!dependencyWorkflow.includes('setfacl'), 'offline workflow does not depend on an unqualified host ACL utility');
 require(!dependencyWorkflow.includes('sudo'), 'V7 workflow does not use sudo');
 require(!dependencyWorkflow.includes('chmod 777'), 'V7 workflow does not use chmod 777');
 require(!dependencyWorkflow.includes('--user 0'), 'offline workflow contains no root container');
