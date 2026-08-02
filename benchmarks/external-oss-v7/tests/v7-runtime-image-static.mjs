@@ -12,8 +12,12 @@ require(workflow.includes('BASE_IMAGE'), 'runtime build receives an explicit bas
 require(!workflow.includes('if: inputs.task_id'), 'runtime image dispatch does not filter matrix before matrix evaluation');
 const safeDpkgInventory = String.raw`dpkg-query -W -f="\${binary:Package}\t\${Version}\n" | sort -u`;
 const unsafeDpkgInventory = 'dpkg-query -W -f="${binary:Package}\\t${Version}\\n" | sort -u';
+const safeLibmagicGrep = String.raw`grep -E '^(libmagic1|libmagic-mgc)(:amd64)?[[:space:]]'`;
+const unsafeLibmagicGrep = String.raw`grep -E '^(libmagic1|libmagic-mgc)(:amd64)?\t'`;
 require(workflow.includes(safeDpkgInventory), 'dpkg inventory protects format placeholders from shell expansion');
 require(!workflow.includes(unsafeDpkgInventory), 'dpkg inventory does not expose format placeholders to shell expansion');
+require(workflow.includes(safeLibmagicGrep), 'libmagic package audit uses a portable whitespace matcher');
+require(!workflow.includes(unsafeLibmagicGrep), 'libmagic package audit does not use a non-portable tab escape');
 require(workflow.includes('base_digest'), 'runtime receipt records base digest');
 require(workflow.includes('imageArchiveSha256'), 'runtime receipt records archive hash');
 require(workflow.includes('imageId'), 'runtime receipt records image ID');
