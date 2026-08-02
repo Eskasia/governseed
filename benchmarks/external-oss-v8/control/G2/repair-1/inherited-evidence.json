@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "repair-1",
+  "evidenceClass": "external-observational",
+  "parent": {
+    "pullRequest": 73,
+    "headCommit": "dd287a27b8ace8719f3af5727487bd4028cd9189",
+    "mergeCommit": "6f23e47c142cc9ba891976703fe01e96e9f74c44",
+    "preRepairCommit": "46e7a1a16c0b28614ed4e73147f93ffad2330e23"
+  },
+  "immutableEvidence": [
+    {
+      "path": "benchmarks/external-oss-v8/control/G2/credential-transport-findings.json",
+      "sha256": "45f0bb14b8e7f4d5723db0309768dc3364e63e9dd2f67ce962a2e756c433228a"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/control/G2/gate.json",
+      "sha256": "2871be8515e1420bf57063187bbd82f1019e24bf893a46ebc291947e8d4d6059"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/control/G2/inherited-evidence.json",
+      "sha256": "b0f7b00703afb3bc72557dfed08e4c9a0d02daa2d8d498eabfe202b5621f6f3c"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/control/G2/luna-handoff.json",
+      "sha256": "2c04305c0071460400119f7489975517469f305a55c0f2857f4cd3c4afc29194"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/control/G2/report.md",
+      "sha256": "c2cc23eb5e696d59a454f82f007789b685b7ec237b30a0e054bc5264d15ba751"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/control/G2/sol-review-evidence.json",
+      "sha256": "6328c41945d21e8e451c3e531fee152e5690fe77abdf2c64ae98831293a7e915"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/control/G2/sol-verdict.json",
+      "sha256": "ea9aa6caa2c0d7ec43d22f12d24f9651f8f725e96d0ab1bc448e6ffd9832f7ac"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/credential-transport/design.json",
+      "sha256": "f008088d354588319706156db7f06a01c87c0c85678b7b48441fdc3ea59e4395"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/credential-transport/review-packet.json",
+      "sha256": "7f4edc9344f980ecaaaa0256c4e81bea668b79cb3edfe047d895bbf480e9f758"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/credential-transport/request.schema.json",
+      "sha256": "b78c2268ce8df35b88244aafeb58e56f4025732d102b8c010c3c08e81f322249"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/credential-transport/response.schema.json",
+      "sha256": "40c068eadbc39a473ff91459adbf585db79b64a4e1e41cae7265b7086324a4b6"
+    }
+  ],
+  "inheritedFindings": {
+    "oldVerdict": "REJECT",
+    "oldSummary": {
+      "total": 22,
+      "pass": 9,
+      "blocked": 13,
+      "notRun": 0
+    },
+    "blockedCheckIds": [
+      "credential-not-in-container-environment",
+      "arbitrary-endpoint-rejects",
+      "model-override-rejects",
+      "unknown-header-rejects",
+      "authorization-host-injected",
+      "unknown-json-field-rejects",
+      "run-id-mismatch-rejects",
+      "benchmark-id-mismatch-rejects",
+      "socket-owner-and-mode-correct",
+      "proxy-crash-fails-closed",
+      "client-disconnect-cleans-up",
+      "timeout-cleans-up",
+      "facade-limit-drift"
+    ],
+    "claimBoundary": "The inherited packet records offline synthetic observations only. It does not authorize provider access, runtime identity, task execution, Pilot, scoring, or benchmark acceptance."
+  },
+  "preservationRule": "The parent G2 evidence files and their hashes are historical evidence and must not be rewritten by repair-1."
+}

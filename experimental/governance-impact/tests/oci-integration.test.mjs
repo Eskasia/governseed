@@ -445,9 +445,15 @@ function noNetworkProxy(root) {
     async getContainerEnvironment(handle) {
       assert.equal(open.has(handle), true);
       return Object.freeze({
-        OPENAI_API_KEY: `fixture-${arms.get(handle)}`,
-        OPENAI_BASE_URL: 'http://127.0.0.1:43127/v1',
+        GOVERNSEED_PROXY_SOCKET: '/run/governance/proxy.sock',
+        GOVERNSEED_BENCHMARK_ID: 'GS-OSS-2026-08-02-V8',
+        GOVERNSEED_RUN_ID: `fixture-run-${arms.get(handle)}`,
+        GOVERNSEED_TASK_ID: 'fixture-task',
       });
+    },
+    async getSocketPath(handle) {
+      assert.equal(open.has(handle), true);
+      return path.join(root, `fixture-${arms.get(handle)}.sock`);
     },
     async attachAttempt(handle, input) {
       assert.equal(open.has(handle), true);
@@ -569,12 +575,15 @@ async function makeLiveHarness(options = {}) {
       return supervisor.openArm({
         arm: input.arm ?? 'baseline',
         attemptId: input.attemptId ?? 'd'.repeat(64),
+        benchmarkId: input.benchmarkId ?? 'GS-OSS-2026-08-02-V8',
+        runId: input.runId ?? `fixture-run-${input.arm ?? 'baseline'}`,
+        taskId: input.taskId ?? 'fixture-task',
         command: {
           args: [],
           stdin: '',
         },
         responseSchema,
-        timeoutMs: input.timeoutMs ?? 2_000,
+        timeoutMs: input.timeoutMs ?? 30_000,
         workspace,
       });
     },

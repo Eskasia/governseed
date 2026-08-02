@@ -1,4 +1,3 @@
-import { spawn as nodeSpawn } from 'node:child_process';
 import { createHash, randomBytes as nodeRandomBytes } from 'node:crypto';
 import nodeFs from 'node:fs';
 import os from 'node:os';
@@ -6,28 +5,28 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import {
-  CREDENTIAL_PROXY_PATH,
+  CREDENTIAL_PROXY_ENDPOINT,
+  CREDENTIAL_PROXY_PROVIDER,
+  CREDENTIAL_PROXY_REQUEST_LIMIT,
+  CREDENTIAL_PROXY_TIMEOUT_MS,
+  CREDENTIAL_PROXY_TOKEN_CEILING,
   createHostCredentialProxy,
   describeCredentialProxyPolicy,
 } from './credential-proxy.mjs';
-import {
-  OCI_PROXY_BASE_URL,
-} from './oci-supervisor.mjs';
 
-const UPSTREAM = 'https://api.openai.com/v1/responses';
+const BENCHMARK_ID = 'GS-OSS-2026-08-02-V8';
+const UPSTREAM = CREDENTIAL_PROXY_ENDPOINT;
 const MAX_REQUEST_BYTES = 1_048_576;
 const MAX_RESPONSE_BYTES = 4_194_304;
-const MAX_REQUESTS = 32;
-const DEFAULT_DEADLINE_MS = 300_000;
-const MANAGED_ROOT_PREFIX = 'governance-impact-oci-proxy-';
-const LOCK_NAME = '.governance-impact-oci-proxy.lock';
+const REQUEST_LIMIT = CREDENTIAL_PROXY_REQUEST_LIMIT;
+const TIMEOUT_MS = CREDENTIAL_PROXY_TIMEOUT_MS;
+const TOKEN_CEILING = CREDENTIAL_PROXY_TOKEN_CEILING;
+const CONTAINER_SOCKET_PATH = '/run/governance/proxy.sock';
+const MANAGED_ROOT_PREFIX = 'gs8-';
+const LOCK_NAME = '.gs8-proxy.lock';
 const STALE_LOCK_PREFIX = `${LOCK_NAME}.stale-`;
 const LOCK_METADATA_NAME = 'owner.json';
 const LOCK_METADATA_MAX_BYTES = 1_024;
-const READY_TEXT = 'READY\n';
-const RELAY_OUTPUT_MAX_BYTES = 4_096;
-const RELAY_READY_TIMEOUT_MS = 5_000;
-const RELAY_SHUTDOWN_TIMEOUT_MS = 1_000;
 const REPOSITORY_ROOT = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
   '..',
@@ -140,7 +139,6 @@ function normalizeDependencies(options) {
     createCredentialProxy: requireFunction(
       options.createCredentialProxy ?? createHostCredentialProxy,
     ),
-    spawn: requireFunction(options.spawn ?? nodeSpawn),
     randomBytes: requireFunction(options.randomBytes ?? nodeRandomBytes),
     isProcessAlive: requireFunction(
       options.isProcessAlive ?? defaultIsProcessAlive,
@@ -174,7 +172,10 @@ function stableFailure(error, fallback) {
 export function createOciCredentialProxyFacade(options = {}) {
   if (!isPlainObject(options)) fail('PROXY_POLICY_INVALID');
   const model = options.model;
-  const deadlineMs = options.deadlineMs ?? DEFAULT_DEADLINE_MS;
+  const timeoutMs = options.timeoutMs ?? TIMEOUT_MS;
+  const benchmarkId = options.benchmarkId ?? BENCHMARK_ID;
+  const runId = options.runId;
+  const taskId = options.taskId;
   const attemptPin = options.attemptId;
   const tempRoot = options.tempRoot ?? os.tmpdir();
   const ownerPid = options.ownerPid ?? process.pid;
@@ -182,21 +183,17 @@ export function createOciCredentialProxyFacade(options = {}) {
     ?? (typeof process.getuid === 'function' ? process.getuid() : 0);
   const ownerGid = options.ownerGid
     ?? (typeof process.getgid === 'function' ? process.getgid() : 0);
-  const platform = options.platform ?? process.platform;
   const upstreamKeyOption = options.upstreamKey;
   const getUpstreamKey = options.getUpstreamKey;
-  const nodeExecutable = options.nodeExecutable ?? process.execPath;
-  const relayScriptPath = options.relayScriptPath
-    ?? 'experimental/governance-impact/uds-relay.mjs';
   const repositoryRoot = options.repositoryRoot ?? REPOSITORY_ROOT;
-  const readyTimeoutMs = options.readyTimeoutMs ?? RELAY_READY_TIMEOUT_MS;
-  const shutdownTimeoutMs = options.shutdownTimeoutMs ?? RELAY_SHUTDOWN_TIMEOUT_MS;
-  const outputLimit = options.relayOutputMaxBytes ?? RELAY_OUTPUT_MAX_BYTES;
   const dependencies = normalizeDependencies(options);
 
   if (
     !closedToken(model)
-    || !positiveInteger(deadlineMs)
+    || timeoutMs !== TIMEOUT_MS
+    || benchmarkId !== BENCHMARK_ID
+    || !closedToken(runId)
+    || !closedToken(taskId)
     || (
       attemptPin !== undefined
       && !HEX_64.test(attemptPin)
@@ -205,13 +202,7 @@ export function createOciCredentialProxyFacade(options = {}) {
     || !positiveInteger(ownerPid)
     || !nonNegativeInteger(ownerUid)
     || !nonNegativeInteger(ownerGid)
-    || !closedToken(nodeExecutable)
-    || !path.isAbsolute(nodeExecutable)
-    || relayScriptPath !== 'experimental/governance-impact/uds-relay.mjs'
     || !path.isAbsolute(repositoryRoot)
-    || !positiveInteger(readyTimeoutMs)
-    || !positiveInteger(shutdownTimeoutMs)
-    || !positiveInteger(outputLimit)
     || (
       getUpstreamKey !== undefined
       && typeof getUpstreamKey !== 'function'
@@ -222,12 +213,17 @@ export function createOciCredentialProxyFacade(options = {}) {
 
   const descriptorInput = Object.freeze({
     attemptId: 'durable-policy-descriptor',
+    benchmarkId,
+    runId: 'durable-policy-run',
+    taskId: 'durable-policy-task',
+    provider: CREDENTIAL_PROXY_PROVIDER,
     model,
     upstream: UPSTREAM,
     maxRequestBytes: MAX_REQUEST_BYTES,
     maxResponseBytes: MAX_RESPONSE_BYTES,
-    maxRequests: MAX_REQUESTS,
-    deadlineMs,
+    requestLimit: REQUEST_LIMIT,
+    timeoutMs: TIMEOUT_MS,
+    tokenCeiling: TOKEN_CEILING,
   });
   let durablePolicy;
   try {
@@ -236,21 +232,6 @@ export function createOciCredentialProxyFacade(options = {}) {
     fail('PROXY_POLICY_INVALID');
   }
 
-  let proxyUrl;
-  try {
-    proxyUrl = new URL(OCI_PROXY_BASE_URL);
-  } catch {
-    fail('PROXY_POLICY_INVALID');
-  }
-  if (
-    proxyUrl.protocol !== 'http:'
-    || proxyUrl.hostname !== '127.0.0.1'
-    || !positiveInteger(Number(proxyUrl.port))
-    || proxyUrl.pathname !== '/v1'
-  ) {
-    fail('PROXY_POLICY_INVALID');
-  }
-  const relayPort = Number(proxyUrl.port);
   const handles = new WeakMap();
   const knownStates = new Set();
   const lockPath = path.join(tempRoot, LOCK_NAME);
@@ -481,7 +462,10 @@ export function createOciCredentialProxyFacade(options = {}) {
       || (input.arm !== 'baseline' && input.arm !== 'governed')
       || !HEX_64.test(input.attemptId ?? '')
       || (boundAttemptId !== null && input.attemptId !== boundAttemptId)
-      || input.deadlineMs !== deadlineMs
+      || input.benchmarkId !== benchmarkId
+      || input.runId !== runId
+      || input.taskId !== taskId
+      || input.timeoutMs !== timeoutMs
     ) {
       fail('PROXY_POLICY_INVALID');
     }
@@ -491,19 +475,6 @@ export function createOciCredentialProxyFacade(options = {}) {
     }
 
     const upstreamKey = await resolveUpstreamKey();
-    let bearer;
-    try {
-      const bytes = dependencies.randomBytes(32);
-      if (
-        (!Buffer.isBuffer(bytes) && !(bytes instanceof Uint8Array))
-        || bytes.length !== 32
-      ) {
-        fail('PROXY_DEPENDENCY_INVALID');
-      }
-      bearer = Buffer.from(bytes).toString('base64url');
-    } catch (error) {
-      throw stableFailure(error, 'PROXY_DEPENDENCY_INVALID');
-    }
 
     let root;
     let core;
@@ -512,20 +483,28 @@ export function createOciCredentialProxyFacade(options = {}) {
         path.join(tempRoot, MANAGED_ROOT_PREFIX),
       );
       await dependencies.fs.chmod(root, 0o700);
-      const socketPath = path.join(root, 'core.sock');
+      const socketPath = path.join(root, 'p.sock');
       core = dependencies.createCredentialProxy({
         policy: {
           attemptId: input.attemptId,
+          benchmarkId,
+          runId,
+          taskId,
+          provider: CREDENTIAL_PROXY_PROVIDER,
           model,
           upstream: UPSTREAM,
           maxRequestBytes: MAX_REQUEST_BYTES,
           maxResponseBytes: MAX_RESPONSE_BYTES,
-          maxRequests: MAX_REQUESTS,
-          deadlineMs,
+          requestLimit: REQUEST_LIMIT,
+          timeoutMs: TIMEOUT_MS,
+          tokenCeiling: TOKEN_CEILING,
         },
         socketPath,
-        attemptBearer: bearer,
+        socketOwnerUid: ownerUid,
+        socketOwnerGid: ownerGid,
+        socketMode: 0o600,
         upstreamKey,
+        receiptSink: options.receiptSink,
         dependencies: options.coreDependencies,
       });
       if (
@@ -549,15 +528,12 @@ export function createOciCredentialProxyFacade(options = {}) {
         socketPath,
         core,
         containerEnvironment: Object.freeze({
-          OPENAI_API_KEY: bearer,
-          OPENAI_BASE_URL: OCI_PROXY_BASE_URL,
+          GOVERNSEED_PROXY_SOCKET: CONTAINER_SOCKET_PATH,
+          GOVERNSEED_BENCHMARK_ID: benchmarkId,
+          GOVERNSEED_RUN_ID: runId,
+          GOVERNSEED_TASK_ID: taskId,
         }),
         phase: 'open',
-        relay: null,
-        relayExited: false,
-        relayExitPromise: null,
-        relayExitResolve: null,
-        relayExpectedClose: false,
         unsafe: false,
         coreClosed: false,
         rootRemoved: false,
@@ -581,137 +557,24 @@ export function createOciCredentialProxyFacade(options = {}) {
       fail('PROXY_LIFECYCLE_INVALID');
     }
     return Object.freeze({
-      OPENAI_API_KEY: state.containerEnvironment.OPENAI_API_KEY,
-      OPENAI_BASE_URL: state.containerEnvironment.OPENAI_BASE_URL,
+      GOVERNSEED_PROXY_SOCKET: state.containerEnvironment.GOVERNSEED_PROXY_SOCKET,
+      GOVERNSEED_BENCHMARK_ID: state.containerEnvironment.GOVERNSEED_BENCHMARK_ID,
+      GOVERNSEED_RUN_ID: state.containerEnvironment.GOVERNSEED_RUN_ID,
+      GOVERNSEED_TASK_ID: state.containerEnvironment.GOVERNSEED_TASK_ID,
     });
   }
 
-  function settleRelayExit(state, exitCode, signalCode) {
-    if (state.relayExited) return;
-    state.relayExited = true;
-    state.relayExitCode = exitCode;
-    state.relaySignalCode = signalCode;
-    if (!state.relayExpectedClose) state.unsafe = true;
-    state.relayExitResolve?.(true);
-  }
-
-  function killRelay(state, signal) {
-    try {
-      return state.relay?.kill(signal) === true;
-    } catch {
-      return false;
+  async function getSocketPath(handle) {
+    const state = requireHandle(handle);
+    if (state.phase !== 'open' && state.phase !== 'attached') {
+      fail('PROXY_LIFECYCLE_INVALID');
     }
-  }
-
-  function waitBounded(promise, timeoutMs) {
-    return new Promise((resolve) => {
-      let settled = false;
-      const timer = dependencies.timers.setTimeout(() => {
-        if (settled) return;
-        settled = true;
-        resolve(false);
-      }, timeoutMs);
-      Promise.resolve(promise).then(() => {
-        if (settled) return;
-        settled = true;
-        dependencies.timers.clearTimeout(timer);
-        resolve(true);
-      }, () => {
-        if (settled) return;
-        settled = true;
-        dependencies.timers.clearTimeout(timer);
-        resolve(false);
-      });
-    });
-  }
-
-  async function stopRelay(state) {
-    if (!state.relay) return true;
-    if (state.relayExited) return true;
-    state.relayExpectedClose = true;
-    try {
-      state.relay.stdin.end();
-    } catch {
-      state.unsafe = true;
-    }
-    if (await waitBounded(state.relayExitPromise, shutdownTimeoutMs)) return true;
-    state.unsafe = true;
-    killRelay(state, 'SIGTERM');
-    if (await waitBounded(state.relayExitPromise, shutdownTimeoutMs)) return true;
-    killRelay(state, 'SIGKILL');
-    return waitBounded(state.relayExitPromise, shutdownTimeoutMs);
-  }
-
-  async function waitForRelayReady(state) {
-    const child = state.relay;
-    let stdout = Buffer.alloc(0);
-    let total = 0;
-    let ready = false;
-    let settled = false;
-    let timer;
-
-    return new Promise((resolve, reject) => {
-      const rejectStable = () => {
-        if (settled) return;
-        settled = true;
-        if (timer) dependencies.timers.clearTimeout(timer);
-        reject(new OciCredentialProxyFacadeError('PROXY_RELAY_UNAVAILABLE'));
-      };
-      const markControlFailure = () => {
-        state.unsafe = true;
-        killRelay(state, 'SIGKILL');
-        rejectStable();
-      };
-      const onStdout = (chunk) => {
-        const bytes = Buffer.from(chunk);
-        total += bytes.length;
-        if (total > outputLimit) {
-          markControlFailure();
-          return;
-        }
-        if (ready) {
-          markControlFailure();
-          return;
-        }
-        stdout = Buffer.concat([stdout, bytes], stdout.length + bytes.length);
-        const text = stdout.toString('utf8');
-        if (!READY_TEXT.startsWith(text)) {
-          markControlFailure();
-          return;
-        }
-        if (text === READY_TEXT) {
-          ready = true;
-          settled = true;
-          dependencies.timers.clearTimeout(timer);
-          resolve(true);
-        }
-      };
-      const onStderr = (chunk) => {
-        total += Buffer.byteLength(chunk);
-        markControlFailure();
-      };
-      const onError = () => {
-        state.unsafe = true;
-        rejectStable();
-      };
-      const onClose = () => rejectStable();
-
-      child.stdout.on('data', onStdout);
-      child.stderr.on('data', onStderr);
-      child.once('error', onError);
-      child.once('close', onClose);
-      timer = dependencies.timers.setTimeout(() => {
-        markControlFailure();
-      }, readyTimeoutMs);
-    });
+    return state.socketPath;
   }
 
   async function attachAttempt(handle, input) {
     const state = requireHandle(handle);
-    if (state.phase !== 'open' || state.relay) {
-      fail('PROXY_RELAY_UNAVAILABLE');
-    }
-    if (platform !== 'linux' || ownerUid === 0 || ownerGid === 0) {
+    if (state.phase !== 'open') {
       state.unsafe = true;
       fail('PROXY_RELAY_UNAVAILABLE');
     }
@@ -724,80 +587,8 @@ export function createOciCredentialProxyFacade(options = {}) {
       state.unsafe = true;
       fail('PROXY_RELAY_UNAVAILABLE');
     }
-
-    const args = [
-      '-n',
-      'nsenter',
-      `--net=/proc/${input.initPid}/ns/net`,
-      `--setgid=${ownerGid}`,
-      `--setuid=${ownerUid}`,
-      '--',
-      nodeExecutable,
-      relayScriptPath,
-    ];
-    const childEnvironment = {
-      PATH: '/usr/sbin:/usr/bin:/sbin:/bin',
-      LANG: 'C.UTF-8',
-    };
-    let child;
-    try {
-      child = dependencies.spawn('sudo', args, {
-        cwd: repositoryRoot,
-        env: childEnvironment,
-        shell: false,
-        stdio: ['pipe', 'pipe', 'pipe'],
-      });
-    } catch {
-      state.unsafe = true;
-      fail('PROXY_RELAY_UNAVAILABLE');
-    }
-    if (
-      !child
-      || typeof child.once !== 'function'
-      || typeof child.kill !== 'function'
-      || typeof child.stdin?.write !== 'function'
-      || typeof child.stdin?.end !== 'function'
-      || typeof child.stdout?.on !== 'function'
-      || typeof child.stderr?.on !== 'function'
-    ) {
-      state.unsafe = true;
-      try {
-        child?.kill?.('SIGKILL');
-      } catch {
-        // The stable relay error below is the only exposed detail.
-      }
-      fail('PROXY_RELAY_UNAVAILABLE');
-    }
-
-    state.relay = child;
-    state.relayExitPromise = new Promise((resolve) => {
-      state.relayExitResolve = resolve;
-    });
-    child.once('close', (exitCode, signalCode) => {
-      settleRelayExit(state, exitCode, signalCode);
-    });
-    child.once('error', () => {
-      state.unsafe = true;
-      if (!positiveInteger(child.pid)) settleRelayExit(state, null, null);
-    });
-
-    try {
-      child.stdin.write(`${JSON.stringify({
-        socketPath: state.socketPath,
-        bearer: state.containerEnvironment.OPENAI_API_KEY,
-        attemptId: state.attemptId,
-        port: relayPort,
-      })}\n`);
-      await waitForRelayReady(state);
-      if (state.relayExited) fail('PROXY_RELAY_UNAVAILABLE');
-      state.phase = 'attached';
-      return true;
-    } catch {
-      state.unsafe = true;
-      const stopped = await stopRelay(state);
-      if (!stopped) fail('PROXY_CLEANUP_UNPROVEN');
-      fail('PROXY_RELAY_UNAVAILABLE');
-    }
+    state.phase = 'attached';
+    return true;
   }
 
   async function closeAttempt(handle) {
@@ -810,7 +601,6 @@ export function createOciCredentialProxyFacade(options = {}) {
       let unsafe = state.unsafe;
       state.phase = 'closing';
 
-      if (!await stopRelay(state)) cleanupComplete = false;
       try {
         await state.core.close();
         state.coreClosed = true;
@@ -836,8 +626,6 @@ export function createOciCredentialProxyFacade(options = {}) {
         state.rootRemoved = false;
       }
       if (!state.rootRemoved) cleanupComplete = false;
-      if (state.relay && !state.relayExited) cleanupComplete = false;
-
       state.containerEnvironment = null;
       if (!cleanupComplete) {
         state.phase = 'failed';
@@ -873,7 +661,6 @@ export function createOciCredentialProxyFacade(options = {}) {
       || state.coreClosed !== true
       || state.rootRemoved !== true
       || absent !== true
-      || (state.relay && state.relayExited !== true)
     ) {
       fail('PROXY_CLEANUP_UNPROVEN');
     }
@@ -885,6 +672,7 @@ export function createOciCredentialProxyFacade(options = {}) {
     reconcile,
     openAttempt,
     getContainerEnvironment,
+    getSocketPath,
     attachAttempt,
     closeAttempt,
     proveClosed,

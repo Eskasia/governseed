@@ -1,0 +1,85 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "repair-1",
+  "evidenceClass": "external-observational",
+  "provider": "OpenAI",
+  "endpoint": "https://api.openai.com/v1/responses",
+  "method": "POST",
+  "modelBinding": {
+    "source": "human-approval approvedModelId",
+    "exact": true,
+    "candidateId": null,
+    "status": "PENDING_HUMAN_SELECTION",
+    "aliasesForbidden": ["latest", "Luna", "Sol"],
+    "startupRule": "The host proxy refuses to start without one exact non-alias model ID; repair-1 synthetic tests use a test-only exact fixture model and do not establish the measured candidate."
+  },
+  "limits": {
+    "requestLimit": 1,
+    "timeoutMs": 30000,
+    "tokenCeiling": 8192,
+    "maxRequestBytes": 1048576,
+    "maxResponseBytes": 4194304
+  },
+  "containerEnvironment": {
+    "allowed": [
+      "GOVERNSEED_PROXY_SOCKET",
+      "GOVERNSEED_BENCHMARK_ID",
+      "GOVERNSEED_RUN_ID",
+      "GOVERNSEED_TASK_ID"
+    ],
+    "forbidden": [
+      "OPENAI_API_KEY",
+      "OPENAI_BASE_URL",
+      "ANTHROPIC_API_KEY",
+      "GITHUB_TOKEN",
+      "GH_TOKEN"
+    ],
+    "credentialTransport": "host-side proxy secret scope only; no alias, file, mount, argv, or encoded credential value"
+  },
+  "requestContract": {
+    "allowedFields": ["model", "input", "max_output_tokens", "response_format", "metadata"],
+    "metadataFields": ["benchmark_id", "run_id", "task_id"],
+    "forbiddenFields": [
+      "tools",
+      "tool_choice",
+      "web_search",
+      "file_search",
+      "store",
+      "background",
+      "service_tier",
+      "unknown"
+    ],
+    "clientHeaders": ["content-type"],
+    "transportFramingHeadersNotForwarded": ["host", "content-length", "connection"],
+    "forbiddenClientHeaders": ["authorization", "openai-organization", "openai-project", "host", "content-length", "x-*"]
+  },
+  "responseContract": {
+    "successStatus": "2xx",
+    "contentType": "application/json",
+    "topLevelFields": ["id", "model", "output", "usage"],
+    "usageFields": ["input_tokens", "output_tokens", "total_tokens"],
+    "modelMustEqualStartupBinding": true,
+    "unknownTopLevelFieldsRejected": true,
+    "secondResponseRejected": true
+  },
+  "retention": {
+    "allowed": ["requestSha256", "responseSha256", "requestBytes", "responseBytes", "modelId", "statusCode", "latencyMs", "tokenCounts", "providerRequestIdHash"],
+    "forbidden": ["rawInput", "rawOutput", "prompt", "response", "apiKey", "authorizationHeader", "refreshToken", "sessionCookie", "rawCodexTranscript", "providerTrace"]
+  },
+  "socket": {
+    "path": "run-scoped unique temporary root / p.sock",
+    "containerPath": "/run/governance/proxy.sock",
+    "mode": "0600",
+    "owner": "explicit host UID/GID measured at proxy start",
+    "bindings": ["benchmarkId", "runId", "taskId"],
+    "singleUse": true,
+    "mount": "only the socket bind, never a credential file"
+  },
+  "cleanup": {
+    "automaticOn": ["clientCrash", "clientDisconnect", "timeout", "proxyError", "invalidRequest", "secondClient"],
+    "proof": ["proxyClosed", "socketAbsent", "tempRootAbsent", "matchingProcessAbsent"]
+  },
+  "claimBoundary": "Synthetic local proxy and UDS observations only. No real provider request, real credential use, Codex runtime identity, task execution, G3, Pilot, scoring, or benchmark acceptance is claimed."
+}
