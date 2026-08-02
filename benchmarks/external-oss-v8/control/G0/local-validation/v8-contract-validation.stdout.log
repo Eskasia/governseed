@@ -1,0 +1,1 @@
+{"schemaVersion":1,"benchmarkId":"GS-OSS-2026-08-02-V8","status":"PASS","checks":["V8 mount contract","runtime probes","negative cache boundary","V7 immutability boundary"]}

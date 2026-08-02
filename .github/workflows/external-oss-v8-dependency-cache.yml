@@ -1,0 +1,537 @@
+name: External OSS V8 dependency cache
+
+on:
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: read
+
+env:
+  BENCHMARK_ID: GS-OSS-2026-08-02-V8
+  EVIDENCE_CLASS: external-observational
+  V7_SOURCE_RUN_ID: 30732978684
+
+jobs:
+  qualify-seed-identity:
+    name: Qualify V8 inherited seed identity (${{ matrix.task_id }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - task_id: TASK-OSS-01
+          - task_id: TASK-OSS-03
+          - task_id: TASK-OSS-09
+    steps:
+      - name: Checkout benchmark contracts
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Validate V8 static contracts
+        run: |
+          node benchmarks/external-oss-v8/tests/v8-contract-validation.mjs
+          node benchmarks/external-oss-v8/tests/v8-schema-validation.mjs
+          node benchmarks/external-oss-v8/tests/v8-runtime-shell-validation.mjs
+      - name: Download immutable V7 seed receipt
+        uses: actions/download-artifact@v4
+        with:
+          name: external-oss-v7-seed-identity-${{ matrix.task_id }}
+          run-id: 30732978684
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          path: ${{ runner.temp }}/v7-seed/${{ matrix.task_id }}
+      - name: Verify inherited seed identity
+        shell: bash
+        env:
+          TASK_ID: ${{ matrix.task_id }}
+        run: |
+          set -euo pipefail
+          source="$RUNNER_TEMP/v7-seed/$TASK_ID/seed-identity.json"
+          contract="benchmarks/external-oss-v5/tasks/$TASK_ID/task-seed-identity.json"
+          test -f "$source"
+          test "$(node --input-type=module - "$source" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const x = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+          if (x.benchmarkId !== 'GS-OSS-2026-08-02-V7' || x.evidenceClass !== 'external-observational') process.exit(1);
+          console.log(x.sealedSeedCommit);
+          NODE
+          )" = "$(node --input-type=module - "$contract" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).sealedSeedCommit);
+          NODE
+          )"
+          test "$(node --input-type=module - "$source" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const x = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+          console.log(x.sealedSeedGitTree);
+          NODE
+          )" = "$(node --input-type=module - "$contract" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).sealedSeedGitTree);
+          NODE
+          )"
+          mkdir -p "$RUNNER_TEMP/v8-seed/$TASK_ID"
+          source_sha=$(sha256sum "$source" | awk '{print $1}')
+          SOURCE_SHA="$source_sha" TASK_ID="$TASK_ID" node --input-type=module - "$RUNNER_TEMP/v8-seed/$TASK_ID/seed-identity.json" "$source" <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const [out, source] = process.argv.slice(2);
+          const x = JSON.parse(readFileSync(source, 'utf8'));
+          writeFileSync(out, JSON.stringify({ schemaVersion: 1, benchmarkId: process.env.BENCHMARK_ID, evidenceClass: process.env.EVIDENCE_CLASS, taskId: process.env.TASK_ID, sourceRunId: Number(process.env.V7_SOURCE_RUN_ID), sourceArtifact: `external-oss-v7-seed-identity-${process.env.TASK_ID}`, sourceReceiptSha256: process.env.SOURCE_SHA, sealedSeedCommit: x.sealedSeedCommit, sealedSeedGitTree: x.sealedSeedGitTree, sealedSeedTreeSha256: x.sealedSeedTreeSha256 }, null, 2) + '\n');
+          NODE
+      - name: Upload V8 seed identity evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v8-seed-identity-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v8-seed/${{ matrix.task_id }}/seed-identity.json
+          if-no-files-found: ignore
+
+  qualify-runtime-image:
+    name: Qualify inherited V7 runtime image (${{ matrix.task_id }})
+    needs: qualify-seed-identity
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - task_id: TASK-OSS-01
+          - task_id: TASK-OSS-03
+          - task_id: TASK-OSS-09
+    steps:
+      - name: Checkout benchmark contracts
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Download immutable V7 runtime image
+        uses: actions/download-artifact@v4
+        with:
+          name: external-oss-v7-runtime-image-${{ matrix.task_id }}
+          run-id: 30732978684
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          path: ${{ runner.temp }}/v7-runtime/${{ matrix.task_id }}
+      - name: Recompute and qualify runtime image identity
+        shell: bash
+        env:
+          TASK_ID: ${{ matrix.task_id }}
+        run: |
+          set -euo pipefail
+          source="$RUNNER_TEMP/v7-runtime/$TASK_ID"
+          test -f "$source/runtime-image.tgz"
+          test -f "$source/runtime-image-receipt.json"
+          archive_sha=$(sha256sum "$source/runtime-image.tgz" | awk '{print $1}')
+          receipt_sha=$(node --input-type=module - "$source/runtime-image-receipt.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).imageArchiveSha256);
+          NODE
+          )
+          test "$archive_sha" = "$receipt_sha"
+          base_digest=$(node --input-type=module - "$source/runtime-image-receipt.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).baseImageDigest);
+          NODE
+          )
+          lock_key=node
+          test "$TASK_ID" = TASK-OSS-09 && lock_key=paperless
+          test "$base_digest" = "$(node --input-type=module - "$lock_key" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const key = process.argv[2];
+          const lock = JSON.parse(readFileSync('benchmarks/external-oss-v7/runtime-image/image-lock.json', 'utf8'));
+          console.log(lock.baseImages[key].digest);
+          NODE
+          )"
+          docker load --input "$source/runtime-image.tgz" >/dev/null
+          image_id=$(node --input-type=module - "$source/runtime-image-receipt.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).imageId);
+          NODE
+          )
+          test "$(docker image inspect "governseed-v7-runtime:$TASK_ID" --format '{{.Id}}')" = "$image_id"
+          mkdir -p "$RUNNER_TEMP/v8-runtime/$TASK_ID"
+          cp -R "$source/." "$RUNNER_TEMP/v8-runtime/$TASK_ID/"
+          SOURCE_SHA=$(sha256sum "$source/runtime-image-receipt.json" | awk '{print $1}') ARCHIVE_SHA="$archive_sha" IMAGE_ID="$image_id" BASE_DIGEST="$base_digest" TASK_ID="$TASK_ID" node --input-type=module - "$RUNNER_TEMP/v8-runtime/$TASK_ID/inherited-runtime-image.json" <<'NODE'
+          import { writeFileSync } from 'node:fs';
+          writeFileSync(process.argv[2], JSON.stringify({ schemaVersion: 1, benchmarkId: process.env.BENCHMARK_ID, evidenceClass: process.env.EVIDENCE_CLASS, taskId: process.env.TASK_ID, sourceRunId: Number(process.env.V7_SOURCE_RUN_ID), sourceArtifact: `external-oss-v7-runtime-image-${process.env.TASK_ID}`, sourceReceiptSha256: process.env.SOURCE_SHA, imageArchiveSha256: process.env.ARCHIVE_SHA, imageId: process.env.IMAGE_ID, baseImageDigest: process.env.BASE_DIGEST, status: 'READY', claimBoundary: 'Inherited V7 runtime image identity only; no V8 offline or G1 claim.' }, null, 2) + '\n');
+          NODE
+      - name: Upload V8 runtime image evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v8-runtime-image-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v8-runtime/${{ matrix.task_id }}/
+          if-no-files-found: ignore
+
+  prepare-dependency-cache:
+    name: Qualify inherited dependency cache (${{ matrix.task_id }})
+    needs: qualify-runtime-image
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - task_id: TASK-OSS-01
+          - task_id: TASK-OSS-03
+          - task_id: TASK-OSS-09
+    steps:
+      - name: Checkout benchmark contracts
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Download immutable V7 cache and V8 runtime identity
+        uses: actions/download-artifact@v4
+        with:
+          name: external-oss-v7-dependency-cache-${{ matrix.task_id }}
+          run-id: 30732978684
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          path: ${{ runner.temp }}/v7-cache/${{ matrix.task_id }}
+      - name: Download V8-qualified runtime identity
+        uses: actions/download-artifact@v4
+        with:
+          name: external-oss-v8-runtime-image-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v8-runtime/${{ matrix.task_id }}
+      - name: Download V8-qualified seed identity
+        uses: actions/download-artifact@v4
+        with:
+          name: external-oss-v8-seed-identity-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v8-seed/${{ matrix.task_id }}
+      - name: Recompute and qualify cache identity
+        shell: bash
+        env:
+          TASK_ID: ${{ matrix.task_id }}
+        run: |
+          set -euo pipefail
+          source="$RUNNER_TEMP/v7-cache/$TASK_ID"
+          runtime="$RUNNER_TEMP/v8-runtime/$TASK_ID"
+          seed_identity="$RUNNER_TEMP/v8-seed/$TASK_ID/seed-identity.json"
+          artifact="$RUNNER_TEMP/v8-cache/$TASK_ID"
+          mkdir -p "$artifact"
+          test -f "$source/cache.tgz"
+          test -f "$source/cache-manifest.json"
+          test -f "$source/seed.tgz"
+          test -f "$source/cache-roots.txt"
+          cache_sha=$(sha256sum "$source/cache.tgz" | awk '{print $1}')
+          manifest_sha=$(sha256sum "$source/cache-manifest.json" | awk '{print $1}')
+          test "$cache_sha" = "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).cacheSha256);
+          NODE
+          )"
+          test "$manifest_sha" = "$(awk '{print $1}' "$source/manifest.sha256")"
+          test "$cache_sha" = "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).cacheSha256);
+          NODE
+          )"
+          runtime_sha=$(sha256sum "$runtime/runtime-image.tgz" | awk '{print $1}')
+          test "$runtime_sha" = "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).runtimeImageArchiveSha256);
+          NODE
+          )"
+          test "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).sealedSeedCommit);
+          NODE
+          )" = "$(node --input-type=module - "$seed_identity" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).sealedSeedCommit);
+          NODE
+          )"
+          test "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).sealedSeedTreeSha256);
+          NODE
+          )" = "$(node --input-type=module - "$seed_identity" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).sealedSeedTreeSha256);
+          NODE
+          )"
+          test "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).runtimeImageId);
+          NODE
+          )" = "$(node --input-type=module - "$runtime/runtime-image-receipt.json" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          console.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).imageId);
+          NODE
+          )"
+          cp -R "$source/." "$artifact/"
+          cp "$runtime/runtime-image.tgz" "$artifact/runtime-image.tgz"
+          cp "$runtime/runtime-image-receipt.json" "$artifact/runtime-image-receipt.json"
+          cp "$runtime/inherited-runtime-image.json" "$artifact/inherited-runtime-image.json"
+          SOURCE_SHA=$(sha256sum "$source/cache-manifest.json" | awk '{print $1}') node --input-type=module - "$artifact/inherited-cache.json" <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const manifest = JSON.parse(readFileSync(`${process.env.RUNNER_TEMP}/v7-cache/${process.env.TASK_ID}/cache-manifest.json`, 'utf8'));
+          writeFileSync(process.argv[2], JSON.stringify({ schemaVersion: 1, benchmarkId: process.env.BENCHMARK_ID, evidenceClass: process.env.EVIDENCE_CLASS, taskId: process.env.TASK_ID, sourceRunId: Number(process.env.V7_SOURCE_RUN_ID), sourceArtifact: `external-oss-v7-dependency-cache-${process.env.TASK_ID}`, sourceManifestSha256: process.env.SOURCE_SHA, cacheSha256: manifest.cacheSha256, runtimeImageArchiveSha256: manifest.runtimeImageArchiveSha256, sealedSeedCommit: manifest.sealedSeedCommit, sealedSeedTreeSha256: manifest.sealedSeedTreeSha256, measuredNetworkUsed: false, cacheReadOnlyByMount: true, status: 'READY', claimBoundary: 'Inherited V7 cache identity only; V8 mount and offline qualification are separate.' }, null, 2) + '\n');
+          NODE
+      - name: Upload V8 cache identity
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v8-dependency-cache-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v8-cache/${{ matrix.task_id }}/
+          if-no-files-found: ignore
+
+  verify-workspace-exec-contract:
+    name: Verify V8 workspace exec contract (${{ matrix.task_id }})
+    needs: prepare-dependency-cache
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task_id: TASK-OSS-01
+          - task_id: TASK-OSS-03
+          - task_id: TASK-OSS-09
+    steps:
+      - name: Checkout benchmark contracts
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Download V8 cache identity
+        uses: actions/download-artifact@v4
+        with:
+          name: external-oss-v8-dependency-cache-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v8-input/${{ matrix.task_id }}
+      - name: Execute workspace mount and binary probes
+        shell: bash
+        env:
+          TASK_ID: ${{ matrix.task_id }}
+        run: |
+          set -euo pipefail
+          input="$RUNNER_TEMP/v8-input/$TASK_ID"
+          root="$RUNNER_TEMP/v8-contract/$TASK_ID"
+          seed="$root/seed"
+          cache="$root/cache"
+          harness="$root/harness"
+          out="$RUNNER_TEMP/v8-contract-receipts/$TASK_ID"
+          mkdir -p "$seed" "$cache" "$harness" "$out"
+          tar -xzf "$input/seed.tgz" -C "$seed"
+          tar -xzf "$input/cache.tgz" -C "$cache"
+          cp "$input/cache-roots.txt" "$harness/cache-roots.txt"
+          cp benchmarks/external-oss-v8/tests/v8-runtime-contract.sh "$harness/v8-runtime-contract.sh"
+          chmod 0555 "$harness/v8-runtime-contract.sh"
+          chmod 0444 "$harness/cache-roots.txt"
+          docker load --input "$input/runtime-image.tgz" >/dev/null
+          runtime_tag="governseed-v7-runtime:$TASK_ID"
+          container_id=
+          cleanup() { test -n "$container_id" && docker rm -f "$container_id" >/dev/null 2>&1 || true; }
+          trap cleanup EXIT
+          docker create --name "v8-${TASK_ID,,}-contract" \
+            --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true \
+            --user 65532:65532 --pids-limit 256 --cpus 4 --memory 15g \
+            --tmpfs "/workspace:rw,exec,nosuid,nodev,size=8g,uid=65532,gid=65532,mode=0750" \
+            --mount "type=bind,src=$seed,dst=/seed,readonly" \
+            --mount "type=bind,src=$cache,dst=/cache,readonly" \
+            --mount "type=bind,src=$harness,dst=/harness,readonly" \
+            --tmpfs "/home/benchmark:rw,noexec,nosuid,nodev,size=1g,uid=65532,gid=65532,mode=0700" \
+            --tmpfs "/tmp:rw,noexec,nosuid,nodev,size=2g,uid=65532,gid=65532,mode=1770" \
+            "$runtime_tag" /harness/v8-runtime-contract.sh "$TASK_ID" > "$out/container-id"
+          container_id=$(tail -n 1 "$out/container-id")
+          test "$(docker inspect "$container_id" --format '{{.HostConfig.NetworkMode}}')" = none
+          test "$(docker inspect "$container_id" --format '{{.HostConfig.ReadonlyRootfs}}')" = true
+          test "$(docker inspect "$container_id" --format '{{.Config.User}}')" = 65532:65532
+          test "$(docker inspect "$container_id" --format '{{json .HostConfig.CapDrop}}')" = '["ALL"]'
+          docker inspect "$container_id" --format '{{json .HostConfig.SecurityOpt}}' | grep -Fq no-new-privileges:true
+          for spec in '/workspace true' '/seed false' '/cache false' '/harness false'; do
+            destination=${spec% *}; expected_rw=${spec#* }
+            count=$(docker inspect "$container_id" --format '{{range .Mounts}}{{println .Destination}}{{end}}' | grep -Fxc "$destination")
+            test "$count" -eq 1
+            actual_rw=$(docker inspect "$container_id" --format '{{range .Mounts}}{{if eq .Destination "'"$destination"'"}}{{.RW}}{{end}}{{end}}')
+            test "$actual_rw" = "$expected_rw"
+          done
+          set +e
+          docker start -a "$container_id" > "$out/container-output" 2>&1
+          rc=$?
+          set -e
+          for file in workspace-exec-receipt.json mountinfo.txt workspace-mount.txt cache-mount.txt home-mount.txt tmp-mount.txt vitest-resolved-path.txt vitest-symlink.txt vitest-version.txt runner-probe.txt python-version.txt pytest-version.txt; do
+            docker cp "$container_id:/workspace/$file" "$out/$file" 2>/dev/null || true
+          done
+          test "$rc" -eq 0
+          test -f "$out/workspace-exec-receipt.json"
+          docker rm -f "$container_id" >/dev/null
+          container_id=
+      - name: Upload V8 workspace exec evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v8-workspace-exec-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v8-contract-receipts/${{ matrix.task_id }}/
+          if-no-files-found: ignore
+
+  verify-dependency-cache-offline:
+    name: Verify V8 cache offline (${{ matrix.task_id }})
+    needs: verify-workspace-exec-contract
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - task_id: TASK-OSS-01
+          - task_id: TASK-OSS-03
+          - task_id: TASK-OSS-09
+    steps:
+      - name: Checkout benchmark contracts
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Download V8 cache identity
+        uses: actions/download-artifact@v4
+        with:
+          name: external-oss-v8-dependency-cache-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v8-input/${{ matrix.task_id }}
+      - name: Run V8 offline positive and negative tests
+        shell: bash
+        env:
+          TASK_ID: ${{ matrix.task_id }}
+        run: |
+          set -euo pipefail
+          input="$RUNNER_TEMP/v8-input/$TASK_ID"
+          root="$RUNNER_TEMP/v8-offline/$TASK_ID"
+          seed="$root/seed"
+          cache="$root/cache"
+          negative_cache="$root/negative-cache"
+          harness="$root/harness"
+          out="$RUNNER_TEMP/v8-receipts/$TASK_ID"
+          mkdir -p "$seed" "$cache" "$negative_cache" "$harness" "$out"
+          tar -xzf "$input/seed.tgz" -C "$seed"
+          tar -xzf "$input/cache.tgz" -C "$cache"
+          chmod -R a-w "$cache"
+          cp -a "$cache/." "$negative_cache/"
+          chmod -R u+rwX "$negative_cache"
+          case "$TASK_ID" in TASK-OSS-01) required_path=packages/cli/node_modules;; TASK-OSS-03) required_path=node_modules;; TASK-OSS-09) required_path=.venv/bin/python;; *) exit 2;; esac
+          test -e "$negative_cache/$required_path" || test -L "$negative_cache/$required_path"
+          rm -rf "$negative_cache/$required_path"
+          test ! -e "$negative_cache/$required_path"
+          test ! -L "$negative_cache/$required_path"
+          chmod -R a-w "$negative_cache"
+          for script in v8-runtime-contract.sh v8-offline-smoke.sh; do cp "benchmarks/external-oss-v8/tests/$script" "$harness/$script"; chmod 0555 "$harness/$script"; done
+          cp "$input/cache-roots.txt" "$harness/cache-roots.txt"
+          chmod 0444 "$harness/cache-roots.txt"
+          docker load --input "$input/runtime-image.tgz" >/dev/null
+          runtime_tag="governseed-v7-runtime:$TASK_ID"
+          run_container() {
+            local name=$1 cache_source=$2 id_file=$3 output_file=$4
+            docker create --name "$name" \
+              --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true \
+              --user 65532:65532 --pids-limit 256 --cpus 4 --memory 15g \
+              --tmpfs "/workspace:rw,exec,nosuid,nodev,size=8g,uid=65532,gid=65532,mode=0750" \
+              --mount "type=bind,src=$seed,dst=/seed,readonly" \
+              --mount "type=bind,src=$cache_source,dst=/cache,readonly" \
+              --mount "type=bind,src=$harness,dst=/harness,readonly" \
+              --tmpfs "/home/benchmark:rw,noexec,nosuid,nodev,size=1g,uid=65532,gid=65532,mode=0700" \
+              --tmpfs "/tmp:rw,noexec,nosuid,nodev,size=2g,uid=65532,gid=65532,mode=1770" \
+              "$runtime_tag" /harness/v8-offline-smoke.sh "$TASK_ID" "$required_path" > "$id_file"
+            local id
+            id=$(tail -n 1 "$id_file")
+            test "$(docker inspect "$id" --format '{{.HostConfig.NetworkMode}}')" = none
+            test "$(docker inspect "$id" --format '{{.HostConfig.ReadonlyRootfs}}')" = true
+            test "$(docker inspect "$id" --format '{{.Config.User}}')" = 65532:65532
+            test "$(docker inspect "$id" --format '{{json .HostConfig.CapDrop}}')" = '["ALL"]'
+            docker inspect "$id" --format '{{json .HostConfig.SecurityOpt}}' | grep -Fq no-new-privileges:true
+            set +e
+            docker start -a "$id" > "$output_file" 2>&1
+            rc=$?
+            set -e
+            printf '%s\n' "$id" > "$id_file"
+            if test "$name" = "v8-${TASK_ID,,}-positive"; then
+              for file in cache-receipt.json workspace-exec-receipt.json mountinfo.txt workspace-mount.txt cache-mount.txt home-mount.txt tmp-mount.txt vitest-resolved-path.txt vitest-symlink.txt vitest-version.txt runner-probe.txt python-version.txt pytest-version.txt; do
+                docker cp "$id:/workspace/$file" "$out/$file" 2>/dev/null || true
+              done
+            fi
+            docker rm -f "$id" >/dev/null
+            return "$rc"
+          }
+          positive_rc=0
+          run_container "v8-${TASK_ID,,}-positive" "$cache" "$out/positive-container-id" "$out/positive-output" || positive_rc=$?
+          test "$positive_rc" -eq 0
+          grep -Fqx PASS "$out/positive-output"
+          negative_rc=0
+          run_container "v8-${TASK_ID,,}-negative" "$negative_cache" "$out/negative-container-id" "$out/negative-output" || negative_rc=$?
+          test "$negative_rc" -eq 42
+          grep -Fq DEPENDENCY_CACHE_INCOMPLETE "$out/negative-output"
+          test -f "$out/cache-receipt.json"
+          node --input-type=module - "$out/cache-receipt.json" "$input/cache-manifest.json" "$input/runtime-image-receipt.json" <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const [out, manifestPath, imagePath] = process.argv.slice(2);
+          const receipt = JSON.parse(readFileSync(out, 'utf8'));
+          const manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));
+          const image = JSON.parse(readFileSync(imagePath, 'utf8'));
+          Object.assign(receipt, {
+            negativeCacheMissBlocked: true,
+            negativeCode: 'DEPENDENCY_CACHE_INCOMPLETE',
+            negativeExitCode: 42,
+            cacheSha256: manifest.cacheSha256,
+            runtimeImageArchiveSha256: image.imageArchiveSha256,
+            runtimeImageId: image.imageId,
+            runtimeImageBaseDigest: image.baseImageDigest,
+            cacheReadOnlyObserved: true,
+            readonlyRootObserved: true,
+            nonRootObserved: true,
+            measuredNetworkUsed: false,
+            cacheBinaryCommitted: false,
+            credentialIncluded: false,
+            codexIncluded: false,
+            hiddenOracleIncluded: false
+          });
+          if (receipt.taskId === 'TASK-OSS-09') Object.assign(receipt, { libmagicLibraryObserved: true, libmagicDatabaseObserved: true, pythonMagicImportPass: true, pythonMagicFunctionalSmokePass: true });
+          writeFileSync(out, JSON.stringify(receipt, null, 2) + '\n');
+          NODE
+          node benchmarks/external-oss-v8/tests/v8-schema-validation.mjs "$out/cache-receipt.json"
+      - name: Upload V8 offline receipt
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v8-receipt-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/v8-receipts/${{ matrix.task_id }}/
+          if-no-files-found: ignore
+
+  aggregate-cache-qualification:
+    name: Aggregate V8 cache qualification
+    needs: verify-dependency-cache-offline
+    if: always()
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Checkout benchmark contracts
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Download all V8 receipts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: external-oss-v8-receipt-TASK-OSS-*
+          path: ${{ runner.temp }}/v8-receipts
+      - name: Require three fully qualified caches
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --input-type=module - "${RUNNER_TEMP}/v8-qualification.json" <<'NODE'
+          import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+          import path from 'node:path';
+          const root = path.join(process.env.RUNNER_TEMP, 'v8-receipts');
+          const files = readdirSync(root, { recursive: true }).filter((x) => String(x).endsWith('cache-receipt.json')).map((x) => path.join(root, x));
+          const receipts = files.map((x) => JSON.parse(readFileSync(x, 'utf8'))).sort((a, b) => a.taskId.localeCompare(b.taskId));
+          const expected = ['TASK-OSS-01', 'TASK-OSS-03', 'TASK-OSS-09'];
+          const required = ['workspaceExecObserved', 'workspaceMountExec', 'runtimeBinaryExecutionPass', 'cacheReadOnlyObserved', 'readonlyRootObserved', 'nonRootObserved', 'publicTestSmokePass', 'negativeCacheMissBlocked'];
+          if (receipts.length !== 3 || receipts.map((x) => x.taskId).join(',') !== expected.join(',') || receipts.some((x) => x.status !== 'READY' || x.workspaceExecObserved !== true || x.workspaceMountExec !== true || x.workspaceMountNoexec !== false || x.runtimeBinaryExecutionPass !== true || x.measuredNetworkUsed !== false || x.cacheReadOnlyObserved !== true || x.readonlyRootObserved !== true || x.nonRootObserved !== true || x.publicTestSmokePass !== true || x.negativeCacheMissBlocked !== true || x.negativeCode !== 'DEPENDENCY_CACHE_INCOMPLETE' || x.negativeExitCode !== 42 || x.cacheBinaryCommitted !== false || x.credentialIncluded !== false || x.codexIncluded !== false || x.hiddenOracleIncluded !== false)) process.exit(1);
+          const immich = receipts.find((x) => x.taskId === 'TASK-OSS-01');
+          if (!immich.vitestResolvedPath || immich.vitestVersionProbePass !== true || immich.vitestSmokePass !== true) process.exit(1);
+          const paperless = receipts.find((x) => x.taskId === 'TASK-OSS-09');
+          if (!paperless.libmagicLibraryObserved || !paperless.libmagicDatabaseObserved || !paperless.pythonMagicImportPass || !paperless.pythonMagicFunctionalSmokePass) process.exit(1);
+          writeFileSync(process.argv[2], JSON.stringify({ schemaVersion: 1, benchmarkId: process.env.BENCHMARK_ID, evidenceClass: process.env.EVIDENCE_CLASS, status: 'READY', dependencyCaches: 'READY', cachesReady: '3/3', workspaceExec: '3/3', offlineSmoke: '3/3 PASS', negativeCacheTests: '3/3 BLOCKED with DEPENDENCY_CACHE_INCOMPLETE exit 42', claimBoundary: 'V8 measured runtime-image inheritance, workspace mount execution, and dependency-cache qualification only; no credentials, Codex, formal lock, Pilot, scoring, or benchmark acceptance claim.' }, null, 2) + '\n');
+          NODE
+      - name: Upload V8 aggregate qualification
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v8-aggregate-qualification
+          path: ${{ runner.temp }}/v8-qualification.json
+          if-no-files-found: ignore
