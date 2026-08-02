@@ -53,12 +53,24 @@
     "approvalEvidence": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "reference"],
+      "required": [
+        "type",
+        "reference",
+        "commentId",
+        "commentAuthor",
+        "commentCreatedAt"
+      ],
       "properties": {
         "type": {
-          "enum": ["github-review", "signed-record", "manual-record"]
+          "enum": ["github-review", "github-comment", "signed-record", "manual-record"]
         },
-        "reference": { "type": "string", "minLength": 1 }
+        "reference": { "type": "string", "minLength": 1 },
+        "commentId": { "type": "integer", "minimum": 1 },
+        "commentAuthor": { "type": "string", "minLength": 1 },
+        "commentCreatedAt": {
+          "type": "string",
+          "pattern": "^[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9]{2}:[0-9]{2}:[0-9]{2}(?:\\.[0-9]+)?Z$"
+        }
       }
     }
   }

@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "status": "READY_TO_DISPATCH_RUNTIME_IDENTITY",
+  "provider": "OpenAI",
+  "endpoint": "https://api.openai.com/v1/responses",
+  "modelBinding": {
+    "provider": "OpenAI",
+    "modelId": "gpt-5.6-luna",
+    "aliasAllowed": false,
+    "fallbackAllowed": false
+  },
+  "requestLimit": 1,
+  "timeoutMs": 30000,
+  "canaryInputSha256": "414dba3ebd1edc4f9a9cd7212c9a3bbf55d9c41b5df02bb89fa5a18f46f0121e",
+  "canaryInputBytes": 57,
+  "canaryOutput": {
+    "runtime_canary": "PASS"
+  },
+  "providerRequests": 0,
+  "runtimeCanary": "NOT_RUN",
+  "pilotIncluded": false,
+  "g3Started": false,
+  "codexIdentity": "CODEX_BINARY_NOT_REQUIRED_FOR_PROVIDER_IDENTITY_CANARY",
+  "approvalRecordPath": "benchmarks/external-oss-v8/credential-transport/human-approval.json",
+  "approvalSourcePath": "benchmarks/external-oss-v8/credential-transport/human-approval-source.json",
+  "container": {
+    "network": "none",
+    "readOnlyRoot": true,
+    "nonRootUidGid": "65532:65532",
+    "capDropAll": true,
+    "noNewPrivileges": true,
+    "pidLimit": 256,
+    "cpuLimit": 4,
+    "memoryLimit": "15g",
+    "readonlyHarness": true,
+    "disposableWorkspaceHomeTmp": true,
+    "runScopedUnixSocketOnly": true,
+    "allowedEnvironmentNames": [
+      "GOVERNSEED_PROXY_SOCKET",
+      "GOVERNSEED_BENCHMARK_ID",
+      "GOVERNSEED_RUN_ID",
+      "GOVERNSEED_TASK_ID"
+    ],
+    "providerCredentialIncluded": false
+  },
+  "claimBoundary": "Preparation and static/mock evidence only. No provider request, runtime canary, Codex identity, G3, Pilot, scoring, or formal benchmark lock is claimed."
+}

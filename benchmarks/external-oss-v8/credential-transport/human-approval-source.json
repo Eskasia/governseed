@@ -1,0 +1,29 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "verificationStatus": "VERIFIED",
+  "repository": "Eskasia/governseed",
+  "pullRequest": 75,
+  "mergeCommit": "8b04ef20a19fa4b764a839b2aa8d6e77e64866eb",
+  "commentId": 5157792741,
+  "commentUrl": "https://github.com/Eskasia/governseed/pull/75#issuecomment-5157792741",
+  "commentAuthor": "Eskasia",
+  "commentCreatedAt": "2026-08-02T12:16:58Z",
+  "bodyClaims": {
+    "benchmarkId": "GS-OSS-2026-08-02-V8",
+    "approvedModelId": "gpt-5.6-luna",
+    "aliasAllowed": false,
+    "fallbackAllowed": false,
+    "approvedDesignSha256": "7974cae887830af31da8245569b106ec97509a1d65a1d9a7668b17b18741e9a0",
+    "approvedProxySha256": "07d0b6b6f37254dd81215f7e3e3b07336af6428f96f057e6bc5192f26870b8b1",
+    "scope": [
+      "credential-transport",
+      "runtime-identity-canary",
+      "v8-pilot"
+    ],
+    "approvalDoesNotMeanGatePass": true,
+    "runtimeIdentityCanaryStillPending": true,
+    "independentSolAcceptanceStillPending": true
+  },
+  "credentialPresent": false
+}
