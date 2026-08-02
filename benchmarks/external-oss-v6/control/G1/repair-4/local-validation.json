@@ -1,0 +1,31 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "evidenceClass": "external-observational",
+  "repair": "repair-4",
+  "baseCommit": "208528d9d8f8d6f7eb12e74b0ab0226ad76185ed",
+  "validatedAt": "2026-08-02T01:07:36Z",
+  "status": "PASS_WITH_RUNTIME_NOT_RUN_LOCALLY",
+  "checks": {
+    "npmCi": "NOT_APPLICABLE_NO_LOCKFILE",
+    "npmRunCheck": "PASS",
+    "npmRunValidate": "PASS",
+    "npmRunTestGovernance": "PASS: 127 tests, 0 failures",
+    "npmRunTestPrivacy": "PASS: 24 tests, 0 failures",
+    "npmRunTestExperimental": "PASS: 125 tests, 0 failures",
+    "npmRunCi": "PASS",
+    "npmRunCiExperimental": "PASS: 125 tests, 0 failures",
+    "v6ContractValidation": "PASS",
+    "v6ShellValidation": "PASS: 6 shell blocks",
+    "v6RuntimeIdentityRegression": "PASS",
+    "v6PermissionRegression": "PASS",
+    "v6ArtifactLayoutRegression": "PASS",
+    "v6JsonParse": "PASS: 25 JSON files",
+    "v6WorkflowYamlParse": "PASS",
+    "v6ReproducerBashSyntax": "PASS",
+    "gitDiffCheck": "PASS",
+    "localDockerRuntime": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE"
+  },
+  "claimBoundary": "Local validation only; no local Docker runtime, cache READY, offline smoke, aggregate READY, or G1 acceptance claim.",
+  "failureEvidence": "benchmarks/external-oss-v6/control/G1/repair-4/run-30725930464-failure.json"
+}

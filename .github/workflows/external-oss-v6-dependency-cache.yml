@@ -31,6 +31,7 @@ jobs:
         run: |
           node benchmarks/external-oss-v6/tests/v6-contract-validation.mjs
           node benchmarks/external-oss-v6/tests/v6-shell-validation.mjs
+          node benchmarks/external-oss-v6/tests/v6-runtime-identity-regression.mjs
           node benchmarks/external-oss-v6/tests/v6-artifact-layout-regression.mjs
       - name: Reconstruct exact inherited seed identity
         shell: bash
@@ -150,6 +151,9 @@ jobs:
           actual_tree=$(git -C "$sealed_root" rev-parse HEAD^{tree})
           actual_hash=$(node benchmarks/external-oss-v5/tests/seed-tree-hash.mjs "$sealed_root")
           test "$actual_commit" = "$expected_commit"; test "$actual_tree" = "$expected_tree"; test "$actual_hash" = "$expected_hash"
+          docker pull "$runtime_reference"
+          runtime_tag="governseed-v6-runtime:$TASK_ID"
+          docker tag "$runtime_reference" "$runtime_tag"
           cache_roots="$artifact_root/cache-roots.txt"
           : > "$cache_roots"
           case "$TASK_ID" in
@@ -168,10 +172,23 @@ jobs:
               printf '%s\n' node_modules >> "$cache_roots"
               ;;
             TASK-OSS-09)
-              uv sync --group testing --directory "$sealed_root"
+              uv_binary=$(command -v uv)
+              docker run --rm --network bridge \
+                --mount "type=bind,src=$sealed_root,dst=/workspace" \
+                --mount "type=bind,src=$uv_binary,dst=/usr/local/bin/uv,readonly" \
+                --workdir /workspace \
+                "$runtime_tag" \
+                /usr/local/bin/uv sync --group testing --directory /workspace
               test -z "$(git -C "$sealed_root" status --porcelain -- uv.lock)"
-              export PAPERLESS_SECRET_KEY=synthetic-test-only-value PAPERLESS_DISABLE_DBHANDLER=true PAPERLESS_CACHE_BACKEND=django.core.cache.backends.locmem.LocMemCache PAPERLESS_CHANNELS_BACKEND=channels.layers.InMemoryChannelLayer
-              ( cd "$sealed_root"; .venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py )
+              docker run --rm --network bridge \
+                --mount "type=bind,src=$sealed_root,dst=/workspace" \
+                --workdir /workspace \
+                --env PAPERLESS_SECRET_KEY=synthetic-test-only-value \
+                --env PAPERLESS_DISABLE_DBHANDLER=true \
+                --env PAPERLESS_CACHE_BACKEND=django.core.cache.backends.locmem.LocMemCache \
+                --env PAPERLESS_CHANNELS_BACKEND=channels.layers.InMemoryChannelLayer \
+                "$runtime_tag" \
+                /workspace/.venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py
               printf '%s\n' .venv >> "$cache_roots"
               ;;
             *) exit 2 ;;
@@ -185,9 +202,6 @@ jobs:
           test -s "$cache_roots"
           chmod -R a-w "$cache_root"
           git -C "$sealed_root" archive --format=tar HEAD | gzip -n > "$artifact_root/seed.tgz"
-          docker pull "$runtime_reference"
-          runtime_tag="governseed-v6-runtime:$TASK_ID"
-          docker tag "$runtime_reference" "$runtime_tag"
           docker save "$runtime_tag" | gzip -n > "$artifact_root/runtime-image.tgz"
           tar --sort=name --mtime='UTC 1970-01-01' --owner=0 --group=0 --numeric-owner --use-compress-program='gzip -n' -cf "$artifact_root/cache.tgz" -C "$cache_root" .
           cache_sha=$(sha256sum "$artifact_root/cache.tgz" | awk '{print $1}')

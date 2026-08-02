@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "evidenceClass": "external-observational",
+  "runId": "30725930464",
+  "baseCommit": "208528d9d8f8d6f7eb12e74b0ab0226ad76185ed",
+  "workflow": ".github/workflows/external-oss-v6-dependency-cache.yml",
+  "status": "FAILURE",
+  "stage": "verify-dependency-cache-offline",
+  "observed": {
+    "seedIdentity": "3/3 PASS",
+    "cachePreparation": "3/3 PASS",
+    "permissionDiagnosis": "3/3 PASS",
+    "offlineTasks": {
+      "TASK-OSS-01": "CANCELLED_AFTER_TASK_OSS_09_FAILURE",
+      "TASK-OSS-03": "CANCELLED_AFTER_TASK_OSS_09_FAILURE",
+      "TASK-OSS-09": {
+        "status": "FAILURE",
+        "code": "DEPENDENCY_CACHE_INCOMPLETE"
+      }
+    },
+    "aggregate": "FAILURE_NO_THREE_READY_RECEIPTS"
+  },
+  "firstFailingOperation": "test -e /cache/.venv/bin/python",
+  "evidence": [
+    "TASK-OSS-09 offline receipt was uploaded with status FAILURE and code DEPENDENCY_CACHE_INCOMPLETE",
+    "V6 preparation log shows host-runner `uv sync --group testing --directory $sealed_root`",
+    "V6 offline log shows python:3.14.6-slim-bookworm and /cache/.venv/bin/python",
+    "Local uv probe confirms uv-created bin/python is an absolute symlink to the host interpreter"
+  ],
+  "rootCause": {
+    "candidate": "Python virtualenv contains host-specific absolute interpreter path",
+    "status": "CONFIRMED_AS_HARNESS_DEFECT",
+    "scope": "TASK-OSS-09 preparation/runtime identity mismatch",
+    "notClaimed": [
+      "No claim that UID 65532 permission containment passed",
+      "No claim that any dependency cache was READY",
+      "No claim that V6 G1 was accepted"
+    ]
+  },
+  "repairBoundary": {
+    "allowed": [
+      "Build the Paperless virtualenv inside the declared public runtime image",
+      "Add static regression coverage for runtime identity portability"
+    ],
+    "forbidden": [
+      "Change V5 evidence or task facts",
+      "Change public acceptance criteria",
+      "Start credential, Codex, Pilot, or scoring phases"
+    ]
+  }
+}
