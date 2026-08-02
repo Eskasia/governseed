@@ -1,0 +1,12 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "evidenceClass": "external-observational",
+  "status": "BLOCKED",
+  "code": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+  "noexecCase": "NOT_RUN",
+  "execCase": "NOT_RUN",
+  "testXPassObserved": false,
+  "actualExecutionObserved": false,
+  "claimBoundary": "No local noexec/exec runtime result is claimed; GitHub Actions runtime integration is required."
+}

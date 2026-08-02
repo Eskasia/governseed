@@ -1,0 +1,158 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "evidenceClass": "external-observational",
+  "status": "READY_FOR_REVIEW",
+  "gitCommit": "0d9faea60b8c2034a2e10621155f4dd3a6a91b2d",
+  "nodeVersion": "v26.3.0",
+  "npmVersion": "11.16.0",
+  "packageLock": "NOT_APPLICABLE_NO_LOCKFILE",
+  "commands": [
+    {
+      "id": "npm-ci",
+      "command": [
+        "npm",
+        "ci"
+      ],
+      "status": "NOT_APPLICABLE_NO_LOCKFILE"
+    },
+    {
+      "id": "npm-check",
+      "command": [
+        "npm",
+        "run",
+        "check"
+      ],
+      "startedAt": "2026-08-02T05:32:05.731Z",
+      "endedAt": "2026-08-02T05:32:07.791Z",
+      "durationMs": 2060,
+      "exitCode": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "npm-validate",
+      "command": [
+        "npm",
+        "run",
+        "validate"
+      ],
+      "startedAt": "2026-08-02T05:32:07.792Z",
+      "endedAt": "2026-08-02T05:32:13.748Z",
+      "durationMs": 5956,
+      "exitCode": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "npm-test-governance",
+      "command": [
+        "npm",
+        "run",
+        "test:governance"
+      ],
+      "startedAt": "2026-08-02T05:32:13.748Z",
+      "endedAt": "2026-08-02T05:32:28.813Z",
+      "durationMs": 15065,
+      "exitCode": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "npm-test-privacy",
+      "command": [
+        "npm",
+        "run",
+        "test:privacy"
+      ],
+      "startedAt": "2026-08-02T05:32:28.813Z",
+      "endedAt": "2026-08-02T05:32:30.883Z",
+      "durationMs": 2070,
+      "exitCode": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "npm-test-experimental",
+      "command": [
+        "npm",
+        "run",
+        "test:experimental"
+      ],
+      "startedAt": "2026-08-02T05:32:30.883Z",
+      "endedAt": "2026-08-02T05:32:32.135Z",
+      "durationMs": 1253,
+      "exitCode": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "npm-ci-script",
+      "command": [
+        "npm",
+        "run",
+        "ci"
+      ],
+      "startedAt": "2026-08-02T05:32:32.136Z",
+      "endedAt": "2026-08-02T05:33:22.688Z",
+      "durationMs": 50553,
+      "exitCode": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "v8-contract-validation",
+      "command": [
+        "node",
+        "benchmarks/external-oss-v8/tests/v8-contract-validation.mjs"
+      ],
+      "startedAt": "2026-08-02T05:33:22.689Z",
+      "endedAt": "2026-08-02T05:33:22.794Z",
+      "durationMs": 106,
+      "exitCode": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "v8-schema-validation",
+      "command": [
+        "node",
+        "benchmarks/external-oss-v8/tests/v8-schema-validation.mjs"
+      ],
+      "startedAt": "2026-08-02T05:33:22.795Z",
+      "endedAt": "2026-08-02T05:33:22.863Z",
+      "durationMs": 69,
+      "exitCode": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "v8-runtime-shell-validation",
+      "command": [
+        "node",
+        "benchmarks/external-oss-v8/tests/v8-runtime-shell-validation.mjs"
+      ],
+      "startedAt": "2026-08-02T05:33:22.864Z",
+      "endedAt": "2026-08-02T05:33:22.943Z",
+      "durationMs": 79,
+      "exitCode": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "yaml-parse",
+      "command": [
+        "ruby",
+        "-e",
+        "require \"yaml\"; YAML.load_file(\".github/workflows/external-oss-v8-dependency-cache.yml\"); puts \"YAML_PASS\""
+      ],
+      "startedAt": "2026-08-02T05:33:22.943Z",
+      "endedAt": "2026-08-02T05:33:23.024Z",
+      "durationMs": 82,
+      "exitCode": 0,
+      "status": "PASS"
+    },
+    {
+      "id": "docker-info",
+      "command": [
+        "docker",
+        "info"
+      ],
+      "exitCode": 1,
+      "status": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE"
+    }
+  ],
+  "runtimeIntegration": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+  "claimBoundary": "Local/static V8 validation only; Docker runtime, cross-run artifact download, offline smoke, negative cache, Sol acceptance, merge, dispatch, G1, G2, Pilot, scoring, and benchmark outcome are not claimed."
+}
