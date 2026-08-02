@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "runId": 30739570734,
+  "evidenceClass": "external-observational",
+  "rawJobLogs": [
+    {"jobId": 91474421921, "path": "seed-TASK-OSS-01-job.log", "sha256": "5e8cfa49d41183c6c4b0709dfb783419ac90cf6574312b3db3c1fa9320adcac9"},
+    {"jobId": 91474421879, "path": "seed-TASK-OSS-03-job.log", "sha256": "7816ed62177b47346232d14db29c30f26f6012bb958fb25cb69fbdbf856a04db"},
+    {"jobId": 91474421850, "path": "seed-TASK-OSS-09-job.log", "sha256": "92fb7bdef409610aa8388eb770c40c38d013302321256bb72ff80301b7e19ce2"},
+    {"jobId": 91474447053, "path": "runtime-TASK-OSS-01-job.log", "sha256": "b93855ed8b6d1ead7e89fc06986f56fdc7538896b3489e3245f17e8509a64ef3"},
+    {"jobId": 91474447056, "path": "runtime-TASK-OSS-03-job.log", "sha256": "2d0d681f86bb5e8b347aa21f05868c90a1a371eef6c4a433a39e23b33137fb22"},
+    {"jobId": 91474447066, "path": "runtime-TASK-OSS-09-job.log", "sha256": "3f14e9173add32029b5f58d31b7ce7eb528fbfc0a92249890f279bc714bb4cce"},
+    {"jobId": 91474564160, "path": "cache-TASK-OSS-01-job.log", "sha256": "0f75a845e952c714f7043c678a45c25a297aa0f50bfdcf24c23c736e16afc28e"},
+    {"jobId": 91474564158, "path": "cache-TASK-OSS-03-job.log", "sha256": "3be2066ae96173a8374dc0cd459d8ac1451f81a5fcdf8748f2cba9ecad7a9a58"},
+    {"jobId": 91474564156, "path": "cache-TASK-OSS-09-job.log", "sha256": "e41b4a4c2d2dc21ef40351369e6994808eed9df9b9d01325118ee70869375f73"},
+    {"jobId": 91474655763, "path": "workspace-TASK-OSS-01-job.log", "sha256": "997afc4d83705bdc29d5b89441f8b37d69646dc15b482e00977ed089bdfcc30d"},
+    {"jobId": 91474655785, "path": "workspace-TASK-OSS-03-job.log", "sha256": "2af18ea1c72de9d2657dcc6c53a0493ed501de2d0162011c6374e72c6ec8360e"},
+    {"jobId": 91474655769, "path": "workspace-TASK-OSS-09-job.log", "sha256": "e4911725aa5cb946817a923f54e0b419c1fda7a7cd6c963d88fe7dc79a98765a"},
+    {"jobId": 91474802683, "path": "offline-TASK-OSS-01-job.log", "sha256": "2da9e576b1b9d5d2e3d09fa94829d8c5f6e69fa9c7c63f6cafb1f7e911d9e2bc"},
+    {"jobId": 91474802665, "path": "offline-TASK-OSS-03-job.log", "sha256": "1c28258c6c32ea281a5960148ced10d432e0db5c1fe68dd5dd3badee1f4b8a48"},
+    {"jobId": 91474802672, "path": "offline-TASK-OSS-09-job.log", "sha256": "d382bb5ddbf2dce1c052d41b1de65a98dfc0509b88d46cbc3a58563e7c89ff8a"},
+    {"jobId": 91474926307, "path": "aggregate-job.log", "sha256": "cbb7e9be4d7cbf209d5a52528a58de4cbd2118e681f3e672a62b177b3f5b5d5a"
+    }
+  ],
+  "downloadedArtifacts": [
+    {"name": "external-oss-v8-workspace-exec-TASK-OSS-01", "artifactId": 8830849270, "path": "workspace-TASK-OSS-01/", "receipt": "workspace-exec-receipt.json", "receiptSha256": "408dacbb54ee74981681a3592eb90d492693ad40a7467226d5fd3dab4f787aa5"},
+    {"name": "external-oss-v8-workspace-exec-TASK-OSS-03", "artifactId": 8830843847, "path": "workspace-TASK-OSS-03/", "receipt": "workspace-exec-receipt.json", "receiptSha256": "cdec9f12860624f2eaf5d85be447ac8a3c7c88c8fb0ff7125c5bf58182de36ed"},
+    {"name": "external-oss-v8-workspace-exec-TASK-OSS-09", "artifactId": 8830844544, "path": "workspace-TASK-OSS-09/", "receipt": "workspace-exec-receipt.json", "receiptSha256": "8b5ae2cfd08c11c736ca81b224d52396b65836b98ba7b6045b8bfec229ea7f46"},
+    {"name": "external-oss-v8-receipt-TASK-OSS-01", "artifactId": 8830863699, "path": "offline-TASK-OSS-01/", "receipt": "cache-receipt.json", "receiptSha256": "9f8c01ee7fe49e4015c699af3148f97492206a9b6eef4db697053844c038e0ab"},
+    {"name": "external-oss-v8-receipt-TASK-OSS-03", "artifactId": 8830862108, "path": "offline-TASK-OSS-03/", "receipt": "cache-receipt.json", "receiptSha256": "9c83776f9957dc17e7d376ea8e745ac77a28cde0fc653dca8cc40c91435126fb"},
+    {"name": "external-oss-v8-receipt-TASK-OSS-09", "artifactId": 8830863092, "path": "offline-TASK-OSS-09/", "receipt": "cache-receipt.json", "receiptSha256": "7fab92757907a0e9e88f220f19f43040ed7776c0231ca3b34f0c2381f50dc40e"},
+    {"name": "external-oss-v8-aggregate-qualification", "artifactId": 8830866420, "path": "aggregate-artifact/", "receipt": "v8-qualification.json", "receiptSha256": "7a542ee8cc678d71fa6c8940e815883064ab32061ead65608fc36b8da1142d92"}
+  ],
+  "notDownloaded": [
+    "runtime image archives",
+    "dependency cache archives",
+    "seed identity artifacts"
+  ],
+  "notDownloadedReason": "Large or inherited prerequisite payloads were not required to establish the V8 G1 decision; their identity was checked by the passing prerequisite jobs and the captured cache receipts.",
+  "integrityCommand": "shasum -a 256 <captured evidence file>",
+  "claimBoundary": "Downloaded GitHub Actions evidence and SHA-256 inventory only; no claim beyond the recorded V8 G1 qualification."
+}

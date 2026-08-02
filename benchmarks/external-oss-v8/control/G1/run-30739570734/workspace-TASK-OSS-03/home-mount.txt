@@ -1,0 +1,2 @@
+TARGET          FSTYPE OPTIONS
+/home/benchmark tmpfs  rw,nosuid,nodev,noexec,relatime,size=1048576k,mode=700,uid=65532,gid=65532,inode64

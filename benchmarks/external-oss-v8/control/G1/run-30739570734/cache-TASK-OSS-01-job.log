@@ -1,0 +1,406 @@
+﻿2026-08-02T08:21:47.1038112Z Current runner version: '2.336.0'
+2026-08-02T08:21:47.1074271Z ##[group]Runner Image Provisioner
+2026-08-02T08:21:47.1075626Z Hosted Compute Agent
+2026-08-02T08:21:47.1076656Z Version: 20260707.563
+2026-08-02T08:21:47.1077830Z Commit: 02667638d2b423fbc733a8e32a88b44996a3ba6e
+2026-08-02T08:21:47.1078983Z Build Date: 2026-07-07T19:33:50Z
+2026-08-02T08:21:47.1080076Z Worker ID: {24e4cd6a-8adc-4f31-8515-da5efa9adb00}
+2026-08-02T08:21:47.1081388Z Azure Region: eastus
+2026-08-02T08:21:47.1082261Z ##[endgroup]
+2026-08-02T08:21:47.1085350Z ##[group]Operating System
+2026-08-02T08:21:47.1086297Z Ubuntu
+2026-08-02T08:21:47.1087080Z 24.04.4
+2026-08-02T08:21:47.1088011Z LTS
+2026-08-02T08:21:47.1088885Z ##[endgroup]
+2026-08-02T08:21:47.1089796Z ##[group]Runner Image
+2026-08-02T08:21:47.1090889Z Image: ubuntu-24.04
+2026-08-02T08:21:47.1091782Z Version: 20260720.247.2
+2026-08-02T08:21:47.1094213Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260720.247/images/ubuntu/Ubuntu2404-Readme.md
+2026-08-02T08:21:47.1097575Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260720.247
+2026-08-02T08:21:47.1099191Z ##[endgroup]
+2026-08-02T08:21:47.1101090Z ##[group]GITHUB_TOKEN Permissions
+2026-08-02T08:21:47.1104168Z Actions: read
+2026-08-02T08:21:47.1105066Z Contents: read
+2026-08-02T08:21:47.1106150Z Metadata: read
+2026-08-02T08:21:47.1107028Z ##[endgroup]
+2026-08-02T08:21:47.1110041Z Secret source: Actions
+2026-08-02T08:21:47.1111934Z Prepare workflow directory
+2026-08-02T08:21:47.1675325Z Prepare all required actions
+2026-08-02T08:21:47.1746163Z Getting action download info
+2026-08-02T08:21:47.3471279Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-08-02T08:21:47.5850294Z Download action repository 'actions/download-artifact@v4' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+2026-08-02T08:21:47.7355452Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-08-02T08:21:47.9697518Z Complete job name: Qualify inherited dependency cache (TASK-OSS-01)
+2026-08-02T08:21:48.0493278Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-02T08:21:48.0502446Z ##[group]Run actions/checkout@v4
+2026-08-02T08:21:48.0503612Z with:
+2026-08-02T08:21:48.0504071Z   fetch-depth: 1
+2026-08-02T08:21:48.0504531Z   repository: Eskasia/governseed
+2026-08-02T08:21:48.0508558Z   token: ***
+2026-08-02T08:21:48.0508982Z   ssh-strict: true
+2026-08-02T08:21:48.0509408Z   ssh-user: git
+2026-08-02T08:21:48.0509838Z   persist-credentials: true
+2026-08-02T08:21:48.0510326Z   clean: true
+2026-08-02T08:21:48.0510758Z   sparse-checkout-cone-mode: true
+2026-08-02T08:21:48.0511266Z   fetch-tags: false
+2026-08-02T08:21:48.0511912Z   show-progress: true
+2026-08-02T08:21:48.0512553Z   lfs: false
+2026-08-02T08:21:48.0512989Z   submodules: false
+2026-08-02T08:21:48.0513610Z   set-safe-directory: true
+2026-08-02T08:21:48.0514106Z   allow-unsafe-pr-checkout: false
+2026-08-02T08:21:48.0514971Z env:
+2026-08-02T08:21:48.0515401Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T08:21:48.0515964Z   EVIDENCE_CLASS: external-observational
+2026-08-02T08:21:48.0516502Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T08:21:48.0516977Z ##[endgroup]
+2026-08-02T08:21:48.1650425Z Syncing repository: Eskasia/governseed
+2026-08-02T08:21:48.1653330Z ##[group]Getting Git version info
+2026-08-02T08:21:48.1654542Z Working directory is '/home/runner/work/governseed/governseed'
+2026-08-02T08:21:48.1664465Z [command]/usr/bin/git version
+2026-08-02T08:21:48.1753004Z git version 2.54.0
+2026-08-02T08:21:48.1777041Z ##[endgroup]
+2026-08-02T08:21:48.1806460Z Temporarily overriding HOME='/home/runner/work/_temp/6cf42887-3f0e-4b75-a03a-d4cde83ba153' before making global git config changes
+2026-08-02T08:21:48.1809489Z Adding repository directory to the temporary git global config as a safe directory
+2026-08-02T08:21:48.1811559Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/governseed/governseed
+2026-08-02T08:21:48.1868115Z Deleting the contents of '/home/runner/work/governseed/governseed'
+2026-08-02T08:21:48.1871259Z ##[group]Initializing the repository
+2026-08-02T08:21:48.1877185Z [command]/usr/bin/git init /home/runner/work/governseed/governseed
+2026-08-02T08:21:48.1998873Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-08-02T08:21:48.2000788Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-08-02T08:21:48.2002315Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-08-02T08:21:48.2004095Z hint: call:
+2026-08-02T08:21:48.2015301Z hint:
+2026-08-02T08:21:48.2023603Z hint: 	git config --global init.defaultBranch <name>
+2026-08-02T08:21:48.2024705Z hint:
+2026-08-02T08:21:48.2025693Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-08-02T08:21:48.2027181Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-08-02T08:21:48.2028392Z hint:
+2026-08-02T08:21:48.2029084Z hint: 	git branch -m <name>
+2026-08-02T08:21:48.2029852Z hint:
+2026-08-02T08:21:48.2030880Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-08-02T08:21:48.2032519Z Initialized empty Git repository in /home/runner/work/governseed/governseed/.git/
+2026-08-02T08:21:48.2035588Z [command]/usr/bin/git remote add origin https://github.com/Eskasia/governseed
+2026-08-02T08:21:48.2074911Z ##[endgroup]
+2026-08-02T08:21:48.2076123Z ##[group]Disabling automatic garbage collection
+2026-08-02T08:21:48.2077248Z [command]/usr/bin/git config --local gc.auto 0
+2026-08-02T08:21:48.2109916Z ##[endgroup]
+2026-08-02T08:21:48.2111055Z ##[group]Setting up auth
+2026-08-02T08:21:48.2118290Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-08-02T08:21:48.2158861Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-08-02T08:21:48.2575546Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-08-02T08:21:48.2624913Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-08-02T08:21:48.2875611Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-08-02T08:21:48.2915707Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-08-02T08:21:48.3153652Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-08-02T08:21:48.3197265Z ##[endgroup]
+2026-08-02T08:21:48.3198449Z ##[group]Fetching the repository
+2026-08-02T08:21:48.3209674Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +38a19c8169ba16879b6fca1132f3bc0f5b6b3e85:refs/remotes/origin/main
+2026-08-02T08:21:50.3158696Z From https://github.com/Eskasia/governseed
+2026-08-02T08:21:50.3160193Z  * [new ref]         38a19c8169ba16879b6fca1132f3bc0f5b6b3e85 -> origin/main
+2026-08-02T08:21:50.3201628Z ##[endgroup]
+2026-08-02T08:21:50.3203632Z ##[group]Determining the checkout info
+2026-08-02T08:21:50.3205881Z ##[endgroup]
+2026-08-02T08:21:50.3210876Z [command]/usr/bin/git sparse-checkout disable
+2026-08-02T08:21:50.3267390Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-08-02T08:21:50.3302991Z ##[group]Checking out the ref
+2026-08-02T08:21:50.3308110Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-08-02T08:21:50.5703745Z Switched to a new branch 'main'
+2026-08-02T08:21:50.5715538Z branch 'main' set up to track 'origin/main'.
+2026-08-02T08:21:50.5758386Z ##[endgroup]
+2026-08-02T08:21:50.5807175Z [command]/usr/bin/git log -1 --format=%H
+2026-08-02T08:21:50.5836742Z 38a19c8169ba16879b6fca1132f3bc0f5b6b3e85
+2026-08-02T08:21:50.6169559Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-02T08:21:50.6172422Z ##[group]Run actions/download-artifact@v4
+2026-08-02T08:21:50.6172931Z with:
+2026-08-02T08:21:50.6173621Z   name: external-oss-v7-dependency-cache-TASK-OSS-01
+2026-08-02T08:21:50.6174162Z   run-id: 30732978684
+2026-08-02T08:21:50.6177575Z   github-token: ***
+2026-08-02T08:21:50.6178018Z   repository: Eskasia/governseed
+2026-08-02T08:21:50.6178534Z   path: /home/runner/work/_temp/v7-cache/TASK-OSS-01
+2026-08-02T08:21:50.6179086Z   merge-multiple: false
+2026-08-02T08:21:50.6179500Z env:
+2026-08-02T08:21:50.6179895Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T08:21:50.6180383Z   EVIDENCE_CLASS: external-observational
+2026-08-02T08:21:50.6180908Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T08:21:50.6181338Z ##[endgroup]
+2026-08-02T08:21:50.7703869Z Downloading single artifact
+2026-08-02T08:21:50.7790091Z (node:2225) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-08-02T08:21:50.7791912Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-08-02T08:21:50.8016367Z (node:2225) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-08-02T08:21:50.9378910Z Preparing to download the following artifacts:
+2026-08-02T08:21:50.9381898Z - external-oss-v7-dependency-cache-TASK-OSS-01 (ID: 8828607861, Size: 788482893, Expected Digest: sha256:93b9ecd4b0d72bed7bb3d6b394d1fa2cc1a6b6fd280d3afb6e75b8b8a3194d24)
+2026-08-02T08:21:50.9425794Z Downloading artifact '8828607861' from 'Eskasia/governseed'
+2026-08-02T08:21:51.0415508Z Redirecting to blob download url: https://productionresultssa7.blob.core.windows.net/actions-results/894d70b7-a56f-4aa7-8975-13e0ab562337/workflow-job-run-e4e8a796-c7dd-55b3-aaf0-4862ccf4a407/artifacts/b069e2646de86789cd0aae45101f0a1492f731e596efaed78a23977a278a8a7b.zip
+2026-08-02T08:21:51.0418188Z Starting download of artifact to: /home/runner/work/_temp/v7-cache/TASK-OSS-01
+2026-08-02T08:21:51.1509594Z (node:2225) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-08-02T08:22:00.4634835Z SHA256 digest of downloaded artifact is 93b9ecd4b0d72bed7bb3d6b394d1fa2cc1a6b6fd280d3afb6e75b8b8a3194d24
+2026-08-02T08:22:00.4635977Z Artifact download completed successfully.
+2026-08-02T08:22:00.4636835Z Total of 1 artifact(s) downloaded
+2026-08-02T08:22:00.4646213Z Download artifact has finished successfully
+2026-08-02T08:22:00.4877285Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-02T08:22:00.4878640Z ##[group]Run actions/download-artifact@v4
+2026-08-02T08:22:00.4878928Z with:
+2026-08-02T08:22:00.4879183Z   name: external-oss-v8-runtime-image-TASK-OSS-01
+2026-08-02T08:22:00.4879550Z   path: /home/runner/work/_temp/v8-runtime/TASK-OSS-01
+2026-08-02T08:22:00.4879879Z   merge-multiple: false
+2026-08-02T08:22:00.4880115Z   repository: Eskasia/governseed
+2026-08-02T08:22:00.4880375Z   run-id: 30739570734
+2026-08-02T08:22:00.4880854Z env:
+2026-08-02T08:22:00.4881050Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T08:22:00.4881340Z   EVIDENCE_CLASS: external-observational
+2026-08-02T08:22:00.4881615Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T08:22:00.4881916Z ##[endgroup]
+2026-08-02T08:22:00.6467501Z Downloading single artifact
+2026-08-02T08:22:00.6626696Z (node:2270) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-08-02T08:22:00.6628292Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-08-02T08:22:00.7315839Z Preparing to download the following artifacts:
+2026-08-02T08:22:00.7317289Z - external-oss-v8-runtime-image-TASK-OSS-01 (ID: 8830821030, Size: 402378270, Expected Digest: sha256:8b6b8d21aec68a9f06ed6e085650c7c8cc2839957b8bcc8d2630cfb107fc2e94)
+2026-08-02T08:22:00.8148471Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/5987fa1b-97c2-4063-a1a9-b1135aa8062a/workflow-job-run-229d6baf-cedd-5752-bdaf-c91015d24ee4/artifacts/e2795ca174f58dcb85a087f5e5d6faefb3bcc077eb84de9fd3c67d7a0a5c0671.zip
+2026-08-02T08:22:00.8151426Z Starting download of artifact to: /home/runner/work/_temp/v8-runtime/TASK-OSS-01
+2026-08-02T08:22:00.9184461Z (node:2270) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-08-02T08:22:06.7756150Z SHA256 digest of downloaded artifact is 8b6b8d21aec68a9f06ed6e085650c7c8cc2839957b8bcc8d2630cfb107fc2e94
+2026-08-02T08:22:06.7757001Z Artifact download completed successfully.
+2026-08-02T08:22:06.7757369Z Total of 1 artifact(s) downloaded
+2026-08-02T08:22:06.7765650Z Download artifact has finished successfully
+2026-08-02T08:22:06.7933941Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-02T08:22:06.7935740Z ##[group]Run actions/download-artifact@v4
+2026-08-02T08:22:06.7936036Z with:
+2026-08-02T08:22:06.7936277Z   name: external-oss-v8-seed-identity-TASK-OSS-01
+2026-08-02T08:22:06.7936641Z   path: /home/runner/work/_temp/v8-seed/TASK-OSS-01
+2026-08-02T08:22:06.7936949Z   merge-multiple: false
+2026-08-02T08:22:06.7937182Z   repository: Eskasia/governseed
+2026-08-02T08:22:06.7937427Z   run-id: 30739570734
+2026-08-02T08:22:06.7937626Z env:
+2026-08-02T08:22:06.7937813Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T08:22:06.7938098Z   EVIDENCE_CLASS: external-observational
+2026-08-02T08:22:06.7938375Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T08:22:06.7938639Z ##[endgroup]
+2026-08-02T08:22:06.9487684Z Downloading single artifact
+2026-08-02T08:22:06.9641113Z (node:2283) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-08-02T08:22:06.9642412Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-08-02T08:22:07.0387856Z Preparing to download the following artifacts:
+2026-08-02T08:22:07.0389198Z - external-oss-v8-seed-identity-TASK-OSS-01 (ID: 8830806457, Size: 488, Expected Digest: sha256:baffe361f1b8d9ffef905a530a5dcbbae467a4fa3ea46fcd0be630e70f095017)
+2026-08-02T08:22:07.1129326Z Redirecting to blob download url: https://productionresultssa2.blob.core.windows.net/actions-results/5987fa1b-97c2-4063-a1a9-b1135aa8062a/workflow-job-run-aa01cc3a-66b9-5b98-a10f-a5fb79ce471a/artifacts/e84310d5b1e47427b8fcfd185f9d7140d7587634152387b46f6c90992ac9046c.zip
+2026-08-02T08:22:07.1131441Z Starting download of artifact to: /home/runner/work/_temp/v8-seed/TASK-OSS-01
+2026-08-02T08:22:07.1426236Z (node:2283) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-08-02T08:22:07.1464778Z SHA256 digest of downloaded artifact is baffe361f1b8d9ffef905a530a5dcbbae467a4fa3ea46fcd0be630e70f095017
+2026-08-02T08:22:07.1465983Z Artifact download completed successfully.
+2026-08-02T08:22:07.1466487Z Total of 1 artifact(s) downloaded
+2026-08-02T08:22:07.1470786Z Download artifact has finished successfully
+2026-08-02T08:22:07.1598053Z ##[group]Run set -euo pipefail
+2026-08-02T08:22:07.1598524Z [36;1mset -euo pipefail[0m
+2026-08-02T08:22:07.1598828Z [36;1msource="$RUNNER_TEMP/v7-cache/$TASK_ID"[0m
+2026-08-02T08:22:07.1599190Z [36;1mruntime="$RUNNER_TEMP/v8-runtime/$TASK_ID"[0m
+2026-08-02T08:22:07.1599621Z [36;1mseed_identity="$RUNNER_TEMP/v8-seed/$TASK_ID/seed-identity.json"[0m
+2026-08-02T08:22:07.1600064Z [36;1martifact="$RUNNER_TEMP/v8-cache/$TASK_ID"[0m
+2026-08-02T08:22:07.1600378Z [36;1mmkdir -p "$artifact"[0m
+2026-08-02T08:22:07.1600641Z [36;1mtest -f "$source/cache.tgz"[0m
+2026-08-02T08:22:07.1600941Z [36;1mtest -f "$source/cache-manifest.json"[0m
+2026-08-02T08:22:07.1601244Z [36;1mtest -f "$source/seed.tgz"[0m
+2026-08-02T08:22:07.1601538Z [36;1mtest -f "$source/cache-roots.txt"[0m
+2026-08-02T08:22:07.1601914Z [36;1mcache_sha=$(sha256sum "$source/cache.tgz" | awk '{print $1}')[0m
+2026-08-02T08:22:07.1602360Z [36;1mseed_sha=$(sha256sum "$source/seed.tgz" | awk '{print $1}')[0m
+2026-08-02T08:22:07.1602873Z [36;1mmanifest_sha=$(sha256sum "$source/cache-manifest.json" | awk '{print $1}')[0m
+2026-08-02T08:22:07.1603782Z [36;1mtest "$cache_sha" = "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'[0m
+2026-08-02T08:22:07.1604265Z [36;1mimport { readFileSync } from 'node:fs';[0m
+2026-08-02T08:22:07.1604717Z [36;1mconsole.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).cacheSha256);[0m
+2026-08-02T08:22:07.1605131Z [36;1mNODE[0m
+2026-08-02T08:22:07.1605321Z [36;1m)"[0m
+2026-08-02T08:22:07.1605689Z [36;1mtest "$seed_sha" = "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'[0m
+2026-08-02T08:22:07.1606165Z [36;1mimport { readFileSync } from 'node:fs';[0m
+2026-08-02T08:22:07.1606650Z [36;1mconsole.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).seedArchiveSha256);[0m
+2026-08-02T08:22:07.1607098Z [36;1mNODE[0m
+2026-08-02T08:22:07.1607283Z [36;1m)"[0m
+2026-08-02T08:22:07.1607587Z [36;1mtest "$manifest_sha" = "$(awk '{print $1}' "$source/manifest.sha256")"[0m
+2026-08-02T08:22:07.1608138Z [36;1mtest "$cache_sha" = "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'[0m
+2026-08-02T08:22:07.1608606Z [36;1mimport { readFileSync } from 'node:fs';[0m
+2026-08-02T08:22:07.1609039Z [36;1mconsole.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).cacheSha256);[0m
+2026-08-02T08:22:07.1609443Z [36;1mNODE[0m
+2026-08-02T08:22:07.1609633Z [36;1m)"[0m
+2026-08-02T08:22:07.1609947Z [36;1mruntime_sha=$(sha256sum "$runtime/runtime-image.tgz" | awk '{print $1}')[0m
+2026-08-02T08:22:07.1610513Z [36;1mtest "$runtime_sha" = "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'[0m
+2026-08-02T08:22:07.1610993Z [36;1mimport { readFileSync } from 'node:fs';[0m
+2026-08-02T08:22:07.1611484Z [36;1mconsole.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).runtimeImageArchiveSha256);[0m
+2026-08-02T08:22:07.1611935Z [36;1mNODE[0m
+2026-08-02T08:22:07.1612122Z [36;1m)"[0m
+2026-08-02T08:22:07.1612443Z [36;1mtest "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'[0m
+2026-08-02T08:22:07.1612860Z [36;1mimport { readFileSync } from 'node:fs';[0m
+2026-08-02T08:22:07.1613707Z [36;1mconsole.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).sealedSeedCommit);[0m
+2026-08-02T08:22:07.1614139Z [36;1mNODE[0m
+2026-08-02T08:22:07.1614414Z [36;1m)" = "$(node --input-type=module - "$seed_identity" <<'NODE'[0m
+2026-08-02T08:22:07.1614788Z [36;1mimport { readFileSync } from 'node:fs';[0m
+2026-08-02T08:22:07.1615232Z [36;1mconsole.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).sealedSeedCommit);[0m
+2026-08-02T08:22:07.1615648Z [36;1mNODE[0m
+2026-08-02T08:22:07.1615824Z [36;1m)"[0m
+2026-08-02T08:22:07.1616331Z [36;1mtest "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'[0m
+2026-08-02T08:22:07.1616750Z [36;1mimport { readFileSync } from 'node:fs';[0m
+2026-08-02T08:22:07.1617361Z [36;1mconsole.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).sealedSeedTreeSha256);[0m
+2026-08-02T08:22:07.1617821Z [36;1mNODE[0m
+2026-08-02T08:22:07.1618083Z [36;1m)" = "$(node --input-type=module - "$seed_identity" <<'NODE'[0m
+2026-08-02T08:22:07.1618441Z [36;1mimport { readFileSync } from 'node:fs';[0m
+2026-08-02T08:22:07.1618904Z [36;1mconsole.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).sealedSeedTreeSha256);[0m
+2026-08-02T08:22:07.1619336Z [36;1mNODE[0m
+2026-08-02T08:22:07.1619514Z [36;1m)"[0m
+2026-08-02T08:22:07.1619822Z [36;1mtest "$(node --input-type=module - "$source/cache-manifest.json" <<'NODE'[0m
+2026-08-02T08:22:07.1620237Z [36;1mimport { readFileSync } from 'node:fs';[0m
+2026-08-02T08:22:07.1620693Z [36;1mconsole.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).runtimeImageId);[0m
+2026-08-02T08:22:07.1621123Z [36;1mNODE[0m
+2026-08-02T08:22:07.1621507Z [36;1m)" = "$(node --input-type=module - "$runtime/runtime-image-receipt.json" <<'NODE'[0m
+2026-08-02T08:22:07.1621995Z [36;1mimport { readFileSync } from 'node:fs';[0m
+2026-08-02T08:22:07.1622419Z [36;1mconsole.log(JSON.parse(readFileSync(process.argv[2], 'utf8')).imageId);[0m
+2026-08-02T08:22:07.1622808Z [36;1mNODE[0m
+2026-08-02T08:22:07.1623245Z [36;1m)"[0m
+2026-08-02T08:22:07.1623477Z [36;1mcp -R "$source/." "$artifact/"[0m
+2026-08-02T08:22:07.1623864Z [36;1mcp "$runtime/runtime-image.tgz" "$artifact/runtime-image.tgz"[0m
+2026-08-02T08:22:07.1624408Z [36;1mcp "$runtime/runtime-image-receipt.json" "$artifact/runtime-image-receipt.json"[0m
+2026-08-02T08:22:07.1625037Z [36;1mcp "$runtime/inherited-runtime-image.json" "$artifact/inherited-runtime-image.json"[0m
+2026-08-02T08:22:07.1625852Z [36;1mSOURCE_SHA=$(sha256sum "$source/cache-manifest.json" | awk '{print $1}') node --input-type=module - "$artifact/inherited-cache.json" <<'NODE'[0m
+2026-08-02T08:22:07.1626560Z [36;1mimport { readFileSync, writeFileSync } from 'node:fs';[0m
+2026-08-02T08:22:07.1627252Z [36;1mconst manifest = JSON.parse(readFileSync(`${process.env.RUNNER_TEMP}/v7-cache/${process.env.TASK_ID}/cache-manifest.json`, 'utf8'));[0m
+2026-08-02T08:22:07.1630325Z [36;1mwriteFileSync(process.argv[2], JSON.stringify({ schemaVersion: 1, benchmarkId: process.env.BENCHMARK_ID, evidenceClass: process.env.EVIDENCE_CLASS, taskId: process.env.TASK_ID, sourceRunId: Number(process.env.V7_SOURCE_RUN_ID), sourceArtifact: `external-oss-v7-dependency-cache-${process.env.TASK_ID}`, sourceManifestSha256: process.env.SOURCE_SHA, cacheSha256: manifest.cacheSha256, runtimeImageArchiveSha256: manifest.runtimeImageArchiveSha256, sealedSeedCommit: manifest.sealedSeedCommit, sealedSeedTreeSha256: manifest.sealedSeedTreeSha256, measuredNetworkUsed: false, cacheReadOnlyByMount: true, status: 'READY', claimBoundary: 'Inherited V7 cache identity only; V8 mount and offline qualification are separate.' }, null, 2) + '\n');[0m
+2026-08-02T08:22:07.1633249Z [36;1mNODE[0m
+2026-08-02T08:22:07.1682849Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T08:22:07.1683438Z env:
+2026-08-02T08:22:07.1683658Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T08:22:07.1683953Z   EVIDENCE_CLASS: external-observational
+2026-08-02T08:22:07.1684236Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T08:22:07.1684473Z   TASK_ID: TASK-OSS-01
+2026-08-02T08:22:07.1684684Z ##[endgroup]
+2026-08-02T08:22:10.1204712Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-02T08:22:10.1206282Z ##[group]Run actions/upload-artifact@v4
+2026-08-02T08:22:10.1206733Z with:
+2026-08-02T08:22:10.1207162Z   name: external-oss-v8-dependency-cache-TASK-OSS-01
+2026-08-02T08:22:10.1208022Z   path: /home/runner/work/_temp/v8-cache/TASK-OSS-01/
+2026-08-02T08:22:10.1208537Z   if-no-files-found: ignore
+2026-08-02T08:22:10.1208926Z   compression-level: 6
+2026-08-02T08:22:10.1209269Z   overwrite: false
+2026-08-02T08:22:10.1209647Z   include-hidden-files: false
+2026-08-02T08:22:10.1209944Z env:
+2026-08-02T08:22:10.1210173Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T08:22:10.1210509Z   EVIDENCE_CLASS: external-observational
+2026-08-02T08:22:10.1210881Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T08:22:10.1211159Z ##[endgroup]
+2026-08-02T08:22:10.2887229Z (node:2405) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-08-02T08:22:10.2888187Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-08-02T08:22:10.2986782Z With the provided path, there will be 11 files uploaded
+2026-08-02T08:22:10.2993642Z Artifact name is valid!
+2026-08-02T08:22:10.2994699Z Root directory input is valid!
+2026-08-02T08:22:10.4210214Z Beginning upload of artifact content to blob storage
+2026-08-02T08:22:10.9249974Z (node:2405) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+2026-08-02T08:22:11.0767621Z Uploaded bytes 8388608
+2026-08-02T08:22:11.3432237Z Uploaded bytes 16777216
+2026-08-02T08:22:11.6196629Z Uploaded bytes 25165824
+2026-08-02T08:22:11.9198334Z Uploaded bytes 33554432
+2026-08-02T08:22:12.1805790Z Uploaded bytes 41943040
+2026-08-02T08:22:12.4420403Z Uploaded bytes 50331648
+2026-08-02T08:22:12.6985628Z Uploaded bytes 58720256
+2026-08-02T08:22:12.9359992Z Uploaded bytes 67108864
+2026-08-02T08:22:13.2373910Z Uploaded bytes 75497472
+2026-08-02T08:22:13.4606316Z Uploaded bytes 83886080
+2026-08-02T08:22:13.6915456Z Uploaded bytes 92274688
+2026-08-02T08:22:13.9820637Z Uploaded bytes 100663296
+2026-08-02T08:22:14.1899746Z Uploaded bytes 109051904
+2026-08-02T08:22:14.4316191Z Uploaded bytes 117440512
+2026-08-02T08:22:14.7120934Z Uploaded bytes 125829120
+2026-08-02T08:22:15.0065952Z Uploaded bytes 134217728
+2026-08-02T08:22:15.2509913Z Uploaded bytes 142606336
+2026-08-02T08:22:15.5065915Z Uploaded bytes 150994944
+2026-08-02T08:22:15.7044303Z Uploaded bytes 159383552
+2026-08-02T08:22:15.9452424Z Uploaded bytes 167772160
+2026-08-02T08:22:16.2486367Z Uploaded bytes 176160768
+2026-08-02T08:22:16.4727407Z Uploaded bytes 184549376
+2026-08-02T08:22:16.7613803Z Uploaded bytes 192937984
+2026-08-02T08:22:16.9767119Z Uploaded bytes 201326592
+2026-08-02T08:22:17.2539583Z Uploaded bytes 209715200
+2026-08-02T08:22:17.4816994Z Uploaded bytes 218103808
+2026-08-02T08:22:17.7364695Z Uploaded bytes 226492416
+2026-08-02T08:22:17.9530392Z Uploaded bytes 234881024
+2026-08-02T08:22:18.2238693Z Uploaded bytes 243269632
+2026-08-02T08:22:18.4631461Z Uploaded bytes 251658240
+2026-08-02T08:22:18.7161618Z Uploaded bytes 260046848
+2026-08-02T08:22:19.0190803Z Uploaded bytes 268435456
+2026-08-02T08:22:19.2119647Z Uploaded bytes 276824064
+2026-08-02T08:22:19.4401591Z Uploaded bytes 285212672
+2026-08-02T08:22:19.7146857Z Uploaded bytes 293601280
+2026-08-02T08:22:19.9741541Z Uploaded bytes 301989888
+2026-08-02T08:22:20.2337145Z Uploaded bytes 310378496
+2026-08-02T08:22:20.4684180Z Uploaded bytes 318767104
+2026-08-02T08:22:20.7929432Z Uploaded bytes 327155712
+2026-08-02T08:22:21.0178929Z Uploaded bytes 335544320
+2026-08-02T08:22:21.2638642Z Uploaded bytes 343932928
+2026-08-02T08:22:21.5985572Z Uploaded bytes 352321536
+2026-08-02T08:22:21.7322460Z Uploaded bytes 360710144
+2026-08-02T08:22:22.0478781Z Uploaded bytes 369098752
+2026-08-02T08:22:22.2785766Z Uploaded bytes 377487360
+2026-08-02T08:22:22.5705988Z Uploaded bytes 385875968
+2026-08-02T08:22:22.8531349Z Uploaded bytes 394264576
+2026-08-02T08:22:23.0229899Z Uploaded bytes 402653184
+2026-08-02T08:22:23.3458285Z Uploaded bytes 411041792
+2026-08-02T08:22:23.5882645Z Uploaded bytes 419430400
+2026-08-02T08:22:23.7981930Z Uploaded bytes 427819008
+2026-08-02T08:22:24.0612585Z Uploaded bytes 436207616
+2026-08-02T08:22:24.3230697Z Uploaded bytes 444596224
+2026-08-02T08:22:24.6192564Z Uploaded bytes 452984832
+2026-08-02T08:22:24.8447086Z Uploaded bytes 461373440
+2026-08-02T08:22:25.0989227Z Uploaded bytes 469762048
+2026-08-02T08:22:25.3159836Z Uploaded bytes 478150656
+2026-08-02T08:22:25.6018987Z Uploaded bytes 486539264
+2026-08-02T08:22:25.8308306Z Uploaded bytes 494927872
+2026-08-02T08:22:26.0860457Z Uploaded bytes 503316480
+2026-08-02T08:22:26.3839945Z Uploaded bytes 511705088
+2026-08-02T08:22:26.6343310Z Uploaded bytes 520093696
+2026-08-02T08:22:26.8800554Z Uploaded bytes 528482304
+2026-08-02T08:22:27.0982111Z Uploaded bytes 536870912
+2026-08-02T08:22:27.4025020Z Uploaded bytes 545259520
+2026-08-02T08:22:27.6429682Z Uploaded bytes 553648128
+2026-08-02T08:22:27.9848174Z Uploaded bytes 562036736
+2026-08-02T08:22:28.2561273Z Uploaded bytes 570425344
+2026-08-02T08:22:28.3770006Z Uploaded bytes 578813952
+2026-08-02T08:22:28.6833175Z Uploaded bytes 587202560
+2026-08-02T08:22:28.9457998Z Uploaded bytes 595591168
+2026-08-02T08:22:29.1877750Z Uploaded bytes 603979776
+2026-08-02T08:22:29.4461493Z Uploaded bytes 612368384
+2026-08-02T08:22:29.7050557Z Uploaded bytes 620756992
+2026-08-02T08:22:30.0261156Z Uploaded bytes 629145600
+2026-08-02T08:22:30.1726129Z Uploaded bytes 637534208
+2026-08-02T08:22:30.4371413Z Uploaded bytes 645922816
+2026-08-02T08:22:30.6850218Z Uploaded bytes 654311424
+2026-08-02T08:22:30.9112298Z Uploaded bytes 662700032
+2026-08-02T08:22:31.1840043Z Uploaded bytes 671088640
+2026-08-02T08:22:31.4664392Z Uploaded bytes 679477248
+2026-08-02T08:22:31.6945323Z Uploaded bytes 687865856
+2026-08-02T08:22:31.9556966Z Uploaded bytes 696254464
+2026-08-02T08:22:32.2267064Z Uploaded bytes 704643072
+2026-08-02T08:22:32.4645409Z Uploaded bytes 713031680
+2026-08-02T08:22:32.7265421Z Uploaded bytes 721420288
+2026-08-02T08:22:33.0023605Z Uploaded bytes 729808896
+2026-08-02T08:22:33.2134625Z Uploaded bytes 738197504
+2026-08-02T08:22:33.4474156Z Uploaded bytes 746586112
+2026-08-02T08:22:33.7085678Z Uploaded bytes 754974720
+2026-08-02T08:22:33.9760509Z Uploaded bytes 763363328
+2026-08-02T08:22:34.1977158Z Uploaded bytes 771751936
+2026-08-02T08:22:34.5258819Z Uploaded bytes 780140544
+2026-08-02T08:22:34.7626067Z Uploaded bytes 788484146
+2026-08-02T08:22:34.7814042Z Finished uploading artifact content to blob storage!
+2026-08-02T08:22:34.7818511Z SHA256 digest of uploaded artifact zip is 09eae8ece90c992ebeffbe9217f37d87de60f54ca1f5cb55f0ece507c58bdbba
+2026-08-02T08:22:34.7820975Z Finalizing artifact upload
+2026-08-02T08:22:34.9569057Z Artifact external-oss-v8-dependency-cache-TASK-OSS-01.zip successfully finalized. Artifact ID 8830831114
+2026-08-02T08:22:34.9572840Z Artifact external-oss-v8-dependency-cache-TASK-OSS-01 has been successfully uploaded! Final size is 788484146 bytes. Artifact ID is 8830831114
+2026-08-02T08:22:34.9579877Z Artifact download URL: https://github.com/Eskasia/governseed/actions/runs/30739570734/artifacts/8830831114
+2026-08-02T08:22:34.9794986Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-02T08:22:34.9796260Z Post job cleanup.
+2026-08-02T08:22:35.0701144Z [command]/usr/bin/git version
+2026-08-02T08:22:35.0749233Z git version 2.54.0
+2026-08-02T08:22:35.0851496Z Temporarily overriding HOME='/home/runner/work/_temp/d1c664f1-f13f-4953-b5bb-548cd6b0cf47' before making global git config changes
+2026-08-02T08:22:35.0852854Z Adding repository directory to the temporary git global config as a safe directory
+2026-08-02T08:22:35.0858213Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/governseed/governseed
+2026-08-02T08:22:35.0916571Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-08-02T08:22:35.0961288Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-08-02T08:22:35.1234619Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-08-02T08:22:35.1259292Z http.https://github.com/.extraheader
+2026-08-02T08:22:35.1273521Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-08-02T08:22:35.1317944Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-08-02T08:22:35.1627881Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-08-02T08:22:35.1665441Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-08-02T08:22:35.2103866Z Cleaning up orphan processes
+2026-08-02T08:22:35.2519763Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/download-artifact@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
