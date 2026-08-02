@@ -1,0 +1,164 @@
+name: External OSS V7 runtime image
+
+on:
+  workflow_call:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  BENCHMARK_ID: GS-OSS-2026-08-02-V7
+  EVIDENCE_CLASS: external-observational
+
+jobs:
+  build-runtime-image:
+    name: Build V7 runtime image (${{ matrix.task_id }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 45
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - task_id: TASK-OSS-01
+          - task_id: TASK-OSS-03
+          - task_id: TASK-OSS-09
+    steps:
+      - name: Checkout benchmark contracts
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Build and audit digest-locked image
+        shell: bash
+        env:
+          TASK_ID: ${{ matrix.task_id }}
+        run: |
+          set -euo pipefail
+          lock="benchmarks/external-oss-v7/runtime-image/image-lock.json"
+          values=$(node --input-type=module - "$lock" <<'NODE'
+          import { readFileSync } from 'node:fs';
+          const lock = JSON.parse(readFileSync(process.argv[2], 'utf8'));
+          const task = process.env.TASK_ID;
+          const key = task === 'TASK-OSS-09' ? 'paperless' : 'node';
+          const item = lock.baseImages[key];
+          console.log([key, item.lockedReference, item.digest, item.declaredAddedPackages.join(',')].join('\t'));
+          NODE
+          )
+          IFS=$'\t' read -r image_kind base_image base_digest declared_packages <<< "$values"
+          install_libmagic=false
+          if test "$TASK_ID" = TASK-OSS-09; then install_libmagic=true; fi
+          artifact="$RUNNER_TEMP/external-oss-v7-runtime-image/$TASK_ID"
+          mkdir -p "$artifact"
+          docker pull "$base_image"
+          runtime_tag="governseed-v7-runtime:$TASK_ID"
+          docker build --pull=false --platform linux/amd64 \
+            --build-arg "BASE_IMAGE=$base_image" \
+            --build-arg "INSTALL_LIBMAGIC=$install_libmagic" \
+            --tag "$runtime_tag" \
+            benchmarks/external-oss-v7/runtime-image
+          test "$(docker image inspect "$runtime_tag" --format '{{.Architecture}}')" = amd64
+          image_id=$(docker image inspect "$runtime_tag" --format '{{.Id}}')
+          base_inventory="$artifact/base-package-inventory.txt"
+          image_inventory="$artifact/package-inventory.txt"
+          docker run --rm --network none --read-only "$base_image" sh -ceu \
+            'dpkg-query -W -f="\${binary:Package}\t\${Version}\n" | sort -u' > "$base_inventory"
+          docker run --rm --network none --read-only --cap-drop=ALL \
+            --security-opt no-new-privileges:true --user 65532:65532 "$runtime_tag" sh -ceu \
+            'dpkg-query -W -f="\${binary:Package}\t\${Version}\n" | sort -u' > "$image_inventory"
+          comm -13 "$base_inventory" "$image_inventory" > "$artifact/added-packages.txt"
+          if test "$TASK_ID" != TASK-OSS-09; then
+            test ! -s "$artifact/added-packages.txt"
+          else
+            grep -E '^(libmagic1|libmagic-mgc)(:amd64)?\t' "$artifact/added-packages.txt" | sort -u > "$artifact/declared-added-packages.txt"
+            test "$(wc -l < "$artifact/declared-added-packages.txt" | tr -d ' ')" -eq 2
+            test "$(wc -l < "$artifact/added-packages.txt" | tr -d ' ')" -eq 2
+          fi
+          probe=$(docker run --rm --network none --read-only --cap-drop=ALL \
+            --security-opt no-new-privileges:true --user 65532:65532 "$runtime_tag" sh -ceu '
+              printf "os=%s\n" "$(. /etc/os-release && printf "%s" "$ID-$VERSION_ID")"
+              printf "architecture=%s\n" "$(uname -m)"
+              if command -v node >/dev/null; then printf "node=%s\n" "$(node --version)"; else printf "node=\n"; fi
+              if command -v python >/dev/null; then printf "python=%s\n" "$(python --version 2>&1)"; else printf "python=\n"; fi
+              library=$(find /usr/lib /lib -name "libmagic.so*" -print -quit 2>/dev/null || true)
+              database=$(find /usr/share /usr/local/share -name "magic.mgc" -print -quit 2>/dev/null || true)
+              if test -n "$library"; then printf "libmagicLibraryObserved=true\nlibmagicLibraryPath=%s\n" "$library"; else printf "libmagicLibraryObserved=false\nlibmagicLibraryPath=\n"; fi
+              if test -n "$database"; then printf "libmagicDatabaseObserved=true\nlibmagicDatabasePath=%s\n" "$database"; else printf "libmagicDatabaseObserved=false\nlibmagicDatabasePath=\n"; fi
+              if ldconfig -p 2>/dev/null | grep -q libmagic; then printf "ldconfigLibmagicObserved=true\n"; else printf "ldconfigLibmagicObserved=false\n"; fi
+            ')
+          printf '%s\n' "$probe" > "$artifact/runtime-probe.txt"
+          if test "$TASK_ID" = TASK-OSS-09; then
+            test "$(printf '%s\n' "$probe" | awk -F= '$1=="libmagicLibraryObserved"{print $2}')" = true
+            test "$(printf '%s\n' "$probe" | awk -F= '$1=="libmagicDatabaseObserved"{print $2}')" = true
+            docker run --rm --network bridge --read-only --cap-drop=ALL \
+              --security-opt no-new-privileges:true --user 65532:65532 \
+              --tmpfs /tmp:rw,noexec,nosuid,nodev "$runtime_tag" sh -ceu '
+                mkdir -p /tmp/home /tmp/python-magic /tmp/pip-cache
+                HOME=/tmp/home PIP_CACHE_DIR=/tmp/pip-cache python -m pip install --disable-pip-version-check --no-cache-dir --target /tmp/python-magic python-magic
+                PYTHONPATH=/tmp/python-magic python -c "import magic; assert magic.from_buffer(b\"hello\")"
+              '
+            python_magic_import=true
+            python_magic_functional=true
+          else
+            python_magic_import=null
+            python_magic_functional=null
+          fi
+          docker save "$runtime_tag" | gzip -n > "$artifact/runtime-image.tgz"
+          archive_sha=$(sha256sum "$artifact/runtime-image.tgz" | awk '{print $1}')
+          node --input-type=module - "$artifact/sbom.json" "$artifact/runtime-probe.txt" "$artifact/package-inventory.txt" <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const [out, probePath, inventoryPath] = process.argv.slice(2);
+          const inventory = readFileSync(inventoryPath, 'utf8').trim().split('\n').filter(Boolean).map((line) => {
+            const [name, version] = line.split('\t');
+            return { name, version };
+          });
+          const probe = Object.fromEntries(readFileSync(probePath, 'utf8').trim().split('\n').map((line) => line.split('=')));
+          writeFileSync(out, JSON.stringify({ schemaVersion: 1, format: 'dpkg-inventory-sbom', benchmarkId: process.env.BENCHMARK_ID, taskId: process.env.TASK_ID, packages: inventory, runtime: probe }, null, 2) + '\n');
+          NODE
+          node --input-type=module - "$artifact/runtime-image-receipt.json" "$artifact/runtime-probe.txt" <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const [out, probePath] = process.argv.slice(2);
+          const probe = Object.fromEntries(readFileSync(probePath, 'utf8').trim().split('\n').map((line) => line.split('=')));
+          const paperless = process.env.TASK_ID === 'TASK-OSS-09';
+          writeFileSync(out, JSON.stringify({
+            schemaVersion: 1,
+            benchmarkId: process.env.BENCHMARK_ID,
+            evidenceClass: process.env.EVIDENCE_CLASS,
+            taskId: process.env.TASK_ID,
+            status: 'READY',
+            baseImageDigest: process.env.BASE_DIGEST,
+            imageArchiveSha256: process.env.ARCHIVE_SHA,
+            imageId: process.env.IMAGE_ID,
+            architecture: 'x86_64',
+            imageKind: process.env.IMAGE_KIND,
+            libmagicLibraryObserved: probe.libmagicLibraryObserved === 'true',
+            libmagicDatabaseObserved: probe.libmagicDatabaseObserved === 'true',
+            pythonMagicImportPass: paperless ? true : null,
+            pythonMagicFunctionalSmokePass: paperless ? true : null,
+            packageInventory: 'package-inventory.txt',
+            sbom: 'sbom.json',
+            declaredAddedPackages: process.env.DECLARED_PACKAGES ? process.env.DECLARED_PACKAGES.split(',').filter(Boolean) : [],
+            unreportedPackages: [],
+            limitations: ['Runtime image qualification only; no Codex task was executed.']
+          }, null, 2) + '\n');
+          NODE
+          BASE_DIGEST="$base_digest" ARCHIVE_SHA="$archive_sha" IMAGE_ID="$image_id" IMAGE_KIND="$image_kind" DECLARED_PACKAGES="$declared_packages" node --input-type=module - "$artifact/runtime-image-receipt.json" "$artifact/runtime-probe.txt" <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const [out, probePath] = process.argv.slice(2);
+          const receipt = JSON.parse(readFileSync(out, 'utf8'));
+          const probe = Object.fromEntries(readFileSync(probePath, 'utf8').trim().split('\n').map((line) => line.split('=')));
+          receipt.baseImageDigest = process.env.BASE_DIGEST;
+          receipt.imageArchiveSha256 = process.env.ARCHIVE_SHA;
+          receipt.imageId = process.env.IMAGE_ID;
+          receipt.imageKind = process.env.IMAGE_KIND;
+          receipt.declaredAddedPackages = process.env.DECLARED_PACKAGES ? process.env.DECLARED_PACKAGES.split(',').filter(Boolean) : [];
+          receipt.libmagicLibraryObserved = probe.libmagicLibraryObserved === 'true';
+          receipt.libmagicDatabaseObserved = probe.libmagicDatabaseObserved === 'true';
+          writeFileSync(out, JSON.stringify(receipt, null, 2) + '\n');
+          NODE
+      - name: Upload V7 runtime image qualification artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v7-runtime-image-${{ matrix.task_id }}
+          path: ${{ runner.temp }}/external-oss-v7-runtime-image/${{ matrix.task_id }}/
+          if-no-files-found: ignore

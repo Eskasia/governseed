@@ -1,0 +1,45 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+
+const repoRoot = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../..');
+const workflow = readFileSync(path.join(repoRoot, '.github/workflows/external-oss-v7-runtime-image.yml'), 'utf8');
+const dockerfile = readFileSync(path.join(repoRoot, 'benchmarks/external-oss-v7/runtime-image/Dockerfile'), 'utf8');
+const lock = JSON.parse(readFileSync(path.join(repoRoot, 'benchmarks/external-oss-v7/runtime-image/image-lock.json'), 'utf8'));
+const errors = [];
+const require = (condition, message) => { if (!condition) errors.push(message); };
+
+require(workflow.includes('BASE_IMAGE'), 'runtime build receives an explicit base image');
+require(!workflow.includes('if: inputs.task_id'), 'runtime image dispatch does not filter matrix before matrix evaluation');
+const safeDpkgInventory = String.raw`dpkg-query -W -f="\${binary:Package}\t\${Version}\n" | sort -u`;
+const unsafeDpkgInventory = 'dpkg-query -W -f="${binary:Package}\\t${Version}\\n" | sort -u';
+require(workflow.includes(safeDpkgInventory), 'dpkg inventory protects format placeholders from shell expansion');
+require(!workflow.includes(unsafeDpkgInventory), 'dpkg inventory does not expose format placeholders to shell expansion');
+require(workflow.includes('base_digest'), 'runtime receipt records base digest');
+require(workflow.includes('imageArchiveSha256'), 'runtime receipt records archive hash');
+require(workflow.includes('imageId'), 'runtime receipt records image ID');
+require(workflow.includes('architecture: \'x86_64\''), 'runtime receipt records x86_64');
+require(workflow.includes('unreportedPackages: []'), 'runtime receipt requires no unreported packages');
+require(workflow.includes('declaredAddedPackages'), 'runtime receipt declares added packages');
+require(workflow.includes('docker image inspect'), 'runtime image identity is inspected');
+require(workflow.includes('docker save'), 'runtime image archive is captured');
+require(workflow.includes('gzip -n'), 'runtime image archive is normalized');
+require(workflow.includes('apt-get install --yes --no-install-recommends libmagic1') === false, 'system package install belongs in Dockerfile, not workflow shell');
+require(dockerfile.includes('apt-get install --yes --no-install-recommends libmagic1'), 'Dockerfile adds only confirmed runtime package');
+require(!dockerfile.match(/gcc|g\+\+|make|python-dev|libmagic-dev|curl|wget/iu), 'Dockerfile has no unproven development or download dependency');
+require(dockerfile.includes('USER 65532:65532'), 'runtime image defaults to non-root');
+require(lock.baseImages.node.lockedReference.startsWith('node@sha256:'), 'node digest lock');
+require(lock.baseImages.paperless.lockedReference.startsWith('python@sha256:'), 'paperless digest lock');
+require(lock.baseImages.paperless.digest === 'sha256:f70215e5dbe2a47dee6d23f9c6d358bf3c148f59cce2fd165b61118e9d80f2bb', 'paperless V6 base digest');
+require(lock.baseImages.paperless.declaredAddedPackages.includes('libmagic1'), 'libmagic1 declared');
+require(lock.baseImages.paperless.declaredAddedPackages.includes('libmagic-mgc'), 'magic database package declared');
+require(workflow.includes('test -n "$library"'), 'library path must be present');
+require(workflow.includes('test -n "$database"'), 'database path must be present');
+require(workflow.includes('PYTHONPATH=/tmp/python-magic python -c "import magic; assert magic.from_buffer'), 'functional python-magic smoke');
+require(workflow.includes('--network none'), 'image audit uses network none');
+require(workflow.includes('--cap-drop=ALL'), 'image audit drops capabilities');
+require(workflow.includes('--security-opt no-new-privileges:true'), 'image audit no-new-privileges');
+require(!workflow.includes('--user 0'), 'image workflow no root execution');
+
+const result = { schemaVersion: 1, status: errors.length ? 'FAIL' : 'PASS', errors };
+console.log(JSON.stringify(result));
+if (errors.length) process.exitCode = 1;

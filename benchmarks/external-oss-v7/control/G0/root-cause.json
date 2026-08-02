@@ -1,0 +1,52 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V7",
+  "evidenceClass": "external-observational",
+  "phase": "G0",
+  "status": "CONFIRMED_FROM_V6_FAILURE_AND_REPRODUCER_READY",
+  "classification": "LIBMAGIC_SHARED_LIBRARY_MISSING",
+  "v6ObservedFailure": {
+    "runId": "30726888838",
+    "headSha": "0f4b844673af47d654a1e84ba5463ac21bd09cba",
+    "job": "Prepare measured dependency cache (TASK-OSS-09)",
+    "step": "Prepare cache and public runtime image",
+    "imageReference": "python:3.14.6-slim-bookworm",
+    "imageDigest": "sha256:f70215e5dbe2a47dee6d23f9c6d358bf3c148f59cce2fd165b61118e9d80f2bb",
+    "architecture": "linux/amd64",
+    "python": "3.14.6",
+    "pythonMagicPackage": "present in /workspace/.venv/lib/python3.14/site-packages/magic",
+    "command": "/workspace/.venv/bin/python -m pytest -q src/paperless/tests/test_parser_utils.py",
+    "importPath": [
+      "documents.data_models",
+      "magic",
+      "/workspace/.venv/lib/python3.14/site-packages/magic/loader.py",
+      "loader.load_lib"
+    ],
+    "observedError": "ImportError: failed to find libmagic. Check your installation",
+    "logEvidence": "V6 GitHub Actions run 30726888838 job 91440146062, step 6, lines 748-757"
+  },
+  "sharedLibraryLookup": {
+    "v6LdconfigLookup": "NOT_EMITTED_BY_V6_RUN",
+    "v6FindLookup": "NOT_EMITTED_BY_V6_RUN",
+    "requiredV7Checks": [
+      "ldconfig -p | grep libmagic",
+      "find /usr/lib /lib -name 'libmagic.so*'",
+      "find /usr/share /usr/local/share -name 'magic.mgc'"
+    ],
+    "localExecution": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE"
+  },
+  "causalReasoning": {
+    "pythonBindingPresent": true,
+    "systemSharedLibraryObservedByV6": false,
+    "databaseObservedByV6": false,
+    "dynamicLinkerPathEvidence": "V6 loader failed before functional call; V7 audit distinguishes missing library from linker-path failure",
+    "conclusion": "The fixed Paperless dependency import reaches python-magic, whose loader cannot resolve libmagic in the V6 Python runtime image. V7 adds the runtime package only during image build."
+  },
+  "reproducer": {
+    "path": "benchmarks/external-oss-v7/minimal-libmagic-reproducer.sh",
+    "status": "READY_TO_RUN_ON_DOCKER_RUNNER",
+    "network": "public-network-only disposable reproducer",
+    "measuredOffline": false
+  },
+  "claimBoundary": "V6 failure classification and V7 root-cause reproducer design only. It is not V7 image readiness, cache readiness, offline smoke, or G1 acceptance."
+}
