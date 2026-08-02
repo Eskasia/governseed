@@ -1,0 +1,56 @@
+{
+  "protocolVersion": 1,
+  "agent": "Sol",
+  "role": "independent read-only acceptance reviewer",
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "gate": "G1",
+  "reviewDate": "2026-08-02",
+  "pullRequest": "https://github.com/Eskasia/governseed/pull/54",
+  "baseCommit": "80063bef888c660f513e081c7e2b9807d98aa744",
+  "reviewCommit": "7dcd3af3a17c3ba85355e4c7748cf3a6f49aa3c0",
+  "verdict": "REJECT",
+  "mergeAuthorized": false,
+  "hardBlocked": false,
+  "g1RuntimeAccepted": false,
+  "cacheReadyAccepted": false,
+  "reason": "PR #54 is fixable but is not the required safe/minimal G1 repair. It leaves the source cache writable, never explicitly makes the disposable negative tree writable before host removal, maps unreadable cache to CACHE_READ_DENIED instead of DEPENDENCY_CACHE_INCOMPLETE, lacks the required denied-removal and unreadable-cache regressions, and collapses uploaded failure diagnostics to OFFLINE_PERMISSION_CAUSE_UNKNOWN. Static security structure, local suites, and current PR checks pass, but none establishes V6 Docker runtime acceptance or cache readiness.",
+  "blockingFindings": [
+    {
+      "id": "G1-BLOCK-001",
+      "summary": "The implemented writable-source/copy-remove/read-only sequence bypasses the confirmed read-only-copy mutation boundary instead of minimally making only the disposable negative tree writable."
+    },
+    {
+      "id": "G1-BLOCK-002",
+      "summary": "An existing but unreadable cache produces CACHE_READ_DENIED, not the required DEPENDENCY_CACHE_INCOMPLETE, and no unreadable-cache regression exists."
+    },
+    {
+      "id": "G1-BLOCK-003",
+      "summary": "The permission regression removes a writable copied entry and never tests denied removal failing closed or the exact three-task contract."
+    },
+    {
+      "id": "G1-BLOCK-004",
+      "summary": "The uploaded diagnostic path overwrites specific structured failure causes with OFFLINE_PERMISSION_CAUSE_UNKNOWN."
+    }
+  ],
+  "verifiedPasses": [
+    "Review commit, base, merge base, and PR head/base identities match; PR is open, non-draft, and GitHub reports MERGEABLE/CLEAN.",
+    "The five required jobs and all three task matrices exist.",
+    "The static Docker command uses network none, read-only rootfs, fixed non-root 65532:65532, cap-drop ALL, no-new-privileges, read-only cache/harness mounts, and only disposable workspace/TMP/HOME writable mounts.",
+    "No V5 path or prior G0 Sol file changed; all 16 inherited V5 hashes and run-30717085665 evidence hashes match.",
+    "All declared G1 artifact hashes match; JSON, CSV, YAML, and Bash syntax validate; focused V6 checks, npm run ci, npm run ci:experimental, and all three current PR checks pass.",
+    "No secret, environment gate, Codex/provider execution, hidden oracle, external-service result, cache archive, dependency tree, or runtime-image binary is committed."
+  ],
+  "reviewEvidence": {
+    "path": "benchmarks/external-oss-v6/control/G1/sol-review-evidence.json",
+    "sha256": "dda6eb27f1c3e4bdc6929fbe460433fd0c43c9ae3b0573a5cbe1b8c57f45a861"
+  },
+  "limitations": [
+    "Local Docker is EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE; docker info failed because the daemon socket is absent.",
+    "The workflow_dispatch-only V6 Docker integration was not run, and current PR checks execute npm run ci rather than the V6 workflow.",
+    "No runtime receipt, aggregate qualification, cache READY state, offline smoke result, UID 65532 execution result, mount/rootfs result, or containment result is accepted.",
+    "actionlint and shellcheck are unavailable; YAML parsing, bash -n, focused tests, and independent semantic checks were used."
+  ],
+  "reviewerOwnership": "This verdict is Sol's independent reviewer artifact. Luna is not authorized to write, alter, replace, or reinterpret it.",
+  "authorizationBoundary": "REJECT withholds merge authorization. The defects are repairable and therefore do not constitute HARD_BLOCKED; any repair requires a new independent review. No merge, push, dispatch, V5 change, or product-code change is authorized or performed.",
+  "claimBoundary": "REJECT applies only to the merge safety and minimality of commit 7dcd3af3a17c3ba85355e4c7748cf3a6f49aa3c0 / PR #54 at G1. It is not G1 runtime acceptance, Docker acceptance, cache READY, positive or negative smoke qualification, task acceptance, benchmark-effect evidence, or a claim that the V6 workflow ran."
+}

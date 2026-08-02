@@ -1,0 +1,57 @@
+{
+  "protocolVersion": 1,
+  "agent": "Luna",
+  "role": "V6 execution layer",
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "gate": "G1",
+  "status": "READY_FOR_REVIEW",
+  "implementationOnly": true,
+  "identity": {
+    "branch": "benchmark/v6-offline-permission-fix",
+    "baseCommit": "80063bef888c660f513e081c7e2b9807d98aa744",
+    "g0SolVerdict": "ACCEPT",
+    "v5RunId": 30717085665
+  },
+  "changedFiles": [
+    ".github/workflows/external-oss-v6-dependency-cache.yml",
+    "benchmarks/external-oss-v6/tests/v6-contract-validation.mjs",
+    "benchmarks/external-oss-v6/tests/v6-permission-regression.mjs",
+    "benchmarks/external-oss-v6/tests/v6-shell-validation.mjs",
+    "benchmarks/external-oss-v6/control/G1/local-validation.json",
+    "benchmarks/external-oss-v6/control/G1/luna-handoff.json"
+  ],
+  "artifactHashes": [
+    {"path":".github/workflows/external-oss-v6-dependency-cache.yml","sha256":"8d77ea9caf692f07fb33be16c0b4e478791ef115036dfcc8815d347e8649712d"},
+    {"path":"benchmarks/external-oss-v6/tests/v6-contract-validation.mjs","sha256":"5798cd346bf94a9c02a552f12462a22dc725d792df3d0ee5f8d23e879204ad38"},
+    {"path":"benchmarks/external-oss-v6/tests/v6-permission-regression.mjs","sha256":"769f4a1f63b2366ad1d6eacf65f52ceade696ad23949f9ba4e6ce5abe452c6ab"},
+    {"path":"benchmarks/external-oss-v6/tests/v6-shell-validation.mjs","sha256":"e476311dd65409e3446cc129caf325b2edba822792ff595177045ddd265afa0f"},
+    {"path":"benchmarks/external-oss-v6/control/G1/local-validation.json","sha256":"50c0743d6b8322360ad29407c1b1853824c443821f7f9fe010b34a7540868ddb"}
+  ],
+  "checks": {
+    "v6Contract": "PASS",
+    "v6Shell": "PASS",
+    "v6PermissionRegression": "PASS",
+    "yamlParse": "PASS",
+    "bashSyntax": "PASS",
+    "npmRunCheck": "PASS",
+    "npmRunValidate": "PASS",
+    "npmRunTestGovernance": "PASS",
+    "npmRunTestPrivacy": "PASS",
+    "npmRunTestExperimental": "PASS",
+    "npmRunCi": "PASS",
+    "lockfile": "NOT_APPLICABLE_NO_LOCKFILE",
+    "v5Immutability": "PASS"
+  },
+  "runtime": {
+    "localDocker": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+    "runtimeIntegration": "NOT_RUN_LOCALLY",
+    "workflowRuntimeIntegration": "implemented in verify-dependency-cache-offline; requires GitHub Actions Docker runner"
+  },
+  "preservedReadOnlyInputs": [
+    "benchmarks/external-oss-v6/control/G0/sol-verdict.json",
+    "benchmarks/external-oss-v6/control/G0/sol-review-evidence.json",
+    "benchmarks/external-oss-v2/ through benchmarks/external-oss-v5/",
+    ".github/workflows/external-oss-v5-dependency-cache.yml"
+  ],
+  "claimBoundary": "This handoff reports V6 G1 implementation and local/static evidence only. It does not issue acceptance, claim Docker runtime success, cache readiness, offline smoke qualification, credentials, Codex, lock, Pilot, baseline/governed, scoring, merge, or dispatch."
+}

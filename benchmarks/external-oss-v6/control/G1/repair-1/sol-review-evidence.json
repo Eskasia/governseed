@@ -1,0 +1,326 @@
+{
+  "protocolVersion": 1,
+  "agent": "Sol",
+  "role": "independent read-only acceptance reviewer",
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "gate": "G1",
+  "repairCycle": 1,
+  "reviewType": "PR safety, minimality, and repair acceptance review",
+  "reviewDate": "2026-08-02",
+  "recommendedVerdict": "REJECT",
+  "mergeAuthorized": false,
+  "runtimeAccepted": false,
+  "cacheReadyAccepted": false,
+  "dispatchAuthorized": false,
+  "scope": {
+    "repository": "/Users/william/governseed-v6-permission-fix",
+    "pullRequest": "https://github.com/Eskasia/governseed/pull/55",
+    "baseCommit": "80063bef888c660f513e081c7e2b9807d98aa744",
+    "repairBaseCommit": "7dcd3af3a17c3ba85355e4c7748cf3a6f49aa3c0",
+    "reviewCommit": "e5b9d66f5b8e6bc1dcca17644e5a17e9e7050375",
+    "reviewCommitTree": "829c3e41e93ea40526a9395dae8324571dac00e6",
+    "authorizedWrites": [
+      "benchmarks/external-oss-v6/control/G1/repair-1/sol-review-evidence.json",
+      "benchmarks/external-oss-v6/control/G1/repair-1/sol-verdict.json"
+    ],
+    "prohibitedActionsObserved": []
+  },
+  "repositoryIdentity": {
+    "head": "e5b9d66f5b8e6bc1dcca17644e5a17e9e7050375",
+    "base": "80063bef888c660f513e081c7e2b9807d98aa744",
+    "mergeBase": "80063bef888c660f513e081c7e2b9807d98aa744",
+    "branch": "benchmark/v6-offline-permission-fix-r1",
+    "preReviewWorktree": "CLEAN",
+    "diffCheck": "PASS",
+    "pullRequestDiffSummary": "18 added text files, 1918 insertions, 0 deletions; no V5 path changed",
+    "v5Immutable": true,
+    "taskFactsSeedsOraclePublicCriteriaUnchanged": true,
+    "g0SolFilesUnchangedByReview": true,
+    "priorPr54SolFilesUnchangedByReview": true
+  },
+  "pullRequestState": {
+    "number": 55,
+    "state": "OPEN",
+    "isDraft": false,
+    "headRefOidMatchesReviewCommit": true,
+    "baseRefOidMatchesBaseCommit": true,
+    "mergeable": "MERGEABLE",
+    "mergeStateStatus": "CLEAN",
+    "reviewDecision": "",
+    "workflowRun": {
+      "id": 30724083675,
+      "event": "pull_request",
+      "headSha": "e5b9d66f5b8e6bc1dcca17644e5a17e9e7050375",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/Eskasia/governseed/actions/runs/30724083675"
+    },
+    "reportedChecks": [
+      {
+        "name": "validate (ubuntu-latest)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/Eskasia/governseed/actions/runs/30724083675/job/91432514245"
+      },
+      {
+        "name": "validate (macos-latest)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/Eskasia/governseed/actions/runs/30724083675/job/91432514272"
+      },
+      {
+        "name": "validate (windows-latest)",
+        "status": "COMPLETED",
+        "conclusion": "SUCCESS",
+        "url": "https://github.com/Eskasia/governseed/actions/runs/30724083675/job/91432514256"
+      }
+    ],
+    "requiredChecksReportedByGitHub": "NONE",
+    "branchRunInventory": [
+      {
+        "workflow": "Validate GovernSeed",
+        "runId": 30724083675,
+        "conclusion": "success"
+      }
+    ],
+    "v6WorkflowRunObserved": false,
+    "checkBoundary": "The three PR checks ran npm run ci. package.json does not include the focused V6 tests, and the workflow_dispatch-only External OSS V6 dependency cache workflow did not run. These checks are repository CI evidence, not V6 Docker runtime, cache READY, or aggregate qualification evidence."
+  },
+  "findings": [
+    {
+      "id": "G1-R1-BLOCK-001",
+      "severity": "BLOCKING",
+      "status": "CONFIRMED",
+      "title": "Merged matrix artifacts cannot provide the aggregate job with three distinct cache receipts",
+      "evidence": [
+        ".github/workflows/external-oss-v6-dependency-cache.yml:379-387 uploads cache-receipt.json and diagnostics.json from each task-specific directory. Under upload-artifact's documented least-common-ancestor rule, each artifact therefore contains the same two root-relative names.",
+        ".github/workflows/external-oss-v6-dependency-cache.yml:396-401 downloads all three receipt artifacts to one path with merge-multiple: true.",
+        ".github/workflows/external-oss-v6-dependency-cache.yml:410-413 recursively selects cache-receipt.json files, then requires receipts.length === 3 and the exact three task IDs.",
+        "actions/upload-artifact@v4 documentation states that the least common ancestor of multiple input paths is the artifact root: https://github.com/actions/upload-artifact/blob/ea165f8d65b6e75b540449e92b4886f43607fa02/README.md#L187-L189",
+        "actions/download-artifact@v4 documents that merge-multiple true extracts matched artifacts into the same destination, and its implementation passes the same resolvedPath to every download: https://github.com/actions/download-artifact/blob/d3f86a106a0bac45b974a628896c90dbdf5c8093/README.md#L71-L75 and https://github.com/actions/download-artifact/blob/d3f86a106a0bac45b974a628896c90dbdf5c8093/src/download-artifact.ts#L172-L181",
+        "The independent path-cardinality check derived root-relative names [cache-receipt.json, diagnostics.json] for every task and one distinct merged cache-receipt path versus the aggregate requirement of three."
+      ],
+      "impact": "All three task receipts target the same destination pathname during the merged download. Whether extraction overwrites/races on that path or fails on the collision, the aggregate directory cannot contain three distinct cache-receipt.json paths, so the required aggregate-cache-qualification job cannot satisfy its cardinality gate or produce a valid READY qualification.",
+      "requiredRepair": "Keep artifacts separated by removing merge-multiple: true (the existing recursive reader can then find one receipt under each artifact directory), or preserve a unique task-ID directory inside each artifact. Add a contract/regression assertion that the downloaded layout yields exactly three distinct receipt paths and exactly TASK-OSS-01, TASK-OSS-03, and TASK-OSS-09."
+    }
+  ],
+  "repairCriteria": [
+    {
+      "id": "PR54-G1-BLOCK-001",
+      "status": "PASS_STATIC_LOCAL",
+      "result": "The source cache is recursively made read-only before cache.tgz is archived and again after extraction in both diagnosis and offline verification. Only negative_cache receives chmod -R u+rwX before host rm; absence is asserted; negative_cache is restored with chmod -R a-w before its read-only mount. The committed contract test uses cache_root/negative_cache and checks the key writable-removal-readonly order in both blocks; an independent full-sequence assertion also checked extraction, source readonly, absence, and mount order. No chmod 777/0777 exists."
+    },
+    {
+      "id": "PR54-G1-BLOCK-002",
+      "status": "PASS_STATIC_LOCAL",
+      "result": "The harness maps both missing and existing-but-unreadable required cache entries to DEPENDENCY_CACHE_INCOMPLETE. The regression creates a mode-000 existing entry and asserts that exact code; a separate Bash access check confirmed the entry existed but was unreadable and mapped to DEPENDENCY_CACHE_INCOMPLETE."
+    },
+    {
+      "id": "PR54-G1-BLOCK-003",
+      "status": "PASS_LOCAL",
+      "result": "The regression table-drives TASK-OSS-01/node_modules, TASK-OSS-03/node_modules, and TASK-OSS-09/.venv/bin/python, requires nonzero rm under a read-only parent, and requires the target to remain. A separate temp-only reproduction observed rm exit 1 and targetRemains=true for all three cases."
+    },
+    {
+      "id": "PR54-G1-BLOCK-004",
+      "status": "PASS_STATIC_LOCAL",
+      "result": "The EXIT trap extracts only one of nine whitelisted structured codes from captured positive/negative output and otherwise writes the fixed OFFLINE_PERMISSION_CAUSE_UNKNOWN fallback. Executing the extracted function returned HOME_NOT_WRITABLE for a specific-code sample and the fixed fallback for unknown raw text, without copying raw text into the result."
+    }
+  ],
+  "additionalAcceptanceChecks": [
+    {
+      "criterion": "Exactly five required jobs and exact task matrices",
+      "status": "FAIL_FUNCTIONAL",
+      "result": "The exact five jobs exist in the required order, and each of the four matrix jobs contains only TASK-OSS-01, TASK-OSS-03, and TASK-OSS-09. The aggregate job is nevertheless nonfunctional because of G1-R1-BLOCK-001."
+    },
+    {
+      "criterion": "Docker static containment contract",
+      "status": "PASS_STATIC_ONLY",
+      "result": "Both docker create commands specify network none, read-only rootfs, non-root 65532:65532, cap-drop ALL, no-new-privileges, read-only /cache and /harness binds, and exactly /workspace, /home/benchmark, and /tmp as writable explicit binds. This was not runtime-accepted."
+    },
+    {
+      "criterion": "No secrets, Codex, hidden oracle, provider execution, or unsafe permission widening",
+      "status": "PASS_STATIC",
+      "result": "The workflow has contents: read, no secrets.* reference or environment gate, no credential/provider/agent execution, no hidden-oracle input, no root container user, and no chmod 777. PAPERLESS_SECRET_KEY is assigned a fixed synthetic-test-only value for the public test and is not a credential read."
+    },
+    {
+      "criterion": "No V5, task fact, seed, oracle, public-criteria, workflow/product-code, or binary-cache change",
+      "status": "PASS",
+      "result": "The base-to-head changed-path set contains only the new V6 workflow and text evidence/tests. V5 paths and the V5 workflow have no diff; all 16 inherited V5 hashes match. All 18 PR files are text, with no archive, runtime image, virtualenv, dependency tree, or cache binary committed."
+    },
+    {
+      "criterion": "Repair evidence hashes and JSON/YAML/Bash/tests",
+      "status": "PASS_LOCAL_STATIC",
+      "result": "All five implementation-handoff declared hashes match current bytes; all V6 JSON parses; workflow YAML parses; minimal-reproducer Bash and all six workflow run blocks pass bash -n; all three focused V6 tests pass; npm run ci and npm run ci:experimental pass."
+    },
+    {
+      "criterion": "Prior PR #54 rejection and G0 Sol evidence preserved",
+      "status": "PASS_WITH_PROVENANCE_LIMITATION",
+      "result": "The PR #54 review evidence is present, identifies PR #54/head 7dcd3af, recommends REJECT, and its SHA-256 matches the hash recorded by its paired verdict. G0 Sol hashes match their established values. The two PR #54 Sol files are introduced into git by repair commit e5b9d66 rather than existing in parent 7dcd3af, so preservation before that commit cannot be established from repository history alone; their bytes were not altered during this review."
+    },
+    {
+      "criterion": "PR checks and runtime claim boundary",
+      "status": "PASS_BOUNDARY",
+      "result": "Ubuntu, macOS, and Windows checks all succeeded at the exact review commit. Only the Validate GovernSeed workflow ran on the branch; the V6 manual workflow did not. Local Docker is exactly EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE, and no Docker/cache READY/runtime acceptance claim is derived from local or PR checks."
+    }
+  ],
+  "artifactHashVerification": {
+    "implementationHandoffDeclaredHashesAllMatch": true,
+    "declaredArtifactCount": 5,
+    "declaredMismatches": 0,
+    "artifacts": [
+      {
+        "path": ".github/workflows/external-oss-v6-dependency-cache.yml",
+        "sha256": "3177340958dd64ad918f70f543dcf0e4e49cfd54d7d558165e733cf88b29dae9"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/tests/v6-contract-validation.mjs",
+        "sha256": "98ecb7b62d1ebd8e2bfde0b1627680bae1ed496d6fdc5edc5667076b60da988a"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/tests/v6-permission-regression.mjs",
+        "sha256": "41f537a1b0347660c0c443f5801aa2764016ee41266d832306df46b9b665cb3d"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/tests/v6-shell-validation.mjs",
+        "sha256": "e476311dd65409e3446cc129caf325b2edba822792ff595177045ddd265afa0f"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/control/G1/repair-1/local-validation.json",
+        "sha256": "8eaa28b2f4843b7f0a33f65fc4311f7ca61a9c40def0dc12360100f58ffb66f2"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/control/G1/repair-1/implementation-handoff.json",
+        "sha256": "c9deee464dbd0004783be60ce7ec75536970ce62648eeefc31917b304acd5def"
+      }
+    ],
+    "inheritedV5": {
+      "sourceCount": 16,
+      "mismatches": 0,
+      "allMatch": true
+    },
+    "preservedSolArtifacts": [
+      {
+        "path": "benchmarks/external-oss-v6/control/G1/sol-review-evidence.json",
+        "sha256": "dda6eb27f1c3e4bdc6929fbe460433fd0c43c9ae3b0573a5cbe1b8c57f45a861",
+        "pairedVerdictHashMatch": true
+      },
+      {
+        "path": "benchmarks/external-oss-v6/control/G1/sol-verdict.json",
+        "sha256": "13eb9df65bb00a9c2007b80ed9877e103fafd6267e4795415cf9f5870aea9082"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/control/G0/sol-review-evidence.json",
+        "sha256": "0838ea90c07b907d82fa7abfbbba05202c1e93fe4c2e387d754baf68aec37902"
+      },
+      {
+        "path": "benchmarks/external-oss-v6/control/G0/sol-verdict.json",
+        "sha256": "2dad1f807682d7e7baa8f09cccfb2295af6f378a96f74fa7e2b3f8cbfed8d508"
+      }
+    ]
+  },
+  "freshValidation": {
+    "json": "PASS",
+    "yaml": "PASS",
+    "minimalReproducerBashSyntax": "PASS",
+    "workflowShellBlocks": "PASS: 6",
+    "focusedV6ContractTest": "PASS",
+    "focusedV6ShellTest": "PASS",
+    "focusedV6PermissionRegression": "PASS",
+    "independentRepairSequenceAssertion": "PASS",
+    "independentDeniedRemovalReproduction": "PASS: all three rm exit codes 1; all three targets remained",
+    "independentUnreadableMapping": "PASS: existing unreadable entry -> DEPENDENCY_CACHE_INCOMPLETE",
+    "independentDiagnosticExtraction": "PASS: specific whitelist code preserved; unknown raw text -> bounded fixed fallback",
+    "aggregateArtifactPathCardinality": "FAIL: one distinct merged cache-receipt path; aggregate requires three",
+    "npmRunCi": "PASS",
+    "npmRunCiExperimental": "PASS: 125 tests, 0 failures",
+    "dockerInfo": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+    "dockerInfoExitCode": 1,
+    "actionlint": "NOT_AVAILABLE",
+    "shellcheck": "NOT_AVAILABLE",
+    "postValidationTrackedWorktree": "CLEAN before authorized review outputs"
+  },
+  "commands": [
+    {
+      "command": "git rev-parse HEAD; git rev-parse HEAD^{tree}; git rev-parse <base>; git merge-base HEAD <base>; git branch --show-current; git status --short; git diff --name-status <base>..HEAD; git diff --check <base>..HEAD",
+      "exitCode": 0,
+      "result": "Exact head/tree/base/merge-base/branch confirmed; pre-review tree clean; PR diff has 18 added text files and diff check passes."
+    },
+    {
+      "command": "git diff --quiet <base>..HEAD -- benchmarks/external-oss-v5 .github/workflows/external-oss-v5-dependency-cache.yml; recompute all inherited-evidence.json source hashes",
+      "exitCode": 0,
+      "result": "No V5 diff; 16 inherited hashes checked with 0 mismatches."
+    },
+    {
+      "command": "gh pr view 55 --repo Eskasia/governseed --json ...; gh pr checks 55 --repo Eskasia/governseed; gh run view 30724083675 --repo Eskasia/governseed --json ...; gh run list --branch benchmark/v6-offline-permission-fix-r1",
+      "exitCode": 0,
+      "result": "PR OPEN/non-draft/MERGEABLE/CLEAN at exact head/base; Ubuntu, macOS, and Windows npm run ci jobs all succeeded; no V6 workflow run appears on the branch."
+    },
+    {
+      "command": "gh pr checks 55 --repo Eskasia/governseed --required",
+      "exitCode": 1,
+      "result": "GitHub reports no checks configured as required on the branch."
+    },
+    {
+      "command": "node benchmarks/external-oss-v6/tests/v6-contract-validation.mjs; node benchmarks/external-oss-v6/tests/v6-shell-validation.mjs; node benchmarks/external-oss-v6/tests/v6-permission-regression.mjs",
+      "exitCode": 0,
+      "result": "All three focused tests report PASS; permission output names all three exact task IDs, denied-removal fail-closed, and unreadableCacheCode DEPENDENCY_CACHE_INCOMPLETE."
+    },
+    {
+      "command": "node --input-type=module <independent workflow sequence, matrix, Docker mount, diagnostic, and test assertions>",
+      "exitCode": 0,
+      "result": "Five exact jobs; four exact matrices; source-readonly/archive and extraction/negative-removal/mount orders pass; owner-writable chmod targets only negative_cache; two Docker commands have the required options and mount sets; diagnostics are whitelisted and bounded."
+    },
+    {
+      "command": "node --input-type=module <temp-only three-task readonly-parent rm reproduction>",
+      "exitCode": 0,
+      "result": "TASK-OSS-01, TASK-OSS-03, and TASK-OSS-09 each produced rm exit 1 with targetRemains=true."
+    },
+    {
+      "command": "node --input-type=module <execute extracted diagnostic function against specific and unknown samples>",
+      "exitCode": 0,
+      "result": "Specific sample returned HOME_NOT_WRITABLE; unknown raw sample returned OFFLINE_PERMISSION_CAUSE_UNKNOWN only."
+    },
+    {
+      "command": "shasum -a 256 <repair artifacts and preserved Sol artifacts>; jq empty <all V6 JSON>; Ruby YAML.load_file <V6 workflow>; bash -n <minimal reproducer>; focused shell-block parser",
+      "exitCode": 0,
+      "result": "All declared/new/preserved hashes recorded above; JSON, YAML, minimal-reproducer Bash, and all six workflow run blocks parse."
+    },
+    {
+      "command": "gh api <actions/upload-artifact@v4 README>; gh api <actions/download-artifact@v4 README and source>; node --input-type=module <artifact relative-path/cardinality derivation>",
+      "exitCode": 0,
+      "result": "Official v4 semantics establish one shared merge destination and least-common-ancestor artifact roots; all three task artifacts derive the same cache-receipt.json relative path, leaving one distinct path versus three required."
+    },
+    {
+      "command": "npm run ci",
+      "exitCode": 0,
+      "result": "PASS"
+    },
+    {
+      "command": "npm run ci:experimental",
+      "exitCode": 0,
+      "result": "PASS: 125 tests, 0 failures"
+    },
+    {
+      "command": "docker info --format '{{.ServerVersion}}'",
+      "exitCode": 1,
+      "result": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE; local Docker socket is absent."
+    },
+    {
+      "command": "file <each PR-changed file>; scan workflow and changed paths for archives, dependency trees, secrets.*, Codex/provider/oracle execution, chmod 777, and root container user",
+      "exitCode": 0,
+      "result": "All PR changes are text; prohibited binaries, credential references/execution, unsafe chmod, and root container execution are absent."
+    }
+  ],
+  "limitations": [
+    "Docker is unavailable locally. UID/GID 65532 execution, bind mounts, read-only rootfs, network none, capabilities, no-new-privileges, positive smoke, negative smoke, cleanup, and containment were not runtime-tested or accepted.",
+    "The workflow_dispatch-only External OSS V6 dependency cache workflow was not dispatched and has no observed receipt, cache artifact, Docker result, or aggregate READY result for this review.",
+    "The passing PR checks execute npm run ci, which does not include the focused V6 tests or the manual V6 Docker workflow.",
+    "actionlint and shellcheck are unavailable; YAML parsing, bash -n for all six run blocks, focused tests, source inspection, and independent semantic checks were completed.",
+    "The artifact-collision finding is a static path-semantics finding grounded in the pinned upload-artifact/download-artifact v4 documentation and source; no V6 workflow run was performed to observe the collision at runtime.",
+    "The PR #54 Sol files were absent from repair parent 7dcd3af and added by review commit e5b9d66, so repository history alone cannot prove their bytes existed before the repair commit. Their current internal hash binding and review identity are valid."
+  ],
+  "reviewerOwnership": "This evidence and the paired repair-1 Sol verdict are independent reviewer artifacts. The implementation layer is not authorized to alter, replace, or reinterpret them.",
+  "authorizationBoundary": "REJECT withholds merge authorization. The aggregate artifact-layout defect is repairable and therefore is not HARD_BLOCKED. No merge, push, dispatch, workflow/product change, V5 change, task fact/seed/oracle/public-criteria change, runtime qualification, cache READY state, or task acceptance is authorized or performed.",
+  "acceptMeaning": "At this gate, an eventual ACCEPT would authorize merge only. It would not establish G1 runtime acceptance, Docker execution, cache READY, workflow dispatch, offline-smoke qualification, task acceptance, or benchmark-effect evidence.",
+  "claimBoundary": "This review evaluates the merge safety and static/local acceptance evidence for commit e5b9d66f5b8e6bc1dcca17644e5a17e9e7050375 / PR #55. REJECT is based on a deterministic aggregate artifact-path defect. Passing local tests and PR checks are not treated as V6 runtime evidence, and this review makes no claim that the V6 workflow ran, that any cache is READY, or that G1 runtime acceptance occurred."
+}

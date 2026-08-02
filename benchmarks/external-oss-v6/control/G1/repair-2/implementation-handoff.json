@@ -1,0 +1,41 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "gate": "G1",
+  "repairCycle": 2,
+  "executionLayer": "primary-fallback",
+  "lunaExecution": "BLOCKED_USAGE_LIMIT",
+  "status": "READY_FOR_INDEPENDENT_REVIEW",
+  "baseCommit": "e5b9d66f5b8e6bc1dcca17644e5a17e9e7050375",
+  "branch": "benchmark/v6-offline-permission-fix-r2",
+  "preserved": [
+    "PR #54 and its rejection evidence",
+    "PR #55 and repair-1 Sol verdict",
+    "benchmarks/external-oss-v2/ through benchmarks/external-oss-v5/",
+    ".github/workflows/external-oss-v5-dependency-cache.yml",
+    "benchmarks/external-oss-v6/control/G0/sol-verdict.json"
+  ],
+  "changedFiles": [
+    ".github/workflows/external-oss-v6-dependency-cache.yml",
+    "benchmarks/external-oss-v6/tests/v6-contract-validation.mjs",
+    "benchmarks/external-oss-v6/tests/v6-artifact-layout-regression.mjs",
+    "benchmarks/external-oss-v6/control/G1/repair-2/local-validation.json",
+    "benchmarks/external-oss-v6/control/G1/repair-2/implementation-handoff.json"
+  ],
+  "artifactHashes": [
+    {"path":".github/workflows/external-oss-v6-dependency-cache.yml","sha256":"8554a9c6dad818a02aca8f39cf190e7fb4f1a9bdfb5d304fd46c157e571c82bd"},
+    {"path":"benchmarks/external-oss-v6/tests/v6-contract-validation.mjs","sha256":"cf900a34124272cbb65323623ed4e4dbcce60c8e6a737273848e98752d152340"},
+    {"path":"benchmarks/external-oss-v6/tests/v6-permission-regression.mjs","sha256":"41f537a1b0347660c0c443f5801aa2764016ee41266d832306df46b9b665cb3d"},
+    {"path":"benchmarks/external-oss-v6/tests/v6-artifact-layout-regression.mjs","sha256":"993695502d46aa81d0ba0753f680a78c420d1b9e58e0971fb808f034eb1105c3"},
+    {"path":"benchmarks/external-oss-v6/control/G1/repair-2/local-validation.json","sha256":"c194173f09e6eacbda69d58bac057b2f20a4b2670127ebfaf9891616d4bed124"}
+  ],
+  "artifactLayoutContract": {
+    "uploadArtifactsRemainTaskScoped": true,
+    "downloadMergeMultiple": false,
+    "aggregateReceiptPattern": "external-oss-v6-receipt-TASK-OSS-*",
+    "aggregateReceiptRoot": "${RUNNER_TEMP}/v6-receipts",
+    "distinctReceiptPathsRequired": 3,
+    "requiredTaskIds": ["TASK-OSS-01", "TASK-OSS-03", "TASK-OSS-09"]
+  },
+  "claimBoundary": "Implementation handoff only. No G1 acceptance, runtime result, cache READY, aggregate qualification, credential, Codex, hidden oracle, Pilot, scoring, merge, or dispatch claim. Independent Sol review is mandatory; primary fallback is disclosed because Luna could not execute this repair under the current usage limit."
+}
