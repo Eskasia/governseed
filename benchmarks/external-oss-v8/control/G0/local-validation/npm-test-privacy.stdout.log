@@ -2,30 +2,30 @@
 > agent-governance-starter@0.1.1 test:privacy
 > node --test tests/privacy/doctor-negative.test.mjs tests/privacy/eval-negative.test.mjs tests/privacy/runtime-proof-negative.test.mjs
 
-✔ doctor blocks private source patterns without reflecting matched values (553.272125ms)
-✔ doctor refuses a governance symlink to an environment file without reading it (84.73325ms)
-✔ evaluator scanner rejects encoded, Unicode, and private-source canaries (3.295625ms)
-✔ evaluator scanner failure is a stable fail-closed code (0.1895ms)
-✔ private scenario bytes are rejected before any artifact hash is computed (3.19125ms)
-✔ a linked environment file is rejected without reading or reflecting it (2.018625ms)
-✔ CLI privacy failure emits one closed envelope and no artifact (1.309959ms)
-✔ evaluator has no HMAC fallback or secret-key environment contract (0.459416ms)
-✔ importing runtime smoke modules has no console or filesystem side effect (80.307625ms)
-✔ all runtime smoke modules export main and exclude shell child runners (1.887958ms)
-✔ all three real-path seams use the shared runner, direct resolver, and minimal environment (46.955ms)
-✔ mock mode is deterministic and never resolves or invokes a real runtime (24.799583ms)
-✔ a concurrent publisher loser never removes the winner artifact (4.5485ms)
-✔ closed parsers reject extra JSON fields and text sections without an artifact (6.575167ms)
-✔ raw stdout and stderr privacy canaries are blocked without reflection or temp persistence (2.904542ms)
-✔ invalid UTF-8 and combined output overflow fail closed through the shared runner (745.071875ms)
-✔ linked output roots and linked raw workspaces are rejected without reading environment data (2.30325ms)
-✔ cleanup uncertainty prevents a new artifact (1.930291ms)
-✔ missing runtime preserves prior canonical evidence and skips capabilities and children (0.898458ms)
-✔ workspace cleanup failure preserves prior canonical evidence after the expected child (1.434083ms)
-✔ differing, private, and oversized prior artifacts fail closed without mutation (19.484625ms)
-✔ lock cleanup removes only canonical output created by the current attempt (10.640917ms)
-✔ production real mode never falls back and refuses every unresolved containment residual (2.920208ms)
-✔ standalone runtime-proof validator requires the exact forced-mock public entrypoint (740.581417ms)
+✔ doctor blocks private source patterns without reflecting matched values (557.115125ms)
+✔ doctor refuses a governance symlink to an environment file without reading it (85.211209ms)
+✔ evaluator scanner rejects encoded, Unicode, and private-source canaries (3.4145ms)
+✔ evaluator scanner failure is a stable fail-closed code (0.124667ms)
+✔ private scenario bytes are rejected before any artifact hash is computed (3.066375ms)
+✔ a linked environment file is rejected without reading or reflecting it (1.999292ms)
+✔ CLI privacy failure emits one closed envelope and no artifact (1.328667ms)
+✔ evaluator has no HMAC fallback or secret-key environment contract (0.490208ms)
+✔ importing runtime smoke modules has no console or filesystem side effect (83.247209ms)
+✔ all runtime smoke modules export main and exclude shell child runners (1.855208ms)
+✔ all three real-path seams use the shared runner, direct resolver, and minimal environment (51.818583ms)
+✔ mock mode is deterministic and never resolves or invokes a real runtime (31.186958ms)
+✔ a concurrent publisher loser never removes the winner artifact (4.505167ms)
+✔ closed parsers reject extra JSON fields and text sections without an artifact (6.414584ms)
+✔ raw stdout and stderr privacy canaries are blocked without reflection or temp persistence (3.326125ms)
+✔ invalid UTF-8 and combined output overflow fail closed through the shared runner (696.696375ms)
+✔ linked output roots and linked raw workspaces are rejected without reading environment data (1.710875ms)
+✔ cleanup uncertainty prevents a new artifact (1.802709ms)
+✔ missing runtime preserves prior canonical evidence and skips capabilities and children (1.017834ms)
+✔ workspace cleanup failure preserves prior canonical evidence after the expected child (1.775209ms)
+✔ differing, private, and oversized prior artifacts fail closed without mutation (19.380958ms)
+✔ lock cleanup removes only canonical output created by the current attempt (15.323625ms)
+✔ production real mode never falls back and refuses every unresolved containment residual (2.202917ms)
+✔ standalone runtime-proof validator requires the exact forced-mock public entrypoint (788.968041ms)
 ℹ tests 24
 ℹ suites 0
 ℹ pass 24
@@ -33,4 +33,4 @@
 ℹ cancelled 0
 ℹ skipped 0
 ℹ todo 0
-ℹ duration_ms 1852.227458
+ℹ duration_ms 1868.630166
