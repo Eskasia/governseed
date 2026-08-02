@@ -1,0 +1,14 @@
+bringing up nodes...
+bringing up nodes...
+
+....                                                                     [100%]
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.14.6-final-0 ________________
+
+Coverage HTML written to dir htmlcov
+Coverage XML written to file coverage.xml
+============================= slowest 50 durations =============================
+
+(12 durations < 0.5s hidden.)
+4 passed in 19.54s
+PASS

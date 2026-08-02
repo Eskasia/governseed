@@ -115,6 +115,12 @@ require(offline.includes('rm -rf "$negative_cache/$required_path"'), 'negative t
 require(offline.includes('test -e "$negative_cache/$required_path" || test -L "$negative_cache/$required_path"'), 'negative test accepts dangling required cache symlinks');
 require(offline.includes('test ! -e "$negative_cache/$required_path"'), 'negative test removes required cache entries');
 require(offline.includes('test ! -L "$negative_cache/$required_path"'), 'negative test removes dangling required cache symlinks');
+require(offline.includes('cp -R --no-preserve=ownership "/cache/$relative_root/." "/workspace/$relative_root/"'), 'offline cache roots are copied into workspace without dereferencing pnpm links');
+require(offline.includes('chmod -R u+rwX "/workspace/$relative_root"'), 'workspace cache copies are writable for runtime temporary files');
+require(!offline.includes('ln -s "/cache/'), 'offline workspace does not rewrite pnpm workspace links through /cache');
+require(offline.includes('test -e "/workspace/$relative_root" || fail OFFLINE_SMOKE_FAILED:workspace-cache-copy'), 'offline smoke verifies path-preserving cache copies');
+for (const marker of ['OFFLINE_SMOKE_FAILED:seed-copy', 'OFFLINE_SMOKE_FAILED:cache-root-list', 'OFFLINE_SMOKE_FAILED:workspace-cache-path', 'OFFLINE_SMOKE_FAILED:workspace-cache-copy', 'OFFLINE_SMOKE_FAILED:workspace-cache-permissions', 'OFFLINE_SMOKE_FAILED:immich-public-test', 'OFFLINE_SMOKE_FAILED:uptime-public-test', 'OFFLINE_SMOKE_FAILED:paperless-public-test']) require(offline.includes(marker), `offline failure marker: ${marker}`);
+require(!offline.includes('./node_modules/.bin/vitest --run src/commands/asset.spec.ts 2>/dev/null'), 'Immich public smoke keeps diagnostic stderr');
 require(dependencyWorkflow.includes('TASK-OSS-01) required_path=packages/cli/node_modules'), 'Immich negative test removes the task-local required cache entry');
 require(offline.includes('grep -Fq DEPENDENCY_CACHE_INCOMPLETE'), 'negative test checks structured block');
 require(offline.includes('test "$negative_rc" -eq 42'), 'negative test checks exit 42');
