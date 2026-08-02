@@ -21,21 +21,16 @@ const RUN_ID = 'repair-1-run';
 const TASK_ID = 'repair-1-task';
 const MODEL = CREDENTIAL_PROXY_MODEL;
 const HOST_KEY = 'synthetic-host-only-key';
-const RESPONSE_FORMAT = {
+const TEXT_FORMAT = {
   type: 'json_schema',
-  json_schema: {
-    name: 'governseed_response',
-    strict: true,
-    schema: {
-      type: 'object',
-      additionalProperties: false,
-      required: ['id', 'model', 'output', 'usage'],
-      properties: {
-        id: { type: 'string' },
-        model: { const: MODEL },
-        output: { type: 'array' },
-        usage: { type: 'object' },
-      },
+  name: 'governseed_runtime_canary',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['runtime_canary'],
+    properties: {
+      runtime_canary: { type: 'string', enum: ['PASS'] },
     },
   },
 };
@@ -54,7 +49,7 @@ function requestBody(overrides = {}) {
     model: MODEL,
     input: 'synthetic repair request',
     max_output_tokens: CREDENTIAL_PROXY_TOKEN_CEILING,
-    response_format: RESPONSE_FORMAT,
+    text: { format: TEXT_FORMAT },
     metadata: identity(),
     ...overrides,
   };

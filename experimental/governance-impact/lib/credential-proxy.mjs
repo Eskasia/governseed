@@ -16,7 +16,7 @@ const REQUEST_FIELDS = Object.freeze([
   'model',
   'input',
   'max_output_tokens',
-  'response_format',
+  'text',
   'metadata',
 ]);
 const REQUEST_METADATA_FIELDS = Object.freeze([
@@ -30,21 +30,16 @@ const RESPONSE_USAGE_FIELDS = Object.freeze([
   'output_tokens',
   'total_tokens',
 ]);
-const FIXED_RESPONSE_FORMAT = Object.freeze({
+const FIXED_TEXT_FORMAT = Object.freeze({
   type: 'json_schema',
-  json_schema: Object.freeze({
-    name: 'governseed_response',
-    strict: true,
-    schema: Object.freeze({
-      type: 'object',
-      additionalProperties: false,
-      required: ['id', 'model', 'output', 'usage'],
-      properties: Object.freeze({
-        id: Object.freeze({ type: 'string' }),
-        model: Object.freeze({ const: CREDENTIAL_PROXY_MODEL }),
-        output: Object.freeze({ type: 'array' }),
-        usage: Object.freeze({ type: 'object' }),
-      }),
+  name: 'governseed_runtime_canary',
+  strict: true,
+  schema: Object.freeze({
+    type: 'object',
+    additionalProperties: false,
+    required: ['runtime_canary'],
+    properties: Object.freeze({
+      runtime_canary: Object.freeze({ type: 'string', enum: ['PASS'] }),
     }),
   }),
 });
@@ -225,7 +220,7 @@ function durablePolicyDescriptor(policy) {
     request: Object.freeze({
       allowedFields: Object.freeze([...REQUEST_FIELDS]),
       metadataFields: Object.freeze([...REQUEST_METADATA_FIELDS]),
-      fixedResponseFormat: FIXED_RESPONSE_FORMAT,
+      fixedTextFormat: FIXED_TEXT_FORMAT,
       forwardedHeaders: Object.freeze([
         'accept',
         'authorization',
@@ -461,7 +456,11 @@ function validateBody(bytes, policy) {
   if (body.max_output_tokens !== policy.tokenCeiling) {
     fail('PROXY_BODY_MISMATCH');
   }
-  if (canonicalJson(body.response_format) !== canonicalJson(FIXED_RESPONSE_FORMAT)) {
+  if (
+    !isPlainObject(body.text)
+    || Object.keys(body.text).sort().join(',') !== 'format'
+    || canonicalJson(body.text.format) !== canonicalJson(FIXED_TEXT_FORMAT)
+  ) {
     fail('PROXY_BODY_MISMATCH');
   }
   if (!isPlainObject(body.metadata)) fail('PROXY_BODY_MISMATCH');

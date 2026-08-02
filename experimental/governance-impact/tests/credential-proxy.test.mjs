@@ -23,21 +23,16 @@ const RUN_ID = 'synthetic-run-1';
 const TASK_ID = 'synthetic-task-1';
 const MODEL = CREDENTIAL_PROXY_MODEL;
 const UPSTREAM_KEY = 'synthetic-host-only-key';
-const RESPONSE_FORMAT = {
+const TEXT_FORMAT = {
   type: 'json_schema',
-  json_schema: {
-    name: 'governseed_response',
-    strict: true,
-    schema: {
-      type: 'object',
-      additionalProperties: false,
-      required: ['id', 'model', 'output', 'usage'],
-      properties: {
-        id: { type: 'string' },
-        model: { const: MODEL },
-        output: { type: 'array' },
-        usage: { type: 'object' },
-      },
+  name: 'governseed_runtime_canary',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['runtime_canary'],
+    properties: {
+      runtime_canary: { type: 'string', enum: ['PASS'] },
     },
   },
 };
@@ -65,7 +60,7 @@ function requestBody(overrides = {}) {
     model: MODEL,
     input: 'synthetic request',
     max_output_tokens: CREDENTIAL_PROXY_TOKEN_CEILING,
-    response_format: RESPONSE_FORMAT,
+    text: { format: TEXT_FORMAT },
     metadata: {
       benchmark_id: BENCHMARK_ID,
       run_id: RUN_ID,
@@ -166,7 +161,7 @@ test('policy descriptor fixes provider, endpoint, one request, 30 seconds, and i
     'model',
     'input',
     'max_output_tokens',
-    'response_format',
+    'text',
     'metadata',
   ]);
   assert.deepEqual(descriptor.request.metadataFields, [
@@ -250,6 +245,8 @@ test('client Authorization, OpenAI headers, x-* headers, and unknown headers are
 test('closed request fields and identity mismatches fail before provider transport', async (t) => {
   const cases = [
     { tools: [], code: 'PROXY_BODY_MISMATCH' },
+    { response_format: { type: 'json_schema' }, code: 'PROXY_BODY_MISMATCH' },
+    { text: { format: { ...TEXT_FORMAT, name: 'wrong_canary' } }, code: 'PROXY_BODY_MISMATCH' },
     { metadata: { benchmark_id: 'wrong', run_id: RUN_ID, task_id: TASK_ID }, code: 'PROXY_BODY_MISMATCH' },
     { metadata: { benchmark_id: BENCHMARK_ID, run_id: 'wrong', task_id: TASK_ID }, code: 'PROXY_BODY_MISMATCH' },
     { metadata: { benchmark_id: BENCHMARK_ID, run_id: RUN_ID, task_id: 'wrong' }, code: 'PROXY_BODY_MISMATCH' },

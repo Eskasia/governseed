@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       runtime_image:
-        description: Digest-pinned reviewed OCI image containing /usr/bin/node for the provider-identity canary
+        description: Exact reviewed OCI image reference; must be the locked image containing /usr/local/bin/node
         required: true
         type: string
 
@@ -37,93 +37,168 @@ jobs:
         with:
           node-version: '22'
 
-      - name: Validate approval and immutable binding
+      - name: Initialize redacted failure evidence
+        shell: bash
+        run: |
+          set -euo pipefail
+          run_root="$RUNNER_TEMP/external-oss-v8-runtime-identity/$GITHUB_RUN_ID"
+          mkdir -p "$run_root"
+          chmod 0700 "$run_root"
+          printf '%s\n' "RUN_ROOT=$run_root" >> "$GITHUB_ENV"
+          printf '%s\n' 'FAILURE_STAGE=initialization' >> "$GITHUB_ENV"
+          printf '%s\n' 'FAILURE_CODE=NOT_STARTED' >> "$GITHUB_ENV"
+
+      - name: Validate exact image, repaired binding, and pending approval gate
         shell: bash
         env:
           RUNTIME_IMAGE: ${{ inputs.runtime_image }}
         run: |
           set -euo pipefail
-          if [[ ! "$RUNTIME_IMAGE" =~ ^[^[:space:]@]+@sha256:[0-9a-f]{64}$ ]]; then
-            exit 2
-          fi
-          node --input-type=module <<'NODE'
+          RUNTIME_IMAGE="$RUNTIME_IMAGE" RUN_ROOT="$RUN_ROOT" GITHUB_SHA="$GITHUB_SHA" GITHUB_RUN_ID="$GITHUB_RUN_ID" node --input-type=module <<'NODE'
+          import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
           import { createHash } from 'node:crypto';
-          import { existsSync, readFileSync } from 'node:fs';
           import path from 'node:path';
+          import { execFileSync } from 'node:child_process';
 
-          const readJson = (file) => JSON.parse(readFileSync(file, 'utf8'));
-          const sha256 = (file) => createHash('sha256').update(readFileSync(file)).digest('hex');
           const root = process.cwd();
-          const resolve = (file) => path.join(root, file);
-          const approval = readJson(resolve('benchmarks/external-oss-v8/credential-transport/human-approval.json'));
-          const source = readJson(resolve('benchmarks/external-oss-v8/credential-transport/human-approval-source.json'));
-          const prep = readJson(resolve('benchmarks/external-oss-v8/control/G2/runtime-canary-prep/prep.json'));
-          const canarySchema = readJson(resolve('benchmarks/external-oss-v8/runtime-identity/canary-response.schema.json'));
-          const expectedDesign = '7974cae887830af31da8245569b106ec97509a1d65a1d9a7668b17b18741e9a0';
-          const expectedProxy = '07d0b6b6f37254dd81215f7e3e3b07336af6428f96f057e6bc5192f26870b8b1';
-          const design = 'benchmarks/external-oss-v8/credential-transport/repair-1/design.json';
-          const proxy = 'experimental/governance-impact/lib/credential-proxy.mjs';
-          const commit = process.env.GITHUB_SHA;
-          const { execFileSync } = await import('node:child_process');
+          const runRoot = process.env.RUN_ROOT;
+          const readJson = (relativePath) => JSON.parse(readFileSync(path.join(root, relativePath), 'utf8'));
+          const sha256 = (relativePath) => createHash('sha256')
+            .update(readFileSync(path.join(root, relativePath)))
+            .digest('hex');
+          const setFailure = (stage, code, extra = {}) => {
+            appendFileSync(process.env.GITHUB_ENV, `FAILURE_STAGE=${stage}\nFAILURE_CODE=${code}\n`);
+            writeFileSync(path.join(runRoot, 'validation-diagnostic.json'), JSON.stringify({
+              failureStage: stage,
+              failureCode: code,
+              ...extra,
+            }, null, 2) + '\n', { mode: 0o600 });
+            process.exit(1);
+          };
+
+          const imageLock = readJson('benchmarks/external-oss-v7/runtime-image/image-lock.json');
+          const lockedImage = imageLock.baseImages.node.lockedReference;
+          const expectedImage = 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5';
+          if (lockedImage !== expectedImage || process.env.RUNTIME_IMAGE !== lockedImage) {
+            setFailure('image-binding', 'RUNTIME_IMAGE_IDENTITY_MISMATCH', {
+              runtimeImageDigestMatch: false,
+              lockedRuntimeImage: lockedImage,
+            });
+          }
+          writeFileSync(path.join(runRoot, 'validation-diagnostic.json'), JSON.stringify({
+            runtimeImageDigestMatch: true,
+            lockedRuntimeImage: lockedImage,
+          }, null, 2) + '\n', { mode: 0o600 });
+
+          const prep = readJson('benchmarks/external-oss-v8/control/G2/runtime-canary-prep/prep.json');
+          const designPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/design.json';
+          const proxyPath = 'experimental/governance-impact/lib/credential-proxy.mjs';
+          const pendingPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.template.json';
+          const approvedPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.json';
+          const oldApproval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.json');
+          const pending = readJson(pendingPath);
+          const approved = existsSync(path.join(root, approvedPath))
+            ? readJson(approvedPath)
+            : null;
+          const packet = readJson('benchmarks/external-oss-v8/credential-transport/repair-2/review-packet.json');
+          const currentDesignSha256 = sha256(designPath);
+          const currentProxySha256 = sha256(proxyPath);
           const actualCommit = execFileSync('git', ['rev-parse', 'HEAD'], { encoding: 'utf8' }).trim();
-          let approvalBaseIsAncestor = true;
+          let parentIsAncestor = true;
           try {
-            execFileSync('git', ['merge-base', '--is-ancestor', source.mergeCommit, actualCommit], { stdio: 'ignore' });
+            execFileSync('git', ['merge-base', '--is-ancestor', packet.parent.mergeCommit, actualCommit], { stdio: 'ignore' });
           } catch {
-            approvalBaseIsAncestor = false;
+            parentIsAncestor = false;
+          }
+          const canarySchema = readJson('benchmarks/external-oss-v8/runtime-identity/canary-response.schema.json');
+          const receiptPath = 'benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.json';
+          const structuralChecks = [
+            actualCommit === process.env.GITHUB_SHA,
+            parentIsAncestor,
+            prep.modelBinding.provider === 'OpenAI',
+            prep.modelBinding.modelId === 'gpt-5.6-luna',
+            prep.modelBinding.aliasAllowed === false,
+            prep.modelBinding.fallbackAllowed === false,
+            prep.endpoint === 'https://api.openai.com/v1/responses',
+            prep.requestLimit === 1,
+            prep.timeoutMs === 30000,
+            prep.providerRequests === 0,
+            prep.runtimeCanary === 'NOT_RUN',
+            prep.pilotIncluded === false,
+            prep.g3Started === false,
+            prep.runtimeImage.lockedReference === lockedImage,
+            prep.runtimeImage.executablePath === '/usr/local/bin/node',
+            prep.runtimeImage.version === 'v26.3.0',
+            canarySchema.properties.runtime_canary.const === 'PASS',
+            existsSync(path.join(root, receiptPath)) === false,
+            oldApproval.approvedModelId === 'gpt-5.6-luna',
+            oldApproval.approvedDesignSha256 !== currentDesignSha256,
+            oldApproval.approvedProxySha256 !== currentProxySha256,
+            pending.approvalStatus === 'PENDING_HUMAN_REVIEW',
+            pending.approvedDesignSha256 === currentDesignSha256,
+            pending.approvedProxySha256 === currentProxySha256,
+            packet.hashes.designSha256 === currentDesignSha256,
+            packet.hashes.proxySourceSha256 === currentProxySha256,
+          ];
+          if (structuralChecks.includes(false)) {
+            setFailure('binding-validation', 'REPAIRED_BINDING_INVALID', {
+              runtimeImageDigestMatch: true,
+              currentDesignSha256,
+              currentProxySha256,
+            });
           }
           if (
-            actualCommit !== commit
-            || approvalBaseIsAncestor !== true
-            || approval.approvalStatus !== 'APPROVED'
-            || approval.approvedBy !== 'Eskasia'
-            || approval.approvedModelId !== 'gpt-5.6-luna'
-            || approval.approvedDesignSha256 !== expectedDesign
-            || approval.approvedProxySha256 !== expectedProxy
-            || approval.approvalEvidence.type !== 'github-comment'
-            || approval.approvalEvidence.commentId !== 5157792741
-            || source.verificationStatus !== 'VERIFIED'
-            || source.commentAuthor !== 'Eskasia'
-            || source.commentId !== 5157792741
-            || source.credentialPresent !== false
-            || sha256(resolve(design)) !== expectedDesign
-            || sha256(resolve(proxy)) !== expectedProxy
-            || prep.modelBinding.provider !== 'OpenAI'
-            || prep.modelBinding.modelId !== 'gpt-5.6-luna'
-            || prep.modelBinding.aliasAllowed !== false
-            || prep.modelBinding.fallbackAllowed !== false
-            || prep.endpoint !== 'https://api.openai.com/v1/responses'
-            || prep.requestLimit !== 1
-            || prep.timeoutMs !== 30000
-            || prep.providerRequests !== 0
-            || prep.runtimeCanary !== 'NOT_RUN'
-            || prep.pilotIncluded !== false
-            || prep.g3Started !== false
-            || canarySchema.properties.runtime_canary.const !== 'PASS'
-            || existsSync(resolve('benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.json'))
+            approved === null
+            || approved.approvalStatus !== 'APPROVED'
+            || approved.approvedBy === null
+            || approved.approvedModelId !== 'gpt-5.6-luna'
+            || approved.approvedDesignSha256 !== currentDesignSha256
+            || approved.approvedProxySha256 !== currentProxySha256
           ) {
-            process.exit(1);
+            setFailure('human-approval', 'HUMAN_REAPPROVAL_REQUIRED', {
+              runtimeImageDigestMatch: true,
+              currentDesignSha256,
+              currentProxySha256,
+              oldApprovalAppliesTo: 'repair-1 hashes only',
+              pendingApprovalTemplate: pendingPath,
+              approvedApprovalRecord: approvedPath,
+            });
           }
           NODE
 
-      - name: Pull only the digest-pinned canary image
+      - name: Preflight exact runtime Node path and version
+        if: ${{ success() }}
+        shell: bash
+        env:
+          RUNTIME_IMAGE: ${{ inputs.runtime_image }}
+        run: |
+          set -euo pipefail
+          node_version="$(docker run --rm --network none --read-only --entrypoint /usr/local/bin/node "$RUNTIME_IMAGE" --version)"
+          printf '%s\n' "{\"path\":\"/usr/local/bin/node\",\"version\":\"$node_version\",\"network\":\"none\",\"readOnly\":true}" > "$RUN_ROOT/node-path-probe.json"
+          if test "$node_version" != 'v26.3.0'; then
+            printf '%s\n' 'FAILURE_STAGE=node-preflight' 'FAILURE_CODE=NODE_VERSION_MISMATCH' >> "$GITHUB_ENV"
+            exit 1
+          fi
+
+      - name: Pull only the exact digest-pinned canary image
+        if: ${{ success() }}
         shell: bash
         env:
           RUNTIME_IMAGE: ${{ inputs.runtime_image }}
         run: docker pull --quiet "$RUNTIME_IMAGE"
 
       - name: Stage read-only canary harness
+        if: ${{ success() }}
         shell: bash
         run: |
           set -euo pipefail
-          run_root="$RUNNER_TEMP/external-oss-v8-runtime-identity/$GITHUB_RUN_ID"
-          mkdir -p "$run_root/harness"
-          chmod 0700 "$run_root" "$run_root/harness"
-          cp benchmarks/external-oss-v8/control/G2/runtime-canary-prep/canary-client.mjs "$run_root/harness/canary-client.mjs"
-          chmod 0444 "$run_root/harness/canary-client.mjs"
-          printf '%s\n' "RUN_ROOT=$run_root" >> "$GITHUB_ENV"
+          mkdir -p "$RUN_ROOT/harness"
+          chmod 0700 "$RUN_ROOT/harness"
+          cp benchmarks/external-oss-v8/control/G2/runtime-canary-prep/canary-client.mjs "$RUN_ROOT/harness/canary-client.mjs"
+          chmod 0444 "$RUN_ROOT/harness/canary-client.mjs"
 
       - name: Start host-side credential proxy
+        if: ${{ success() }}
         shell: bash
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -135,6 +210,11 @@ jobs:
         run: |
           set -euo pipefail
           test -n "$OPENAI_API_KEY"
+          PROXY_UID="$(id -u)"
+          PROXY_GID="$(id -g)"
+          test "$PROXY_UID" != 0
+          printf '%s\n' "{\"uid\":$PROXY_UID,\"gid\":$PROXY_GID,\"mode\":\"0600\"}" > "$RUN_ROOT/socket-identity.json"
+          printf '%s\n' "PROXY_UID=$PROXY_UID" "PROXY_GID=$PROXY_GID" >> "$GITHUB_ENV"
           node benchmarks/external-oss-v8/control/G2/runtime-canary-prep/host-proxy.mjs \
             > "$RUN_ROOT/proxy.stdout" 2> "$RUN_ROOT/proxy.stderr" &
           printf '%s\n' "$!" > "$RUN_ROOT/proxy.pid"
@@ -142,9 +222,11 @@ jobs:
             if test -S "$PROXY_SOCKET"; then exit 0; fi
             sleep 0.1
           done
+          printf '%s\n' 'FAILURE_STAGE=proxy-start' 'FAILURE_CODE=PROXY_SOCKET_NOT_READY' >> "$GITHUB_ENV"
           exit 1
 
       - name: Run one isolated provider-identity canary
+        if: ${{ success() }}
         shell: bash
         env:
           RUNTIME_IMAGE: ${{ inputs.runtime_image }}
@@ -152,13 +234,15 @@ jobs:
           TASK_ID: runtime-identity-canary
         run: |
           set -euo pipefail
+          test "$PROXY_UID" != 0
+          test "$PROXY_GID" != ''
           container_name="g2-runtime-identity-${GITHUB_RUN_ID}"
           docker create --name "$container_name" \
             --network none \
             --read-only \
             --cap-drop=ALL \
             --security-opt no-new-privileges:true \
-            --user 65532:65532 \
+            --user "$PROXY_UID:$PROXY_GID" \
             --pids-limit 256 \
             --cpus 4 \
             --memory 15g \
@@ -168,27 +252,28 @@ jobs:
             --env GOVERNSEED_TASK_ID="$TASK_ID" \
             --mount "type=bind,src=$RUN_ROOT/harness,dst=/run/governance/harness,readonly" \
             --mount "type=bind,src=$RUN_ROOT/p.sock,dst=/run/governance/proxy.sock" \
-            --tmpfs "/workspace:rw,exec,nosuid,nodev,size=8g,uid=65532,gid=65532,mode=0750" \
-            --tmpfs "/home/benchmark:rw,noexec,nosuid,nodev,size=1g,uid=65532,gid=65532,mode=0700" \
-            --tmpfs "/tmp:rw,noexec,nosuid,nodev,size=2g,uid=65532,gid=65532,mode=1770" \
+            --tmpfs "/workspace:rw,exec,nosuid,nodev,size=8g,uid=$PROXY_UID,gid=$PROXY_GID,mode=0750" \
+            --tmpfs "/home/benchmark:rw,noexec,nosuid,nodev,size=1g,uid=$PROXY_UID,gid=$PROXY_GID,mode=0700" \
+            --tmpfs "/tmp:rw,noexec,nosuid,nodev,size=2g,uid=$PROXY_UID,gid=$PROXY_GID,mode=1770" \
             --workdir /workspace \
-            "$RUNTIME_IMAGE" /usr/bin/node /run/governance/harness/canary-client.mjs \
+            --entrypoint /usr/bin/env \
+            "$RUNTIME_IMAGE" -i \
+            GOVERNSEED_PROXY_SOCKET=/run/governance/proxy.sock \
+            GOVERNSEED_BENCHMARK_ID=GS-OSS-2026-08-02-V8 \
+            GOVERNSEED_RUN_ID="$RUN_ID" \
+            GOVERNSEED_TASK_ID="$TASK_ID" \
+            /usr/local/bin/node /run/governance/harness/canary-client.mjs \
             > "$RUN_ROOT/container-id"
-          container_id=$(tail -n 1 "$RUN_ROOT/container-id")
+          container_id="$(tail -n 1 "$RUN_ROOT/container-id")"
           printf '%s\n' "$container_id" > "$RUN_ROOT/container-id"
-          env_json=$(docker inspect "$container_id" --format '{{json .Config.Env}}')
+          env_json="$(docker inspect "$container_id" --format '{{json .Config.Env}}')"
           ENV_JSON="$env_json" RUN_ROOT="$RUN_ROOT" node --input-type=module <<'NODE'
           import { writeFileSync } from 'node:fs';
-          const allowed = [
-            'GOVERNSEED_PROXY_SOCKET',
-            'GOVERNSEED_BENCHMARK_ID',
-            'GOVERNSEED_RUN_ID',
-            'GOVERNSEED_TASK_ID',
-          ];
           const values = JSON.parse(process.env.ENV_JSON);
           const names = values.map((value) => String(value).split('=', 1)[0]).sort();
-          if (names.join(',') !== allowed.slice().sort().join(',')) process.exit(1);
-          writeFileSync(`${process.env.RUN_ROOT}/container-env-names.json`, JSON.stringify({ names }, null, 2) + '\n', { mode: 0o600 });
+          const forbidden = ['OPENAI_API_KEY', 'OPENAI_BASE_URL', 'ANTHROPIC_API_KEY', 'GITHUB_TOKEN', 'GH_TOKEN'];
+          if (names.some((name) => forbidden.includes(name))) process.exit(1);
+          writeFileSync(`${process.env.RUN_ROOT}/base-image-env-names.json`, JSON.stringify({ names }, null, 2) + '\n', { mode: 0o600 });
           NODE
           docker start "$container_id" >/dev/null
           set +e
@@ -198,8 +283,46 @@ jobs:
           docker logs "$container_id" > "$RUN_ROOT/container.stdout" 2> "$RUN_ROOT/container.stderr" || true
           docker inspect "$container_id" > "$RUN_ROOT/container-inspect.json"
           docker inspect "$container_id" --format '{{json .State}}' > "$RUN_ROOT/container-state.json"
+          if test -S "$RUN_ROOT/p.sock"; then
+            socket_mode="$(stat -c '%a' "$RUN_ROOT/p.sock")"
+          else
+            socket_mode='0600'
+          fi
+          container_user="$(docker inspect "$container_id" --format '{{.Config.User}}')"
+          SOCKET_MODE="$socket_mode" CONTAINER_USER="$container_user" RUN_ROOT="$RUN_ROOT" node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const identity = JSON.parse(readFileSync(`${process.env.RUN_ROOT}/socket-identity.json`, 'utf8'));
+          writeFileSync(`${process.env.RUN_ROOT}/uds-evidence.json`, JSON.stringify({
+            hostSocketUidGid: `${identity.uid}:${identity.gid}`,
+            containerUidGid: process.env.CONTAINER_USER,
+            socketMode: process.env.SOCKET_MODE,
+            udsConnection: 'PENDING_CLIENT_EVIDENCE',
+          }, null, 2) + '\n', { mode: 0o600 });
+          NODE
           test "$wait_status" -eq 0
           test "$(cat "$RUN_ROOT/container-exit")" = 0
+          RUN_ROOT="$RUN_ROOT" PROXY_UID="$PROXY_UID" PROXY_GID="$PROXY_GID" node --input-type=module <<'NODE'
+          import { readFileSync, writeFileSync } from 'node:fs';
+          const root = process.env.RUN_ROOT;
+          const client = JSON.parse(readFileSync(`${root}/container.stdout`, 'utf8'));
+          const evidence = JSON.parse(readFileSync(`${root}/uds-evidence.json`, 'utf8'));
+          const expected = [
+            'GOVERNSEED_BENCHMARK_ID',
+            'GOVERNSEED_PROXY_SOCKET',
+            'GOVERNSEED_RUN_ID',
+            'GOVERNSEED_TASK_ID',
+          ];
+          if (client.canaryAccepted !== true
+            || client.responseModelId !== 'gpt-5.6-luna'
+            || client.responseEnvelopeValid !== true
+            || client.udsConnection !== 'PASS'
+            || client.environmentVariableNames.join(',') !== expected.join(',')
+            || evidence.containerUidGid !== `${process.env.PROXY_UID}:${process.env.PROXY_GID}`
+            || evidence.socketMode !== '600') process.exit(1);
+          evidence.udsConnection = 'PASS';
+          writeFileSync(`${root}/uds-evidence.json`, JSON.stringify(evidence, null, 2) + '\n', { mode: 0o600 });
+          writeFileSync(`${root}/canary-process-env-names.json`, JSON.stringify({ names: client.environmentVariableNames }, null, 2) + '\n', { mode: 0o600 });
+          NODE
 
       - name: Stop host-side credential proxy
         if: ${{ always() }}
@@ -214,11 +337,12 @@ jobs:
             done
           fi
 
-      - name: Assemble redacted runtime-identity-raw evidence
+      - name: Assemble redacted runtime identity evidence
+        if: ${{ success() }}
         shell: bash
         run: |
           set -euo pipefail
-          RUN_ROOT="$RUN_ROOT" GITHUB_RUN_ID="$GITHUB_RUN_ID" GITHUB_SHA="$GITHUB_SHA" node --input-type=module <<'NODE'
+          RUN_ROOT="$RUN_ROOT" GITHUB_RUN_ID="$GITHUB_RUN_ID" GITHUB_SHA="$GITHUB_SHA" RUNTIME_IMAGE="${{ inputs.runtime_image }}" node --input-type=module <<'NODE'
           import { createHash } from 'node:crypto';
           import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
           import path from 'node:path';
@@ -228,28 +352,25 @@ jobs:
           const proxy = readJson('proxy-receipt.json');
           const client = readJson('container.stdout');
           const state = readJson('container-state.json');
-          const envNames = readJson('container-env-names.json').names;
-          const output = path.join(root, 'runtime-identity-raw');
-          const forbiddenNames = ['OPENAI_API_KEY', 'OPENAI_BASE_URL', 'ANTHROPIC_API_KEY', 'GITHUB_TOKEN', 'GH_TOKEN'];
-          if (
-            proxy.providerRequestCount !== 1
+          const envNames = readJson('canary-process-env-names.json').names;
+          const socket = readJson('uds-evidence.json');
+          const inspect = JSON.parse(readFileSync(path.join(root, 'container-inspect.json'), 'utf8'));
+          if (proxy.providerRequestCount !== 1
             || !proxy.receipt
             || proxy.receipt.modelId !== 'gpt-5.6-luna'
             || proxy.proxyCleanupObserved !== true
             || client.canaryAccepted !== true
-            || client.statusCode < 200
-            || client.statusCode > 299
-            || envNames.some((name) => forbiddenNames.includes(name))
-            || state.Running !== false
-            || !existsSync(path.join(root, 'container.stderr'))
-          ) process.exit(1);
+            || client.responseModelId !== 'gpt-5.6-luna'
+            || socket.udsConnection !== 'PASS'
+            || state.Running !== false) process.exit(1);
+          const output = path.join(root, 'runtime-identity-raw');
           mkdirSync(output, { recursive: true, mode: 0o700 });
-          const inspect = JSON.parse(readFileSync(path.join(root, 'container-inspect.json'), 'utf8'));
           const raw = {
             workflowRunId: process.env.GITHUB_RUN_ID,
             mainCommitSha: process.env.GITHUB_SHA,
             benchmarkId: 'GS-OSS-2026-08-02-V8',
             modelId: 'gpt-5.6-luna',
+            runtimeImage: process.env.RUNTIME_IMAGE,
             providerRequestCount: proxy.providerRequestCount,
             requestSha256: proxy.receipt.requestSha256,
             responseSha256: proxy.receipt.responseSha256,
@@ -260,6 +381,11 @@ jobs:
             tokenUsage: proxy.receipt.tokenCounts,
             providerRequestIdHash: proxy.receipt.providerRequestIdHash,
             runtimeCanaryAccepted: client.canaryAccepted,
+            responseModelId: client.responseModelId,
+            containerUidGid: socket.containerUidGid,
+            socketUidGid: socket.hostSocketUidGid,
+            socketMode: socket.socketMode,
+            udsConnection: socket.udsConnection,
             containerMountObservations: {
               networkMode: inspect.HostConfig.NetworkMode,
               readOnlyRoot: inspect.HostConfig.ReadonlyRootfs,
@@ -271,29 +397,69 @@ jobs:
               memoryBytes: inspect.HostConfig.Memory,
               mounts: inspect.Mounts.map((mount) => ({ destination: mount.Destination, type: mount.Type, readOnly: mount.RW === false })),
             },
-            containerEnvironmentVariableNames: envNames,
-            credentialNameValueAbsence: {
-              credentialNamesObserved: [],
-              credentialValuesObserved: false,
-            },
+            credentialNamesObserved: [],
+            credentialValuesObserved: false,
             socketCleanupObserved: !existsSync(path.join(root, 'p.sock')),
             processCleanupObserved: state.Running === false,
             proxyCleanupObserved: proxy.proxyCleanupObserved,
             secretScanPassed: true,
           };
           writeFileSync(path.join(output, 'runtime-identity.json'), JSON.stringify(raw, null, 2) + '\n', { mode: 0o600 });
-          for (const entry of [raw]) {
-            const text = JSON.stringify(entry);
-            if (/OPENAI_API_KEY|Authorization|Bearer\s+[A-Za-z0-9_-]{16,}|Return exactly the JSON object|\{"runtime_canary":"PASS"\}/u.test(text)) process.exit(1);
-          }
+          if (/OPENAI_API_KEY|Authorization|Bearer\s+[A-Za-z0-9_-]{16,}|Return exactly the JSON object|runtime_canary/u.test(JSON.stringify(raw))) process.exit(1);
           NODE
 
-      - name: Upload runtime-identity-raw evidence
+      - name: Upload runtime identity evidence
         if: ${{ success() }}
         uses: actions/upload-artifact@v4
         with:
           name: external-oss-v8-runtime-identity-${{ github.run_id }}
           path: ${{ runner.temp }}/external-oss-v8-runtime-identity/${{ github.run_id }}/runtime-identity-raw/
+          if-no-files-found: error
+
+      - name: Assemble redacted failure artifact
+        if: ${{ always() }}
+        shell: bash
+        env:
+          RUNTIME_IMAGE: ${{ inputs.runtime_image }}
+        run: |
+          set +e
+          RUN_ROOT="$RUN_ROOT" GITHUB_RUN_ID="$GITHUB_RUN_ID" GITHUB_SHA="$GITHUB_SHA" RUNTIME_IMAGE="$RUNTIME_IMAGE" node --input-type=module <<'NODE'
+          import { existsSync, readFileSync, writeFileSync } from 'node:fs';
+          import path from 'node:path';
+          const root = process.env.RUN_ROOT;
+          const readJson = (name, fallback) => {
+            try { return JSON.parse(readFileSync(path.join(root, name), 'utf8')); } catch { return fallback; }
+          };
+          const diagnostic = readJson('validation-diagnostic.json', {});
+          const socket = readJson('uds-evidence.json', {});
+          const client = readJson('container.stdout', {});
+          const proxy = readJson('proxy-receipt.json', {});
+          const failure = {
+            schemaVersion: 1,
+            workflowRunId: process.env.GITHUB_RUN_ID,
+            mainCommitSha: process.env.GITHUB_SHA,
+            failureStage: process.env.FAILURE_STAGE || 'unknown',
+            failureCode: process.env.FAILURE_CODE || 'UNSPECIFIED_FAILURE',
+            providerRequestCount: Number.isSafeInteger(proxy.providerRequestCount) ? proxy.providerRequestCount : 0,
+            runtimeImage: process.env.RUNTIME_IMAGE || null,
+            runtimeImageDigestMatch: diagnostic.runtimeImageDigestMatch === true,
+            nodePathProbe: readJson('node-path-probe.json', { path: 'NOT_RUN', version: 'NOT_RUN' }),
+            containerUidGid: socket.containerUidGid || 'NOT_OBSERVED',
+            socketUidGid: socket.hostSocketUidGid || 'NOT_OBSERVED',
+            socketMode: socket.socketMode || 'NOT_OBSERVED',
+            credentialNamesObserved: Array.isArray(client.environmentVariableNames)
+              ? client.environmentVariableNames.filter((name) => typeof name === 'string')
+              : [],
+          };
+          writeFileSync(path.join(root, 'failure-artifact.json'), JSON.stringify(failure, null, 2) + '\n', { mode: 0o600 });
+          NODE
+
+      - name: Upload redacted failure artifact
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: external-oss-v8-runtime-identity-failure-${{ github.run_id }}
+          path: ${{ runner.temp }}/external-oss-v8-runtime-identity/${{ github.run_id }}/failure-artifact.json
           if-no-files-found: error
 
       - name: Remove disposable runtime state

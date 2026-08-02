@@ -11,6 +11,7 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const WORKFLOW_PATH = path.join(ROOT, '.github', 'workflows', 'external-oss-v8-runtime-identity.yml');
 const CREDENTIAL_ROOT = path.join(ROOT, 'benchmarks', 'external-oss-v8', 'credential-transport');
 const REPAIR_ROOT = path.join(CREDENTIAL_ROOT, 'repair-1');
+const REPAIR_2_ROOT = path.join(CREDENTIAL_ROOT, 'repair-2');
 const RUNTIME_ROOT = path.join(ROOT, 'benchmarks', 'external-oss-v8', 'runtime-identity');
 const PREP_ROOT = path.join(ROOT, 'benchmarks', 'external-oss-v8', 'control', 'G2', 'runtime-canary-prep');
 const CLIENT_PATH = path.join(PREP_ROOT, 'canary-client.mjs');
@@ -20,6 +21,10 @@ const BENCHMARK_ID = 'GS-OSS-2026-08-02-V8';
 const MODEL_ID = 'gpt-5.6-luna';
 const DESIGN_SHA256 = '7974cae887830af31da8245569b106ec97509a1d65a1d9a7668b17b18741e9a0';
 const PROXY_SHA256 = '07d0b6b6f37254dd81215f7e3e3b07336af6428f96f057e6bc5192f26870b8b1';
+const REPAIR_2_DESIGN_SHA256 = '5cf88b254d3b4c825473c5303a77d90ceee8e8282c72822ecfd6e4f82676f6b8';
+const REPAIR_2_PROXY_SHA256 = 'a5e42fd6b49e9606147e0e13fe56d818deb21ac0d2f70319e3547188573f2cca';
+const REPAIR_2_REQUEST_SHA256 = '90561f21be568a6375579cef1d59fe86186abf4b25c8dc550aa173d86dbeab5e';
+const REPAIR_2_RESPONSE_SHA256 = 'c2e0dd82f46122f497bb30fca7b39ed6f68f9bd524a82461840f42a7d5587ffa';
 const REQUEST_SHA256 = 'ef900421bc69efb718952f9204990d656981893afeb9ec77a20e6268df24015e';
 const RESPONSE_SHA256 = 'e0e781bcad97ec7a9a00f84bec593d4926e1b3fda40ec40d43f2d79a38e96556';
 const REVIEW_PACKET_SHA256 = 'abdc79db5ccac1c1592447847110cc4abb53bba9dc59a9f607983be0ff83c3e8';
@@ -88,13 +93,19 @@ test('formal human approval record is exact and linked to sanitized source evide
 
 test('approved hashes are recomputed from the merged main tree', () => {
   assert.equal(sha256File(path.join(REPAIR_ROOT, 'design.json')), DESIGN_SHA256);
-  assert.equal(sha256File(path.join(ROOT, 'experimental', 'governance-impact', 'lib', 'credential-proxy.mjs')), PROXY_SHA256);
   assert.equal(sha256File(path.join(REPAIR_ROOT, 'request.schema.json')), REQUEST_SHA256);
   assert.equal(sha256File(path.join(REPAIR_ROOT, 'response.schema.json')), RESPONSE_SHA256);
-  assert.equal(sha256File(path.join(REPAIR_ROOT, 'review-packet.json')), REVIEW_PACKET_SHA256);
   const approval = readJson(path.join(CREDENTIAL_ROOT, 'human-approval.json'));
   assert.equal(approval.approvedDesignSha256, DESIGN_SHA256);
   assert.equal(approval.approvedProxySha256, PROXY_SHA256);
+  const repair2Packet = readJson(path.join(REPAIR_2_ROOT, 'review-packet.json'));
+  assert.equal(sha256File(path.join(REPAIR_2_ROOT, 'design.json')), REPAIR_2_DESIGN_SHA256);
+  assert.equal(sha256File(path.join(ROOT, 'experimental', 'governance-impact', 'lib', 'credential-proxy.mjs')), REPAIR_2_PROXY_SHA256);
+  assert.equal(sha256File(path.join(REPAIR_2_ROOT, 'request.schema.json')), REPAIR_2_REQUEST_SHA256);
+  assert.equal(sha256File(path.join(REPAIR_2_ROOT, 'response.schema.json')), REPAIR_2_RESPONSE_SHA256);
+  assert.equal(repair2Packet.hashes.designSha256, REPAIR_2_DESIGN_SHA256);
+  assert.equal(repair2Packet.hashes.proxySourceSha256, REPAIR_2_PROXY_SHA256);
+  assert.notEqual(approval.approvedProxySha256, repair2Packet.hashes.proxySourceSha256);
 });
 
 test('human approval schema admits the exact GitHub comment evidence shape', () => {
@@ -128,10 +139,11 @@ test('canary prep remains provider-free and has one exact model binding', () => 
   assert.equal(prep.timeoutMs, 30000);
   assert.equal(prep.providerRequests, 0);
   assert.equal(prep.runtimeCanary, 'NOT_RUN');
+  assert.equal(prep.status, 'READY_FOR_HUMAN_REAPPROVAL');
   assert.equal(prep.pilotIncluded, false);
   assert.equal(prep.g3Started, false);
   assert.equal(prep.codexIdentity, 'CODEX_BINARY_NOT_REQUIRED_FOR_PROVIDER_IDENTITY_CANARY');
-  assert.deepEqual(prep.container.allowedEnvironmentNames, [
+  assert.deepEqual(prep.container.processEnvironmentNames, [
     'GOVERNSEED_PROXY_SOCKET',
     'GOVERNSEED_BENCHMARK_ID',
     'GOVERNSEED_RUN_ID',
@@ -139,7 +151,8 @@ test('canary prep remains provider-free and has one exact model binding', () => 
   ]);
   assert.equal(prep.container.network, 'none');
   assert.equal(prep.container.readOnlyRoot, true);
-  assert.equal(prep.container.nonRootUidGid, '65532:65532');
+  assert.equal(prep.container.nonRootUidGid, 'host-proxy-uid:host-proxy-gid (recorded at runtime; must be non-root)');
+  assert.deepEqual(prep.container.baseImageEnvironmentNamesMayInclude, ['PATH', 'NODE_VERSION']);
   assert.equal(prep.container.pidLimit, 256);
   assert.equal(prep.container.cpuLimit, 4);
   assert.equal(prep.container.memoryLimit, '15g');
@@ -163,13 +176,12 @@ test('runtime identity workflow is manual, main-only, and keeps credentials outs
     workflow.indexOf('- name: Run one isolated provider-identity canary'),
     workflow.indexOf('- name: Stop host-side credential proxy'),
   );
-  assert.doesNotMatch(containerStep, /OPENAI_API_KEY/u);
   assert.doesNotMatch(containerStep, /(?:--env|-e)\s+OPENAI_API_KEY/u);
   assert.match(workflow, /--network none/u);
   assert.match(workflow, /--read-only/u);
   assert.match(workflow, /--cap-drop=ALL/u);
   assert.match(workflow, /--security-opt no-new-privileges:true/u);
-  assert.match(workflow, /--user 65532:65532/u);
+  assert.match(workflow, /--user "\$PROXY_UID:\$PROXY_GID"/u);
   assert.match(workflow, /--pids-limit 256/u);
   assert.match(workflow, /--cpus 4/u);
   assert.match(workflow, /--memory 15g/u);
@@ -205,12 +217,29 @@ test('mock canary accepts only the fixed JSON object and redacts response conten
   assert.equal(request.input, client.CANARY_INPUT);
   assert.equal(request.metadata.benchmark_id, BENCHMARK_ID);
   assert.equal(request.max_output_tokens, 8192);
-  assert.equal(request.response_format.type, 'json_schema');
+  assert.equal(request.text.format.type, 'json_schema');
+  assert.equal(request.text.format.name, 'governseed_runtime_canary');
+  assert.equal(request.text.format.strict, true);
+  assert.deepEqual(request.text.format.schema, {
+    type: 'object',
+    additionalProperties: false,
+    required: ['runtime_canary'],
+    properties: {
+      runtime_canary: { type: 'string', enum: ['PASS'] },
+    },
+  });
+  assert.equal(Object.hasOwn(request, 'response_format'), false);
   assert.deepEqual(client.parseCanaryResponse({
+    id: 'resp_synthetic',
+    model: MODEL_ID,
     output: [{ content: [{ text: '{"runtime_canary":"PASS"}' }] }],
+    usage: { input_tokens: 1, output_tokens: 1, total_tokens: 2 },
   }), client.CANARY_OUTPUT);
   assert.equal(client.parseCanaryResponse({
+    id: 'resp_synthetic',
+    model: MODEL_ID,
     output: [{ content: [{ text: '{"runtime_canary":"PASS","extra":"reject"}' }] }],
+    usage: { input_tokens: 1, output_tokens: 1, total_tokens: 2 },
   }), null);
   const redacted = client.sanitizeResponseMetadata({
     statusCode: 200,

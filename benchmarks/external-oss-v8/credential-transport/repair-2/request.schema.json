@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "gs-oss-2026-08-02-v8-g2-repair-2-request",
+  "title": "GovernSeed V8 G2 repair-2 proxy request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["model", "input", "max_output_tokens", "text", "metadata"],
+  "properties": {
+    "model": { "const": "gpt-5.6-luna" },
+    "input": {
+      "type": ["string", "array"],
+      "maxLength": 1048576
+    },
+    "max_output_tokens": { "const": 8192 },
+    "text": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["format"],
+      "properties": {
+        "format": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["type", "name", "strict", "schema"],
+          "properties": {
+            "type": { "const": "json_schema" },
+            "name": { "const": "governseed_runtime_canary" },
+            "strict": { "const": true },
+            "schema": {
+              "type": "object",
+              "additionalProperties": false,
+              "required": ["type", "additionalProperties", "required", "properties"],
+              "properties": {
+                "type": { "const": "object" },
+                "additionalProperties": { "const": false },
+                "required": { "const": ["runtime_canary"] },
+                "properties": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["runtime_canary"],
+                  "properties": {
+                    "runtime_canary": {
+                      "type": "object",
+                      "additionalProperties": false,
+                      "required": ["type", "enum"],
+                      "properties": {
+                        "type": { "const": "string" },
+                        "enum": { "const": ["PASS"] }
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["benchmark_id", "run_id", "task_id"],
+      "properties": {
+        "benchmark_id": { "const": "GS-OSS-2026-08-02-V8" },
+        "run_id": { "type": "string", "minLength": 1, "maxLength": 8192 },
+        "task_id": { "type": "string", "minLength": 1, "maxLength": 8192 }
+      }
+    }
+  }
+}

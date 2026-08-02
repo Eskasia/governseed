@@ -10,22 +10,23 @@ export const REQUEST_PATH = '/v1/responses';
 export const REQUEST_LIMIT = 1;
 export const TIMEOUT_MS = 30_000;
 export const MAX_RESPONSE_BYTES = 4_194_304;
+export const CANARY_ENVIRONMENT_NAMES = Object.freeze([
+  'GOVERNSEED_BENCHMARK_ID',
+  'GOVERNSEED_PROXY_SOCKET',
+  'GOVERNSEED_RUN_ID',
+  'GOVERNSEED_TASK_ID',
+]);
 
-const FIXED_RESPONSE_FORMAT = Object.freeze({
+export const CANARY_TEXT_FORMAT = Object.freeze({
   type: 'json_schema',
-  json_schema: Object.freeze({
-    name: 'governseed_response',
-    strict: true,
-    schema: Object.freeze({
-      type: 'object',
-      additionalProperties: false,
-      required: ['id', 'model', 'output', 'usage'],
-      properties: Object.freeze({
-        id: Object.freeze({ type: 'string' }),
-        model: Object.freeze({ const: MODEL_ID }),
-        output: Object.freeze({ type: 'array' }),
-        usage: Object.freeze({ type: 'object' }),
-      }),
+  name: 'governseed_runtime_canary',
+  strict: true,
+  schema: Object.freeze({
+    type: 'object',
+    additionalProperties: false,
+    required: ['runtime_canary'],
+    properties: Object.freeze({
+      runtime_canary: Object.freeze({ type: 'string', enum: ['PASS'] }),
     }),
   }),
 });
@@ -40,6 +41,34 @@ function isExactCanary(value) {
     && !Array.isArray(value)
     && Object.keys(value).length === 1
     && value.runtime_canary === 'PASS';
+}
+
+function isExactObject(value, fields) {
+  return value !== null
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && Object.keys(value).sort().join(',') === fields.slice().sort().join(',');
+}
+
+export function validateResponseEnvelope(response) {
+  if (!isExactObject(response, ['id', 'model', 'output', 'usage'])) return false;
+  if (
+    typeof response.id !== 'string'
+    || response.id.length === 0
+    || response.id.length > 256
+    || response.model !== MODEL_ID
+    || !Array.isArray(response.output)
+    || response.output.length > 256
+    || !isExactObject(response.usage, ['input_tokens', 'output_tokens', 'total_tokens'])
+  ) return false;
+  const usageValues = [
+    response.usage.input_tokens,
+    response.usage.output_tokens,
+    response.usage.total_tokens,
+  ];
+  if (usageValues.some((value) => !Number.isSafeInteger(value) || value < 0)) return false;
+  return response.usage.total_tokens === response.usage.input_tokens + response.usage.output_tokens
+    && response.usage.total_tokens <= 8_192;
 }
 
 function textCandidates(response) {
@@ -66,7 +95,9 @@ export function buildCanaryRequest({ benchmarkId, runId, taskId }) {
     model: MODEL_ID,
     input: CANARY_INPUT,
     max_output_tokens: 8192,
-    response_format: FIXED_RESPONSE_FORMAT,
+    text: {
+      format: CANARY_TEXT_FORMAT,
+    },
     metadata: {
       benchmark_id: benchmarkId,
       run_id: runId,
@@ -76,6 +107,7 @@ export function buildCanaryRequest({ benchmarkId, runId, taskId }) {
 }
 
 export function parseCanaryResponse(response) {
+  if (!validateResponseEnvelope(response)) return null;
   for (const candidate of textCandidates(response)) {
     try {
       const parsed = JSON.parse(candidate);
@@ -95,6 +127,15 @@ export function sanitizeResponseMetadata({ statusCode, body, canaryAccepted }) {
     statusCode: Number.isInteger(statusCode) ? statusCode : null,
     canaryAccepted: canaryAccepted === true,
   };
+}
+
+export function scrubbedEnvironmentNames(environment = process.env) {
+  const names = Object.keys(environment).sort();
+  const expected = CANARY_ENVIRONMENT_NAMES.slice().sort();
+  if (names.join(',') !== expected.join(',')) {
+    throw new Error('CANARY_ENVIRONMENT_INVALID');
+  }
+  return names;
 }
 
 function readBody(response) {
@@ -165,6 +206,7 @@ export async function runCanary({ socketPath, benchmarkId, runId, taskId }) {
     requestBytes: body.length,
   };
   const response = await requestOnce(socketPath, body);
+  const envelopeValid = validateResponseEnvelope(response.parsed);
   const canary = response.statusCode >= 200 && response.statusCode <= 299
     ? parseCanaryResponse(response.parsed)
     : null;
@@ -175,13 +217,31 @@ export async function runCanary({ socketPath, benchmarkId, runId, taskId }) {
       body: response.bytes,
       canaryAccepted: canary !== null,
     }),
+    responseModelId: envelopeValid ? response.parsed.model : null,
+    responseEnvelopeValid: envelopeValid,
+    udsConnection: 'PASS',
   };
 }
 
 async function main() {
-  const required = ['GOVERNSEED_PROXY_SOCKET', 'GOVERNSEED_BENCHMARK_ID', 'GOVERNSEED_RUN_ID', 'GOVERNSEED_TASK_ID'];
+  let environmentVariableNames;
+  try {
+    environmentVariableNames = scrubbedEnvironmentNames();
+  } catch {
+    process.stdout.write(JSON.stringify({
+      canaryAccepted: false,
+      errorCode: 'CANARY_ENVIRONMENT_INVALID',
+    }) + '\n');
+    process.exitCode = 64;
+    return;
+  }
+  const required = CANARY_ENVIRONMENT_NAMES;
   if (required.some((name) => typeof process.env[name] !== 'string' || process.env[name].length === 0)) {
-    process.stdout.write(JSON.stringify({ canaryAccepted: false, errorCode: 'CANARY_CONTEXT_INVALID' }) + '\n');
+    process.stdout.write(JSON.stringify({
+      canaryAccepted: false,
+      errorCode: 'CANARY_CONTEXT_INVALID',
+      environmentVariableNames,
+    }) + '\n');
     process.exitCode = 64;
     return;
   }
@@ -192,10 +252,14 @@ async function main() {
       runId: process.env.GOVERNSEED_RUN_ID,
       taskId: process.env.GOVERNSEED_TASK_ID,
     });
-    process.stdout.write(JSON.stringify(result) + '\n');
+    process.stdout.write(JSON.stringify({ ...result, environmentVariableNames }) + '\n');
     process.exitCode = result.canaryAccepted === true ? 0 : 1;
   } catch {
-    process.stdout.write(JSON.stringify({ canaryAccepted: false, errorCode: 'CANARY_TRANSPORT_FAILED' }) + '\n');
+    process.stdout.write(JSON.stringify({
+      canaryAccepted: false,
+      errorCode: 'CANARY_TRANSPORT_FAILED',
+      environmentVariableNames,
+    }) + '\n');
     process.exitCode = 1;
   }
 }

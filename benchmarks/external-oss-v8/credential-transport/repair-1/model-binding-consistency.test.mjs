@@ -6,6 +6,7 @@ import test from 'node:test';
 
 const ROOT = path.resolve(process.cwd());
 const MODEL = 'gpt-5.6-luna';
+const REPAIR_2 = 'benchmarks/external-oss-v8/credential-transport/repair-2';
 const readJson = (relativePath) => JSON.parse(
   fs.readFileSync(path.join(ROOT, relativePath), 'utf8'),
 );
@@ -13,22 +14,17 @@ const sha256 = (relativePath) => createHash('sha256')
   .update(fs.readFileSync(path.join(ROOT, relativePath)))
   .digest('hex');
 
-test('G2 model binding is exact and consistent across the approval-prep surface', () => {
-  const design = readJson('benchmarks/external-oss-v8/credential-transport/repair-1/design.json');
-  const requestSchema = readJson('benchmarks/external-oss-v8/credential-transport/repair-1/request.schema.json');
-  const responseSchema = readJson('benchmarks/external-oss-v8/credential-transport/repair-1/response.schema.json');
-  const packet = readJson('benchmarks/external-oss-v8/credential-transport/repair-1/review-packet.json');
+test('G2 repair-2 model binding is exact and consistent across every active surface', () => {
+  const design = readJson(`${REPAIR_2}/design.json`);
+  const requestSchema = readJson(`${REPAIR_2}/request.schema.json`);
+  const responseSchema = readJson(`${REPAIR_2}/response.schema.json`);
+  const packet = readJson(`${REPAIR_2}/review-packet.json`);
   const approvalSchema = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.schema.json');
-  const approvalTemplate = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.template.json');
-  const approval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.json');
-  const approvalSource = readJson('benchmarks/external-oss-v8/credential-transport/human-approval-source.json');
+  const pendingApproval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.template.json');
+  const oldApproval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.json');
   const receiptSchema = readJson('benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.schema.json');
-  const verdict = readJson('benchmarks/external-oss-v8/control/G2/repair-1/sol-verdict.json');
-  const evidence = readJson('benchmarks/external-oss-v8/control/G2/repair-1/sol-review-evidence.json');
-  const source = [
-    'experimental/governance-impact/lib/credential-proxy.mjs',
-    'experimental/governance-impact/lib/oci-proxy-facade.mjs',
-  ].map((relativePath) => fs.readFileSync(path.join(ROOT, relativePath), 'utf8')).join('\n');
+  const prep = readJson('benchmarks/external-oss-v8/control/G2/runtime-canary-prep/prep.json');
+  const source = fs.readFileSync(path.join(ROOT, 'experimental/governance-impact/lib/credential-proxy.mjs'), 'utf8');
 
   const candidate = {
     provider: 'OpenAI',
@@ -41,39 +37,42 @@ test('G2 model binding is exact and consistent across the approval-prep surface'
     candidate,
   );
   assert.deepEqual(
-    Object.fromEntries(Object.keys(candidate).map((key) => [key, packet.contract.modelBinding[key]])),
+    Object.fromEntries(Object.keys(candidate).map((key) => [key, packet.modelBinding[key]])),
     candidate,
   );
+  assert.deepEqual(prep.modelBinding, candidate);
   assert.equal(design.modelBinding.exact, true);
-  assert.equal(packet.contract.modelBinding.exact, true);
-  assert.equal(design.modelBinding.status, 'LOCKED_PENDING_HUMAN_APPROVAL');
-  assert.equal(packet.contract.modelBinding.status, 'LOCKED_PENDING_HUMAN_APPROVAL');
+  assert.equal(packet.modelBinding.exact, true);
+  assert.equal(design.modelBinding.status, 'PENDING_HUMAN_REAPPROVAL');
+  assert.equal(packet.modelBinding.status, 'PENDING_HUMAN_REAPPROVAL');
 
   assert.equal(requestSchema.properties.model.const, MODEL);
   assert.equal(responseSchema.properties.model.const, MODEL);
   assert.equal(approvalSchema.properties.approvedModelId.const, MODEL);
   assert.equal(receiptSchema.properties.modelId.const, MODEL);
-  assert.equal(approvalTemplate.approvedModelId, MODEL);
-  assert.equal(approvalTemplate.approvalStatus, 'PENDING_HUMAN_REVIEW');
-  assert.equal(approvalTemplate.approvedBy, null);
-  assert.equal(approvalTemplate.approvedAt, null);
-  assert.equal(approvalTemplate.limitationsAcknowledged, false);
-  assert.equal(approval.approvalStatus, 'APPROVED');
-  assert.equal(approval.approvedBy, 'Eskasia');
-  assert.equal(approval.approvedModelId, MODEL);
-  assert.equal(approval.approvedDesignSha256, sha256('benchmarks/external-oss-v8/credential-transport/repair-1/design.json'));
-  assert.equal(approval.approvedProxySha256, sha256('experimental/governance-impact/lib/credential-proxy.mjs'));
-  assert.equal(approvalSource.verificationStatus, 'VERIFIED');
-  assert.equal(approvalSource.commentId, 5157792741);
-  assert.equal(approvalSource.credentialPresent, false);
+  assert.equal(pendingApproval.approvedModelId, MODEL);
+  assert.equal(pendingApproval.approvalStatus, 'PENDING_HUMAN_REVIEW');
+  assert.equal(pendingApproval.approvedBy, null);
+  assert.equal(pendingApproval.approvedAt, null);
+  assert.equal(pendingApproval.limitationsAcknowledged, false);
+  assert.equal(oldApproval.approvalStatus, 'APPROVED');
+  assert.equal(oldApproval.approvedBy, 'Eskasia');
+  assert.equal(oldApproval.approvedModelId, MODEL);
+  assert.notEqual(oldApproval.approvedDesignSha256, packet.hashes.designSha256);
+  assert.notEqual(oldApproval.approvedProxySha256, packet.hashes.proxySourceSha256);
 
+  assert.equal(requestSchema.properties.text.properties.format.properties.name.const, 'governseed_runtime_canary');
+  assert.equal(requestSchema.properties.text.properties.format.properties.strict.const, true);
+  assert.equal(requestSchema.properties.text.properties.format.properties.schema.properties.required.const[0], 'runtime_canary');
+  assert.equal(responseSchema.properties.model.const, MODEL);
+  assert.deepEqual(packet.transport.responseEnvelopeFields, ['id', 'model', 'output', 'usage']);
+  assert.equal(packet.transport.responseModelId, MODEL);
+  assert.equal(packet.transport.structuredOutputPath, 'text.format');
+  assert.equal(packet.providerRequests, 0);
+  assert.equal(prep.providerRequests, 0);
   assert.match(source, /CREDENTIAL_PROXY_MODEL\s*=\s*['"]gpt-5\.6-luna['"]/u);
   assert.doesNotMatch(source, /gpt-5\.6(?!-luna)/u);
-  assert.doesNotMatch(source, /fallbackModel|modelFallback|latest/u);
-  assert.equal(verdict.exactModelCandidate, MODEL);
-  assert.equal(evidence.independentAssessment.exactModelCandidate, MODEL);
-  assert.equal(verdict.providerRequestCount, 0);
-  assert.equal(evidence.independentAssessment.providerRequests, 0);
+  assert.doesNotMatch(source, /fallbackModel|modelFallback|latest|response_format/u);
 
   for (const [field, relativePath] of [
     ['designSha256', packet.hashes.designPath],
@@ -82,13 +81,7 @@ test('G2 model binding is exact and consistent across the approval-prep surface'
     ['proxySourceSha256', packet.hashes.proxySourcePath],
   ]) {
     assert.equal(packet.hashes[field], sha256(relativePath), `hash drift: ${relativePath}`);
-    assert.equal(evidence.hashVerification[field], packet.hashes[field], `Sol hash drift: ${field}`);
   }
-  assert.equal(verdict.reviewPacketSha256, sha256(
-    'benchmarks/external-oss-v8/credential-transport/repair-1/review-packet.json',
-  ));
-  assert.equal(evidence.hashVerification.reviewPacketSha256, verdict.reviewPacketSha256);
-
-  assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/credential-transport/human-approval.json')), true);
+  assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.json')), false);
   assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.json')), false);
 });

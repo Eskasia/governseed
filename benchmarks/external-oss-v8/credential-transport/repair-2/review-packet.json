@@ -1,0 +1,131 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "repair-2",
+  "evidenceClass": "external-observational",
+  "status": "PENDING_HUMAN_REAPPROVAL",
+  "technicalDisposition": "TECHNICALLY_REPAIRED_PENDING_HUMAN_REAPPROVAL",
+  "parent": {
+    "pullRequest": 76,
+    "headCommit": "09a89fb3a93f007c84b01dd9ae15ffd794718797",
+    "mergeCommit": "d6c4ba2a6239c10d31a144cdc649b766a7f270c4"
+  },
+  "repairBranch": "benchmark/v8-g2-runtime-canary-repair-1",
+  "previousRepair": {
+    "reviewPacketPath": "benchmarks/external-oss-v8/credential-transport/repair-1/review-packet.json",
+    "humanApprovalPath": "benchmarks/external-oss-v8/credential-transport/human-approval.json",
+    "humanApprovalStatus": "APPROVED",
+    "humanApprovalAppliesTo": "repair-1 design and proxy hashes only",
+    "designSha256": "7974cae887830af31da8245569b106ec97509a1d65a1d9a7668b17b18741e9a0",
+    "proxySha256": "07d0b6b6f37254dd81215f7e3e3b07336af6428f96f057e6bc5192f26870b8b1"
+  },
+  "hashes": {
+    "designPath": "benchmarks/external-oss-v8/credential-transport/repair-2/design.json",
+    "designSha256": "5cf88b254d3b4c825473c5303a77d90ceee8e8282c72822ecfd6e4f82676f6b8",
+    "requestSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json",
+    "requestSchemaSha256": "90561f21be568a6375579cef1d59fe86186abf4b25c8dc550aa173d86dbeab5e",
+    "responseSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/response.schema.json",
+    "responseSchemaSha256": "c2e0dd82f46122f497bb30fca7b39ed6f68f9bd524a82461840f42a7d5587ffa",
+    "proxySourcePath": "experimental/governance-impact/lib/credential-proxy.mjs",
+    "proxySourceSha256": "a5e42fd6b49e9606147e0e13fe56d818deb21ac0d2f70319e3547188573f2cca",
+    "canaryClientPath": "benchmarks/external-oss-v8/control/G2/runtime-canary-prep/canary-client.mjs",
+    "canaryClientSha256": "c98d2c27ecd9e4538a6a15fd4a070a8e69f3eb56d2b207f22102e153ebc3ca79",
+    "workflowPath": ".github/workflows/external-oss-v8-runtime-identity.yml",
+    "workflowSha256": "914badc0465fb1175def2b71fa9460c91179759ae5a56a2a7c51413e7169f96e",
+    "proxyFacadePath": "experimental/governance-impact/lib/oci-proxy-facade.mjs",
+    "proxyFacadeSha256": "463346868d6ab92357d88696b44356998b8ad32703a7b9095dc3dcb51b2fbdfe",
+    "supervisorSourcePath": "experimental/governance-impact/lib/oci-supervisor.mjs",
+    "supervisorSourceSha256": "9e37e7ef72144c446a495eb1a42d126f94133b8310134fbd50f2eb9172622293",
+    "relaySourcePath": "experimental/governance-impact/uds-relay.mjs",
+    "relaySourceSha256": "decd68ec23bb3232e49f7fd3036626fed55e973d7149c399e0eb3ac606eaeb40"
+  },
+  "modelBinding": {
+    "provider": "OpenAI",
+    "modelId": "gpt-5.6-luna",
+    "aliasAllowed": false,
+    "fallbackAllowed": false,
+    "exact": true,
+    "status": "PENDING_HUMAN_REAPPROVAL",
+    "aliasesForbidden": ["latest", "gpt-5.6", "Luna", "Sol"]
+  },
+  "transport": {
+    "method": "POST",
+    "endpoint": "https://api.openai.com/v1/responses",
+    "requestLimit": 1,
+    "timeoutMs": 30000,
+    "tokenCeiling": 8192,
+    "requestAllowedFields": ["model", "input", "max_output_tokens", "text", "metadata"],
+    "structuredOutputPath": "text.format",
+    "structuredOutputName": "governseed_runtime_canary",
+    "structuredOutputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime_canary"],
+      "properties": {
+        "runtime_canary": { "type": "string", "enum": ["PASS"] }
+      }
+    },
+    "responseEnvelopeFields": ["id", "model", "output", "usage"],
+    "responseModelId": "gpt-5.6-luna",
+    "forbiddenRequestField": "response_format"
+  },
+  "providerRequests": 0,
+  "runtimeImage": {
+    "source": "benchmarks/external-oss-v7/runtime-image/image-lock.json",
+    "lockedReference": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+    "executablePath": "/usr/local/bin/node",
+    "version": "v26.3.0",
+    "identityFailureCode": "RUNTIME_IMAGE_IDENTITY_MISMATCH"
+  },
+  "environment": {
+    "baseImageNamesMayInclude": ["PATH", "NODE_VERSION"],
+    "processNames": [
+      "GOVERNSEED_BENCHMARK_ID",
+      "GOVERNSEED_PROXY_SOCKET",
+      "GOVERNSEED_RUN_ID",
+      "GOVERNSEED_TASK_ID"
+    ],
+    "credentialNamesObserved": [],
+    "credentialValuesObserved": false
+  },
+  "socket": {
+    "mode": "0600",
+    "hostUidGidMustEqualContainerUidGid": true,
+    "containerNonRoot": true,
+    "connectionEvidenceRequired": ["hostSocketUidGid", "containerUidGid", "socketMode", "udsConnection"]
+  },
+  "evidence": {
+    "providerRequests": 0,
+    "runtimeCanary": "NOT_RUN",
+    "dispatch": "NOT_RUN",
+    "localSyntheticTests": "PASS",
+    "dockerRuntime": "NOT_RUN_UNTIL_HUMAN_REAPPROVAL",
+    "testSummary": {
+      "npmRunCheck": "PASS",
+      "npmRunTestGovernance": { "passed": 127, "failed": 0 },
+      "npmRunTestPrivacy": { "passed": 24, "failed": 0 },
+      "npmRunTestExperimental": { "passed": 106, "failed": 0 },
+      "g2RepairAndCanaryTests": { "passed": 35, "failed": 0 },
+      "g2SchemaValidation": { "passed": 9, "failed": 0 },
+      "v8ContractValidation": "PASS",
+      "v8SchemaValidation": "PASS",
+      "v8RuntimeShellValidation": "PASS",
+      "yamlParse": "PASS",
+      "shellSyntax": "PASS",
+      "providerRequests": 0
+    }
+  },
+  "humanApproval": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "appliesTo": "repair-2 hashes only",
+    "templatePath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.template.json",
+    "approvedRecordPath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.json",
+    "oldApprovalMustNotAuthorizeThisRepair": true
+  },
+  "overallGate": "BLOCKED",
+  "prohibitedClaims": [
+    "No human reapproval, provider access, provider request, runtime identity, runtime canary, task execution, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance is claimed."
+  ],
+  "claimBoundary": "Repair-2 offline and synthetic credential-transport evidence only; request/proxy/design hashes changed from the approved repair-1 record, so a new human approval is required before any dispatch."
+}

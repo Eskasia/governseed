@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "approvalStatus": "PENDING_HUMAN_REVIEW",
+  "approvedBy": null,
+  "approvedAt": null,
+  "approvedDesignSha256": "5cf88b254d3b4c825473c5303a77d90ceee8e8282c72822ecfd6e4f82676f6b8",
+  "approvedProxySha256": "a5e42fd6b49e9606147e0e13fe56d818deb21ac0d2f70319e3547188573f2cca",
+  "approvedModelId": "gpt-5.6-luna",
+  "scope": [
+    "credential-transport",
+    "runtime-identity-canary",
+    "v8-pilot"
+  ],
+  "limitationsAcknowledged": false,
+  "approvalEvidence": {
+    "type": "manual-record",
+    "reference": ""
+  }
+}
