@@ -59,5 +59,6 @@
   },
   "offlineSmoke": "SKIPPED: workspace-exec prerequisite failure",
   "aggregateQualification": "FAILED: receipt directory absent after workspace-exec failures",
+  "aggregateLogSha256": "3ec17439da3492c1914a677ed456e05b83b80e9fdfda58b1201025dd0589b5dc",
   "claimBoundary": "Immutable G1 run failure evidence only; no workspace execution, offline smoke, G1 acceptance, G2, Pilot, scoring, or benchmark outcome claim."
 }
