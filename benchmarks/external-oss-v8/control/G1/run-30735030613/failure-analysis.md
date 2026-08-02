@@ -14,9 +14,11 @@ WORKSPACE_MOUNT_NOT_WRITABLE
 
 Root cause: the runtime contract correctly used a read-only container root, but its `mount_options` observations were written to `/workspace-mount.txt`, `/cache-mount.txt`, `/home-mount.txt`, and `/tmp-mount.txt` at the root of the container. The observation files therefore failed before the actual mount flags or executable probes could run. This is a harness defect, not evidence that the explicit `/workspace:rw,exec` mount was ineffective.
 
+The downstream aggregate job also executed and failed. Job `91462575345`, step `Require three fully qualified caches`, found zero receipt artifacts because the workspace prerequisite failed; its exact log is preserved in `aggregate-output.log`. The offline positive and negative smoke matrix was skipped by its failed prerequisite. The aggregate failure is downstream evidence of the same incomplete run, not a second runtime observation.
+
 Repair: write all four observation files under the writable `/workspace` tmpfs. Add a static regression test that requires those destinations and rejects the former root-level destinations.
 
-No G1 acceptance is claimed. The offline positive smoke, negative cache test, and aggregate qualification were not run because the workspace execution prerequisite failed.
+No G1 acceptance is claimed. The offline positive smoke and negative cache tests were skipped because the workspace execution prerequisite failed; the aggregate job did run and failed while finding no receipts.
 
 Preserved raw artifacts:
 

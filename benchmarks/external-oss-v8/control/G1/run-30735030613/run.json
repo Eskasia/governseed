@@ -43,6 +43,13 @@
         "container-id": "b03335093897957d0393abf01cd68f5069f1eb681d83b790e32ce84693890130",
         "container-output": "3dd693bc43524221600fc6a94e6c911542a734f10ca08aa4c351315e3d61bd75"
       }
+    },
+    {
+      "taskId": "ALL",
+      "jobId": 91462575345,
+      "step": "Require three fully qualified caches",
+      "exitCode": 1,
+      "failure": "Receipt directory was absent because all workspace execution jobs failed"
     }
   ],
   "passedPrerequisiteJobs": {
@@ -50,7 +57,7 @@
     "runtimeImage": 3,
     "dependencyCache": 3
   },
-  "offlineSmoke": "NOT_RUN",
-  "aggregateQualification": "NOT_RUN",
+  "offlineSmoke": "SKIPPED: workspace-exec prerequisite failure",
+  "aggregateQualification": "FAILED: receipt directory absent after workspace-exec failures",
   "claimBoundary": "Immutable G1 run failure evidence only; no workspace execution, offline smoke, G1 acceptance, G2, Pilot, scoring, or benchmark outcome claim."
 }

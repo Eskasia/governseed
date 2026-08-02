@@ -1,0 +1,5 @@
+2026-08-02T06:02:36.3111484Z Found 12 artifact(s)
+2026-08-02T06:02:36.3112918Z Filtering artifacts by pattern 'external-oss-v8-receipt-TASK-OSS-*'
+2026-08-02T06:02:36.3165883Z Total of 0 artifact(s) downloaded
+2026-08-02T06:02:38.5735899Z Error: ENOENT: no such file or directory, scandir '/home/runner/work/_temp/v8-receipts'
+2026-08-02T06:02:38.5840792Z ##[error]Process completed with exit code 1.
