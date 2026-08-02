@@ -14,16 +14,16 @@
   "supportingFacts": [
     "The fixed Immich seed uses packages/cli/vite.config.ts with the public command ./node_modules/.bin/vitest --run src/commands/asset.spec.ts.",
     "The prepared Immich cache archive contains packages/cli/node_modules/@immich/sdk -> ../../../sdk, while the cache roots contain packages/sdk/build and packages/sdk/node_modules but not a packages/sdk source root.",
-    "Under the previous /workspace/packages/cli/node_modules -> /cache/packages/cli/node_modules rewrite, that pnpm link resolves to /cache/sdk; under the original workspace topology it resolves to /workspace/packages/sdk from the seed.",
+    "Under the previous /workspace/packages/cli/node_modules -> /cache/packages/cli/node_modules rewrite, that pnpm link resolves to /cache/packages/sdk; under the original workspace topology it resolves to /workspace/packages/sdk from the seed.",
     "The Vite runtime resolves its default cache and temporary paths below node_modules, so the measured harness must preserve the workspace package topology while keeping the cache source read-only.",
     "The failed positive-output was intentionally sanitized by the previous harness and therefore cannot distinguish module resolution from another public-smoke failure."
   ],
   "cacheTopology": {
     "cacheRootsSha256Source": "run-30731829404 artifact cache-roots.txt",
-    "previousCliNodeModulesResolution": "/cache/sdk (not present in the prepared cache roots)",
+    "previousCliNodeModulesResolution": "/cache/packages/sdk (not present in the prepared cache roots)",
     "pathPreservingCliNodeModulesResolution": "/workspace/packages/sdk (seed source)"
   },
-  "repairAction": "Mount each prepared cache root read-only at its matching /workspace path, use disposable placeholders only for missing negative-test roots, and retain distinct sanitized smoke failure markers plus public-test stderr.",
+  "repairAction": "Copy each prepared cache root from read-only /cache into writable /workspace while preserving relative pnpm symlinks, avoid nested Docker mounts, and retain distinct sanitized smoke failure markers plus public-test stderr.",
   "sourceEvidence": {
     "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30731829404",
     "failedJobUrl": "https://github.com/Eskasia/governseed/actions/runs/30731829404/job/91453851349",
