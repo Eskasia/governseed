@@ -322,7 +322,9 @@ jobs:
           tar -xzf "$input/cache.tgz" -C "$cache"
           cp "$input/cache-roots.txt" "$harness/cache-roots.txt"
           cp benchmarks/external-oss-v8/tests/v8-runtime-contract.sh "$harness/v8-runtime-contract.sh"
+          cp benchmarks/external-oss-v8/tests/v8-container-wrapper.sh "$harness/v8-container-wrapper.sh"
           chmod 0555 "$harness/v8-runtime-contract.sh"
+          chmod 0555 "$harness/v8-container-wrapper.sh"
           chmod 0444 "$harness/cache-roots.txt"
           docker load --input "$input/runtime-image.tgz" >/dev/null
           runtime_tag="governseed-v7-runtime:$TASK_ID"
@@ -338,7 +340,7 @@ jobs:
             --mount "type=bind,src=$harness,dst=/harness,readonly" \
             --tmpfs "/home/benchmark:rw,noexec,nosuid,nodev,size=1g,uid=65532,gid=65532,mode=0700" \
             --tmpfs "/tmp:rw,noexec,nosuid,nodev,size=2g,uid=65532,gid=65532,mode=1770" \
-            "$runtime_tag" /harness/v8-runtime-contract.sh "$TASK_ID" > "$out/container-id"
+            "$runtime_tag" /harness/v8-container-wrapper.sh v8-runtime-contract.sh "$TASK_ID" > "$out/container-id"
           container_id=$(tail -n 1 "$out/container-id")
           test "$(docker inspect "$container_id" --format '{{.HostConfig.NetworkMode}}')" = none
           test "$(docker inspect "$container_id" --format '{{.HostConfig.ReadonlyRootfs}}')" = true
@@ -367,13 +369,27 @@ jobs:
             actual_rw=$(docker inspect "$container_id" --format '{{range .Mounts}}{{if eq .Destination "'"$destination"'"}}{{.RW}}{{end}}{{end}}')
             test "$actual_rw" = "$expected_rw"
           done
-          set +e
-          docker start -a "$container_id" > "$out/container-output" 2>&1
-          rc=$?
-          set -e
-          for file in workspace-exec-receipt.json mountinfo.txt workspace-mount.txt cache-mount.txt home-mount.txt tmp-mount.txt vitest-resolved-path.txt vitest-symlink.txt vitest-version.txt runner-probe.txt python-version.txt pytest-version.txt libmagic-library-path.txt libmagic-database-path.txt libmagic-probe.txt; do
-            docker cp "$container_id:/workspace/$file" "$out/$file" 2>/dev/null || true
+          docker start "$container_id" >/dev/null
+          for attempt in $(seq 1 180); do
+            running=$(docker inspect "$container_id" --format '{{.State.Running}}')
+            test "$running" = true || break
+            if docker exec "$container_id" test -f /workspace/workspace-exec-receipt.json 2>/dev/null; then break; fi
+            sleep 1
           done
+          running=$(docker inspect "$container_id" --format '{{.State.Running}}')
+          if test "$running" = true; then
+            for file in workspace-exec-receipt.json mountinfo.txt workspace-mount.txt cache-mount.txt home-mount.txt tmp-mount.txt vitest-resolved-path.txt vitest-symlink.txt vitest-version.txt runner-probe.txt python-version.txt pytest-version.txt libmagic-library-path.txt libmagic-database-path.txt libmagic-probe.txt; do
+              docker exec "$container_id" cat "/workspace/$file" > "$out/$file" 2>/dev/null || true
+            done
+            docker exec "$container_id" sh -c ': > /workspace/.v8-release'
+          fi
+          for attempt in $(seq 1 30); do
+            running=$(docker inspect "$container_id" --format '{{.State.Running}}')
+            test "$running" = true || break
+            sleep 1
+          done
+          rc=$(docker inspect "$container_id" --format '{{.State.ExitCode}}')
+          docker logs "$container_id" > "$out/container-output" 2>&1 || true
           test "$rc" -eq 0
           test -f "$out/workspace-exec-receipt.json"
           docker rm -f "$container_id" >/dev/null
@@ -433,7 +449,7 @@ jobs:
           test ! -e "$negative_cache/$required_path"
           test ! -L "$negative_cache/$required_path"
           chmod -R a-w "$negative_cache"
-          for script in v8-runtime-contract.sh v8-offline-smoke.sh; do cp "benchmarks/external-oss-v8/tests/$script" "$harness/$script"; chmod 0555 "$harness/$script"; done
+          for script in v8-runtime-contract.sh v8-offline-smoke.sh v8-container-wrapper.sh; do cp "benchmarks/external-oss-v8/tests/$script" "$harness/$script"; chmod 0555 "$harness/$script"; done
           cp "$input/cache-roots.txt" "$harness/cache-roots.txt"
           chmod 0444 "$harness/cache-roots.txt"
           docker load --input "$input/runtime-image.tgz" >/dev/null
@@ -449,7 +465,7 @@ jobs:
               --mount "type=bind,src=$harness,dst=/harness,readonly" \
               --tmpfs "/home/benchmark:rw,noexec,nosuid,nodev,size=1g,uid=65532,gid=65532,mode=0700" \
               --tmpfs "/tmp:rw,noexec,nosuid,nodev,size=2g,uid=65532,gid=65532,mode=1770" \
-              "$runtime_tag" /harness/v8-offline-smoke.sh "$TASK_ID" "$required_path" > "$id_file"
+              "$runtime_tag" /harness/v8-container-wrapper.sh v8-offline-smoke.sh "$TASK_ID" "$required_path" > "$id_file"
             local id
             id=$(tail -n 1 "$id_file")
             test "$(docker inspect "$id" --format '{{.HostConfig.NetworkMode}}')" = none
@@ -472,16 +488,30 @@ jobs:
               if (destination === '/workspace' && options.includes('noexec')) process.exit(1);
             }
             NODE
-            set +e
-            docker start -a "$id" > "$output_file" 2>&1
-            rc=$?
-            set -e
-            printf '%s\n' "$id" > "$id_file"
-            if test "$name" = "v8-${TASK_ID,,}-positive"; then
+            docker start "$id" >/dev/null
+            is_positive=false
+            if test "$name" = "v8-${TASK_ID,,}-positive"; then is_positive=true; fi
+            for attempt in $(seq 1 240); do
+              running=$(docker inspect "$id" --format '{{.State.Running}}')
+              test "$running" = true || break
+              if test "$is_positive" = true && docker exec "$id" test -f /workspace/cache-receipt.json 2>/dev/null; then break; fi
+              sleep 1
+            done
+            running=$(docker inspect "$id" --format '{{.State.Running}}')
+            if test "$is_positive" = true && test "$running" = true; then
               for file in cache-receipt.json workspace-exec-receipt.json mountinfo.txt workspace-mount.txt cache-mount.txt home-mount.txt tmp-mount.txt vitest-resolved-path.txt vitest-symlink.txt vitest-version.txt runner-probe.txt python-version.txt pytest-version.txt libmagic-library-path.txt libmagic-database-path.txt libmagic-probe.txt; do
-                docker cp "$id:/workspace/$file" "$out/$file" 2>/dev/null || true
+                docker exec "$id" cat "/workspace/$file" > "$out/$file" 2>/dev/null || true
               done
+              docker exec "$id" sh -c ': > /workspace/.v8-release'
             fi
+            for attempt in $(seq 1 30); do
+              running=$(docker inspect "$id" --format '{{.State.Running}}')
+              test "$running" = true || break
+              sleep 1
+            done
+            rc=$(docker inspect "$id" --format '{{.State.ExitCode}}')
+            docker logs "$id" > "$output_file" 2>&1 || true
+            printf '%s\n' "$id" > "$id_file"
             docker rm -f "$id" >/dev/null
             return "$rc"
           }

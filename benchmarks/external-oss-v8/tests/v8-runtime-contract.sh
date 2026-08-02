@@ -104,7 +104,11 @@ case "$task_id" in
     vitest_resolved_path=$(readlink -e ./node_modules/.bin/vitest 2>/dev/null || true)
     test -n "$vitest_resolved_path" || fail SYMLINK_TARGET_EXECUTION_DENIED
     printf '%s\n' "$vitest_resolved_path" > /workspace/vitest-resolved-path.txt
-    readlink ./node_modules/.bin/vitest > /workspace/vitest-symlink.txt 2>/dev/null || fail SYMLINK_TARGET_EXECUTION_DENIED
+    if test -L ./node_modules/.bin/vitest; then
+      readlink ./node_modules/.bin/vitest > /workspace/vitest-symlink.txt 2>/dev/null || fail SYMLINK_TARGET_EXECUTION_DENIED
+    else
+      printf '%s\n' REGULAR_FILE > /workspace/vitest-symlink.txt
+    fi
     ./node_modules/.bin/vitest --version > /workspace/vitest-version.txt 2>&1 || fail RUNTIME_BINARY_EXECUTION_DENIED
     vitest_version_probe_pass=true
     ;;
