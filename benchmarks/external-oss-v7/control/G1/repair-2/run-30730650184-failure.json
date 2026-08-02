@@ -1,0 +1,59 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V7",
+  "evidenceClass": "external-observational",
+  "runId": "30730650184",
+  "headSha": "2757c0480c54b78ac8b88b32ce64392329940b22",
+  "workflow": "External OSS V7 dependency cache",
+  "result": "failure",
+  "failureClass": "pending-triage",
+  "repairCycle": 2,
+  "jobs": {
+    "seedIdentity": {
+      "TASK-OSS-01": { "jobId": "91450358737", "conclusion": "success" },
+      "TASK-OSS-03": { "jobId": "91450358716", "conclusion": "success" },
+      "TASK-OSS-09": { "jobId": "91450358736", "conclusion": "success" }
+    },
+    "runtimeImage": {
+      "TASK-OSS-01": { "jobId": "91450393186", "conclusion": "success" },
+      "TASK-OSS-03": { "jobId": "91450393189", "conclusion": "success" },
+      "TASK-OSS-09": { "jobId": "91450393197", "conclusion": "success" }
+    },
+    "cachePreparation": {
+      "TASK-OSS-01": { "jobId": "91450521829", "conclusion": "success" },
+      "TASK-OSS-03": { "jobId": "91450521823", "conclusion": "success" },
+      "TASK-OSS-09": { "jobId": "91450521824", "conclusion": "success" }
+    },
+    "offlineVerification": {
+      "TASK-OSS-01": { "jobId": "91450780544", "conclusion": "cancelled", "reason": "fail-fast after TASK-OSS-09 failure" },
+      "TASK-OSS-03": { "jobId": "91450780551", "conclusion": "cancelled", "reason": "fail-fast after TASK-OSS-09 failure" },
+      "TASK-OSS-09": { "jobId": "91450780540", "conclusion": "failure" }
+    },
+    "aggregate": { "jobId": "91450868443", "conclusion": "failure", "reason": "fewer than three READY receipts" }
+  },
+  "firstFailedStep": "Run permission diagnostics, offline containment, positive smoke, and negative smoke",
+  "firstFailingCommand": null,
+  "failureCode": null,
+  "observations": [
+    "All three seed identity jobs passed.",
+    "All three digest-locked runtime image jobs passed.",
+    "All three dependency cache preparation jobs passed.",
+    "TASK-OSS-03 produced a READY receipt with positive smoke PASS and negative DEPENDENCY_CACHE_INCOMPLETE exit 42.",
+    "TASK-OSS-09 offline verification exited 1 before creating an offline receipt; the upload step reported no files found.",
+    "TASK-OSS-01 and TASK-OSS-03 offline verification did not execute because the matrix used fail-fast.",
+    "No G1 3/3 offline or dependency-cache READY claim is made by this evidence."
+  ],
+  "artifacts": {
+    "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30730650184",
+    "failedJobUrl": "https://github.com/Eskasia/governseed/actions/runs/30730650184/job/91450780540",
+    "availableReceiptTask": "TASK-OSS-03",
+    "downloadedFiles": {
+      "cache-receipt.json": "96f5f95bc4c0d1aa19c795ff90c0647d9f3bb06b09e8b394f2e63efff047189a",
+      "negative-container-id": "5f47bc2d9a000d85e0bb5906383613ddd42f99d1549c6b9c871ca292a0b5ac95",
+      "negative-output": "acf894cfcc6a70a2187ff1e208a7e03ad8e4d83ecf2d364f288813fdf5f176ea",
+      "positive-container-id": "007b49ec590abfefba3887bc4f512afe8e10ef2d27b373d1268ce0096aba8601",
+      "positive-output": "9b9a56a95abc2f64f29b75ec7d88f82a4de4f48ef470c7b21f925afb0876dc44"
+    }
+  },
+  "claimBoundary": "Immutable failure record only; no runtime-image, offline-smoke, dependency-cache, G1 acceptance, Pilot, scoring, credential, Codex, provider, or task-result claim."
+}
