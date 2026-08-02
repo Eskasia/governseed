@@ -3,7 +3,7 @@
   "benchmarkId": "GS-OSS-2026-08-02-V8",
   "evidenceClass": "external-observational",
   "status": "READY_FOR_REVIEW",
-  "gitCommit": "de3485525a4535d4a7c2baec8c48fe631a96bda8",
+  "gitCommit": "09a3cad5c10ee510b8857ed3b6b363dda75f33ec",
   "nodeVersion": "v26.3.0",
   "npmVersion": "11.16.0",
   "packageLock": "NOT_APPLICABLE_NO_LOCKFILE",
@@ -23,9 +23,9 @@
         "run",
         "check"
       ],
-      "startedAt": "2026-08-02T07:47:10.155Z",
-      "endedAt": "2026-08-02T07:47:12.250Z",
-      "durationMs": 2094,
+      "startedAt": "2026-08-02T08:03:59.894Z",
+      "endedAt": "2026-08-02T08:04:02.059Z",
+      "durationMs": 2165,
       "exitCode": 0,
       "status": "PASS"
     },
@@ -36,9 +36,9 @@
         "run",
         "validate"
       ],
-      "startedAt": "2026-08-02T07:47:12.250Z",
-      "endedAt": "2026-08-02T07:47:19.168Z",
-      "durationMs": 6918,
+      "startedAt": "2026-08-02T08:04:02.060Z",
+      "endedAt": "2026-08-02T08:04:08.539Z",
+      "durationMs": 6479,
       "exitCode": 0,
       "status": "PASS"
     },
@@ -49,9 +49,9 @@
         "run",
         "test:governance"
       ],
-      "startedAt": "2026-08-02T07:47:19.168Z",
-      "endedAt": "2026-08-02T07:47:35.536Z",
-      "durationMs": 16369,
+      "startedAt": "2026-08-02T08:04:08.539Z",
+      "endedAt": "2026-08-02T08:04:25.224Z",
+      "durationMs": 16686,
       "exitCode": 0,
       "status": "PASS"
     },
@@ -62,9 +62,9 @@
         "run",
         "test:privacy"
       ],
-      "startedAt": "2026-08-02T07:47:35.537Z",
-      "endedAt": "2026-08-02T07:47:37.596Z",
-      "durationMs": 2059,
+      "startedAt": "2026-08-02T08:04:25.225Z",
+      "endedAt": "2026-08-02T08:04:27.836Z",
+      "durationMs": 2611,
       "exitCode": 0,
       "status": "PASS"
     },
@@ -75,9 +75,9 @@
         "run",
         "test:experimental"
       ],
-      "startedAt": "2026-08-02T07:47:37.596Z",
-      "endedAt": "2026-08-02T07:47:38.879Z",
-      "durationMs": 1284,
+      "startedAt": "2026-08-02T08:04:27.836Z",
+      "endedAt": "2026-08-02T08:04:29.111Z",
+      "durationMs": 1276,
       "exitCode": 0,
       "status": "PASS"
     },
@@ -88,9 +88,9 @@
         "run",
         "ci"
       ],
-      "startedAt": "2026-08-02T07:47:38.880Z",
-      "endedAt": "2026-08-02T07:48:29.720Z",
-      "durationMs": 50840,
+      "startedAt": "2026-08-02T08:04:29.112Z",
+      "endedAt": "2026-08-02T08:05:20.939Z",
+      "durationMs": 51828,
       "exitCode": 0,
       "status": "PASS"
     },
@@ -100,9 +100,9 @@
         "node",
         "benchmarks/external-oss-v8/tests/v8-contract-validation.mjs"
       ],
-      "startedAt": "2026-08-02T07:48:29.720Z",
-      "endedAt": "2026-08-02T07:48:29.815Z",
-      "durationMs": 95,
+      "startedAt": "2026-08-02T08:05:20.940Z",
+      "endedAt": "2026-08-02T08:05:21.039Z",
+      "durationMs": 100,
       "exitCode": 0,
       "status": "PASS"
     },
@@ -112,9 +112,9 @@
         "node",
         "benchmarks/external-oss-v8/tests/v8-schema-validation.mjs"
       ],
-      "startedAt": "2026-08-02T07:48:29.815Z",
-      "endedAt": "2026-08-02T07:48:29.882Z",
-      "durationMs": 68,
+      "startedAt": "2026-08-02T08:05:21.040Z",
+      "endedAt": "2026-08-02T08:05:21.109Z",
+      "durationMs": 70,
       "exitCode": 0,
       "status": "PASS"
     },
@@ -124,9 +124,9 @@
         "node",
         "benchmarks/external-oss-v8/tests/v8-runtime-shell-validation.mjs"
       ],
-      "startedAt": "2026-08-02T07:48:29.883Z",
-      "endedAt": "2026-08-02T07:48:29.963Z",
-      "durationMs": 80,
+      "startedAt": "2026-08-02T08:05:21.110Z",
+      "endedAt": "2026-08-02T08:05:21.190Z",
+      "durationMs": 81,
       "exitCode": 0,
       "status": "PASS"
     },
@@ -137,9 +137,9 @@
         "-e",
         "require \"yaml\"; YAML.load_file(\".github/workflows/external-oss-v8-dependency-cache.yml\"); puts \"YAML_PASS\""
       ],
-      "startedAt": "2026-08-02T07:48:29.963Z",
-      "endedAt": "2026-08-02T07:48:30.051Z",
-      "durationMs": 88,
+      "startedAt": "2026-08-02T08:05:21.191Z",
+      "endedAt": "2026-08-02T08:05:21.293Z",
+      "durationMs": 103,
       "exitCode": 0,
       "status": "PASS"
     },

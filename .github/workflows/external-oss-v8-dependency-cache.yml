@@ -487,7 +487,7 @@ jobs:
               if (!options.length || tokens.some((token) => !(aliases[token] || [token]).some((candidate) => options.includes(candidate)))) process.exit(1);
               if (destination === '/workspace' && options.includes('noexec')) process.exit(1);
             }
-            NODE
+          NODE
             docker start "$id" >/dev/null
             is_positive=false
             if test "$name" = "v8-${TASK_ID,,}-positive"; then is_positive=true; fi

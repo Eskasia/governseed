@@ -1,0 +1,301 @@
+﻿2026-08-02T07:59:05.1695693Z Current runner version: '2.336.0'
+2026-08-02T07:59:05.1744386Z ##[group]Runner Image Provisioner
+2026-08-02T07:59:05.1745409Z Hosted Compute Agent
+2026-08-02T07:59:05.1746004Z Version: 20260707.563
+2026-08-02T07:59:05.1746675Z Commit: 02667638d2b423fbc733a8e32a88b44996a3ba6e
+2026-08-02T07:59:05.1747414Z Build Date: 2026-07-07T19:33:50Z
+2026-08-02T07:59:05.1748126Z Worker ID: {c98c973c-3b32-42d5-ac61-7d8519ec05d8}
+2026-08-02T07:59:05.1748890Z Azure Region: westus
+2026-08-02T07:59:05.1749460Z ##[endgroup]
+2026-08-02T07:59:05.1751252Z ##[group]Operating System
+2026-08-02T07:59:05.1752060Z Ubuntu
+2026-08-02T07:59:05.1752678Z 24.04.4
+2026-08-02T07:59:05.1753485Z LTS
+2026-08-02T07:59:05.1754096Z ##[endgroup]
+2026-08-02T07:59:05.1754648Z ##[group]Runner Image
+2026-08-02T07:59:05.1755316Z Image: ubuntu-24.04
+2026-08-02T07:59:05.1755912Z Version: 20260720.247.2
+2026-08-02T07:59:05.1757203Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20260720.247/images/ubuntu/Ubuntu2404-Readme.md
+2026-08-02T07:59:05.1758752Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20260720.247
+2026-08-02T07:59:05.1759747Z ##[endgroup]
+2026-08-02T07:59:05.1760925Z ##[group]GITHUB_TOKEN Permissions
+2026-08-02T07:59:05.1763426Z Actions: read
+2026-08-02T07:59:05.1764059Z Contents: read
+2026-08-02T07:59:05.1764577Z Metadata: read
+2026-08-02T07:59:05.1765607Z ##[endgroup]
+2026-08-02T07:59:05.1767699Z Secret source: Actions
+2026-08-02T07:59:05.1769200Z Prepare workflow directory
+2026-08-02T07:59:05.2189977Z Prepare all required actions
+2026-08-02T07:59:05.2240177Z Getting action download info
+2026-08-02T07:59:05.5705544Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+2026-08-02T07:59:06.0114843Z Download action repository 'actions/download-artifact@v4' (SHA:d3f86a106a0bac45b974a628896c90dbdf5c8093)
+2026-08-02T07:59:06.8649298Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+2026-08-02T07:59:07.0729753Z Complete job name: Verify V8 cache offline (TASK-OSS-03)
+2026-08-02T07:59:07.1488065Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-02T07:59:07.1496780Z ##[group]Run actions/checkout@v4
+2026-08-02T07:59:07.1497407Z with:
+2026-08-02T07:59:07.1497737Z   fetch-depth: 1
+2026-08-02T07:59:07.1498090Z   repository: Eskasia/governseed
+2026-08-02T07:59:07.1501029Z   token: ***
+2026-08-02T07:59:07.1501369Z   ssh-strict: true
+2026-08-02T07:59:07.1501699Z   ssh-user: git
+2026-08-02T07:59:07.1502048Z   persist-credentials: true
+2026-08-02T07:59:07.1502417Z   clean: true
+2026-08-02T07:59:07.1502751Z   sparse-checkout-cone-mode: true
+2026-08-02T07:59:07.1503362Z   fetch-tags: false
+2026-08-02T07:59:07.1503711Z   show-progress: true
+2026-08-02T07:59:07.1504076Z   lfs: false
+2026-08-02T07:59:07.1504416Z   submodules: false
+2026-08-02T07:59:07.1504806Z   set-safe-directory: true
+2026-08-02T07:59:07.1505185Z   allow-unsafe-pr-checkout: false
+2026-08-02T07:59:07.1505856Z env:
+2026-08-02T07:59:07.1506203Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T07:59:07.1506637Z   EVIDENCE_CLASS: external-observational
+2026-08-02T07:59:07.1507054Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T07:59:07.1507409Z ##[endgroup]
+2026-08-02T07:59:07.2557065Z Syncing repository: Eskasia/governseed
+2026-08-02T07:59:07.2559381Z ##[group]Getting Git version info
+2026-08-02T07:59:07.2560288Z Working directory is '/home/runner/work/governseed/governseed'
+2026-08-02T07:59:07.2561641Z [command]/usr/bin/git version
+2026-08-02T07:59:07.2658426Z git version 2.54.0
+2026-08-02T07:59:07.2715035Z ##[endgroup]
+2026-08-02T07:59:07.2721618Z Temporarily overriding HOME='/home/runner/work/_temp/8c0ec495-673d-4509-ad97-d0ce4d20f39d' before making global git config changes
+2026-08-02T07:59:07.2724263Z Adding repository directory to the temporary git global config as a safe directory
+2026-08-02T07:59:07.2725885Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/governseed/governseed
+2026-08-02T07:59:07.2790919Z Deleting the contents of '/home/runner/work/governseed/governseed'
+2026-08-02T07:59:07.2796418Z ##[group]Initializing the repository
+2026-08-02T07:59:07.2802345Z [command]/usr/bin/git init /home/runner/work/governseed/governseed
+2026-08-02T07:59:07.2945540Z hint: Using 'master' as the name for the initial branch. This default branch name
+2026-08-02T07:59:07.2946921Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+2026-08-02T07:59:07.2947961Z hint: to use in all of your new repositories, which will suppress this warning,
+2026-08-02T07:59:07.2948978Z hint: call:
+2026-08-02T07:59:07.2949542Z hint:
+2026-08-02T07:59:07.2950321Z hint: 	git config --global init.defaultBranch <name>
+2026-08-02T07:59:07.2951179Z hint:
+2026-08-02T07:59:07.2952160Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+2026-08-02T07:59:07.2953656Z hint: 'development'. The just-created branch can be renamed via this command:
+2026-08-02T07:59:07.2954633Z hint:
+2026-08-02T07:59:07.2955244Z hint: 	git branch -m <name>
+2026-08-02T07:59:07.2956231Z hint:
+2026-08-02T07:59:07.2957070Z hint: Disable this message with "git config set advice.defaultBranchName false"
+2026-08-02T07:59:07.2958342Z Initialized empty Git repository in /home/runner/work/governseed/governseed/.git/
+2026-08-02T07:59:07.2974179Z [command]/usr/bin/git remote add origin https://github.com/Eskasia/governseed
+2026-08-02T07:59:07.3059209Z ##[endgroup]
+2026-08-02T07:59:07.3060307Z ##[group]Disabling automatic garbage collection
+2026-08-02T07:59:07.3065623Z [command]/usr/bin/git config --local gc.auto 0
+2026-08-02T07:59:07.3116514Z ##[endgroup]
+2026-08-02T07:59:07.3117433Z ##[group]Setting up auth
+2026-08-02T07:59:07.3118330Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-08-02T07:59:07.3150106Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-08-02T07:59:07.3568617Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-08-02T07:59:07.3608477Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-08-02T07:59:07.3838831Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-08-02T07:59:07.3875175Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-08-02T07:59:07.4110886Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+2026-08-02T07:59:07.4152346Z ##[endgroup]
+2026-08-02T07:59:07.4154046Z ##[group]Fetching the repository
+2026-08-02T07:59:07.4163810Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +c47cb33f590d9d95c25cfa386925954f49a5b0c0:refs/remotes/origin/main
+2026-08-02T07:59:11.1277879Z From https://github.com/Eskasia/governseed
+2026-08-02T07:59:11.1279891Z  * [new ref]         c47cb33f590d9d95c25cfa386925954f49a5b0c0 -> origin/main
+2026-08-02T07:59:11.1346539Z ##[endgroup]
+2026-08-02T07:59:11.1347341Z ##[group]Determining the checkout info
+2026-08-02T07:59:11.1348867Z ##[endgroup]
+2026-08-02T07:59:11.1355263Z [command]/usr/bin/git sparse-checkout disable
+2026-08-02T07:59:11.1414064Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+2026-08-02T07:59:11.1445743Z ##[group]Checking out the ref
+2026-08-02T07:59:11.1450161Z [command]/usr/bin/git checkout --progress --force -B main refs/remotes/origin/main
+2026-08-02T07:59:11.3829512Z Switched to a new branch 'main'
+2026-08-02T07:59:11.3834792Z branch 'main' set up to track 'origin/main'.
+2026-08-02T07:59:11.3883703Z ##[endgroup]
+2026-08-02T07:59:11.3931208Z [command]/usr/bin/git log -1 --format=%H
+2026-08-02T07:59:11.3958812Z c47cb33f590d9d95c25cfa386925954f49a5b0c0
+2026-08-02T07:59:11.4219817Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-02T07:59:11.4222249Z ##[group]Run actions/download-artifact@v4
+2026-08-02T07:59:11.4222590Z with:
+2026-08-02T07:59:11.4223203Z   name: external-oss-v8-dependency-cache-TASK-OSS-03
+2026-08-02T07:59:11.4223660Z   path: /home/runner/work/_temp/v8-input/TASK-OSS-03
+2026-08-02T07:59:11.4224029Z   merge-multiple: false
+2026-08-02T07:59:11.4224309Z   repository: Eskasia/governseed
+2026-08-02T07:59:11.4224621Z   run-id: 30738733647
+2026-08-02T07:59:11.4224870Z env:
+2026-08-02T07:59:11.4225120Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T07:59:11.4225444Z   EVIDENCE_CLASS: external-observational
+2026-08-02T07:59:11.4225760Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T07:59:11.4226072Z ##[endgroup]
+2026-08-02T07:59:11.5781874Z Downloading single artifact
+2026-08-02T07:59:11.5950460Z (node:2157) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-08-02T07:59:11.5951353Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-08-02T07:59:11.8441654Z Preparing to download the following artifacts:
+2026-08-02T07:59:11.8443519Z - external-oss-v8-dependency-cache-TASK-OSS-03 (ID: 8830557018, Size: 503621020, Expected Digest: sha256:0b7f532e2e5a91cda39893c12cf911ef3b85c73da72c400840319b3cd2c9516c)
+2026-08-02T07:59:12.0418315Z Redirecting to blob download url: https://productionresultssa17.blob.core.windows.net/actions-results/3bc21622-9579-4935-b180-a268c7011cbd/workflow-job-run-42df5032-4be9-5da0-a36f-e5e3b3a3d40a/artifacts/832f0df008fe1ea67ae7beaf17995516c67dbdbb92a8df00f60e431f0b409f61.zip
+2026-08-02T07:59:12.0421348Z Starting download of artifact to: /home/runner/work/_temp/v8-input/TASK-OSS-03
+2026-08-02T07:59:12.3903083Z (node:2157) [DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
+2026-08-02T07:59:44.5667327Z SHA256 digest of downloaded artifact is 0b7f532e2e5a91cda39893c12cf911ef3b85c73da72c400840319b3cd2c9516c
+2026-08-02T07:59:44.5668591Z Artifact download completed successfully.
+2026-08-02T07:59:44.5669331Z Total of 1 artifact(s) downloaded
+2026-08-02T07:59:44.5677091Z Download artifact has finished successfully
+2026-08-02T07:59:44.5919502Z ##[group]Run set -euo pipefail
+2026-08-02T07:59:44.5919967Z [36;1mset -euo pipefail[0m
+2026-08-02T07:59:44.5920273Z [36;1minput="$RUNNER_TEMP/v8-input/$TASK_ID"[0m
+2026-08-02T07:59:44.5920638Z [36;1mroot="$RUNNER_TEMP/v8-offline/$TASK_ID"[0m
+2026-08-02T07:59:44.5920954Z [36;1mseed="$root/seed"[0m
+2026-08-02T07:59:44.5921209Z [36;1mcache="$root/cache"[0m
+2026-08-02T07:59:44.5921487Z [36;1mnegative_cache="$root/negative-cache"[0m
+2026-08-02T07:59:44.5921786Z [36;1mharness="$root/harness"[0m
+2026-08-02T07:59:44.5922076Z [36;1mout="$RUNNER_TEMP/v8-receipts/$TASK_ID"[0m
+2026-08-02T07:59:44.5922462Z [36;1mmkdir -p "$seed" "$cache" "$negative_cache" "$harness" "$out"[0m
+2026-08-02T07:59:44.5923128Z [36;1mtar -xzf "$input/seed.tgz" -C "$seed"[0m
+2026-08-02T07:59:44.5923505Z [36;1mtar -xzf "$input/cache.tgz" -C "$cache"[0m
+2026-08-02T07:59:44.5923813Z [36;1mchmod -R a-w "$cache"[0m
+2026-08-02T07:59:44.5924087Z [36;1mcp -a "$cache/." "$negative_cache/"[0m
+2026-08-02T07:59:44.5924422Z [36;1mchmod -R u+rwX "$negative_cache"[0m
+2026-08-02T07:59:44.5925184Z [36;1mcase "$TASK_ID" in TASK-OSS-01) required_path=packages/cli/node_modules;; TASK-OSS-03) required_path=node_modules;; TASK-OSS-09) required_path=.venv/bin/python;; *) exit 2;; esac[0m
+2026-08-02T07:59:44.5926293Z [36;1mtest -e "$negative_cache/$required_path" || test -L "$negative_cache/$required_path"[0m
+2026-08-02T07:59:44.5926771Z [36;1mrm -rf "$negative_cache/$required_path"[0m
+2026-08-02T07:59:44.5927118Z [36;1mtest ! -e "$negative_cache/$required_path"[0m
+2026-08-02T07:59:44.5927473Z [36;1mtest ! -L "$negative_cache/$required_path"[0m
+2026-08-02T07:59:44.5927792Z [36;1mchmod -R a-w "$negative_cache"[0m
+2026-08-02T07:59:44.5928605Z [36;1mfor script in v8-runtime-contract.sh v8-offline-smoke.sh v8-container-wrapper.sh; do cp "benchmarks/external-oss-v8/tests/$script" "$harness/$script"; chmod 0555 "$harness/$script"; done[0m
+2026-08-02T07:59:44.5929487Z [36;1mcp "$input/cache-roots.txt" "$harness/cache-roots.txt"[0m
+2026-08-02T07:59:44.5929871Z [36;1mchmod 0444 "$harness/cache-roots.txt"[0m
+2026-08-02T07:59:44.5930261Z [36;1mdocker load --input "$input/runtime-image.tgz" >/dev/null[0m
+2026-08-02T07:59:44.5930675Z [36;1mruntime_tag="governseed-v7-runtime:$TASK_ID"[0m
+2026-08-02T07:59:44.5930991Z [36;1mrun_container() {[0m
+2026-08-02T07:59:44.5931318Z [36;1m  local name=$1 cache_source=$2 id_file=$3 output_file=$4[0m
+2026-08-02T07:59:44.5931680Z [36;1m  docker create --name "$name" \[0m
+2026-08-02T07:59:44.5932147Z [36;1m    --network none --read-only --cap-drop=ALL --security-opt no-new-privileges:true \[0m
+2026-08-02T07:59:44.5932683Z [36;1m    --user 65532:65532 --pids-limit 256 --cpus 4 --memory 15g \[0m
+2026-08-02T07:59:44.5933533Z [36;1m    --tmpfs "/workspace:rw,exec,nosuid,nodev,size=8g,uid=65532,gid=65532,mode=0750" \[0m
+2026-08-02T07:59:44.5934038Z [36;1m    --mount "type=bind,src=$seed,dst=/seed,readonly" \[0m
+2026-08-02T07:59:44.5934458Z [36;1m    --mount "type=bind,src=$cache_source,dst=/cache,readonly" \[0m
+2026-08-02T07:59:44.5934911Z [36;1m    --mount "type=bind,src=$harness,dst=/harness,readonly" \[0m
+2026-08-02T07:59:44.5935442Z [36;1m    --tmpfs "/home/benchmark:rw,noexec,nosuid,nodev,size=1g,uid=65532,gid=65532,mode=0700" \[0m
+2026-08-02T07:59:44.5936043Z [36;1m    --tmpfs "/tmp:rw,noexec,nosuid,nodev,size=2g,uid=65532,gid=65532,mode=1770" \[0m
+2026-08-02T07:59:44.5936718Z [36;1m    "$runtime_tag" /harness/v8-container-wrapper.sh v8-offline-smoke.sh "$TASK_ID" "$required_path" > "$id_file"[0m
+2026-08-02T07:59:44.5937254Z [36;1m  local id[0m
+2026-08-02T07:59:44.5937485Z [36;1m  id=$(tail -n 1 "$id_file")[0m
+2026-08-02T07:59:44.5937876Z [36;1m  test "$(docker inspect "$id" --format '{{.HostConfig.NetworkMode}}')" = none[0m
+2026-08-02T07:59:44.5938415Z [36;1m  test "$(docker inspect "$id" --format '{{.HostConfig.ReadonlyRootfs}}')" = true[0m
+2026-08-02T07:59:44.5939114Z [36;1m  test "$(docker inspect "$id" --format '{{.Config.User}}')" = 65532:65532[0m
+2026-08-02T07:59:44.5939652Z [36;1m  test "$(docker inspect "$id" --format '{{json .HostConfig.CapDrop}}')" = '["ALL"]'[0m
+2026-08-02T07:59:44.5940300Z [36;1m  docker inspect "$id" --format '{{json .HostConfig.SecurityOpt}}' | grep -Fq no-new-privileges:true[0m
+2026-08-02T07:59:44.5940922Z [36;1m  tmpfs_json=$(docker inspect "$id" --format '{{json .HostConfig.Tmpfs}}')[0m
+2026-08-02T07:59:44.5941411Z [36;1m  TMPFS_JSON="$tmpfs_json" node --input-type=module - <<'NODE'[0m
+2026-08-02T07:59:44.5941844Z [36;1m  const tmpfs = JSON.parse(process.env.TMPFS_JSON);[0m
+2026-08-02T07:59:44.5942182Z [36;1m  const required = {[0m
+2026-08-02T07:59:44.5942600Z [36;1m    '/workspace': ['rw', 'exec', 'nosuid', 'nodev', 'size=8g', 'uid=65532', 'gid=65532', 'mode=0750'],[0m
+2026-08-02T07:59:44.5943529Z [36;1m    '/home/benchmark': ['rw', 'noexec', 'nosuid', 'nodev', 'size=1g', 'uid=65532', 'gid=65532', 'mode=0700'],[0m
+2026-08-02T07:59:44.5944151Z [36;1m    '/tmp': ['rw', 'noexec', 'nosuid', 'nodev', 'size=2g', 'uid=65532', 'gid=65532', 'mode=1770'][0m
+2026-08-02T07:59:44.5944560Z [36;1m  };[0m
+2026-08-02T07:59:44.5945309Z [36;1m  const aliases = { 'size=8g': ['size=8g', 'size=8388608k'], 'size=1g': ['size=1g', 'size=1048576k'], 'size=2g': ['size=2g', 'size=2097152k'], 'mode=0750': ['mode=0750', 'mode=750'], 'mode=0700': ['mode=0700', 'mode=700'], 'mode=1770': ['mode=1770'] };[0m
+2026-08-02T07:59:44.5946384Z [36;1m  for (const [destination, tokens] of Object.entries(required)) {[0m
+2026-08-02T07:59:44.5946849Z [36;1m    const options = String(tmpfs[destination] || '').split(',');[0m
+2026-08-02T07:59:44.5947544Z [36;1m    if (!options.length || tokens.some((token) => !(aliases[token] || [token]).some((candidate) => options.includes(candidate)))) process.exit(1);[0m
+2026-08-02T07:59:44.5948297Z [36;1m    if (destination === '/workspace' && options.includes('noexec')) process.exit(1);[0m
+2026-08-02T07:59:44.5948712Z [36;1m  }[0m
+2026-08-02T07:59:44.5948906Z [36;1m  NODE[0m
+2026-08-02T07:59:44.5949119Z [36;1m  docker start "$id" >/dev/null[0m
+2026-08-02T07:59:44.5949413Z [36;1m  is_positive=false[0m
+2026-08-02T07:59:44.5949794Z [36;1m  if test "$name" = "v8-${TASK_ID,,}-positive"; then is_positive=true; fi[0m
+2026-08-02T07:59:44.5950194Z [36;1m  for attempt in $(seq 1 240); do[0m
+2026-08-02T07:59:44.5950577Z [36;1m    running=$(docker inspect "$id" --format '{{.State.Running}}')[0m
+2026-08-02T07:59:44.5950977Z [36;1m    test "$running" = true || break[0m
+2026-08-02T07:59:44.5951516Z [36;1m    if test "$is_positive" = true && docker exec "$id" test -f /workspace/cache-receipt.json 2>/dev/null; then break; fi[0m
+2026-08-02T07:59:44.5952041Z [36;1m    sleep 1[0m
+2026-08-02T07:59:44.5952247Z [36;1m  done[0m
+2026-08-02T07:59:44.5952541Z [36;1m  running=$(docker inspect "$id" --format '{{.State.Running}}')[0m
+2026-08-02T07:59:44.5953338Z [36;1m  if test "$is_positive" = true && test "$running" = true; then[0m
+2026-08-02T07:59:44.5954802Z [36;1m    for file in cache-receipt.json workspace-exec-receipt.json mountinfo.txt workspace-mount.txt cache-mount.txt home-mount.txt tmp-mount.txt vitest-resolved-path.txt vitest-symlink.txt vitest-version.txt runner-probe.txt python-version.txt pytest-version.txt libmagic-library-path.txt libmagic-database-path.txt libmagic-probe.txt; do[0m
+2026-08-02T07:59:44.5956301Z [36;1m      docker exec "$id" cat "/workspace/$file" > "$out/$file" 2>/dev/null || true[0m
+2026-08-02T07:59:44.5956687Z [36;1m    done[0m
+2026-08-02T07:59:44.5956967Z [36;1m    docker exec "$id" sh -c ': > /workspace/.v8-release'[0m
+2026-08-02T07:59:44.5957289Z [36;1m  fi[0m
+2026-08-02T07:59:44.5957511Z [36;1m  for attempt in $(seq 1 30); do[0m
+2026-08-02T07:59:44.5957878Z [36;1m    running=$(docker inspect "$id" --format '{{.State.Running}}')[0m
+2026-08-02T07:59:44.5958260Z [36;1m    test "$running" = true || break[0m
+2026-08-02T07:59:44.5958530Z [36;1m    sleep 1[0m
+2026-08-02T07:59:44.5958741Z [36;1m  done[0m
+2026-08-02T07:59:44.5959176Z [36;1m  rc=$(docker inspect "$id" --format '{{.State.ExitCode}}')[0m
+2026-08-02T07:59:44.5959571Z [36;1m  docker logs "$id" > "$output_file" 2>&1 || true[0m
+2026-08-02T07:59:44.5959896Z [36;1m  printf '%s\n' "$id" > "$id_file"[0m
+2026-08-02T07:59:44.5960182Z [36;1m  docker rm -f "$id" >/dev/null[0m
+2026-08-02T07:59:44.5960442Z [36;1m  return "$rc"[0m
+2026-08-02T07:59:44.5960656Z [36;1m}[0m
+2026-08-02T07:59:44.5960853Z [36;1mpositive_rc=0[0m
+2026-08-02T07:59:44.5961367Z [36;1mrun_container "v8-${TASK_ID,,}-positive" "$cache" "$out/positive-container-id" "$out/positive-output" || positive_rc=$?[0m
+2026-08-02T07:59:44.5961928Z [36;1mtest "$positive_rc" -eq 0[0m
+2026-08-02T07:59:44.5962225Z [36;1mgrep -Fqx PASS "$out/positive-output"[0m
+2026-08-02T07:59:44.5962522Z [36;1mnegative_rc=0[0m
+2026-08-02T07:59:44.5963366Z [36;1mrun_container "v8-${TASK_ID,,}-negative" "$negative_cache" "$out/negative-container-id" "$out/negative-output" || negative_rc=$?[0m
+2026-08-02T07:59:44.5963974Z [36;1mtest "$negative_rc" -eq 42[0m
+2026-08-02T07:59:44.5964329Z [36;1mgrep -Fq DEPENDENCY_CACHE_INCOMPLETE "$out/negative-output"[0m
+2026-08-02T07:59:44.5964721Z [36;1mtest -f "$out/cache-receipt.json"[0m
+2026-08-02T07:59:44.5965465Z [36;1mnode --input-type=module - "$out/cache-receipt.json" "$input/cache-manifest.json" "$input/runtime-image-receipt.json" <<'NODE'[0m
+2026-08-02T07:59:44.5966131Z [36;1mimport { readFileSync, writeFileSync } from 'node:fs';[0m
+2026-08-02T07:59:44.5966584Z [36;1mconst [out, manifestPath, imagePath] = process.argv.slice(2);[0m
+2026-08-02T07:59:44.5967030Z [36;1mconst receipt = JSON.parse(readFileSync(out, 'utf8'));[0m
+2026-08-02T07:59:44.5967484Z [36;1mconst manifest = JSON.parse(readFileSync(manifestPath, 'utf8'));[0m
+2026-08-02T07:59:44.5967946Z [36;1mconst image = JSON.parse(readFileSync(imagePath, 'utf8'));[0m
+2026-08-02T07:59:44.5968307Z [36;1mObject.assign(receipt, {[0m
+2026-08-02T07:59:44.5968602Z [36;1m  negativeCacheMissBlocked: true,[0m
+2026-08-02T07:59:44.5968936Z [36;1m  negativeCode: 'DEPENDENCY_CACHE_INCOMPLETE',[0m
+2026-08-02T07:59:44.5969261Z [36;1m  negativeExitCode: 42,[0m
+2026-08-02T07:59:44.5969540Z [36;1m  cacheSha256: manifest.cacheSha256,[0m
+2026-08-02T07:59:44.5969916Z [36;1m  runtimeImageArchiveSha256: image.imageArchiveSha256,[0m
+2026-08-02T07:59:44.5970278Z [36;1m  runtimeImageId: image.imageId,[0m
+2026-08-02T07:59:44.5970626Z [36;1m  runtimeImageBaseDigest: image.baseImageDigest,[0m
+2026-08-02T07:59:44.5970974Z [36;1m  cacheReadOnlyObserved: true,[0m
+2026-08-02T07:59:44.5971254Z [36;1m  readonlyRootObserved: true,[0m
+2026-08-02T07:59:44.5971533Z [36;1m  nonRootObserved: true,[0m
+2026-08-02T07:59:44.5971792Z [36;1m  measuredNetworkUsed: false,[0m
+2026-08-02T07:59:44.5972069Z [36;1m  cacheBinaryCommitted: false,[0m
+2026-08-02T07:59:44.5972345Z [36;1m  credentialIncluded: false,[0m
+2026-08-02T07:59:44.5972621Z [36;1m  codexIncluded: false,[0m
+2026-08-02T07:59:44.5973166Z [36;1m  hiddenOracleIncluded: false[0m
+2026-08-02T07:59:44.5973445Z [36;1m});[0m
+2026-08-02T07:59:44.5973736Z [36;1mwriteFileSync(out, JSON.stringify(receipt, null, 2) + '\n');[0m
+2026-08-02T07:59:44.5974091Z [36;1mNODE[0m
+2026-08-02T07:59:44.5974488Z [36;1mnode benchmarks/external-oss-v8/tests/v8-schema-validation.mjs "$out/cache-receipt.json"[0m
+2026-08-02T07:59:44.6023768Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+2026-08-02T07:59:44.6024144Z env:
+2026-08-02T07:59:44.6024359Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T07:59:44.6024650Z   EVIDENCE_CLASS: external-observational
+2026-08-02T07:59:44.6024930Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T07:59:44.6025174Z   TASK_ID: TASK-OSS-03
+2026-08-02T07:59:44.6025382Z ##[endgroup]
+2026-08-02T08:00:15.6664555Z /home/runner/work/_temp/8d0fc216-8744-408b-88cb-7c860ad014e9.sh: line 122: syntax error: unexpected end of file
+2026-08-02T08:00:15.6683791Z ##[error]Process completed with exit code 2.
+2026-08-02T08:00:15.6768092Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-02T08:00:15.6769421Z ##[group]Run actions/upload-artifact@v4
+2026-08-02T08:00:15.6769689Z with:
+2026-08-02T08:00:15.6769909Z   name: external-oss-v8-receipt-TASK-OSS-03
+2026-08-02T08:00:15.6770325Z   path: /home/runner/work/_temp/v8-receipts/TASK-OSS-03/
+2026-08-02T08:00:15.6770651Z   if-no-files-found: ignore
+2026-08-02T08:00:15.6770889Z   compression-level: 6
+2026-08-02T08:00:15.6771104Z   overwrite: false
+2026-08-02T08:00:15.6771321Z   include-hidden-files: false
+2026-08-02T08:00:15.6771556Z env:
+2026-08-02T08:00:15.6771748Z   BENCHMARK_ID: GS-OSS-2026-08-02-V8
+2026-08-02T08:00:15.6772035Z   EVIDENCE_CLASS: external-observational
+2026-08-02T08:00:15.6772341Z   V7_SOURCE_RUN_ID: 30732978684
+2026-08-02T08:00:15.6772582Z ##[endgroup]
+2026-08-02T08:00:15.8431491Z (node:2258) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+2026-08-02T08:00:15.8433267Z (Use `node --trace-deprecation ...` to show where the warning was created)
+2026-08-02T08:00:15.8494196Z No files were found with the provided path: /home/runner/work/_temp/v8-receipts/TASK-OSS-03/. No artifacts will be uploaded.
+2026-08-02T08:00:15.8745826Z Node 20 is being deprecated. This workflow is running with Node 24 by default. If you need to temporarily use Node 20, you can set the ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true environment variable. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+2026-08-02T08:00:15.8747105Z Post job cleanup.
+2026-08-02T08:00:15.9634870Z [command]/usr/bin/git version
+2026-08-02T08:00:15.9683658Z git version 2.54.0
+2026-08-02T08:00:15.9761717Z Temporarily overriding HOME='/home/runner/work/_temp/0f7db404-ae6e-4e83-8e5c-e0b797cb2727' before making global git config changes
+2026-08-02T08:00:15.9763723Z Adding repository directory to the temporary git global config as a safe directory
+2026-08-02T08:00:15.9769125Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/governseed/governseed
+2026-08-02T08:00:15.9816252Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+2026-08-02T08:00:15.9858164Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+2026-08-02T08:00:16.0184317Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+2026-08-02T08:00:16.0215837Z http.https://github.com/.extraheader
+2026-08-02T08:00:16.0264593Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+2026-08-02T08:00:16.0282641Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+2026-08-02T08:00:16.0564459Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+2026-08-02T08:00:16.0606225Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+2026-08-02T08:00:16.1095424Z Cleaning up orphan processes
+2026-08-02T08:00:16.1518851Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/download-artifact@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
