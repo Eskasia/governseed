@@ -89,6 +89,10 @@ require(offline.includes('diagnostic_code="$failure_code"'), 'bounded diagnostic
 require(offline.includes('test -r "/cache/$2" || fail DEPENDENCY_CACHE_INCOMPLETE'), 'unreadable cache fails incomplete');
 require(aggregate.includes('READY'), 'aggregate readiness gate');
 require(aggregate.includes('TASK-OSS-01') && aggregate.includes('TASK-OSS-03') && aggregate.includes('TASK-OSS-09'), 'aggregate fixed tasks');
+require(aggregate.includes('pattern: external-oss-v6-receipt-TASK-OSS-*'), 'aggregate downloads all task receipts');
+require(aggregate.includes('path: ${{ runner.temp }}/v6-receipts'), 'aggregate receipt destination');
+require(!aggregate.includes('merge-multiple: true'), 'aggregate preserves per-artifact receipt directories');
+require(aggregate.includes('readdirSync(root,{recursive:true})'), 'aggregate recursively reads separated receipts');
 require(!offline.match(/\b(?:curl|wget|npm|pnpm|uv)\s+(?:install|ci|sync)/iu), 'no offline dependency mutation');
 require(!offline.includes('benchmarks/external-oss-v5/'), 'offline job does not mutate V5 inputs');
 

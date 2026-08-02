@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V6",
+  "gate": "G1",
+  "repairCycle": 2,
+  "baseCommit": "e5b9d66f5b8e6bc1dcca17644e5a17e9e7050375",
+  "branch": "benchmark/v6-offline-permission-fix-r2",
+  "status": "PASS_LOCAL_STATIC",
+  "checks": {
+    "v6Contract": "PASS",
+    "v6Shell": "PASS",
+    "v6PermissionRegression": "PASS",
+    "v6ArtifactLayoutRegression": "PASS",
+    "v6JsonParse": "PASS",
+    "v6YamlParse": "PASS",
+    "bashSyntax": "PASS",
+    "npmRunCheck": "PASS",
+    "npmRunValidate": "PASS",
+    "npmRunTestGovernance": "PASS",
+    "npmRunTestPrivacy": "PASS",
+    "npmRunTestExperimental": "PASS",
+    "npmRunCi": "PASS",
+    "lockfile": "NOT_APPLICABLE_NO_LOCKFILE",
+    "v5Immutability": "PASS",
+    "gitDiffCheck": "PASS"
+  },
+  "artifactLayout": {
+    "downloadMergeMultiple": false,
+    "distinctReceiptPaths": 3,
+    "taskIds": ["TASK-OSS-01", "TASK-OSS-03", "TASK-OSS-09"],
+    "aggregateRecursiveRead": true
+  },
+  "docker": "EXPECTED_NOT_RUN: LOCAL_DOCKER_DAEMON_UNAVAILABLE",
+  "runtimeIntegration": "NOT_RUN_LOCALLY",
+  "claimBoundary": "Repair-2 local/static evidence only; no Docker runtime, cache receipt, aggregate READY, credentials, Codex, hidden oracle, Pilot, scoring, merge, or dispatch claim. Luna execution layer was unavailable for this repair because of account usage limit; independent Sol review remains required."
+}

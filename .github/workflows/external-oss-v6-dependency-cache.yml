@@ -31,6 +31,7 @@ jobs:
         run: |
           node benchmarks/external-oss-v6/tests/v6-contract-validation.mjs
           node benchmarks/external-oss-v6/tests/v6-shell-validation.mjs
+          node benchmarks/external-oss-v6/tests/v6-artifact-layout-regression.mjs
       - name: Reconstruct exact inherited seed identity
         shell: bash
         env:
@@ -398,7 +399,6 @@ jobs:
         with:
           pattern: external-oss-v6-receipt-TASK-OSS-*
           path: ${{ runner.temp }}/v6-receipts
-          merge-multiple: true
       - name: Aggregate exactly three measured caches
         shell: bash
         run: |
