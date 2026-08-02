@@ -61,7 +61,7 @@ jobs:
           git -C "$sealed_root" config user.email benchmark@example.invalid
           git -C "$sealed_root" add --all --force
           if test "$overlay" != "-"; then git -C "$sealed_root" apply --index --include='.vscode/settings.json' --include='design/.DS_Store' "$GITHUB_WORKSPACE/$overlay"; git -C "$sealed_root" add --all --force; fi
-          GIT_AUTHOR_NAME="GovernSeed Benchmark" GIT_AUTHOR_EMAIL=benchmark@example.invalid GIT_COMMITTER_NAME="GovernSeed Benchmark" GIT_COMMITTER_EMAIL=benchmark@example.invalid GIT_AUTHOR_DATE=2026-08-02T00:00:00Z GIT_COMMITTER_DATE=2026-08-02T00:00:00Z git -C "$sealed_root" commit --quiet --message "benchmark seed"
+          GIT_AUTHOR_NAME="GovernSeed Benchmark" GIT_AUTHOR_EMAIL=benchmark@example.invalid GIT_COMMITTER_NAME="GovernSeed Benchmark" GIT_COMMITTER_EMAIL=benchmark@example.invalid GIT_AUTHOR_DATE=2026-08-01T00:00:00Z GIT_COMMITTER_DATE=2026-08-01T00:00:00Z git -C "$sealed_root" commit --quiet --message "benchmark seed"
           actual_commit=$(git -C "$sealed_root" rev-parse HEAD)
           actual_tree=$(git -C "$sealed_root" rev-parse HEAD^{tree})
           actual_hash=$(node benchmarks/external-oss-v5/tests/seed-tree-hash.mjs "$sealed_root")
@@ -145,7 +145,7 @@ jobs:
           git -C "$sealed_root" config user.email benchmark@example.invalid
           git -C "$sealed_root" add --all --force
           if test "$overlay" != "-"; then git -C "$sealed_root" apply --index --include='.vscode/settings.json' --include='design/.DS_Store' "$GITHUB_WORKSPACE/$overlay"; git -C "$sealed_root" add --all --force; fi
-          GIT_AUTHOR_NAME="GovernSeed Benchmark" GIT_AUTHOR_EMAIL=benchmark@example.invalid GIT_COMMITTER_NAME="GovernSeed Benchmark" GIT_COMMITTER_EMAIL=benchmark@example.invalid GIT_AUTHOR_DATE=2026-08-02T00:00:00Z GIT_COMMITTER_DATE=2026-08-02T00:00:00Z git -C "$sealed_root" commit --quiet --message "benchmark seed"
+          GIT_AUTHOR_NAME="GovernSeed Benchmark" GIT_AUTHOR_EMAIL=benchmark@example.invalid GIT_COMMITTER_NAME="GovernSeed Benchmark" GIT_COMMITTER_EMAIL=benchmark@example.invalid GIT_AUTHOR_DATE=2026-08-01T00:00:00Z GIT_COMMITTER_DATE=2026-08-01T00:00:00Z git -C "$sealed_root" commit --quiet --message "benchmark seed"
           actual_commit=$(git -C "$sealed_root" rev-parse HEAD)
           actual_tree=$(git -C "$sealed_root" rev-parse HEAD^{tree})
           actual_hash=$(node benchmarks/external-oss-v5/tests/seed-tree-hash.mjs "$sealed_root")
