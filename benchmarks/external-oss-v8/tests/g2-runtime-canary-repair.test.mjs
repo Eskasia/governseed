@@ -264,7 +264,8 @@ test('the workflow always emits a redacted failure artifact with the required di
 test('the workflow cannot dispatch with the old approval after a binding change', async () => {
   const workflow = await readText(WORKFLOW_PATH);
 
-  assert.match(workflow, /human-approval-repair-2\.template\.json/);
+  assert.match(workflow, /human-approval-repair-2-attempt-3\.template\.json/);
+  assert.match(workflow, /human-approval-repair-2-attempt-3\.addendum\.json/);
   assert.match(workflow, /HUMAN_REAPPROVAL_REQUIRED/);
   assert.match(workflow, /approvedDesignSha256/);
   assert.match(workflow, /approvedProxySha256/);

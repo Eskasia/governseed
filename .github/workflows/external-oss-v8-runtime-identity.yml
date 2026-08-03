@@ -45,8 +45,8 @@ jobs:
           mkdir -p "$run_root"
           chmod 0700 "$run_root"
           printf '%s\n' "RUN_ROOT=$run_root" >> "$GITHUB_ENV"
-          printf '%s\n' 'FAILURE_STAGE=initialization' >> "$GITHUB_ENV"
-          printf '%s\n' 'FAILURE_CODE=NOT_STARTED' >> "$GITHUB_ENV"
+          printf '%s\n' 'FAILURE_STAGE=binding-validation' >> "$GITHUB_ENV"
+          printf '%s\n' 'FAILURE_CODE=VALIDATION_IN_PROGRESS' >> "$GITHUB_ENV"
 
       - name: Validate exact image, repaired binding, and pending approval gate
         shell: bash
@@ -76,6 +76,35 @@ jobs:
             process.exit(1);
           };
 
+          const validateReviewPacketTransport = (
+            packet,
+            expected,
+            getTransport = (value) => value?.transport,
+          ) => {
+            const failure = (failureCode) => ({
+              ok: false,
+              failureStage: 'binding-validation',
+              failureCode,
+              providerRequestCount: 0,
+              proxy: 'NOT_STARTED',
+            });
+            try {
+              const transport = getTransport(packet);
+              if (!packet || typeof packet !== 'object' || !transport || typeof transport !== 'object') {
+                return failure('REVIEW_PACKET_TRANSPORT_SHAPE_INVALID');
+              }
+              if (transport.providerResponseValidationPath !== expected.providerResponseValidationPath) {
+                return failure('REVIEW_PACKET_PROVIDER_VALIDATION_PATH_MISMATCH');
+              }
+              if (transport.normalizedResponseSchemaPath !== expected.normalizedResponseSchemaPath) {
+                return failure('REVIEW_PACKET_NORMALIZED_SCHEMA_PATH_MISMATCH');
+              }
+              return { ok: true };
+            } catch {
+              return failure('UNEXPECTED_BINDING_VALIDATION_ERROR');
+            }
+          };
+
           const imageLock = readJson('benchmarks/external-oss-v7/runtime-image/image-lock.json');
           const lockedImage = imageLock.baseImages.node.lockedReference;
           const expectedImage = 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5';
@@ -90,22 +119,29 @@ jobs:
             lockedRuntimeImage: lockedImage,
           }, null, 2) + '\n', { mode: 0o600 });
 
+          try {
           const prep = readJson('benchmarks/external-oss-v8/control/G2/runtime-canary-prep/prep.json');
           const designPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/design.json';
           const proxyPath = 'experimental/governance-impact/lib/credential-proxy.mjs';
           const providerResponseValidationPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json';
           const providerResponseValidationSourcePath = 'experimental/governance-impact/lib/provider-response-validation.mjs';
           const normalizedResponseSchemaPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json';
-          const pendingPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.template.json';
-          const approvedPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.json';
+          const reviewPacketPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-3/review-packet.json';
+          const pendingPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-3.template.json';
+          const addendumPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-3.addendum.json';
+          const approvedPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-3.json';
           const oldApproval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.json');
+          const previousApproval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.json');
           const pending = readJson(pendingPath);
+          const addendum = readJson(addendumPath);
           const approved = existsSync(path.join(root, approvedPath))
             ? readJson(approvedPath)
             : null;
-          const packet = readJson('benchmarks/external-oss-v8/credential-transport/repair-2/review-packet.json');
+          const packet = readJson(reviewPacketPath);
           const currentDesignSha256 = sha256(designPath);
           const currentProxySha256 = sha256(proxyPath);
+          const currentWorkflowSha256 = sha256('.github/workflows/external-oss-v8-runtime-identity.yml');
+          const currentReviewPacketSha256 = sha256(reviewPacketPath);
           const expectedArtifactPaths = {
             designPath,
             requestSchemaPath: 'benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json',
@@ -151,6 +187,31 @@ jobs:
           const providerResponseValidation = readJson(providerResponseValidationPath);
           const normalizedResponseSchema = readJson(normalizedResponseSchemaPath);
           const receiptPath = 'benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.json';
+          const bindingResult = validateReviewPacketTransport(packet, {
+            providerResponseValidationPath,
+            normalizedResponseSchemaPath,
+          });
+          if (!bindingResult.ok) {
+            setFailure(bindingResult.failureStage, bindingResult.failureCode, {
+              runtimeImageDigestMatch: true,
+              providerRequestCount: 0,
+              proxy: 'NOT_STARTED',
+            });
+          }
+          let reviewedHeadIsAncestor = false;
+          let reviewedTreeMatches = false;
+          if (/^[0-9a-f]{40}$/u.test(addendum.reviewedTechnicalHead || '')
+            && /^[0-9a-f]{40}$/u.test(addendum.reviewedTreeSha || '')) {
+            try {
+              execFileSync('git', ['merge-base', '--is-ancestor', addendum.reviewedTechnicalHead, actualCommit], { stdio: 'ignore' });
+              reviewedHeadIsAncestor = true;
+              reviewedTreeMatches = execFileSync('git', ['rev-parse', `${addendum.reviewedTechnicalHead}^{tree}`], { encoding: 'utf8' }).trim()
+                === addendum.reviewedTreeSha;
+            } catch {
+              reviewedHeadIsAncestor = false;
+              reviewedTreeMatches = false;
+            }
+          }
           const structuralChecks = [
             actualCommit === process.env.GITHUB_SHA,
             parentIsAncestor,
@@ -163,6 +224,8 @@ jobs:
             prep.timeoutMs === 30000,
             prep.canaryInput === 'Return exactly the JSON object {"runtime_canary":"PASS"}.',
             packet.transport.fixedInput === 'Return exactly the JSON object {"runtime_canary":"PASS"}.',
+            packet.transport.providerResponseValidationPath === providerResponseValidationPath,
+            packet.transport.normalizedResponseSchemaPath === normalizedResponseSchemaPath,
             providerResponseValidation.modelId === 'gpt-5.6-luna',
             providerResponseValidation.additionalTopLevelFieldsAllowed === true,
             normalizedResponseSchema.additionalProperties === false,
@@ -179,13 +242,32 @@ jobs:
             oldApproval.approvedModelId === 'gpt-5.6-luna',
             oldApproval.approvedDesignSha256 !== currentDesignSha256,
             oldApproval.approvedProxySha256 !== currentProxySha256,
+            previousApproval.approvalStatus === 'APPROVED',
+            previousApproval.approvedModelId === 'gpt-5.6-luna',
+            previousApproval.approvedDesignSha256 === currentDesignSha256,
+            previousApproval.approvedProxySha256 === currentProxySha256,
             pending.approvalStatus === 'PENDING_HUMAN_REVIEW',
             pending.approvedDesignSha256 === currentDesignSha256,
             pending.approvedProxySha256 === currentProxySha256,
-            packet.responseContract.providerValidationPath === providerResponseValidationPath,
-            packet.responseContract.normalizedSchemaPath === normalizedResponseSchemaPath,
+            addendum.approvalStatus === 'PENDING_HUMAN_REVIEW',
+            addendum.reviewPacketPath === reviewPacketPath,
+            addendum.workflowPath === '.github/workflows/external-oss-v8-runtime-identity.yml',
+            addendum.approvedModelId === 'gpt-5.6-luna',
+            addendum.aliasAllowed === false,
+            addendum.fallbackAllowed === false,
+            addendum.newBindingHashes.workflowSha256 === currentWorkflowSha256,
+            addendum.newBindingHashes.reviewPacketSha256 === currentReviewPacketSha256,
+            addendum.inheritedHashes.designSha256 === currentDesignSha256,
+            addendum.inheritedHashes.proxySourceSha256 === currentProxySha256,
+            addendum.inheritedHashes.requestSchemaSha256 === packet.hashes.requestSchemaSha256,
+            addendum.inheritedHashes.responseSchemaSha256 === packet.hashes.responseSchemaSha256,
+            addendum.inheritedHashes.providerResponseValidationSha256 === packet.hashes.providerResponseValidationSha256,
+            addendum.inheritedHashes.normalizedResponseSchemaSha256 === packet.hashes.normalizedResponseSchemaSha256,
+            reviewedHeadIsAncestor,
+            reviewedTreeMatches,
             packet.hashes.designSha256 === currentDesignSha256,
             packet.hashes.proxySourceSha256 === currentProxySha256,
+            packet.hashes.workflowSha256 === currentWorkflowSha256,
             packetPathsMatch,
             packetHashesMatch,
           ];
@@ -211,6 +293,13 @@ jobs:
               oldApprovalAppliesTo: 'repair-1 hashes only',
               pendingApprovalTemplate: pendingPath,
               approvedApprovalRecord: approvedPath,
+            });
+          }
+          } catch {
+            setFailure('binding-validation', 'UNEXPECTED_BINDING_VALIDATION_ERROR', {
+              runtimeImageDigestMatch: true,
+              providerRequestCount: 0,
+              proxy: 'NOT_STARTED',
             });
           }
           NODE
@@ -491,8 +580,8 @@ jobs:
             schemaVersion: 1,
             workflowRunId: process.env.GITHUB_RUN_ID,
             mainCommitSha: process.env.GITHUB_SHA,
-            failureStage: process.env.FAILURE_STAGE || 'unknown',
-            failureCode: process.env.FAILURE_CODE || 'UNSPECIFIED_FAILURE',
+            failureStage: diagnostic.failureStage || process.env.FAILURE_STAGE || 'unknown',
+            failureCode: diagnostic.failureCode || process.env.FAILURE_CODE || 'UNSPECIFIED_FAILURE',
             providerRequestCount: Number.isSafeInteger(proxy.providerRequestCount) ? proxy.providerRequestCount : 0,
             runtimeImage: process.env.RUNTIME_IMAGE || null,
             runtimeImageDigestMatch: diagnostic.runtimeImageDigestMatch === true,

@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "workflowRunId": "30814159615",
+  "mainCommitSha": "9511e3e038e3ae29bb446991127c70d423a1b456",
+  "failureStage": "initialization",
+  "failureCode": "NOT_STARTED",
+  "providerRequestCount": 0,
+  "runtimeImage": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+  "runtimeImageDigestMatch": true,
+  "nodePathProbe": {
+    "path": "NOT_RUN",
+    "version": "NOT_RUN"
+  },
+  "containerUidGid": "NOT_OBSERVED",
+  "socketUidGid": "NOT_OBSERVED",
+  "socketMode": "NOT_OBSERVED",
+  "credentialNamesObserved": []
+}
