@@ -17,6 +17,10 @@ const PACKET_PATH = path.join(ATTEMPT_4_ROOT, 'review-packet.json');
 const TEMPLATE_PATH = path.join(CREDENTIAL_ROOT, 'human-approval-repair-2-attempt-4.template.json');
 const ADDENDUM_PATH = path.join(CREDENTIAL_ROOT, 'human-approval-repair-2-attempt-4.addendum.json');
 const APPROVED_ATTEMPT_4_PATH = path.join(CREDENTIAL_ROOT, 'human-approval-repair-2-attempt-4.json');
+const APPROVED_ATTEMPT_4_SOURCE_PATH = path.join(
+  CREDENTIAL_ROOT,
+  'human-approval-repair-2-attempt-4-source.json',
+);
 const RUN_ROOT = path.join(
   ROOT,
   'benchmarks',
@@ -47,9 +51,16 @@ const TECHNICAL_MANIFEST_SHA256 = 'c4610bb68f5ddec2b143cf174ce1defcebe57f36a57c7
 const TECHNICAL_HEAD = '19e0b086dc31e31a308fc3a2d39bc5cf4e78b8c0';
 const TECHNICAL_TREE = '6b586424d3d6d9560c7d3fe915079203e7fa1175';
 const SQUASHED_MAIN = '00cd4d80a550bbae150248c52b4ff5faf68ac351';
+const FINAL_EVIDENCE_HEAD = '1ca27e4df9d1c31dc7266e44935100f091203c74';
 const PREVIOUS_TECHNICAL_HEAD = 'e043ae4af346d0db63b3edf163bf5ac7c7ccb31a';
 const ATTEMPT_3_APPROVAL_SHA256 = '5f407e693dbf073b68d3992b22d220999a4960b72dcf4104d4eef177ee37a59a';
 const ATTEMPT_3_SOURCE_SHA256 = '0cdd1244f2ce4127223e2665505d4f94600238f65031a2f8023482967d532de0';
+const APPROVAL_COMMENT_ID = 5170969440;
+const APPROVAL_COMMENT_URL = 'https://github.com/Eskasia/governseed/pull/79#issuecomment-5170969440';
+const APPROVAL_COMMENT_CREATED_AT = '2026-08-03T19:45:40Z';
+const APPROVAL_AT_DECLARED = '2026-08-03T17:29:00Z';
+const ATTEMPT_4_WORKFLOW_SHA256 = '33adf28248f6762bfd64decd1f7a2b6899d6dd3f206d07b70dcbd88d929ba6f1';
+const ATTEMPT_4_REVIEW_PACKET_SHA256 = '7de8be5700ee46df77cdd68fa670b06c0f8990033acd58c0f69c6ca4dfd553d6';
 const INHERITED_HASHES = {
   designSha256: '434da5f42ae9d5752b5db6641557cec6a3893a22988225947458d287d516d995',
   proxySourceSha256: '0d77d9f7d74daffae64d30169755b049aa00f0c9d536c3cb228b755878c57eea',
@@ -330,6 +341,7 @@ test('provider, dispatch, canary, and approval states remain blocked or not run'
   const packet = readJson(PACKET_PATH);
   const addendum = readJson(ADDENDUM_PATH);
   const template = readJson(TEMPLATE_PATH);
+  const approved = readJson(APPROVED_ATTEMPT_4_PATH);
   assert.equal(packet.providerRequests, 0);
   assert.equal(packet.evidence.providerRequests, 0);
   assert.equal(packet.evidence.runtimeCanary, 'NOT_RUN');
@@ -338,7 +350,98 @@ test('provider, dispatch, canary, and approval states remain blocked or not run'
   assert.equal(addendum.workflowDispatch, 'NOT_RUN');
   assert.equal(addendum.runtimeCanary, 'NOT_RUN');
   assert.equal(template.approvalStatus, 'PENDING_HUMAN_REVIEW');
-  assert.equal(existsSync(APPROVED_ATTEMPT_4_PATH), false);
+  assert.equal(approved.approvalStatus, 'APPROVED');
+});
+
+test('attempt-4 GitHub reapproval is recorded with sanitized source evidence', () => {
+  const approval = readJson(APPROVED_ATTEMPT_4_PATH);
+  const source = readJson(APPROVED_ATTEMPT_4_SOURCE_PATH);
+
+  assert.equal(existsSync(APPROVED_ATTEMPT_4_PATH), true);
+  assert.equal(existsSync(APPROVED_ATTEMPT_4_SOURCE_PATH), true);
+  assert.equal(approval.approvalStatus, 'APPROVED');
+  assert.equal(approval.approvedBy, 'Eskasia');
+  assert.equal(approval.approvedAt, source.commentCreatedAt);
+  assert.equal(approval.approvedAt, source.approvalEffectiveAt);
+  assert.equal(approval.approvedAt, APPROVAL_COMMENT_CREATED_AT);
+  assert.equal(approval.approvedAtDeclared, APPROVAL_AT_DECLARED);
+  assert.equal(source.approvedAtDeclared, APPROVAL_AT_DECLARED);
+  assert.notEqual(approval.approvedAt, approval.approvedAtDeclared);
+
+  assert.equal(source.verificationStatus, 'VERIFIED_GITHUB_ISSUE_COMMENT');
+  assert.equal(source.repository, 'Eskasia/governseed');
+  assert.equal(source.pullRequest, 79);
+  assert.equal(source.commentId, APPROVAL_COMMENT_ID);
+  assert.equal(source.commentUrl, APPROVAL_COMMENT_URL);
+  assert.equal(source.commentAuthor, 'Eskasia');
+  assert.equal(source.commentCreatedAt, APPROVAL_COMMENT_CREATED_AT);
+  assert.equal(source.commentUpdatedAt, APPROVAL_COMMENT_CREATED_AT);
+  assert.equal(source.commentBodySha256, 'fda0801d7246926685d25f7d3e5a316b68254d97227a29ebd0f6fdd6387ac3f3');
+  assert.equal(source.credentialPresent, false);
+  assert.equal(source.rawApprovalBodyPersisted, false);
+  assert.equal(Object.hasOwn(source, 'body'), false);
+  assert.equal(Object.hasOwn(source, 'rawBody'), false);
+  assert.equal(Object.hasOwn(source, 'authorization'), false);
+  assert.doesNotMatch(JSON.stringify(source), /sk-[A-Za-z0-9_-]{16,}|Authorization:\s*Bearer/iu);
+
+  assert.equal(approval.approvalEvidence.type, 'github-issue-comment');
+  assert.equal(approval.approvalEvidence.repository, 'Eskasia/governseed');
+  assert.equal(approval.approvalEvidence.pullRequest, 79);
+  assert.equal(approval.approvalEvidence.commentId, APPROVAL_COMMENT_ID);
+  assert.equal(approval.approvalEvidence.commentUrl, APPROVAL_COMMENT_URL);
+  assert.equal(approval.approvalEvidence.commentAuthor, 'Eskasia');
+  assert.equal(approval.approvalEvidence.commentCreatedAt, source.commentCreatedAt);
+  assert.equal(approval.approvalEvidence.approvedAtDeclared, APPROVAL_AT_DECLARED);
+
+  assert.equal(approval.approvedDesignSha256, INHERITED_HASHES.designSha256);
+  assert.equal(approval.approvedProxySha256, INHERITED_HASHES.proxySourceSha256);
+  assert.equal(approval.approvedWorkflowSha256, ATTEMPT_4_WORKFLOW_SHA256);
+  assert.equal(approval.approvedReviewPacketSha256, ATTEMPT_4_REVIEW_PACKET_SHA256);
+  assert.equal(approval.approvedTechnicalManifestSha256, TECHNICAL_MANIFEST_SHA256);
+  assert.equal(approval.approvedTechnicalManifestEntries, 12);
+  assert.equal(approval.approvedModelId, MODEL_ID);
+  assert.equal(approval.aliasAllowed, false);
+  assert.equal(approval.fallbackAllowed, false);
+  assert.equal(approval.limitationsAcknowledged, true);
+
+  assert.deepEqual(source.bodyClaims, {
+    reviewedTechnicalHead: TECHNICAL_HEAD,
+    reviewedTechnicalTreeSha: TECHNICAL_TREE,
+    reviewedEvidenceCandidateHead: 'e88bcc4b3e3cd3f0ac4fe5406c31f0cb4e884931',
+    reviewedEvidenceCandidateTreeSha: '55207c80f9a0e2c5e05fd6aea7b25caf8dd1176b',
+    finalEvidenceHead: FINAL_EVIDENCE_HEAD,
+    workflowSha256: ATTEMPT_4_WORKFLOW_SHA256,
+    reviewPacketSha256: ATTEMPT_4_REVIEW_PACKET_SHA256,
+    technicalManifestSha256: TECHNICAL_MANIFEST_SHA256,
+    technicalManifestEntries: 12,
+    approvedModelId: MODEL_ID,
+    aliasAllowed: false,
+    fallbackAllowed: false,
+    runtimeAncestryRequired: false,
+    limitationsAcknowledged: true,
+  });
+});
+
+test('attempt-4 approval does not alter approved technical or Sol evidence bytes', () => {
+  const technicalPaths = [
+    '.github/workflows/external-oss-v8-runtime-identity.yml',
+    'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-4/technical-manifest.json',
+    'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-4/review-packet.json',
+    'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-4.addendum.json',
+    'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-4.template.json',
+  ];
+  for (const relativePath of technicalPaths) {
+    assert.deepEqual(readFileSync(path.join(ROOT, relativePath)), readGitBlob(FINAL_EVIDENCE_HEAD, relativePath), relativePath);
+  }
+  for (const relativePath of [
+    'benchmarks/external-oss-v8/control/G2/runtime-canary-repair-4/sol-review-evidence.json',
+    'benchmarks/external-oss-v8/control/G2/runtime-canary-repair-4/sol-verdict.json',
+  ]) {
+    assert.deepEqual(readFileSync(path.join(ROOT, relativePath)), readGitBlob(FINAL_EVIDENCE_HEAD, relativePath), relativePath);
+  }
+  assert.equal(sha256File(WORKFLOW_PATH), ATTEMPT_4_WORKFLOW_SHA256);
+  assert.equal(sha256File(PACKET_PATH), ATTEMPT_4_REVIEW_PACKET_SHA256);
+  assert.equal(readJson(MANIFEST_PATH).entries.length, 12);
 });
 
 test('workflow uses named structural checks and never the old anonymous array form', () => {
