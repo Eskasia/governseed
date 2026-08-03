@@ -123,7 +123,7 @@ test('repair-2 packet, schemas, immutable evidence, and source contract are cons
   assert.doesNotMatch(source, /OPENAI_API_KEY|OPENAI_BASE_URL|ANTHROPIC_API_KEY|GITHUB_TOKEN|GH_TOKEN/u);
   assert.doesNotMatch(source, /sk-[A-Za-z0-9]{20,}/u);
   assert.doesNotMatch(source, /Bearer\s+[A-Za-z0-9_-]{32,}/u);
-  assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.json')), false);
+  assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.json')), true);
   assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.json')), false);
   assert.equal(design.modelBinding.modelId, 'gpt-5.6-luna');
   assert.equal(pendingApproval.approvalStatus, 'PENDING_HUMAN_REVIEW');

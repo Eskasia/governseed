@@ -29,6 +29,13 @@ const REPAIR_2_PROVIDER_RESPONSE_VALIDATION_SHA256 = '5b36f410ebc898a34eb2d4e678
 const REPAIR_2_NORMALIZED_RESPONSE_SCHEMA_SHA256 = '5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcce7182c5662c2a08e';
 const REPAIR_2_REVIEW_PACKET_SHA256 = '25021a1855112475fa4508e3ae8862cea756cbcb9f42c12d3a37a790a896ec5d';
 const REPAIR_2_PENDING_TEMPLATE_SHA256 = 'fd5b14e37b8fc41c0f538db3482199624325fbff6f13d9112584dffa0aab5d79';
+const REPAIR_2_APPROVAL_COMMENT_URL = 'https://github.com/Eskasia/governseed/pull/77#issuecomment-5163819162';
+const REPAIR_2_APPROVAL_COMMENT_ID = 5163819162;
+const REPAIR_2_APPROVAL_COMMENT_CREATED_AT = '2026-08-03T08:06:22Z';
+const REPAIR_2_APPROVED_AT = '2026-08-03T08:04:00Z';
+const REPAIR_2_REVIEWED_HEAD = '5c3e63cd427ecb5aa4279c346e136349a32eab28';
+const REPAIR_2_REVIEWED_TREE = '6f2151f833d463d8ee98479f013b39409d8d6bc9';
+const REPAIR_2_FINAL_EVIDENCE_HEAD = '2e83347c007c89a4c5da6ab21daea272b0139a65';
 const REQUEST_SHA256 = 'ef900421bc69efb718952f9204990d656981893afeb9ec77a20e6268df24015e';
 const RESPONSE_SHA256 = 'e0e781bcad97ec7a9a00f84bec593d4926e1b3fda40ec40d43f2d79a38e96556';
 const MERGE_COMMIT = '8b04ef20a19fa4b764a839b2aa8d6e77e64866eb';
@@ -91,6 +98,79 @@ test('formal human approval record is exact and linked to sanitized source evide
   });
   assert.equal(source.credentialPresent, false);
   assert.equal(Object.hasOwn(source, 'body'), false);
+  assert.doesNotMatch(JSON.stringify(source), /sk-[A-Za-z0-9_-]{16,}/u);
+});
+
+test('repair-2 reapproval record is exact and linked to sanitized comment evidence', () => {
+  const approval = readJson(path.join(CREDENTIAL_ROOT, 'human-approval-repair-2.json'));
+  const source = readJson(path.join(CREDENTIAL_ROOT, 'human-approval-repair-2-source.json'));
+
+  assert.deepEqual(approval, {
+    schemaVersion: 1,
+    benchmarkId: BENCHMARK_ID,
+    approvalStatus: 'APPROVED',
+    approvedBy: 'Eskasia',
+    approvedAt: REPAIR_2_APPROVED_AT,
+    approvedDesignSha256: REPAIR_2_DESIGN_SHA256,
+    approvedProxySha256: REPAIR_2_PROXY_SHA256,
+    approvedModelId: MODEL_ID,
+    scope: ['credential-transport', 'runtime-identity-canary', 'v8-pilot'],
+    limitationsAcknowledged: true,
+    approvalEvidence: {
+      type: 'github-comment',
+      reference: REPAIR_2_APPROVAL_COMMENT_URL,
+      commentId: REPAIR_2_APPROVAL_COMMENT_ID,
+      commentAuthor: 'Eskasia',
+      commentCreatedAt: REPAIR_2_APPROVAL_COMMENT_CREATED_AT,
+    },
+  });
+  assert.deepEqual(source, {
+    schemaVersion: 1,
+    benchmarkId: BENCHMARK_ID,
+    gate: 'G2',
+    repair: 'repair-2',
+    attempt: 2,
+    verificationStatus: 'VERIFIED',
+    repository: 'Eskasia/governseed',
+    pullRequest: 77,
+    commentId: REPAIR_2_APPROVAL_COMMENT_ID,
+    commentUrl: REPAIR_2_APPROVAL_COMMENT_URL,
+    commentAuthor: 'Eskasia',
+    commentCreatedAt: REPAIR_2_APPROVAL_COMMENT_CREATED_AT,
+    approvedAtDeclared: REPAIR_2_APPROVED_AT,
+    bodyClaims: {
+      reviewedTechnicalHead: REPAIR_2_REVIEWED_HEAD,
+      reviewedTreeSha: REPAIR_2_REVIEWED_TREE,
+      finalEvidenceHead: REPAIR_2_FINAL_EVIDENCE_HEAD,
+      approvedModelId: MODEL_ID,
+      aliasAllowed: false,
+      fallbackAllowed: false,
+      approvedDesignSha256: REPAIR_2_DESIGN_SHA256,
+      approvedProxySha256: REPAIR_2_PROXY_SHA256,
+      approvedRequestSchemaSha256: REPAIR_2_REQUEST_SHA256,
+      approvedProviderResponseContractSha256: REPAIR_2_PROVIDER_RESPONSE_VALIDATION_SHA256,
+      approvedNormalizedResponseSchemaSha256: REPAIR_2_NORMALIZED_RESPONSE_SCHEMA_SHA256,
+      approvedReviewPacketSha256: REPAIR_2_REVIEW_PACKET_SHA256,
+      runtimeImage: 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5',
+      nodeExecutable: '/usr/local/bin/node',
+      nodeVersion: 'v26.3.0',
+      requestLimit: 1,
+      timeoutMs: 30000,
+      scope: ['credential-transport', 'runtime-identity-canary', 'v8-pilot'],
+      limitationsAcknowledged: true,
+    },
+    credentialPresent: false,
+    rawCommentBodyPersisted: false,
+  });
+  assert.equal(sha256File(path.join(REPAIR_2_ROOT, 'design.json')), source.bodyClaims.approvedDesignSha256);
+  assert.equal(sha256File(path.join(ROOT, 'experimental', 'governance-impact', 'lib', 'credential-proxy.mjs')), source.bodyClaims.approvedProxySha256);
+  assert.equal(sha256File(path.join(REPAIR_2_ROOT, 'request.schema.json')), source.bodyClaims.approvedRequestSchemaSha256);
+  assert.equal(sha256File(path.join(REPAIR_2_ROOT, 'provider-response-validation.json')), source.bodyClaims.approvedProviderResponseContractSha256);
+  assert.equal(sha256File(path.join(REPAIR_2_ROOT, 'normalized-proxy-response.schema.json')), source.bodyClaims.approvedNormalizedResponseSchemaSha256);
+  assert.equal(sha256File(path.join(REPAIR_2_ROOT, 'review-packet.json')), source.bodyClaims.approvedReviewPacketSha256);
+  assert.equal(existsSync(path.join(RUNTIME_ROOT, 'runtime-identity-receipt.json')), false);
+  assert.equal(Object.hasOwn(source, 'body'), false);
+  assert.equal(Object.hasOwn(source, 'authorization'), false);
   assert.doesNotMatch(JSON.stringify(source), /sk-[A-Za-z0-9_-]{16,}/u);
 });
 

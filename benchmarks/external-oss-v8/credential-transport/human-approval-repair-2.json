@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "approvalStatus": "APPROVED",
+  "approvedBy": "Eskasia",
+  "approvedAt": "2026-08-03T08:04:00Z",
+  "approvedDesignSha256": "434da5f42ae9d5752b5db6641557cec6a3893a22988225947458d287d516d995",
+  "approvedProxySha256": "0d77d9f7d74daffae64d30169755b049aa00f0c9d536c3cb228b755878c57eea",
+  "approvedModelId": "gpt-5.6-luna",
+  "scope": [
+    "credential-transport",
+    "runtime-identity-canary",
+    "v8-pilot"
+  ],
+  "limitationsAcknowledged": true,
+  "approvalEvidence": {
+    "type": "github-comment",
+    "reference": "https://github.com/Eskasia/governseed/pull/77#issuecomment-5163819162",
+    "commentId": 5163819162,
+    "commentAuthor": "Eskasia",
+    "commentCreatedAt": "2026-08-03T08:06:22Z"
+  }
+}

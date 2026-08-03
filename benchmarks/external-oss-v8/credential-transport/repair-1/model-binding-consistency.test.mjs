@@ -94,6 +94,6 @@ test('G2 repair-2 model binding is exact and consistent across every active surf
   ]) {
     assert.equal(packet.hashes[field], sha256(relativePath), `hash drift: ${relativePath}`);
   }
-  assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.json')), false);
+  assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.json')), true);
   assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.json')), false);
 });
