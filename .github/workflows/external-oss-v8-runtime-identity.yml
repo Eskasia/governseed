@@ -48,7 +48,7 @@ jobs:
           printf '%s\n' 'FAILURE_STAGE=binding-validation' >> "$GITHUB_ENV"
           printf '%s\n' 'FAILURE_CODE=VALIDATION_IN_PROGRESS' >> "$GITHUB_ENV"
 
-      - name: Validate exact image, repaired binding, and pending approval gate
+      - name: Validate exact image, squash-safe repaired binding, and pending approval gate
         shell: bash
         env:
           RUNTIME_IMAGE: ${{ inputs.runtime_image }}
@@ -110,6 +110,7 @@ jobs:
           const expectedImage = 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5';
           if (lockedImage !== expectedImage || process.env.RUNTIME_IMAGE !== lockedImage) {
             setFailure('image-binding', 'RUNTIME_IMAGE_IDENTITY_MISMATCH', {
+              failedChecks: ['runtimeImageMatches'],
               runtimeImageDigestMatch: false,
               lockedRuntimeImage: lockedImage,
             });
@@ -126,10 +127,11 @@ jobs:
           const providerResponseValidationPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json';
           const providerResponseValidationSourcePath = 'experimental/governance-impact/lib/provider-response-validation.mjs';
           const normalizedResponseSchemaPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json';
-          const reviewPacketPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-3/review-packet.json';
-          const pendingPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-3.template.json';
-          const addendumPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-3.addendum.json';
-          const approvedPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-3.json';
+          const technicalManifestPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-4/technical-manifest.json';
+          const reviewPacketPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-4/review-packet.json';
+          const pendingPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-4.template.json';
+          const addendumPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-4.addendum.json';
+          const approvedPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-4.json';
           const oldApproval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.json');
           const previousApproval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.json');
           const pending = readJson(pendingPath);
@@ -142,6 +144,68 @@ jobs:
           const currentProxySha256 = sha256(proxyPath);
           const currentWorkflowSha256 = sha256('.github/workflows/external-oss-v8-runtime-identity.yml');
           const currentReviewPacketSha256 = sha256(reviewPacketPath);
+          const technicalManifestPaths = [
+            '.github/workflows/external-oss-v8-runtime-identity.yml',
+            'benchmarks/external-oss-v8/control/G2/runtime-canary-prep/canary-client.mjs',
+            'benchmarks/external-oss-v8/credential-transport/repair-2/design.json',
+            'benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json',
+            'benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json',
+            'benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json',
+            'benchmarks/external-oss-v8/credential-transport/repair-2/response.schema.json',
+            'experimental/governance-impact/lib/credential-proxy.mjs',
+            'experimental/governance-impact/lib/oci-proxy-facade.mjs',
+            'experimental/governance-impact/lib/oci-supervisor.mjs',
+            'experimental/governance-impact/lib/provider-response-validation.mjs',
+            'experimental/governance-impact/uds-relay.mjs',
+          ];
+          const canonicalTechnicalManifest = (manifest) => JSON.stringify({
+            schemaVersion: manifest.schemaVersion,
+            benchmarkId: manifest.benchmarkId,
+            gate: manifest.gate,
+            repair: manifest.repair,
+            attempt: manifest.attempt,
+            entries: manifest.entries.map(({ path: entryPath, sha256: entrySha256 }) => ({
+              path: entryPath,
+              sha256: entrySha256,
+            })),
+          });
+          const technicalManifestSha256 = (manifest) => createHash('sha256')
+            .update(canonicalTechnicalManifest(manifest), 'utf8')
+            .digest('hex');
+          const validateTechnicalManifest = (manifest) => {
+            const invalid = (failureCode = 'APPROVED_TECHNICAL_MANIFEST_INVALID') => ({
+              ok: false,
+              failureCode,
+              failedChecks: ['technicalManifestMatches'],
+            });
+            if (!manifest || typeof manifest !== 'object' || Array.isArray(manifest)) return invalid();
+            const manifestKeys = Object.keys(manifest).sort().join('|');
+            if (manifestKeys !== 'attempt|benchmarkId|entries|gate|repair|schemaVersion'
+              || manifest.schemaVersion !== 1
+              || manifest.benchmarkId !== 'GS-OSS-2026-08-02-V8'
+              || manifest.gate !== 'G2'
+              || manifest.repair !== 'repair-2'
+              || manifest.attempt !== 4
+              || !Array.isArray(manifest.entries)
+              || manifest.entries.length !== technicalManifestPaths.length) return invalid();
+            const entries = manifest.entries;
+            const paths = entries.map((entry) => entry?.path);
+            if (paths.some((entryPath, index) => entryPath !== technicalManifestPaths[index])
+              || entries.some((entry) => {
+                if (!entry || typeof entry !== 'object' || Array.isArray(entry)) return true;
+                if (Object.keys(entry).sort().join('|') !== 'path|sha256') return true;
+                return !/^[0-9a-f]{64}$/u.test(entry.sha256);
+              })) return invalid();
+            if (entries.some((entry, index) => index > 0 && entries[index - 1].path >= entry.path)) return invalid();
+            let currentFilesMatch = true;
+            try {
+              currentFilesMatch = entries.every((entry) => sha256(entry.path) === entry.sha256);
+            } catch {
+              currentFilesMatch = false;
+            }
+            if (!currentFilesMatch) return invalid('CURRENT_TECHNICAL_MANIFEST_MISMATCH');
+            return { ok: true, canonicalSha256: technicalManifestSha256(manifest) };
+          };
           const expectedArtifactPaths = {
             designPath,
             requestSchemaPath: 'benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json',
@@ -187,92 +251,93 @@ jobs:
           const providerResponseValidation = readJson(providerResponseValidationPath);
           const normalizedResponseSchema = readJson(normalizedResponseSchemaPath);
           const receiptPath = 'benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.json';
+          const manifest = readJson(technicalManifestPath);
+          const manifestResult = validateTechnicalManifest(manifest);
+          if (!manifestResult.ok) {
+            setFailure('binding-validation', manifestResult.failureCode, {
+              failedChecks: manifestResult.failedChecks,
+              runtimeImageDigestMatch: true,
+              providerRequestCount: 0,
+              proxy: 'NOT_STARTED',
+            });
+          }
+          const currentTechnicalManifestSha256 = manifestResult.canonicalSha256;
           const bindingResult = validateReviewPacketTransport(packet, {
             providerResponseValidationPath,
             normalizedResponseSchemaPath,
           });
           if (!bindingResult.ok) {
             setFailure(bindingResult.failureStage, bindingResult.failureCode, {
+              failedChecks: ['responseContractMatches'],
               runtimeImageDigestMatch: true,
               providerRequestCount: 0,
               proxy: 'NOT_STARTED',
             });
           }
-          let reviewedHeadIsAncestor = false;
-          let reviewedTreeMatches = false;
-          if (/^[0-9a-f]{40}$/u.test(addendum.reviewedTechnicalHead || '')
-            && /^[0-9a-f]{40}$/u.test(addendum.reviewedTreeSha || '')) {
-            try {
-              execFileSync('git', ['merge-base', '--is-ancestor', addendum.reviewedTechnicalHead, actualCommit], { stdio: 'ignore' });
-              reviewedHeadIsAncestor = true;
-              reviewedTreeMatches = execFileSync('git', ['rev-parse', `${addendum.reviewedTechnicalHead}^{tree}`], { encoding: 'utf8' }).trim()
-                === addendum.reviewedTreeSha;
-            } catch {
-              reviewedHeadIsAncestor = false;
-              reviewedTreeMatches = false;
-            }
-          }
-          const structuralChecks = [
-            actualCommit === process.env.GITHUB_SHA,
-            parentIsAncestor,
-            prep.modelBinding.provider === 'OpenAI',
-            prep.modelBinding.modelId === 'gpt-5.6-luna',
-            prep.modelBinding.aliasAllowed === false,
-            prep.modelBinding.fallbackAllowed === false,
-            prep.endpoint === 'https://api.openai.com/v1/responses',
-            prep.requestLimit === 1,
-            prep.timeoutMs === 30000,
-            prep.canaryInput === 'Return exactly the JSON object {"runtime_canary":"PASS"}.',
-            packet.transport.fixedInput === 'Return exactly the JSON object {"runtime_canary":"PASS"}.',
-            packet.transport.providerResponseValidationPath === providerResponseValidationPath,
-            packet.transport.normalizedResponseSchemaPath === normalizedResponseSchemaPath,
-            providerResponseValidation.modelId === 'gpt-5.6-luna',
-            providerResponseValidation.additionalTopLevelFieldsAllowed === true,
-            normalizedResponseSchema.additionalProperties === false,
-            JSON.stringify(normalizedResponseSchema.required) === JSON.stringify(['model', 'output_text', 'usage']),
-            prep.providerRequests === 0,
-            prep.runtimeCanary === 'NOT_RUN',
-            prep.pilotIncluded === false,
-            prep.g3Started === false,
-            prep.runtimeImage.lockedReference === lockedImage,
-            prep.runtimeImage.executablePath === '/usr/local/bin/node',
-            prep.runtimeImage.version === 'v26.3.0',
-            canarySchema.properties.runtime_canary.const === 'PASS',
-            existsSync(path.join(root, receiptPath)) === false,
-            oldApproval.approvedModelId === 'gpt-5.6-luna',
-            oldApproval.approvedDesignSha256 !== currentDesignSha256,
-            oldApproval.approvedProxySha256 !== currentProxySha256,
-            previousApproval.approvalStatus === 'APPROVED',
-            previousApproval.approvedModelId === 'gpt-5.6-luna',
-            previousApproval.approvedDesignSha256 === currentDesignSha256,
-            previousApproval.approvedProxySha256 === currentProxySha256,
-            pending.approvalStatus === 'PENDING_HUMAN_REVIEW',
-            pending.approvedDesignSha256 === currentDesignSha256,
-            pending.approvedProxySha256 === currentProxySha256,
-            addendum.approvalStatus === 'PENDING_HUMAN_REVIEW',
-            addendum.reviewPacketPath === reviewPacketPath,
-            addendum.workflowPath === '.github/workflows/external-oss-v8-runtime-identity.yml',
-            addendum.approvedModelId === 'gpt-5.6-luna',
-            addendum.aliasAllowed === false,
-            addendum.fallbackAllowed === false,
-            addendum.newBindingHashes.workflowSha256 === currentWorkflowSha256,
-            addendum.newBindingHashes.reviewPacketSha256 === currentReviewPacketSha256,
-            addendum.inheritedHashes.designSha256 === currentDesignSha256,
-            addendum.inheritedHashes.proxySourceSha256 === currentProxySha256,
-            addendum.inheritedHashes.requestSchemaSha256 === packet.hashes.requestSchemaSha256,
-            addendum.inheritedHashes.responseSchemaSha256 === packet.hashes.responseSchemaSha256,
-            addendum.inheritedHashes.providerResponseValidationSha256 === packet.hashes.providerResponseValidationSha256,
-            addendum.inheritedHashes.normalizedResponseSchemaSha256 === packet.hashes.normalizedResponseSchemaSha256,
-            reviewedHeadIsAncestor,
-            reviewedTreeMatches,
-            packet.hashes.designSha256 === currentDesignSha256,
-            packet.hashes.proxySourceSha256 === currentProxySha256,
-            packet.hashes.workflowSha256 === currentWorkflowSha256,
-            packetPathsMatch,
-            packetHashesMatch,
-          ];
-          if (structuralChecks.includes(false)) {
+          const structuralChecks = {
+            githubShaMatches: actualCommit === process.env.GITHUB_SHA,
+            parentMainIsAncestor: parentIsAncestor,
+            modelBindingMatches: prep.modelBinding.provider === 'OpenAI'
+              && prep.modelBinding.modelId === 'gpt-5.6-luna'
+              && prep.modelBinding.aliasAllowed === false
+              && prep.modelBinding.fallbackAllowed === false,
+            requestTransportMatches: prep.endpoint === 'https://api.openai.com/v1/responses'
+              && prep.requestLimit === 1
+              && prep.timeoutMs === 30000
+              && prep.canaryInput === 'Return exactly the JSON object {"runtime_canary":"PASS"}.'
+              && packet.transport.fixedInput === 'Return exactly the JSON object {"runtime_canary":"PASS"}.',
+            responseContractMatches: packet.transport.providerResponseValidationPath === providerResponseValidationPath
+              && packet.transport.normalizedResponseSchemaPath === normalizedResponseSchemaPath
+              && providerResponseValidation.modelId === 'gpt-5.6-luna'
+              && providerResponseValidation.additionalTopLevelFieldsAllowed === true
+              && normalizedResponseSchema.additionalProperties === false
+              && JSON.stringify(normalizedResponseSchema.required) === JSON.stringify(['model', 'output_text', 'usage'])
+              && canarySchema.properties.runtime_canary.const === 'PASS',
+            technicalManifestMatches: packet.technicalManifestPath === technicalManifestPath
+              && packet.technicalManifestSha256 === currentTechnicalManifestSha256
+              && addendum.technicalManifestPath === technicalManifestPath
+              && addendum.technicalManifestSha256 === currentTechnicalManifestSha256,
+            workflowHashMatches: packet.hashes.workflowSha256 === currentWorkflowSha256
+              && addendum.newBindingHashes.workflowSha256 === currentWorkflowSha256,
+            reviewPacketHashMatches: addendum.newBindingHashes.reviewPacketSha256 === currentReviewPacketSha256,
+            humanApprovalMatches: pending.approvalStatus === 'PENDING_HUMAN_REVIEW'
+              && pending.approvedDesignSha256 === currentDesignSha256
+              && pending.approvedProxySha256 === currentProxySha256
+              && addendum.approvalStatus === 'PENDING_HUMAN_REVIEW'
+              && addendum.reviewPacketPath === reviewPacketPath
+              && addendum.workflowPath === '.github/workflows/external-oss-v8-runtime-identity.yml'
+              && addendum.approvedModelId === 'gpt-5.6-luna'
+              && addendum.aliasAllowed === false
+              && addendum.fallbackAllowed === false,
+            runtimeImageMatches: prep.runtimeImage.lockedReference === lockedImage
+              && prep.runtimeImage.executablePath === '/usr/local/bin/node'
+              && prep.runtimeImage.version === 'v26.3.0',
+            providerFreeStateMatches: prep.providerRequests === 0
+              && prep.runtimeCanary === 'NOT_RUN'
+              && prep.pilotIncluded === false
+              && prep.g3Started === false,
+            receiptAbsent: existsSync(path.join(root, receiptPath)) === false,
+            packetArtifactPathsMatch: packetPathsMatch,
+            packetArtifactHashesMatch: packetHashesMatch,
+            inheritedApprovalHashesMatch: oldApproval.approvedModelId === 'gpt-5.6-luna'
+              && oldApproval.approvedDesignSha256 !== currentDesignSha256
+              && oldApproval.approvedProxySha256 !== currentProxySha256
+              && previousApproval.approvalStatus === 'APPROVED'
+              && previousApproval.approvedModelId === 'gpt-5.6-luna'
+              && previousApproval.approvedDesignSha256 === currentDesignSha256
+              && previousApproval.approvedProxySha256 === currentProxySha256
+              && addendum.inheritedHashes.designSha256 === currentDesignSha256
+              && addendum.inheritedHashes.proxySourceSha256 === currentProxySha256
+              && addendum.inheritedHashes.requestSchemaSha256 === packet.hashes.requestSchemaSha256
+              && addendum.inheritedHashes.responseSchemaSha256 === packet.hashes.responseSchemaSha256
+              && addendum.inheritedHashes.providerResponseValidationSha256 === packet.hashes.providerResponseValidationSha256
+              && addendum.inheritedHashes.normalizedResponseSchemaSha256 === packet.hashes.normalizedResponseSchemaSha256,
+          };
+          if (Object.values(structuralChecks).includes(false)) {
             setFailure('binding-validation', 'REPAIRED_BINDING_INVALID', {
+              failedChecks: Object.entries(structuralChecks)
+                .filter(([, passed]) => !passed)
+                .map(([name]) => name),
               runtimeImageDigestMatch: true,
               currentDesignSha256,
               currentProxySha256,
@@ -287,6 +352,7 @@ jobs:
             || approved.approvedProxySha256 !== currentProxySha256
           ) {
             setFailure('human-approval', 'HUMAN_REAPPROVAL_REQUIRED', {
+              failedChecks: ['humanApprovalMatches'],
               runtimeImageDigestMatch: true,
               currentDesignSha256,
               currentProxySha256,
@@ -297,6 +363,7 @@ jobs:
           }
           } catch {
             setFailure('binding-validation', 'UNEXPECTED_BINDING_VALIDATION_ERROR', {
+              failedChecks: ['bindingValidationExecution'],
               runtimeImageDigestMatch: true,
               providerRequestCount: 0,
               proxy: 'NOT_STARTED',
@@ -576,12 +643,34 @@ jobs:
           const socket = readJson('uds-evidence.json', {});
           const client = readJson('container.stdout', {});
           const proxy = readJson('proxy-receipt.json', {});
+          const allowedFailedChecks = new Set([
+            'githubShaMatches',
+            'parentMainIsAncestor',
+            'modelBindingMatches',
+            'requestTransportMatches',
+            'responseContractMatches',
+            'technicalManifestMatches',
+            'workflowHashMatches',
+            'reviewPacketHashMatches',
+            'humanApprovalMatches',
+            'runtimeImageMatches',
+            'providerFreeStateMatches',
+            'receiptAbsent',
+            'packetArtifactPathsMatch',
+            'packetArtifactHashesMatch',
+            'inheritedApprovalHashesMatch',
+            'bindingValidationExecution',
+          ]);
+          const failedChecks = Array.isArray(diagnostic.failedChecks)
+            ? [...new Set(diagnostic.failedChecks.filter((name) => allowedFailedChecks.has(name)))]
+            : [];
           const failure = {
             schemaVersion: 1,
             workflowRunId: process.env.GITHUB_RUN_ID,
             mainCommitSha: process.env.GITHUB_SHA,
             failureStage: diagnostic.failureStage || process.env.FAILURE_STAGE || 'unknown',
             failureCode: diagnostic.failureCode || process.env.FAILURE_CODE || 'UNSPECIFIED_FAILURE',
+            failedChecks,
             providerRequestCount: Number.isSafeInteger(proxy.providerRequestCount) ? proxy.providerRequestCount : 0,
             runtimeImage: process.env.RUNTIME_IMAGE || null,
             runtimeImageDigestMatch: diagnostic.runtimeImageDigestMatch === true,
