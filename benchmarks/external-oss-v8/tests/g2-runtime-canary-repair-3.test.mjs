@@ -45,6 +45,7 @@ const RESPONSE_SCHEMA_SHA256 = '5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcc
 const PROVIDER_RESPONSE_SHA256 = '5b36f410ebc898a34eb2d4e67814441c78d5331e1d0764750aeb98c9bfb7f528';
 const NORMALIZED_RESPONSE_SHA256 = '5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcce7182c5662c2a08e';
 const OLD_WORKFLOW_SHA256 = '83bef779f31c271e40543fe40e9763f2a3321e69930f9c1ac4cd5fe5a6c02f26';
+const ATTEMPT_3_WORKFLOW_SHA256 = '91d71cf39ddab0e5501100d79fcb20769dfea4364d5f0a9c026b62c41132e8a0';
 const OLD_PACKET_SHA256 = '25021a1855112475fa4508e3ae8862cea756cbcb9f42c12d3a37a790a896ec5d';
 const OLD_APPROVAL_SHA256 = '0bd0869949786ba80e16c048b9275acf0d9328046b529a3ad793af9fa0852de0';
 const FAILURE_ARTIFACT_SHA256 = 'b48107fd16de3e38af3596db568b61b5e51aee17ded255400014b738b26b32fe';
@@ -177,7 +178,8 @@ test('repair-3 packet and pending addendum bind the new workflow with the approv
   assert.equal(packet.hashes.responseSchemaSha256, RESPONSE_SCHEMA_SHA256);
   assert.equal(packet.hashes.providerResponseValidationSha256, PROVIDER_RESPONSE_SHA256);
   assert.equal(packet.hashes.normalizedResponseSchemaSha256, NORMALIZED_RESPONSE_SHA256);
-  assert.equal(packet.hashes.workflowSha256, sha256File(WORKFLOW_PATH));
+  assert.equal(packet.hashes.workflowSha256, ATTEMPT_3_WORKFLOW_SHA256);
+  assert.notEqual(sha256File(WORKFLOW_PATH), ATTEMPT_3_WORKFLOW_SHA256);
   assert.equal(packet.humanApproval.status, 'PENDING_HUMAN_REVIEW');
   assert.equal(packet.humanApproval.templatePath, 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-3.template.json');
   assert.equal(packet.humanApproval.addendumPath, 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-3.addendum.json');
@@ -187,7 +189,7 @@ test('repair-3 packet and pending addendum bind the new workflow with the approv
   assert.equal(addendum.approvedModelId, MODEL_ID);
   assert.equal(addendum.aliasAllowed, false);
   assert.equal(addendum.fallbackAllowed, false);
-  assert.equal(addendum.newBindingHashes.workflowSha256, sha256File(WORKFLOW_PATH));
+  assert.equal(addendum.newBindingHashes.workflowSha256, ATTEMPT_3_WORKFLOW_SHA256);
   assert.equal(addendum.newBindingHashes.reviewPacketSha256, sha256File(ATTEMPT_3_PACKET_PATH));
   assert.equal(addendum.inheritedHashes.designSha256, DESIGN_SHA256);
   assert.equal(addendum.inheritedHashes.proxySourceSha256, PROXY_SHA256);
