@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "runtime-canary-repair-3",
+  "reviewStatus": "ACCEPT",
+  "reviewer": {
+    "agent": "Sol",
+    "model": "gpt-5.6-sol",
+    "role": "independent read-only technical reviewer"
+  },
+  "reviewedTechnicalHead": "e043ae4af346d0db63b3edf163bf5ac7c7ccb31a",
+  "reviewedTechnicalTreeSha": "36c6b05d9ce6e3b835b72b2db3489f201c7659fa",
+  "reviewedEvidenceHead": "c978807f6258b1f1e47c8460e1b06da9a2632e99",
+  "reviewedEvidenceTreeSha": "016c435b45fac9af39da79b082002f105305674a",
+  "workflowSha256": "91d71cf39ddab0e5501100d79fcb20769dfea4364d5f0a9c026b62c41132e8a0",
+  "reviewPacketSha256": "c2d65e676901e73e44dd31188c231c2d956c053604b72dc4891af7f384210f86",
+  "remainingTechnicalBlockers": 0,
+  "providerRequests": 0,
+  "workflowDispatch": "NOT_RUN",
+  "runtimeCanary": "NOT_RUN",
+  "humanApproval": "PENDING_HUMAN_REVIEW",
+  "failedRun": {
+    "runId": 30814159615,
+    "providerRequests": 0,
+    "proxy": "NOT_STARTED",
+    "runtimeCanary": "NOT_RUN",
+    "failureArtifactSha256": "b48107fd16de3e38af3596db568b61b5e51aee17ded255400014b738b26b32fe"
+  },
+  "prAtCandidateReview": {
+    "number": 78,
+    "state": "OPEN",
+    "merged": false,
+    "headSha": "7dd1eaa3e3f70de0597bfa84e94e52b195e7cce9"
+  },
+  "credentialValuesPersisted": false,
+  "rawReviewReasoningPersisted": false
+}
