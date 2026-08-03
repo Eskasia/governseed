@@ -18,6 +18,7 @@ const ATTEMPT_3_PACKET_PATH = path.join(ATTEMPT_3_ROOT, 'review-packet.json');
 const PENDING_TEMPLATE_PATH = path.join(CREDENTIAL_ROOT, 'human-approval-repair-2-attempt-3.template.json');
 const ADDENDUM_PATH = path.join(CREDENTIAL_ROOT, 'human-approval-repair-2-attempt-3.addendum.json');
 const APPROVED_ATTEMPT_3_PATH = path.join(CREDENTIAL_ROOT, 'human-approval-repair-2-attempt-3.json');
+const APPROVED_ATTEMPT_3_SOURCE_PATH = path.join(CREDENTIAL_ROOT, 'human-approval-repair-2-attempt-3-source.json');
 const OLD_APPROVAL_PATH = path.join(CREDENTIAL_ROOT, 'human-approval-repair-2.json');
 const RUN_EVIDENCE_ROOT = path.join(
   ROOT,
@@ -152,10 +153,12 @@ test('unexpected transport binding errors become redacted fail-closed diagnostic
   });
 });
 
-test('repair-3 packet and pending addendum bind the new workflow without creating approval', () => {
+test('repair-3 packet and pending addendum bind the new workflow with the approved manual record', () => {
   const packet = readJson(ATTEMPT_3_PACKET_PATH);
   const addendum = readJson(ADDENDUM_PATH);
   const pending = readJson(PENDING_TEMPLATE_PATH);
+  const approved = readJson(APPROVED_ATTEMPT_3_PATH);
+  const source = readJson(APPROVED_ATTEMPT_3_SOURCE_PATH);
 
   assert.equal(packet.benchmarkId, BENCHMARK_ID);
   assert.equal(packet.attempt, 3);
@@ -198,7 +201,65 @@ test('repair-3 packet and pending addendum bind the new workflow without creatin
     execFileSync('git', ['rev-parse', `${addendum.reviewedTechnicalHead}^{tree}`], { encoding: 'utf8' }).trim(),
     addendum.reviewedTreeSha,
   );
-  assert.equal(existsSync(APPROVED_ATTEMPT_3_PATH), false);
+  assert.equal(existsSync(APPROVED_ATTEMPT_3_PATH), true);
+  assert.deepEqual(approved, {
+    schemaVersion: 1,
+    benchmarkId: BENCHMARK_ID,
+    approvalStatus: 'APPROVED',
+    approvedBy: 'Eskasia',
+    approvedAt: '2026-08-03T13:45:00Z',
+    approvedDesignSha256: DESIGN_SHA256,
+    approvedProxySha256: PROXY_SHA256,
+    approvedModelId: MODEL_ID,
+    scope: ['credential-transport', 'runtime-identity-canary', 'v8-pilot'],
+    limitationsAcknowledged: true,
+    approvalEvidence: {
+      type: 'manual-record',
+      reference: 'manual-record:GS-OSS-2026-08-02-V8:G2:runtime-canary-repair-3:2026-08-03T13:45:00Z',
+      commentId: 20260803134500,
+      commentAuthor: 'Eskasia',
+      commentCreatedAt: '2026-08-03T13:45:00Z',
+    },
+  });
+  assert.equal(source.verificationStatus, 'VERIFIED_MANUAL_RECORD');
+  assert.equal(source.repository, 'Eskasia/governseed');
+  assert.equal(source.pullRequest, 78);
+  assert.equal(source.manualRecordId, 20260803134500);
+  assert.equal(source.recordAuthor, 'Eskasia');
+  assert.equal(source.recordCreatedAt, '2026-08-03T13:45:00Z');
+  assert.equal(source.approvedAtDeclared, '2026-08-03T13:45:00Z');
+  assert.deepEqual(source.bodyClaims, {
+    reviewedTechnicalHead: 'e043ae4af346d0db63b3edf163bf5ac7c7ccb31a',
+    reviewedTechnicalTreeSha: '36c6b05d9ce6e3b835b72b2db3489f201c7659fa',
+    reviewedEvidenceCandidateHead: 'c978807f6258b1f1e47c8460e1b06da9a2632e99',
+    reviewedEvidenceCandidateTreeSha: '016c435b45fac9af39da79b082002f105305674a',
+    finalEvidenceHead: '91483fc4022997227347b6215cc251a7f701ef5b',
+    approvedWorkflowSha256: '91d71cf39ddab0e5501100d79fcb20769dfea4364d5f0a9c026b62c41132e8a0',
+    approvedReviewPacketSha256: 'c2d65e676901e73e44dd31188c231c2d956c053604b72dc4891af7f384210f86',
+    approvedModelId: MODEL_ID,
+    aliasAllowed: false,
+    fallbackAllowed: false,
+    designSha256: DESIGN_SHA256,
+    proxySha256: PROXY_SHA256,
+    requestSchemaSha256: REQUEST_SCHEMA_SHA256,
+    responseSchemaSha256: RESPONSE_SCHEMA_SHA256,
+    providerResponseContractSha256: PROVIDER_RESPONSE_SHA256,
+    normalizedResponseSchemaSha256: NORMALIZED_RESPONSE_SHA256,
+    runtimeImage: EXACT_IMAGE,
+    nodeExecutable: '/usr/local/bin/node',
+    nodeVersion: 'v26.3.0',
+    requestLimit: 1,
+    timeoutMs: 30000,
+    fixedCanaryInput: FIXED_CANARY_INPUT,
+    failedRun: '30814159615',
+    failedRunProviderRequests: 0,
+    failedRunHostProxy: 'NOT_STARTED',
+    failedRunRuntimeCanary: 'NOT_RUN',
+    scope: ['credential-transport', 'runtime-identity-canary', 'v8-pilot'],
+    limitationsAcknowledged: true,
+  });
+  assert.equal(source.credentialPresent, false);
+  assert.equal(source.rawApprovalBodyPersisted, false);
   assert.equal(sha256File(CANONICAL_PACKET_PATH), OLD_PACKET_SHA256);
   assert.equal(sha256File(OLD_APPROVAL_PATH), OLD_APPROVAL_SHA256);
 });
