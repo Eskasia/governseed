@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "evidenceClass": "external-observational",
+  "status": "PENDING_HUMAN_REAPPROVAL",
+  "modelId": "gpt-5.6-luna",
+  "proxySha256": "0d77d9f7d74daffae64d30169755b049aa00f0c9d536c3cb228b755878c57eea",
+  "credentialDesignSha256": "434da5f42ae9d5752b5db6641557cec6a3893a22988225947458d287d516d995",
+  "requestSchemaSha256": "630ee0eb7b1ca458b1562a676f318430b675b92b005a98c958cb3226b65afb51",
+  "responseSchemaSha256": "5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcce7182c5662c2a08e",
+  "providerResponseValidationSha256": "5b36f410ebc898a34eb2d4e67814441c78d5331e1d0764750aeb98c9bfb7f528",
+  "normalizedResponseSchemaSha256": "5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcce7182c5662c2a08e",
+  "humanApprovalSha256": null,
+  "runtimeImage": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+  "nodeExecutablePath": "/usr/local/bin/node",
+  "nodeVersion": "v26.3.0",
+  "providerRequests": 0,
+  "runtimeCanary": "NOT_RUN",
+  "containerCredentialNamesObserved": false,
+  "networkNoneObserved": false,
+  "claimDisposition": "NOT_RUN_PENDING_HUMAN_REAPPROVAL",
+  "claimBoundary": "Template only. No provider request, credential use, runtime identity, or benchmark acceptance is claimed."
+}

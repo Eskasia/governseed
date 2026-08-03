@@ -1,9 +1,14 @@
 {
   "schemaVersion": 1,
   "benchmarkId": "GS-OSS-2026-08-02-V8",
-  "status": "READY_TO_DISPATCH_RUNTIME_IDENTITY",
+  "status": "READY_FOR_HUMAN_REAPPROVAL",
   "provider": "OpenAI",
   "endpoint": "https://api.openai.com/v1/responses",
+  "requestSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json",
+  "responseSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/response.schema.json",
+  "providerResponseValidationPath": "benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json",
+  "providerResponseValidationSourcePath": "experimental/governance-impact/lib/provider-response-validation.mjs",
+  "normalizedResponseSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json",
   "modelBinding": {
     "provider": "OpenAI",
     "modelId": "gpt-5.6-luna",
@@ -12,8 +17,30 @@
   },
   "requestLimit": 1,
   "timeoutMs": 30000,
+  "runtimeImage": {
+    "source": "benchmarks/external-oss-v7/runtime-image/image-lock.json",
+    "lockedReference": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+    "executablePath": "/usr/local/bin/node",
+    "version": "v26.3.0",
+    "identityFailureCode": "RUNTIME_IMAGE_IDENTITY_MISMATCH"
+  },
+  "responsesRequestFormat": {
+    "path": "text.format",
+    "type": "json_schema",
+    "name": "governseed_runtime_canary",
+    "strict": true,
+    "schema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime_canary"],
+      "properties": {
+        "runtime_canary": { "type": "string", "enum": ["PASS"] }
+      }
+    }
+  },
   "canaryInputSha256": "414dba3ebd1edc4f9a9cd7212c9a3bbf55d9c41b5df02bb89fa5a18f46f0121e",
   "canaryInputBytes": 57,
+  "canaryInput": "Return exactly the JSON object {\"runtime_canary\":\"PASS\"}.",
   "canaryOutput": {
     "runtime_canary": "PASS"
   },
@@ -23,11 +50,12 @@
   "g3Started": false,
   "codexIdentity": "CODEX_BINARY_NOT_REQUIRED_FOR_PROVIDER_IDENTITY_CANARY",
   "approvalRecordPath": "benchmarks/external-oss-v8/credential-transport/human-approval.json",
+  "pendingApprovalTemplatePath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.template.json",
   "approvalSourcePath": "benchmarks/external-oss-v8/credential-transport/human-approval-source.json",
   "container": {
     "network": "none",
     "readOnlyRoot": true,
-    "nonRootUidGid": "65532:65532",
+    "nonRootUidGid": "host-proxy-uid:host-proxy-gid (recorded at runtime; must be non-root)",
     "capDropAll": true,
     "noNewPrivileges": true,
     "pidLimit": 256,
@@ -36,13 +64,25 @@
     "readonlyHarness": true,
     "disposableWorkspaceHomeTmp": true,
     "runScopedUnixSocketOnly": true,
-    "allowedEnvironmentNames": [
+    "baseImageEnvironmentNamesMayInclude": ["PATH", "NODE_VERSION"],
+    "processEnvironmentNames": [
       "GOVERNSEED_PROXY_SOCKET",
       "GOVERNSEED_BENCHMARK_ID",
       "GOVERNSEED_RUN_ID",
       "GOVERNSEED_TASK_ID"
     ],
-    "providerCredentialIncluded": false
+    "providerCredentialIncluded": false,
+    "socketMode": "0600",
+    "socketOwnerAndContainerUidGidMustMatch": true,
+    "udsConnection": "NOT_RUN"
   },
-  "claimBoundary": "Preparation and static/mock evidence only. No provider request, runtime canary, Codex identity, G3, Pilot, scoring, or formal benchmark lock is claimed."
+  "responseEnvelope": {
+    "identityModelId": "gpt-5.6-luna",
+    "providerValidationRequiredFields": ["id", "object", "status", "model", "error", "incomplete_details", "output", "usage"],
+    "providerAdditionalFieldsAllowed": true,
+    "normalizedRequiredFields": ["model", "output_text", "usage"],
+    "normalizedAdditionalFieldsRejected": true,
+    "structuredOutputValidatedSeparately": true
+  },
+  "claimBoundary": "Offline and synthetic repair evidence only. No provider request, runtime identity canary, Codex identity, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance is claimed."
 }

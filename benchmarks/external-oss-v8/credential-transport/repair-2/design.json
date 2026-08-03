@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "repair-2",
+  "attempt": 2,
+  "evidenceClass": "external-observational",
+  "status": "HARD_BLOCKED",
+  "provider": "OpenAI",
+  "endpoint": "https://api.openai.com/v1/responses",
+  "method": "POST",
+  "modelBinding": {
+    "source": "locked measured model candidate",
+    "provider": "OpenAI",
+    "modelId": "gpt-5.6-luna",
+    "aliasAllowed": false,
+    "fallbackAllowed": false,
+    "exact": true,
+    "status": "PENDING_HUMAN_REAPPROVAL",
+    "aliasesForbidden": ["latest", "gpt-5.6", "Luna", "Sol"],
+    "startupRule": "The host proxy refuses to start unless the exact measured model ID is gpt-5.6-luna; aliases and fallback models are rejected."
+  },
+  "limits": {
+    "requestLimit": 1,
+    "timeoutMs": 30000,
+    "tokenCeiling": 8192,
+    "maxRequestBytes": 1048576,
+    "maxResponseBytes": 4194304
+  },
+  "requestContract": {
+    "schemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json",
+    "fixedInput": "Return exactly the JSON object {\"runtime_canary\":\"PASS\"}.",
+    "allowedFields": ["model", "input", "max_output_tokens", "text", "metadata"],
+    "metadataFields": ["benchmark_id", "run_id", "task_id"],
+    "structuredOutputPath": "text.format",
+    "structuredOutput": {
+      "type": "json_schema",
+      "name": "governseed_runtime_canary",
+      "strict": true,
+      "schema": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["runtime_canary"],
+        "properties": {
+          "runtime_canary": { "type": "string", "enum": ["PASS"] }
+        }
+      }
+    },
+    "forbiddenFields": ["response_format", "tools", "tool_choice", "web_search", "file_search", "store", "background", "service_tier", "unknown"],
+    "clientHeaders": ["content-type"],
+    "transportFramingHeadersNotForwarded": ["host", "content-length", "connection"],
+    "forbiddenClientHeaders": ["authorization", "openai-organization", "openai-project", "host", "content-length", "x-*"]
+  },
+  "responseContract": {
+    "providerValidationPath": "benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json",
+    "providerValidationSourcePath": "experimental/governance-impact/lib/provider-response-validation.mjs",
+    "normalizedSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json",
+    "successStatus": "2xx",
+    "contentType": "application/json",
+    "providerRequiredFields": ["id", "object", "status", "model", "error", "incomplete_details", "output", "usage"],
+    "providerAdditionalTopLevelFieldsAllowed": true,
+    "providerUsageAdditionalFieldsAllowed": true,
+    "normalizedFields": ["model", "output_text", "usage"],
+    "normalizedAdditionalFieldsRejected": true,
+    "modelMustEqualStartupBinding": true,
+    "completedOnly": true,
+    "errorMustBeNull": true,
+    "incompleteDetailsMustBeNull": true,
+    "rawProviderResponsePersistence": "HASH_ONLY",
+    "rawOutputTextPersistence": "FORBIDDEN",
+    "malformedRejected": true,
+    "oversizedRejected": true,
+    "secondResponseRejected": true
+  },
+  "containerEnvironment": {
+    "baseImageEnvironment": "Image metadata names are observed and may include PATH and NODE_VERSION.",
+    "processAllowedNames": [
+      "GOVERNSEED_BENCHMARK_ID",
+      "GOVERNSEED_PROXY_SOCKET",
+      "GOVERNSEED_RUN_ID",
+      "GOVERNSEED_TASK_ID"
+    ],
+    "forbiddenCredentialVariables": ["OPENAI_API_KEY", "OPENAI_BASE_URL", "ANTHROPIC_API_KEY", "GITHUB_TOKEN", "GH_TOKEN"],
+    "credentialScope": "Host-side proxy secret only; no alias, file, mount, argv, or encoded credential value."
+  },
+  "runtimeImage": {
+    "source": "benchmarks/external-oss-v7/runtime-image/image-lock.json",
+    "lockedReference": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+    "executablePath": "/usr/local/bin/node",
+    "version": "v26.3.0",
+    "identityFailureCode": "RUNTIME_IMAGE_IDENTITY_MISMATCH"
+  },
+  "socket": {
+    "path": "run-scoped unique temporary root/p.sock",
+    "containerPath": "/run/governance/proxy.sock",
+    "ownerUidGid": "container runs as the non-root host proxy UID:GID recorded at runtime",
+    "mode": "0600",
+    "connectionEvidence": ["hostSocketUidGid", "containerUidGid", "socketMode", "udsConnection"],
+    "nonReuse": true
+  },
+  "cleanup": {
+    "automaticOn": ["client-crash", "client-disconnect", "timeout", "proxy-crash", "invalid-request", "second-client"],
+    "proof": ["server-closed", "socket-absent", "matching-process-absent", "run-root-clean"]
+  },
+  "humanApproval": {
+    "required": true,
+    "oldApprovalPath": "benchmarks/external-oss-v8/credential-transport/human-approval.json",
+    "pendingTemplatePath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.template.json",
+    "requiredScope": ["credential-transport", "runtime-identity-canary", "v8-pilot"],
+    "oldApprovalAppliesTo": "repair-1 design and proxy hashes only"
+  },
+  "repairReason": [
+    "Responses structured output must be bound at text.format, not response_format.",
+    "The proxy must validate the documented provider response shape without applying a closed normalized schema to provider extras.",
+    "The container must receive only the closed model/output_text/usage normalized response.",
+    "The proxy boundary must accept only the fixed canary input and reject arbitrary strings, arrays, and objects before provider transport.",
+    "The image binding must equal the reviewed locked OCI reference.",
+    "The canary must invoke /usr/local/bin/node and verify v26.3.0.",
+    "Image base environment metadata is distinct from the scrubbed process environment.",
+    "The non-root canary UID:GID must match the 0600 socket owner for an actual UDS connection."
+  ],
+  "claimBoundary": "Offline and synthetic repair evidence only. No provider request, real credential use, runtime identity canary, task execution, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance is claimed."
+}

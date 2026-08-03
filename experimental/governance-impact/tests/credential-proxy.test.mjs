@@ -6,6 +6,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import {
+  CREDENTIAL_PROXY_CANARY_INPUT,
   CREDENTIAL_PROXY_ENDPOINT,
   CREDENTIAL_PROXY_MODEL,
   CREDENTIAL_PROXY_PROVIDER,
@@ -23,21 +24,16 @@ const RUN_ID = 'synthetic-run-1';
 const TASK_ID = 'synthetic-task-1';
 const MODEL = CREDENTIAL_PROXY_MODEL;
 const UPSTREAM_KEY = 'synthetic-host-only-key';
-const RESPONSE_FORMAT = {
+const TEXT_FORMAT = {
   type: 'json_schema',
-  json_schema: {
-    name: 'governseed_response',
-    strict: true,
-    schema: {
-      type: 'object',
-      additionalProperties: false,
-      required: ['id', 'model', 'output', 'usage'],
-      properties: {
-        id: { type: 'string' },
-        model: { const: MODEL },
-        output: { type: 'array' },
-        usage: { type: 'object' },
-      },
+  name: 'governseed_runtime_canary',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['runtime_canary'],
+    properties: {
+      runtime_canary: { type: 'string', enum: ['PASS'] },
     },
   },
 };
@@ -63,9 +59,9 @@ function policy(overrides = {}) {
 function requestBody(overrides = {}) {
   return {
     model: MODEL,
-    input: 'synthetic request',
+    input: CREDENTIAL_PROXY_CANARY_INPUT,
     max_output_tokens: CREDENTIAL_PROXY_TOKEN_CEILING,
-    response_format: RESPONSE_FORMAT,
+    text: { format: TEXT_FORMAT },
     metadata: {
       benchmark_id: BENCHMARK_ID,
       run_id: RUN_ID,
@@ -78,14 +74,37 @@ function requestBody(overrides = {}) {
 function responseBody(overrides = {}) {
   return {
     id: 'resp_synthetic',
+    object: 'response',
+    status: 'completed',
+    error: null,
+    incomplete_details: null,
     model: MODEL,
-    output: [],
+    output: [{
+      type: 'message',
+      status: 'completed',
+      content: [{ type: 'output_text', text: '{"runtime_canary":"PASS"}' }],
+    }],
     usage: {
       input_tokens: 3,
       output_tokens: 5,
       total_tokens: 8,
     },
+    created_at: 1_754_121_600,
+    metadata: {},
+    text: { format: { type: 'json_schema' } },
     ...overrides,
+  };
+}
+
+function normalizedResponseBody() {
+  return {
+    model: MODEL,
+    output_text: '{"runtime_canary":"PASS"}',
+    usage: {
+      input_tokens: 3,
+      output_tokens: 5,
+      total_tokens: 8,
+    },
   };
 }
 
@@ -166,7 +185,7 @@ test('policy descriptor fixes provider, endpoint, one request, 30 seconds, and i
     'model',
     'input',
     'max_output_tokens',
-    'response_format',
+    'text',
     'metadata',
   ]);
   assert.deepEqual(descriptor.request.metadataFields, [
@@ -204,7 +223,7 @@ test('valid request injects provider Authorization and forwards only fixed heade
   const { socketPath, upstreamCalls, receipts } = await runningProxy(t);
   const response = await requestProxy(socketPath);
   assert.equal(response.statusCode, 200);
-  assert.deepEqual(JSON.parse(response.body.toString('utf8')), responseBody());
+  assert.deepEqual(JSON.parse(response.body.toString('utf8')), normalizedResponseBody());
   assert.equal(upstreamCalls.length, 1);
   assert.deepEqual(upstreamCalls[0].headers, {
     accept: 'application/json',
@@ -225,7 +244,7 @@ test('valid request injects provider Authorization and forwards only fixed heade
     'statusCode',
     'tokenCounts',
   ]);
-  assert.equal(JSON.stringify(receipts).includes('synthetic request'), false);
+  assert.equal(JSON.stringify(receipts).includes(CREDENTIAL_PROXY_CANARY_INPUT), false);
   assert.equal(JSON.stringify(receipts).includes(UPSTREAM_KEY), false);
 });
 
@@ -250,6 +269,8 @@ test('client Authorization, OpenAI headers, x-* headers, and unknown headers are
 test('closed request fields and identity mismatches fail before provider transport', async (t) => {
   const cases = [
     { tools: [], code: 'PROXY_BODY_MISMATCH' },
+    { response_format: { type: 'json_schema' }, code: 'PROXY_BODY_MISMATCH' },
+    { text: { format: { ...TEXT_FORMAT, name: 'wrong_canary' } }, code: 'PROXY_BODY_MISMATCH' },
     { metadata: { benchmark_id: 'wrong', run_id: RUN_ID, task_id: TASK_ID }, code: 'PROXY_BODY_MISMATCH' },
     { metadata: { benchmark_id: BENCHMARK_ID, run_id: 'wrong', task_id: TASK_ID }, code: 'PROXY_BODY_MISMATCH' },
     { metadata: { benchmark_id: BENCHMARK_ID, run_id: RUN_ID, task_id: 'wrong' }, code: 'PROXY_BODY_MISMATCH' },
@@ -272,8 +293,11 @@ test('malformed, oversized, mismatched, and non-success provider responses fail 
   const cases = [
     { body: Buffer.from('{'), code: 'PROXY_RESPONSE_INVALID' },
     { body: Buffer.from(JSON.stringify({ ...responseBody(), model: 'other' })), code: 'PROXY_RESPONSE_INVALID' },
-    { body: Buffer.from(JSON.stringify({ ...responseBody(), extra: true })), code: 'PROXY_RESPONSE_INVALID' },
-    { body: Buffer.from(JSON.stringify({ ...responseBody(), usage: { input_tokens: 1, output_tokens: 1, total_tokens: 9 } })), code: 'PROXY_RESPONSE_INVALID' },
+    { body: Buffer.from(JSON.stringify({ ...responseBody(), object: 'not-response' })), code: 'PROXY_RESPONSE_INVALID' },
+    { body: Buffer.from(JSON.stringify({ ...responseBody(), status: 'in_progress' })), code: 'PROXY_RESPONSE_INVALID' },
+    { body: Buffer.from(JSON.stringify({ ...responseBody(), error: { code: 'server_error' } })), code: 'PROXY_RESPONSE_INVALID' },
+    { body: Buffer.from(JSON.stringify({ ...responseBody(), incomplete_details: { reason: 'max_output_tokens' } })), code: 'PROXY_RESPONSE_INVALID' },
+    { body: Buffer.from(JSON.stringify({ ...responseBody(), usage: { input_tokens: 1, output_tokens: 1, total_tokens: 8_193 } })), code: 'PROXY_RESPONSE_INVALID' },
   ];
   for (const entry of cases) {
     await t.test(entry.code, async (t) => {

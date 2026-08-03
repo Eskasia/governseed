@@ -5,14 +5,6 @@ import path from 'node:path';
 import test from 'node:test';
 
 const ROOT = path.resolve(process.cwd());
-const repairRoot = path.join(
-  ROOT,
-  'benchmarks/external-oss-v8/credential-transport/repair-1',
-);
-const controlRoot = path.join(
-  ROOT,
-  'benchmarks/external-oss-v8/control/G2/repair-1',
-);
 const readJson = (relativePath) => JSON.parse(
   fs.readFileSync(path.join(ROOT, relativePath), 'utf8'),
 );
@@ -20,141 +12,119 @@ const sha256 = (relativePath) => createHash('sha256')
   .update(fs.readFileSync(path.join(ROOT, relativePath)))
   .digest('hex');
 
-test('repair-1 packet, schemas, immutable evidence, and source contract are consistent', () => {
-  const packet = readJson('benchmarks/external-oss-v8/credential-transport/repair-1/review-packet.json');
-  const design = readJson('benchmarks/external-oss-v8/credential-transport/repair-1/design.json');
-  const requestSchema = readJson('benchmarks/external-oss-v8/credential-transport/repair-1/request.schema.json');
-  const responseSchema = readJson('benchmarks/external-oss-v8/credential-transport/repair-1/response.schema.json');
-  const approvalSchema = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.schema.json');
-  const approvalTemplate = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.template.json');
-  const receiptSchema = readJson('benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.schema.json');
-  const approval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.json');
-  const approvalSource = readJson('benchmarks/external-oss-v8/credential-transport/human-approval-source.json');
+test('repair-2 packet, schemas, immutable evidence, and source contract are consistent', () => {
+  const packet = readJson('benchmarks/external-oss-v8/credential-transport/repair-2/review-packet.json');
+  const design = readJson('benchmarks/external-oss-v8/credential-transport/repair-2/design.json');
+  const requestSchema = readJson('benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json');
+  const responseSchema = readJson('benchmarks/external-oss-v8/credential-transport/repair-2/response.schema.json');
+  const providerResponseValidation = readJson('benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json');
+  const normalizedResponseSchema = readJson('benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json');
+  const pendingApproval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.template.json');
+  const oldApproval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.json');
   const inherited = readJson('benchmarks/external-oss-v8/control/G2/repair-1/inherited-evidence.json');
-  const findings = readJson('benchmarks/external-oss-v8/control/G2/repair-1/findings.json');
-  const solEvidence = readJson('benchmarks/external-oss-v8/control/G2/repair-1/sol-review-evidence.json');
-  const solVerdict = readJson('benchmarks/external-oss-v8/control/G2/repair-1/sol-verdict.json');
+  const prep = readJson('benchmarks/external-oss-v8/control/G2/runtime-canary-prep/prep.json');
+  const receiptTemplate = readJson('benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.template.json');
 
   assert.equal(packet.benchmarkId, 'GS-OSS-2026-08-02-V8');
   assert.equal(packet.gate, 'G2');
-  assert.equal(packet.repair, 'repair-1');
-  assert.equal(packet.status, 'PENDING_HUMAN_REVIEW');
-  assert.equal(packet.technicalDisposition, 'TECHNICALLY_ACCEPTABLE_FOR_HUMAN_REVIEW');
+  assert.equal(packet.repair, 'repair-2');
+  assert.equal(packet.status, 'PENDING_HUMAN_REAPPROVAL');
+  assert.equal(packet.technicalDisposition, 'TECHNICALLY_REPAIRED_PENDING_HUMAN_REAPPROVAL');
   assert.equal(packet.overallGate, 'BLOCKED');
-  assert.deepEqual(Object.keys(packet.humanApproval).sort(), [
-    'approvalStatus',
-    'approvedAt',
-    'approvedBy',
-  ]);
-  assert.deepEqual(packet.humanApproval, {
-    approvalStatus: 'PENDING_HUMAN_REVIEW',
-    approvedBy: null,
-    approvedAt: null,
+  assert.deepEqual(packet.modelBinding, {
+    provider: 'OpenAI',
+    modelId: 'gpt-5.6-luna',
+    aliasAllowed: false,
+    fallbackAllowed: false,
+    exact: true,
+    status: 'PENDING_HUMAN_REAPPROVAL',
+    aliasesForbidden: ['latest', 'gpt-5.6', 'Luna', 'Sol'],
   });
-  assert.equal(packet.contract.provider, 'OpenAI');
-  assert.equal(packet.contract.method, 'POST');
-  assert.equal(packet.contract.endpoint, 'https://api.openai.com/v1/responses');
-  assert.equal(packet.contract.limits.requestLimit, 1);
-  assert.equal(packet.contract.limits.timeoutMs, 30_000);
-  assert.equal(packet.contract.modelBinding.provider, 'OpenAI');
-  assert.equal(packet.contract.modelBinding.modelId, 'gpt-5.6-luna');
-  assert.equal(packet.contract.modelBinding.aliasAllowed, false);
-  assert.equal(packet.contract.modelBinding.fallbackAllowed, false);
-  assert.equal(packet.contract.modelBinding.exact, true);
-  assert.equal(packet.contract.modelBinding.status, 'LOCKED_PENDING_HUMAN_APPROVAL');
-  assert.deepEqual(packet.contract.request.allowedFields, [
+  assert.deepEqual(packet.transport.requestAllowedFields, [
     'model',
     'input',
     'max_output_tokens',
-    'response_format',
+    'text',
     'metadata',
   ]);
-  assert.deepEqual(packet.contract.request.metadataFields, [
-    'benchmark_id',
-    'run_id',
-    'task_id',
-  ]);
-  assert.deepEqual(packet.contract.containerEnvironment.proxyVariables, [
-    'GOVERNSEED_PROXY_SOCKET',
-    'GOVERNSEED_BENCHMARK_ID',
-    'GOVERNSEED_RUN_ID',
-    'GOVERNSEED_TASK_ID',
-  ]);
+  assert.equal(packet.transport.structuredOutputPath, 'text.format');
+  assert.equal(packet.transport.forbiddenRequestField, 'response_format');
+  assert.equal(packet.transport.requestLimit, 1);
+  assert.equal(packet.transport.timeoutMs, 30_000);
+  assert.equal(packet.providerRequests, 0);
+  assert.equal(packet.humanApproval.status, 'PENDING_HUMAN_REVIEW');
+  assert.equal(packet.humanApproval.appliesTo, 'repair-2 hashes only');
+  assert.equal(oldApproval.approvalStatus, 'APPROVED');
+  assert.equal(oldApproval.approvedDesignSha256, packet.previousRepair.designSha256);
+  assert.equal(oldApproval.approvedProxySha256, packet.previousRepair.proxySha256);
+  assert.notEqual(oldApproval.approvedDesignSha256, packet.hashes.designSha256);
+  assert.notEqual(oldApproval.approvedProxySha256, packet.hashes.proxySourceSha256);
+
   assert.equal(requestSchema.additionalProperties, false);
   assert.equal(responseSchema.additionalProperties, false);
   assert.equal(requestSchema.properties.model.const, 'gpt-5.6-luna');
   assert.equal(responseSchema.properties.model.const, 'gpt-5.6-luna');
-  assert.equal(approvalSchema.properties.approvedModelId.const, 'gpt-5.6-luna');
-  assert.equal(receiptSchema.properties.modelId.const, 'gpt-5.6-luna');
-  assert.equal(requestSchema.properties.max_output_tokens.const, 8192);
-  assert.deepEqual(requestSchema.properties.metadata.required, [
-    'benchmark_id',
-    'run_id',
-    'task_id',
-  ]);
-  assert.deepEqual(responseSchema.required, ['id', 'model', 'output', 'usage']);
+  assert.equal(requestSchema.properties.input.const, 'Return exactly the JSON object {"runtime_canary":"PASS"}.');
+  assert.equal(requestSchema.properties.text.properties.format.properties.name.const, 'governseed_runtime_canary');
+  assert.equal(requestSchema.properties.text.properties.format.properties.strict.const, true);
+  assert.deepEqual(
+    requestSchema.properties.text.properties.format.properties.schema.properties.required.const,
+    ['runtime_canary'],
+  );
+  assert.deepEqual(responseSchema.required, ['model', 'output_text', 'usage']);
   assert.equal(responseSchema.properties.usage.additionalProperties, false);
-
-  assert.equal(findings.summary.total, 13);
-  assert.equal(findings.summary.closed, 13);
-  assert.equal(findings.summary.remainingTechnicalBlockers, 0);
-  assert.equal(new Set(findings.checks.map((entry) => entry.id)).size, 13);
-  assert.equal(solEvidence.reviewer.model, 'gpt-5.6-sol');
-  assert.equal(solEvidence.recommendation, 'ACCEPT');
-  assert.equal(solEvidence.technicalDisposition, 'TECHNICALLY_ACCEPTABLE_FOR_HUMAN_REVIEW');
-  assert.equal(solEvidence.independentAssessment.closedInheritedBlockers, 13);
-  assert.equal(solEvidence.independentAssessment.providerRequests, 0);
-  assert.equal(solVerdict.verdict, 'ACCEPT');
-  assert.equal(solVerdict.technicalToken, 'TECHNICALLY_ACCEPTABLE_FOR_HUMAN_REVIEW');
-  assert.equal(solVerdict.providerRequestCount, 0);
-  assert.equal(solVerdict.runtimeIdentity, 'NOT_RUN');
-  assert.equal(solVerdict.exactModelCandidate, 'gpt-5.6-luna');
-  assert.equal(approvalTemplate.approvalStatus, 'PENDING_HUMAN_REVIEW');
-  assert.equal(approvalTemplate.approvedBy, null);
-  assert.equal(approvalTemplate.approvedAt, null);
-  assert.equal(approvalTemplate.approvedModelId, 'gpt-5.6-luna');
-  assert.equal(approvalTemplate.limitationsAcknowledged, false);
-  assert.equal(inherited.parent.pullRequest, 73);
-  assert.equal(inherited.inheritedFindings.oldVerdict, 'REJECT');
-  assert.equal(inherited.inheritedFindings.oldSummary.blocked, 13);
-  for (const entry of inherited.immutableEvidence) {
-    assert.equal(sha256(entry.path), entry.sha256, `immutable evidence changed: ${entry.path}`);
-  }
+  assert.deepEqual(normalizedResponseSchema.required, ['model', 'output_text', 'usage']);
+  assert.equal(providerResponseValidation.additionalTopLevelFieldsAllowed, true);
+  assert.equal(providerResponseValidation.usage.additionalFieldsAllowed, true);
+  assert.equal(providerResponseValidation.requiredFields.status, 'completed');
+  assert.equal(prep.status, 'READY_FOR_HUMAN_REAPPROVAL');
+  assert.equal(prep.runtimeImage.lockedReference, 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5');
+  assert.equal(prep.runtimeImage.executablePath, '/usr/local/bin/node');
+  assert.equal(prep.runtimeImage.version, 'v26.3.0');
+  assert.equal(prep.responsesRequestFormat.path, 'text.format');
+  assert.equal(receiptTemplate.modelId, 'gpt-5.6-luna');
+  assert.equal(receiptTemplate.providerRequests, 0);
+  assert.equal(receiptTemplate.runtimeCanary, 'NOT_RUN');
 
   for (const [field, expectedPath] of [
     ['designSha256', packet.hashes.designPath],
     ['requestSchemaSha256', packet.hashes.requestSchemaPath],
     ['responseSchemaSha256', packet.hashes.responseSchemaPath],
+    ['providerResponseValidationSha256', packet.hashes.providerResponseValidationPath],
+    ['providerResponseValidationSourceSha256', packet.hashes.providerResponseValidationSourcePath],
+    ['normalizedResponseSchemaSha256', packet.hashes.normalizedResponseSchemaPath],
     ['proxySourceSha256', packet.hashes.proxySourcePath],
-    ['proxyFacadeSha256', packet.hashes.proxyFacadePath],
-    ['supervisorSourceSha256', packet.hashes.supervisorSourcePath],
-    ['relaySourceSha256', packet.hashes.relaySourcePath],
+    ['canaryClientSha256', packet.hashes.canaryClientPath],
+    ['workflowSha256', packet.hashes.workflowPath],
   ]) {
     assert.equal(sha256(expectedPath), packet.hashes[field], `hash drift: ${expectedPath}`);
   }
+  for (const entry of inherited.immutableEvidence) {
+    assert.equal(sha256(entry.path), entry.sha256, `immutable evidence changed: ${entry.path}`);
+  }
 
-  const sourcePaths = [
-    packet.hashes.proxySourcePath,
-    packet.hashes.proxyFacadePath,
-    packet.hashes.supervisorSourcePath,
-    packet.hashes.relaySourcePath,
-  ];
-  const source = sourcePaths
-    .map((relativePath) => fs.readFileSync(path.join(ROOT, relativePath), 'utf8'))
-    .join('\n');
-  assert.doesNotMatch(source, /(?:MAX_REQUESTS|requestLimit\s*:\s*)32\b/u);
-  assert.doesNotMatch(source, /(?:DEFAULT_DEADLINE_MS|timeoutMs\s*:\s*)300000\b/u);
+  for (const [snapshotPath, activePath] of [
+    [packet.attempt2Artifacts.designPath, packet.hashes.designPath],
+    [packet.attempt2Artifacts.requestSchemaPath, packet.hashes.requestSchemaPath],
+    [packet.attempt2Artifacts.providerResponseValidationPath, packet.hashes.providerResponseValidationPath],
+    [packet.attempt2Artifacts.normalizedResponseSchemaPath, packet.hashes.normalizedResponseSchemaPath],
+    [packet.attempt2Artifacts.responseSchemaPath, packet.hashes.responseSchemaPath],
+    [packet.attempt2Artifacts.proxySourcePath, packet.hashes.proxySourcePath],
+    [packet.attempt2Artifacts.providerResponseValidationSourcePath, packet.hashes.providerResponseValidationSourcePath],
+    [packet.attempt2Artifacts.canaryClientPath, packet.hashes.canaryClientPath],
+    [packet.attempt2Artifacts.workflowPath, packet.hashes.workflowPath],
+    [packet.attempt2Artifacts.reviewPacketPath, 'benchmarks/external-oss-v8/credential-transport/repair-2/review-packet.json'],
+    [packet.attempt2Artifacts.reviewPacketMarkdownPath, 'benchmarks/external-oss-v8/credential-transport/repair-2/review-packet.md'],
+  ]) {
+    assert.equal(sha256(snapshotPath), sha256(activePath), `attempt-2 snapshot drift: ${snapshotPath}`);
+  }
+
+  const source = fs.readFileSync(path.join(ROOT, packet.hashes.proxySourcePath), 'utf8');
   assert.doesNotMatch(source, /OPENAI_API_KEY|OPENAI_BASE_URL|ANTHROPIC_API_KEY|GITHUB_TOKEN|GH_TOKEN/u);
   assert.doesNotMatch(source, /sk-[A-Za-z0-9]{20,}/u);
   assert.doesNotMatch(source, /Bearer\s+[A-Za-z0-9_-]{32,}/u);
-  assert.equal(approval.approvalStatus, 'APPROVED');
-  assert.equal(approval.approvedBy, 'Eskasia');
-  assert.equal(approval.approvedModelId, 'gpt-5.6-luna');
-  assert.equal(approval.approvedDesignSha256, packet.hashes.designSha256);
-  assert.equal(approval.approvedProxySha256, packet.hashes.proxySourceSha256);
-  assert.equal(approvalSource.verificationStatus, 'VERIFIED');
-  assert.equal(approvalSource.credentialPresent, false);
-  assert.equal(fs.existsSync(path.join(repairRoot, 'human-approval.json')), false);
-  assert.equal(fs.existsSync(path.join(controlRoot, 'human-approval.json')), false);
+  assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.json')), true);
   assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.json')), false);
+  assert.equal(design.modelBinding.modelId, 'gpt-5.6-luna');
+  assert.equal(pendingApproval.approvalStatus, 'PENDING_HUMAN_REVIEW');
 });

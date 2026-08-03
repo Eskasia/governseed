@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "repair-2",
+  "attempt": 2,
+  "evidenceClass": "external-observational",
+  "status": "PENDING_HUMAN_REAPPROVAL",
+  "technicalDisposition": "TECHNICALLY_REPAIRED_PENDING_HUMAN_REAPPROVAL",
+  "parent": {
+    "pullRequest": 76,
+    "headCommit": "09a89fb3a93f007c84b01dd9ae15ffd794718797",
+    "mergeCommit": "d6c4ba2a6239c10d31a144cdc649b766a7f270c4"
+  },
+  "repairBranch": "benchmark/v8-g2-runtime-canary-repair-1",
+  "attemptHistory": {
+    "attempt1SolVerdictPath": "benchmarks/external-oss-v8/control/G2/repair-2/attempt-1/sol-verdict.json",
+    "attempt1SolEvidencePath": "benchmarks/external-oss-v8/control/G2/repair-2/attempt-1/sol-review-evidence.json",
+    "attempt2SolVerdictPath": "benchmarks/external-oss-v8/control/G2/repair-2/attempt-2/sol-verdict.json",
+    "attempt2SolEvidencePath": "benchmarks/external-oss-v8/control/G2/repair-2/attempt-2/sol-review-evidence.json"
+  },
+  "attempt2Artifacts": {
+    "designPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-2/design.json",
+    "requestSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-2/request.schema.json",
+    "providerResponseValidationPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-2/provider-response-validation.json",
+    "normalizedResponseSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-2/normalized-proxy-response.schema.json",
+    "responseSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-2/response.schema.json",
+    "proxySourcePath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-2/credential-proxy.mjs",
+    "providerResponseValidationSourcePath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-2/provider-response-validation.mjs",
+    "canaryClientPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-2/canary-client.mjs",
+    "workflowPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-2/external-oss-v8-runtime-identity.yml",
+    "reviewPacketPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-2/review-packet.json",
+    "reviewPacketMarkdownPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-2/review-packet.md",
+    "solEvidencePath": "benchmarks/external-oss-v8/control/G2/repair-2/attempt-2/sol-review-evidence.json",
+    "solVerdictPath": "benchmarks/external-oss-v8/control/G2/repair-2/attempt-2/sol-verdict.json"
+  },
+  "previousRepair": {
+    "reviewPacketPath": "benchmarks/external-oss-v8/credential-transport/repair-1/review-packet.json",
+    "humanApprovalPath": "benchmarks/external-oss-v8/credential-transport/human-approval.json",
+    "humanApprovalStatus": "APPROVED",
+    "humanApprovalAppliesTo": "repair-1 design and proxy hashes only",
+    "designSha256": "7974cae887830af31da8245569b106ec97509a1d65a1d9a7668b17b18741e9a0",
+    "proxySha256": "07d0b6b6f37254dd81215f7e3e3b07336af6428f96f057e6bc5192f26870b8b1"
+  },
+  "hashes": {
+    "designPath": "benchmarks/external-oss-v8/credential-transport/repair-2/design.json",
+    "designSha256": "434da5f42ae9d5752b5db6641557cec6a3893a22988225947458d287d516d995",
+    "requestSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json",
+    "requestSchemaSha256": "630ee0eb7b1ca458b1562a676f318430b675b92b005a98c958cb3226b65afb51",
+    "responseSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/response.schema.json",
+    "responseSchemaSha256": "5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcce7182c5662c2a08e",
+    "providerResponseValidationPath": "benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json",
+    "providerResponseValidationSha256": "5b36f410ebc898a34eb2d4e67814441c78d5331e1d0764750aeb98c9bfb7f528",
+    "normalizedResponseSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json",
+    "normalizedResponseSchemaSha256": "5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcce7182c5662c2a08e",
+    "proxySourcePath": "experimental/governance-impact/lib/credential-proxy.mjs",
+    "proxySourceSha256": "0d77d9f7d74daffae64d30169755b049aa00f0c9d536c3cb228b755878c57eea",
+    "providerResponseValidationSourcePath": "experimental/governance-impact/lib/provider-response-validation.mjs",
+    "providerResponseValidationSourceSha256": "980e8cef7e58028a017406b5ce776b292639bb756501cbbc002b01c4d2919711",
+    "canaryClientPath": "benchmarks/external-oss-v8/control/G2/runtime-canary-prep/canary-client.mjs",
+    "canaryClientSha256": "0fcbc59d2c77d5e42174eaff375d183016f1f361a338b4e77c2b9e73cc4a6742",
+    "workflowPath": ".github/workflows/external-oss-v8-runtime-identity.yml",
+    "workflowSha256": "83bef779f31c271e40543fe40e9763f2a3321e69930f9c1ac4cd5fe5a6c02f26",
+    "proxyFacadePath": "experimental/governance-impact/lib/oci-proxy-facade.mjs",
+    "proxyFacadeSha256": "463346868d6ab92357d88696b44356998b8ad32703a7b9095dc3dcb51b2fbdfe",
+    "supervisorSourcePath": "experimental/governance-impact/lib/oci-supervisor.mjs",
+    "supervisorSourceSha256": "9e37e7ef72144c446a495eb1a42d126f94133b8310134fbd50f2eb9172622293",
+    "relaySourcePath": "experimental/governance-impact/uds-relay.mjs",
+    "relaySourceSha256": "decd68ec23bb3232e49f7fd3036626fed55e973d7149c399e0eb3ac606eaeb40"
+  },
+  "modelBinding": {
+    "provider": "OpenAI",
+    "modelId": "gpt-5.6-luna",
+    "aliasAllowed": false,
+    "fallbackAllowed": false,
+    "exact": true,
+    "status": "PENDING_HUMAN_REAPPROVAL",
+    "aliasesForbidden": ["latest", "gpt-5.6", "Luna", "Sol"]
+  },
+  "transport": {
+    "method": "POST",
+    "endpoint": "https://api.openai.com/v1/responses",
+    "requestLimit": 1,
+    "timeoutMs": 30000,
+    "tokenCeiling": 8192,
+    "requestAllowedFields": ["model", "input", "max_output_tokens", "text", "metadata"],
+    "fixedInput": "Return exactly the JSON object {\"runtime_canary\":\"PASS\"}.",
+    "structuredOutputPath": "text.format",
+    "structuredOutputName": "governseed_runtime_canary",
+    "structuredOutputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["runtime_canary"],
+      "properties": {
+        "runtime_canary": { "type": "string", "enum": ["PASS"] }
+      }
+    },
+    "providerResponseValidationPath": "benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json",
+    "providerResponseRequiredFields": ["id", "object", "status", "model", "error", "incomplete_details", "output", "usage"],
+    "providerResponseAdditionalFieldsAllowed": true,
+    "normalizedResponseSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json",
+    "responseEnvelopeFields": ["model", "output_text", "usage"],
+    "normalizedResponseAdditionalFieldsRejected": true,
+    "responseModelId": "gpt-5.6-luna",
+    "forbiddenRequestField": "response_format"
+  },
+  "providerRequests": 0,
+  "runtimeImage": {
+    "source": "benchmarks/external-oss-v7/runtime-image/image-lock.json",
+    "lockedReference": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+    "executablePath": "/usr/local/bin/node",
+    "version": "v26.3.0",
+    "identityFailureCode": "RUNTIME_IMAGE_IDENTITY_MISMATCH"
+  },
+  "environment": {
+    "baseImageNamesMayInclude": ["PATH", "NODE_VERSION"],
+    "processNames": [
+      "GOVERNSEED_BENCHMARK_ID",
+      "GOVERNSEED_PROXY_SOCKET",
+      "GOVERNSEED_RUN_ID",
+      "GOVERNSEED_TASK_ID"
+    ],
+    "credentialNamesObserved": [],
+    "credentialValuesObserved": false
+  },
+  "socket": {
+    "mode": "0600",
+    "hostUidGidMustEqualContainerUidGid": true,
+    "containerNonRoot": true,
+    "connectionEvidenceRequired": ["hostSocketUidGid", "containerUidGid", "socketMode", "udsConnection"]
+  },
+  "evidence": {
+    "providerRequests": 0,
+    "runtimeCanary": "NOT_RUN",
+    "dispatch": "NOT_RUN",
+    "localSyntheticTests": "PASS",
+    "dockerRuntime": "NOT_RUN_UNTIL_HUMAN_REAPPROVAL",
+    "testSummary": {
+      "npmRunCheck": "PASS",
+      "npmRunTestGovernance": { "passed": 127, "failed": 0 },
+      "npmRunTestPrivacy": { "passed": 24, "failed": 0 },
+      "npmRunTestExperimental": { "passed": 122, "failed": 0 },
+      "g2RepairAndCanaryTests": { "passed": 39, "failed": 0 },
+      "g2SchemaValidation": { "passed": 9, "failed": 0 },
+      "v8ContractValidation": "PASS",
+      "v8SchemaValidation": "PASS",
+      "v8RuntimeShellValidation": "PASS",
+      "yamlParse": "PASS",
+      "shellSyntax": "PASS",
+      "providerRequests": 0
+    }
+  },
+  "humanApproval": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "appliesTo": "repair-2 hashes only",
+    "templatePath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.template.json",
+    "approvedRecordPath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.json",
+    "oldApprovalMustNotAuthorizeThisRepair": true
+  },
+  "overallGate": "BLOCKED",
+  "prohibitedClaims": [
+    "No human reapproval, provider access, provider request, runtime identity, runtime canary, task execution, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance is claimed."
+  ],
+  "claimBoundary": "Repair-2 attempt-2 offline and synthetic credential-transport evidence only; provider validation and proxy-to-container normalization are separate contracts, the fixed canary input is enforced at the proxy boundary, and request/proxy/design hashes changed from the approved repair-1 record, so a new human approval is required before any dispatch."
+}

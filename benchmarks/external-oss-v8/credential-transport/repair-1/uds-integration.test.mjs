@@ -7,6 +7,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import {
+  CREDENTIAL_PROXY_CANARY_INPUT,
   CREDENTIAL_PROXY_ENDPOINT,
   CREDENTIAL_PROXY_MODEL,
   CREDENTIAL_PROXY_PROVIDER,
@@ -21,21 +22,16 @@ const RUN_ID = 'repair-1-run';
 const TASK_ID = 'repair-1-task';
 const MODEL = CREDENTIAL_PROXY_MODEL;
 const HOST_KEY = 'synthetic-host-only-key';
-const RESPONSE_FORMAT = {
+const TEXT_FORMAT = {
   type: 'json_schema',
-  json_schema: {
-    name: 'governseed_response',
-    strict: true,
-    schema: {
-      type: 'object',
-      additionalProperties: false,
-      required: ['id', 'model', 'output', 'usage'],
-      properties: {
-        id: { type: 'string' },
-        model: { const: MODEL },
-        output: { type: 'array' },
-        usage: { type: 'object' },
-      },
+  name: 'governseed_runtime_canary',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['runtime_canary'],
+    properties: {
+      runtime_canary: { type: 'string', enum: ['PASS'] },
     },
   },
 };
@@ -52,9 +48,9 @@ function identity(overrides = {}) {
 function requestBody(overrides = {}) {
   return {
     model: MODEL,
-    input: 'synthetic repair request',
+    input: CREDENTIAL_PROXY_CANARY_INPUT,
     max_output_tokens: CREDENTIAL_PROXY_TOKEN_CEILING,
-    response_format: RESPONSE_FORMAT,
+    text: { format: TEXT_FORMAT },
     metadata: identity(),
     ...overrides,
   };
@@ -63,9 +59,20 @@ function requestBody(overrides = {}) {
 function responseBody(overrides = {}) {
   return {
     id: 'resp_repair_1',
+    object: 'response',
+    status: 'completed',
+    error: null,
+    incomplete_details: null,
     model: MODEL,
-    output: [],
+    output: [{
+      type: 'message',
+      status: 'completed',
+      content: [{ type: 'output_text', text: '{"runtime_canary":"PASS"}' }],
+    }],
     usage: { input_tokens: 2, output_tokens: 3, total_tokens: 5 },
+    created_at: 1_754_121_600,
+    metadata: {},
+    text: { format: { type: 'json_schema' } },
     ...overrides,
   };
 }
@@ -168,7 +175,7 @@ test('normal completion retains only hashed receipt fields and removes socket on
   assert.equal(receipts[0].modelId, MODEL);
   assert.equal(typeof receipts[0].requestSha256, 'string');
   assert.equal(typeof receipts[0].responseSha256, 'string');
-  assert.equal(JSON.stringify(receipts).includes('synthetic repair request'), false);
+  assert.equal(JSON.stringify(receipts).includes(CREDENTIAL_PROXY_CANARY_INPUT), false);
   assert.equal(JSON.stringify(receipts).includes(HOST_KEY), false);
   await proxy.close();
   assert.equal(await waitForAbsent(socketPath), true);

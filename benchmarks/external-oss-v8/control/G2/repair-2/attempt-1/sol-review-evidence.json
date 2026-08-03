@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "repair-2",
+  "evidenceClass": "external-observational",
+  "reviewer": {
+    "agent": "Sol",
+    "model": "gpt-5.6-sol",
+    "agentId": "019fc2fa-b832-7363-8872-20c0ada2ed5a",
+    "role": "independent read-only technical reviewer",
+    "reasoningEffort": "high"
+  },
+  "reviewedPaths": [
+    "benchmarks/external-oss-v8/credential-transport/repair-2/design.json",
+    "benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json",
+    "benchmarks/external-oss-v8/credential-transport/repair-2/response.schema.json",
+    "benchmarks/external-oss-v8/credential-transport/repair-2/review-packet.json",
+    "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.template.json",
+    "benchmarks/external-oss-v8/credential-transport/human-approval.json",
+    "benchmarks/external-oss-v8/control/G2/runtime-canary-prep/prep.json",
+    "benchmarks/external-oss-v8/control/G2/runtime-canary-prep/canary-client.mjs",
+    "experimental/governance-impact/lib/credential-proxy.mjs",
+    "experimental/governance-impact/lib/oci-proxy-facade.mjs",
+    "experimental/governance-impact/lib/oci-supervisor.mjs",
+    "experimental/governance-impact/uds-relay.mjs",
+    ".github/workflows/external-oss-v8-runtime-identity.yml",
+    "benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.template.json"
+  ],
+  "hashVerification": {
+    "designSha256": "5cf88b254d3b4c825473c5303a77d90ceee8e8282c72822ecfd6e4f82676f6b8",
+    "requestSchemaSha256": "90561f21be568a6375579cef1d59fe86186abf4b25c8dc550aa173d86dbeab5e",
+    "responseSchemaSha256": "c2e0dd82f46122f497bb30fca7b39ed6f68f9bd524a82461840f42a7d5587ffa",
+    "proxySourceSha256": "a5e42fd6b49e9606147e0e13fe56d818deb21ac0d2f70319e3547188573f2cca",
+    "canaryClientSha256": "c98d2c27ecd9e4538a6a15fd4a070a8e69f3eb56d2b207f22102e153ebc3ca79",
+    "workflowSha256": "27fca389575c7d32e12fa19881ff669781301d9ed091fd0482a61d10f5a6ca3b",
+    "proxyFacadeSha256": "463346868d6ab92357d88696b44356998b8ad32703a7b9095dc3dcb51b2fbdfe",
+    "supervisorSourceSha256": "9e37e7ef72144c446a495eb1a42d126f94133b8310134fbd50f2eb9172622293",
+    "relaySourceSha256": "decd68ec23bb3232e49f7fd3036626fed55e973d7149c399e0eb3ac606eaeb40",
+    "reviewPacketSha256": "5335b06e4e2eea189e864130239e1ca7d8cbff2c96ddbd801ee29ea53328948c"
+  },
+  "independentAssessment": {
+    "blockingDefects": [],
+    "remainingTechnicalBlockers": 0,
+    "providerRequests": 0,
+    "workflowDispatch": "NOT_RUN",
+    "runtimeCanary": "NOT_RUN",
+    "humanApproval": "PENDING_HUMAN_REAPPROVAL",
+    "exactModelCandidate": "gpt-5.6-luna",
+    "aliasAllowed": false,
+    "fallbackAllowed": false,
+    "hashConsistency": "CONSISTENT",
+    "oldRepair1ApprovalUnchanged": true,
+    "oldRepair1ApprovalAppliesOnlyToOldHashes": true,
+    "repair2ApprovedRecordPresent": false,
+    "runtimeIdentityReceiptPresent": false,
+    "noRealProviderTransport": true
+  },
+  "contractChecks": {
+    "requestFormat": "Responses API text.format json_schema with name governseed_runtime_canary and strict=true; only runtime_canary=PASS is allowed; response_format is forbidden",
+    "responseEnvelope": "closed to id/model/output/usage; model is const gpt-5.6-luna",
+    "runtimeBinding": "locked image digest, /usr/local/bin/node v26.3.0, non-root UID:GID-compatible UDS mode 0600, and exactly four scrubbed GOVERNSEED_* process names",
+    "approvalBinding": "workflow checks repair-2 packet paths and hashes before any future approved record can authorize dispatch"
+  },
+  "recommendation": "ACCEPT",
+  "authorization": {
+    "mergeAuthorized": false,
+    "providerRequestAuthorized": false,
+    "runtimeCanaryAuthorized": false,
+    "humanApprovalCreated": false
+  },
+  "claimBoundary": "Independent Sol read-only technical review only. This evidence does not authorize provider access, human reapproval, workflow dispatch, runtime identity canary, task execution, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance."
+}
