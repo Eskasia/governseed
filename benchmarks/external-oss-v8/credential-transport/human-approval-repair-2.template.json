@@ -4,8 +4,8 @@
   "approvalStatus": "PENDING_HUMAN_REVIEW",
   "approvedBy": null,
   "approvedAt": null,
-  "approvedDesignSha256": "5cf88b254d3b4c825473c5303a77d90ceee8e8282c72822ecfd6e4f82676f6b8",
-  "approvedProxySha256": "a5e42fd6b49e9606147e0e13fe56d818deb21ac0d2f70319e3547188573f2cca",
+  "approvedDesignSha256": "434da5f42ae9d5752b5db6641557cec6a3893a22988225947458d287d516d995",
+  "approvedProxySha256": "0d77d9f7d74daffae64d30169755b049aa00f0c9d536c3cb228b755878c57eea",
   "approvedModelId": "gpt-5.6-luna",
   "scope": [
     "credential-transport",

@@ -6,6 +6,9 @@
   "endpoint": "https://api.openai.com/v1/responses",
   "requestSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json",
   "responseSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/response.schema.json",
+  "providerResponseValidationPath": "benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json",
+  "providerResponseValidationSourcePath": "experimental/governance-impact/lib/provider-response-validation.mjs",
+  "normalizedResponseSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json",
   "modelBinding": {
     "provider": "OpenAI",
     "modelId": "gpt-5.6-luna",
@@ -37,6 +40,7 @@
   },
   "canaryInputSha256": "414dba3ebd1edc4f9a9cd7212c9a3bbf55d9c41b5df02bb89fa5a18f46f0121e",
   "canaryInputBytes": 57,
+  "canaryInput": "Return exactly the JSON object {\"runtime_canary\":\"PASS\"}.",
   "canaryOutput": {
     "runtime_canary": "PASS"
   },
@@ -74,7 +78,10 @@
   },
   "responseEnvelope": {
     "identityModelId": "gpt-5.6-luna",
-    "requiredFields": ["id", "model", "output", "usage"],
+    "providerValidationRequiredFields": ["id", "object", "status", "model", "error", "incomplete_details", "output", "usage"],
+    "providerAdditionalFieldsAllowed": true,
+    "normalizedRequiredFields": ["model", "output_text", "usage"],
+    "normalizedAdditionalFieldsRejected": true,
     "structuredOutputValidatedSeparately": true
   },
   "claimBoundary": "Offline and synthetic repair evidence only. No provider request, runtime identity canary, Codex identity, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance is claimed."

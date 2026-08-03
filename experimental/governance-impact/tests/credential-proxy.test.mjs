@@ -6,6 +6,7 @@ import path from 'node:path';
 import test from 'node:test';
 
 import {
+  CREDENTIAL_PROXY_CANARY_INPUT,
   CREDENTIAL_PROXY_ENDPOINT,
   CREDENTIAL_PROXY_MODEL,
   CREDENTIAL_PROXY_PROVIDER,
@@ -58,7 +59,7 @@ function policy(overrides = {}) {
 function requestBody(overrides = {}) {
   return {
     model: MODEL,
-    input: 'synthetic request',
+    input: CREDENTIAL_PROXY_CANARY_INPUT,
     max_output_tokens: CREDENTIAL_PROXY_TOKEN_CEILING,
     text: { format: TEXT_FORMAT },
     metadata: {
@@ -73,14 +74,37 @@ function requestBody(overrides = {}) {
 function responseBody(overrides = {}) {
   return {
     id: 'resp_synthetic',
+    object: 'response',
+    status: 'completed',
+    error: null,
+    incomplete_details: null,
     model: MODEL,
-    output: [],
+    output: [{
+      type: 'message',
+      status: 'completed',
+      content: [{ type: 'output_text', text: '{"runtime_canary":"PASS"}' }],
+    }],
     usage: {
       input_tokens: 3,
       output_tokens: 5,
       total_tokens: 8,
     },
+    created_at: 1_754_121_600,
+    metadata: {},
+    text: { format: { type: 'json_schema' } },
     ...overrides,
+  };
+}
+
+function normalizedResponseBody() {
+  return {
+    model: MODEL,
+    output_text: '{"runtime_canary":"PASS"}',
+    usage: {
+      input_tokens: 3,
+      output_tokens: 5,
+      total_tokens: 8,
+    },
   };
 }
 
@@ -199,7 +223,7 @@ test('valid request injects provider Authorization and forwards only fixed heade
   const { socketPath, upstreamCalls, receipts } = await runningProxy(t);
   const response = await requestProxy(socketPath);
   assert.equal(response.statusCode, 200);
-  assert.deepEqual(JSON.parse(response.body.toString('utf8')), responseBody());
+  assert.deepEqual(JSON.parse(response.body.toString('utf8')), normalizedResponseBody());
   assert.equal(upstreamCalls.length, 1);
   assert.deepEqual(upstreamCalls[0].headers, {
     accept: 'application/json',
@@ -220,7 +244,7 @@ test('valid request injects provider Authorization and forwards only fixed heade
     'statusCode',
     'tokenCounts',
   ]);
-  assert.equal(JSON.stringify(receipts).includes('synthetic request'), false);
+  assert.equal(JSON.stringify(receipts).includes(CREDENTIAL_PROXY_CANARY_INPUT), false);
   assert.equal(JSON.stringify(receipts).includes(UPSTREAM_KEY), false);
 });
 
@@ -269,8 +293,11 @@ test('malformed, oversized, mismatched, and non-success provider responses fail 
   const cases = [
     { body: Buffer.from('{'), code: 'PROXY_RESPONSE_INVALID' },
     { body: Buffer.from(JSON.stringify({ ...responseBody(), model: 'other' })), code: 'PROXY_RESPONSE_INVALID' },
-    { body: Buffer.from(JSON.stringify({ ...responseBody(), extra: true })), code: 'PROXY_RESPONSE_INVALID' },
-    { body: Buffer.from(JSON.stringify({ ...responseBody(), usage: { input_tokens: 1, output_tokens: 1, total_tokens: 9 } })), code: 'PROXY_RESPONSE_INVALID' },
+    { body: Buffer.from(JSON.stringify({ ...responseBody(), object: 'not-response' })), code: 'PROXY_RESPONSE_INVALID' },
+    { body: Buffer.from(JSON.stringify({ ...responseBody(), status: 'in_progress' })), code: 'PROXY_RESPONSE_INVALID' },
+    { body: Buffer.from(JSON.stringify({ ...responseBody(), error: { code: 'server_error' } })), code: 'PROXY_RESPONSE_INVALID' },
+    { body: Buffer.from(JSON.stringify({ ...responseBody(), incomplete_details: { reason: 'max_output_tokens' } })), code: 'PROXY_RESPONSE_INVALID' },
+    { body: Buffer.from(JSON.stringify({ ...responseBody(), usage: { input_tokens: 1, output_tokens: 1, total_tokens: 8_193 } })), code: 'PROXY_RESPONSE_INVALID' },
   ];
   for (const entry of cases) {
     await t.test(entry.code, async (t) => {

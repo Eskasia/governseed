@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "repair-2",
+  "agent": "Sol",
+  "model": "gpt-5.6-sol",
+  "agentId": "019fc2fa-b832-7363-8872-20c0ada2ed5a",
+  "verdict": "ACCEPT",
+  "technicalToken": "TECHNICALLY_ACCEPTABLE_FOR_HUMAN_REAPPROVAL",
+  "remainingTechnicalBlockers": 0,
+  "providerRequestCount": 0,
+  "workflowDispatch": "NOT_RUN",
+  "runtimeCanary": "NOT_RUN",
+  "runtimeIdentity": "NOT_RUN",
+  "humanApproval": "PENDING_HUMAN_REAPPROVAL",
+  "exactModelCandidate": "gpt-5.6-luna",
+  "modelBinding": {
+    "provider": "OpenAI",
+    "modelId": "gpt-5.6-luna",
+    "aliasAllowed": false,
+    "fallbackAllowed": false
+  },
+  "reviewPacketSha256": "5335b06e4e2eea189e864130239e1ca7d8cbff2c96ddbd801ee29ea53328948c",
+  "pendingApprovalTemplateSha256": "f43275f0dde9bb01c5794f705c86ffdb195fa3e10ff7e3b99f955e3ae750dad3",
+  "hashConsistency": "CONSISTENT",
+  "technicalReviewEvidencePath": "benchmarks/external-oss-v8/control/G2/repair-2/sol-review-evidence.json",
+  "mergeAuthorized": false,
+  "providerRequestAuthorized": false,
+  "runtimeCanaryAuthorized": false,
+  "humanApprovalCreated": false,
+  "claimBoundary": "ACCEPT is a technical repair verdict only. gpt-5.6-luna is locked as the exact candidate, but G2 remains BLOCKED pending human reapproval; no provider request, workflow dispatch, runtime identity canary, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance is authorized."
+}

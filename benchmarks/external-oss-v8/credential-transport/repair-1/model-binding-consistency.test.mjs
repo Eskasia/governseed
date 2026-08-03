@@ -18,6 +18,8 @@ test('G2 repair-2 model binding is exact and consistent across every active surf
   const design = readJson(`${REPAIR_2}/design.json`);
   const requestSchema = readJson(`${REPAIR_2}/request.schema.json`);
   const responseSchema = readJson(`${REPAIR_2}/response.schema.json`);
+  const normalizedResponseSchema = readJson(`${REPAIR_2}/normalized-proxy-response.schema.json`);
+  const providerResponseValidation = readJson(`${REPAIR_2}/provider-response-validation.json`);
   const packet = readJson(`${REPAIR_2}/review-packet.json`);
   const approvalSchema = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.schema.json');
   const pendingApproval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.template.json');
@@ -48,6 +50,9 @@ test('G2 repair-2 model binding is exact and consistent across every active surf
 
   assert.equal(requestSchema.properties.model.const, MODEL);
   assert.equal(responseSchema.properties.model.const, MODEL);
+  assert.equal(normalizedResponseSchema.properties.model.const, MODEL);
+  assert.equal(providerResponseValidation.modelId, MODEL);
+  assert.equal(prep.providerResponseValidationSourcePath, 'experimental/governance-impact/lib/provider-response-validation.mjs');
   assert.equal(approvalSchema.properties.approvedModelId.const, MODEL);
   assert.equal(receiptSchema.properties.modelId.const, MODEL);
   assert.equal(pendingApproval.approvedModelId, MODEL);
@@ -65,8 +70,12 @@ test('G2 repair-2 model binding is exact and consistent across every active surf
   assert.equal(requestSchema.properties.text.properties.format.properties.strict.const, true);
   assert.equal(requestSchema.properties.text.properties.format.properties.schema.properties.required.const[0], 'runtime_canary');
   assert.equal(responseSchema.properties.model.const, MODEL);
-  assert.deepEqual(packet.transport.responseEnvelopeFields, ['id', 'model', 'output', 'usage']);
+  assert.deepEqual(packet.transport.responseEnvelopeFields, ['model', 'output_text', 'usage']);
+  assert.deepEqual(packet.transport.providerResponseRequiredFields, [
+    'id', 'object', 'status', 'model', 'error', 'incomplete_details', 'output', 'usage',
+  ]);
   assert.equal(packet.transport.responseModelId, MODEL);
+  assert.equal(packet.transport.fixedInput, 'Return exactly the JSON object {"runtime_canary":"PASS"}.');
   assert.equal(packet.transport.structuredOutputPath, 'text.format');
   assert.equal(packet.providerRequests, 0);
   assert.equal(prep.providerRequests, 0);
@@ -78,6 +87,9 @@ test('G2 repair-2 model binding is exact and consistent across every active surf
     ['designSha256', packet.hashes.designPath],
     ['requestSchemaSha256', packet.hashes.requestSchemaPath],
     ['responseSchemaSha256', packet.hashes.responseSchemaPath],
+    ['providerResponseValidationSha256', packet.hashes.providerResponseValidationPath],
+    ['providerResponseValidationSourceSha256', packet.hashes.providerResponseValidationSourcePath],
+    ['normalizedResponseSchemaSha256', packet.hashes.normalizedResponseSchemaPath],
     ['proxySourceSha256', packet.hashes.proxySourcePath],
   ]) {
     assert.equal(packet.hashes[field], sha256(relativePath), `hash drift: ${relativePath}`);

@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 1,
+  "contractType": "provider-response-validation",
+  "provider": "OpenAI",
+  "endpoint": "https://api.openai.com/v1/responses",
+  "modelId": "gpt-5.6-luna",
+  "httpStatus": {
+    "minimum": 200,
+    "maximum": 299
+  },
+  "contentType": "application/json",
+  "requiredFields": {
+    "id": "non-empty-string",
+    "object": "response",
+    "status": "completed",
+    "model": "gpt-5.6-luna",
+    "error": null,
+    "incomplete_details": null,
+    "output": "array",
+    "usage": "object"
+  },
+  "additionalTopLevelFieldsAllowed": true,
+  "usage": {
+    "requiredFields": ["input_tokens", "output_tokens", "total_tokens"],
+    "additionalFieldsAllowed": true,
+    "minimum": 0,
+    "totalMaximum": 8192
+  },
+  "outputTextExtraction": {
+    "source": "output[].content[] where content.type=output_text",
+    "normalizedField": "output_text",
+    "nonEmpty": true
+  },
+  "normalizedResponseSchemaPath": "benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json",
+  "rawResponsePersistence": "HASH_ONLY",
+  "rawOutputPersistence": "FORBIDDEN",
+  "authorizationPersistence": "FORBIDDEN"
+}

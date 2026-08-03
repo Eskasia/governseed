@@ -33,6 +33,14 @@ const RESPONSE_SCHEMA_PATH = join(
   REPO_ROOT,
   'benchmarks/external-oss-v8/credential-transport/repair-2/response.schema.json',
 );
+const PROVIDER_RESPONSE_CONTRACT_PATH = join(
+  REPO_ROOT,
+  'benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json',
+);
+const NORMALIZED_RESPONSE_SCHEMA_PATH = join(
+  REPO_ROOT,
+  'benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json',
+);
 
 const EXACT_IMAGE =
   'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5';
@@ -122,14 +130,18 @@ test('the repaired canary request uses Responses text.format structured output',
   assert.equal('json_schema' in request, false);
 });
 
-test('request and proxy schemas reject response_format and accept only the canary structured schema', async () => {
-  const [requestSchemaText, responseSchemaText, proxyText] = await Promise.all([
+test('request, provider, and normalized schemas separate the provider response contract', async () => {
+  const [requestSchemaText, responseSchemaText, providerContractText, normalizedSchemaText, proxyText] = await Promise.all([
     readText(REQUEST_SCHEMA_PATH),
     readText(RESPONSE_SCHEMA_PATH),
+    readText(PROVIDER_RESPONSE_CONTRACT_PATH),
+    readText(NORMALIZED_RESPONSE_SCHEMA_PATH),
     readText(PROXY_PATH),
   ]);
   const requestSchema = JSON.parse(requestSchemaText);
   const responseSchema = JSON.parse(responseSchemaText);
+  const providerContract = JSON.parse(providerContractText);
+  const normalizedSchema = JSON.parse(normalizedSchemaText);
 
   assert.equal(requestSchema.properties.text.properties.format.properties.type.const, 'json_schema');
   assert.deepEqual(
@@ -141,10 +153,24 @@ test('request and proxy schemas reject response_format and accept only the canar
     ['PASS'],
   );
   assert.equal('response_format' in requestSchema.properties, false);
-  assert.deepEqual(responseSchema.required, ['id', 'model', 'output', 'usage']);
+  assert.deepEqual(requestSchema.properties.input.const, 'Return exactly the JSON object {"runtime_canary":"PASS"}.');
+  assert.deepEqual(responseSchema.required, ['model', 'output_text', 'usage']);
   assert.equal(responseSchema.properties.model.const, MODEL_ID);
+  assert.deepEqual(normalizedSchema.required, ['model', 'output_text', 'usage']);
+  assert.equal(providerContract.additionalTopLevelFieldsAllowed, true);
+  assert.equal(providerContract.normalizedResponseSchemaPath, 'benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json');
+  assert.deepEqual(providerContract.requiredFields, {
+    id: 'non-empty-string',
+    object: 'response',
+    status: 'completed',
+    model: MODEL_ID,
+    error: null,
+    incomplete_details: null,
+    output: 'array',
+    usage: 'object',
+  });
   assert.match(proxyText, /text.*format/s);
-  assert.doesNotMatch(proxyText, /response_format/);
+  assert.match(proxyText, /CREDENTIAL_PROXY_CANARY_INPUT/);
 });
 
 test('the runtime canary records a real UDS connection with scrubbed environment names', async () => {
@@ -164,9 +190,8 @@ test('the runtime canary records a real UDS connection with scrubbed environment
       assert.equal('response_format' in parsed, false);
       response.writeHead(200, { 'content-type': 'application/json' });
       response.end(JSON.stringify({
-        id: 'resp_synthetic',
         model: MODEL_ID,
-        output: [{ content: [{ text: '{"runtime_canary":"PASS"}' }] }],
+        output_text: '{"runtime_canary":"PASS"}',
         usage: { input_tokens: 1, output_tokens: 1, total_tokens: 2 },
       }));
     });
@@ -187,6 +212,7 @@ test('the runtime canary records a real UDS connection with scrubbed environment
     assert.equal(output.udsConnection, 'PASS');
     assert.equal(output.responseModelId, MODEL_ID);
     assert.equal(output.responseEnvelopeValid, true);
+    assert.equal(output.normalizedResponseValid, true);
     assert.equal(requestCount, 1);
   } finally {
     await new Promise((resolve) => server.close(resolve));

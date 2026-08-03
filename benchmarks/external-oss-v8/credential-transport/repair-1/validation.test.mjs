@@ -17,6 +17,8 @@ test('repair-2 packet, schemas, immutable evidence, and source contract are cons
   const design = readJson('benchmarks/external-oss-v8/credential-transport/repair-2/design.json');
   const requestSchema = readJson('benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json');
   const responseSchema = readJson('benchmarks/external-oss-v8/credential-transport/repair-2/response.schema.json');
+  const providerResponseValidation = readJson('benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json');
+  const normalizedResponseSchema = readJson('benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json');
   const pendingApproval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.template.json');
   const oldApproval = readJson('benchmarks/external-oss-v8/credential-transport/human-approval.json');
   const inherited = readJson('benchmarks/external-oss-v8/control/G2/repair-1/inherited-evidence.json');
@@ -62,14 +64,19 @@ test('repair-2 packet, schemas, immutable evidence, and source contract are cons
   assert.equal(responseSchema.additionalProperties, false);
   assert.equal(requestSchema.properties.model.const, 'gpt-5.6-luna');
   assert.equal(responseSchema.properties.model.const, 'gpt-5.6-luna');
+  assert.equal(requestSchema.properties.input.const, 'Return exactly the JSON object {"runtime_canary":"PASS"}.');
   assert.equal(requestSchema.properties.text.properties.format.properties.name.const, 'governseed_runtime_canary');
   assert.equal(requestSchema.properties.text.properties.format.properties.strict.const, true);
   assert.deepEqual(
     requestSchema.properties.text.properties.format.properties.schema.properties.required.const,
     ['runtime_canary'],
   );
-  assert.deepEqual(responseSchema.required, ['id', 'model', 'output', 'usage']);
+  assert.deepEqual(responseSchema.required, ['model', 'output_text', 'usage']);
   assert.equal(responseSchema.properties.usage.additionalProperties, false);
+  assert.deepEqual(normalizedResponseSchema.required, ['model', 'output_text', 'usage']);
+  assert.equal(providerResponseValidation.additionalTopLevelFieldsAllowed, true);
+  assert.equal(providerResponseValidation.usage.additionalFieldsAllowed, true);
+  assert.equal(providerResponseValidation.requiredFields.status, 'completed');
   assert.equal(prep.status, 'READY_FOR_HUMAN_REAPPROVAL');
   assert.equal(prep.runtimeImage.lockedReference, 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5');
   assert.equal(prep.runtimeImage.executablePath, '/usr/local/bin/node');
@@ -83,6 +90,9 @@ test('repair-2 packet, schemas, immutable evidence, and source contract are cons
     ['designSha256', packet.hashes.designPath],
     ['requestSchemaSha256', packet.hashes.requestSchemaPath],
     ['responseSchemaSha256', packet.hashes.responseSchemaPath],
+    ['providerResponseValidationSha256', packet.hashes.providerResponseValidationPath],
+    ['providerResponseValidationSourceSha256', packet.hashes.providerResponseValidationSourcePath],
+    ['normalizedResponseSchemaSha256', packet.hashes.normalizedResponseSchemaPath],
     ['proxySourceSha256', packet.hashes.proxySourcePath],
     ['canaryClientSha256', packet.hashes.canaryClientPath],
     ['workflowSha256', packet.hashes.workflowPath],
@@ -91,6 +101,22 @@ test('repair-2 packet, schemas, immutable evidence, and source contract are cons
   }
   for (const entry of inherited.immutableEvidence) {
     assert.equal(sha256(entry.path), entry.sha256, `immutable evidence changed: ${entry.path}`);
+  }
+
+  for (const [snapshotPath, activePath] of [
+    [packet.attempt2Artifacts.designPath, packet.hashes.designPath],
+    [packet.attempt2Artifacts.requestSchemaPath, packet.hashes.requestSchemaPath],
+    [packet.attempt2Artifacts.providerResponseValidationPath, packet.hashes.providerResponseValidationPath],
+    [packet.attempt2Artifacts.normalizedResponseSchemaPath, packet.hashes.normalizedResponseSchemaPath],
+    [packet.attempt2Artifacts.responseSchemaPath, packet.hashes.responseSchemaPath],
+    [packet.attempt2Artifacts.proxySourcePath, packet.hashes.proxySourcePath],
+    [packet.attempt2Artifacts.providerResponseValidationSourcePath, packet.hashes.providerResponseValidationSourcePath],
+    [packet.attempt2Artifacts.canaryClientPath, packet.hashes.canaryClientPath],
+    [packet.attempt2Artifacts.workflowPath, packet.hashes.workflowPath],
+    [packet.attempt2Artifacts.reviewPacketPath, 'benchmarks/external-oss-v8/credential-transport/repair-2/review-packet.json'],
+    [packet.attempt2Artifacts.reviewPacketMarkdownPath, 'benchmarks/external-oss-v8/credential-transport/repair-2/review-packet.md'],
+  ]) {
+    assert.equal(sha256(snapshotPath), sha256(activePath), `attempt-2 snapshot drift: ${snapshotPath}`);
   }
 
   const source = fs.readFileSync(path.join(ROOT, packet.hashes.proxySourcePath), 'utf8');
