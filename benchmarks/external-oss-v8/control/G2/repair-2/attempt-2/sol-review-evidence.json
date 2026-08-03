@@ -6,6 +6,13 @@
   "attempt": 2,
   "evidenceClass": "external-observational",
   "reviewStatus": "ACCEPT",
+  "reviewedWorkingTreeHead": "5c3e63cd427ecb5aa4279c346e136349a32eab28",
+  "reviewedTreeSha": "6f2151f833d463d8ee98479f013b39409d8d6bc9",
+  "remainingTechnicalBlockers": 0,
+  "providerRequests": 0,
+  "workflowDispatch": "NOT_RUN",
+  "runtimeCanary": "NOT_RUN",
+  "humanApproval": "PENDING_HUMAN_REAPPROVAL",
   "reviewer": {
     "agent": "Sol",
     "model": "gpt-5.6-sol",
@@ -48,7 +55,7 @@
   ],
   "independentAssessment": {
     "blockingDefects": [],
-    "remainingTechnicalBlockers": null,
+    "remainingTechnicalBlockers": 0,
     "providerRequests": 0,
     "workflowDispatch": "NOT_RUN",
     "runtimeCanary": "NOT_RUN",
@@ -70,8 +77,7 @@
     "redactedEvidence": "PASS"
   },
   "recommendation": "Proceed only to human reapproval review of the attempt-2 hashes; do not authorize runtime execution from this technical verdict.",
-  "readOnlyReviewAgentId": "019fc564-1c1b-7262-ae78-75c517aca6fd",
-  "reviewedWorkingTreeHead": "244c46bd11c194ebc93b395e15a69928e3d3f87a",
+  "readOnlyReviewAgentId": "019fc69a-dd9a-7f61-a74f-4ed761bd69ef",
   "prStateAtReadOnlyReview": {
     "number": 77,
     "state": "OPEN",
@@ -79,7 +85,7 @@
     "draft": false,
     "base": "main",
     "headBranch": "benchmark/v8-g2-runtime-canary-repair-1",
-    "headSha": "244c46bd11c194ebc93b395e15a69928e3d3f87a"
+    "headSha": "5c3e63cd427ecb5aa4279c346e136349a32eab28"
   },
   "offlineValidation": {
     "passed": 43,
