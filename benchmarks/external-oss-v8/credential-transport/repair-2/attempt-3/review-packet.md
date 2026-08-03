@@ -18,6 +18,10 @@ The provider response contract is intentionally separate from the closed proxy-t
 | Canary client | `0fcbc59d2c77d5e42174eaff375d183016f1f361a338b4e77c2b9e73cc4a6742` |
 | Workflow | `91d71cf39ddab0e5501100d79fcb20769dfea4364d5f0a9c026b62c41132e8a0` |
 
+Review packet SHA-256: `c2d65e676901e73e44dd31188c231c2d956c053604b72dc4891af7f384210f86`
+
+Evidence status: local synthetic tests `PASS`; `npm run check`, `npm run validate`, `npm run test:governance`, `npm run test:privacy`, `npm run test:experimental` (`122/122`), and `npm run ci` passed. The focused G2 suite passed `37/37`; YAML, shell, Node syntax, secret scan, and hash consistency passed. Provider requests remain `0`, workflow dispatch is `NOT_RUN`, and runtime canary is `NOT_RUN`.
+
 The approved repair-1 and repair-2 records remain immutable. The approved repair-2 record does not authorize this changed workflow or packet. No approved repair-2 attempt-3 record or runtime identity receipt is created. `approvedBy` and `approvedAt` remain `null` in `human-approval-repair-2-attempt-3.template.json`; the addendum is also pending.
 
 Provider requests: `0`. Workflow dispatch: `NOT_RUN`. Runtime canary: `NOT_RUN`. Human approval: `PENDING_HUMAN_REVIEW`.

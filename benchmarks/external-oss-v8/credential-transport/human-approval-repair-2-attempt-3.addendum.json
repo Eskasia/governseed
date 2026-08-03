@@ -23,7 +23,7 @@
   },
   "newBindingHashes": {
     "workflowSha256": "91d71cf39ddab0e5501100d79fcb20769dfea4364d5f0a9c026b62c41132e8a0",
-    "reviewPacketSha256": "55935f030474710f61d76701bcc7cc98759f82f72d89e5e274c63430261bf0a0"
+    "reviewPacketSha256": "c2d65e676901e73e44dd31188c231c2d956c053604b72dc4891af7f384210f86"
   },
   "scope": [
     "credential-transport",
