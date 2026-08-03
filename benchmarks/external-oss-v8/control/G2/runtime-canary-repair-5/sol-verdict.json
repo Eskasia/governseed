@@ -1,0 +1,23 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "runtime-canary-repair-5",
+  "verdict": "ACCEPT",
+  "reviewer": "Sol",
+  "model": "gpt-5.6-sol",
+  "reviewedTechnicalHead": "b7e7d34e68031671dee41fe7fe13800accae3e51",
+  "reviewedTechnicalTreeSha": "2492683260127bc118f090a8f1808da367264dbc",
+  "workflowSha256": "abfd7bbd8f8453e629e524dfc81451db3114139237c90d189be0277973ebb051",
+  "technicalManifestSha256": "e71090b084ff17a964027d1a7288b43d526152852131ac866d64bd836705c809",
+  "reviewPacketSha256": "0a215526da26ff3ec59df9ad5c696c70c33a9229ff092617aabe8e3b2577839d",
+  "exactModel": "gpt-5.6-luna",
+  "aliasAllowed": false,
+  "fallbackAllowed": false,
+  "remainingTechnicalBlockers": 0,
+  "providerRequests": 0,
+  "workflowDispatch": "NOT_RUN",
+  "runtimeCanary": "NOT_RUN",
+  "humanApproval": "PENDING_HUMAN_REVIEW",
+  "claimBoundary": "Sol accepted the committed repair-5 offline/evidence candidate only; no provider request, runtime identity canary, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance is established."
+}
