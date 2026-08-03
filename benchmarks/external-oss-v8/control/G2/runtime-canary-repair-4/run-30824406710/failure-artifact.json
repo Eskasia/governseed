@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "workflowRunId": "30824406710",
+  "mainCommitSha": "00cd4d80a550bbae150248c52b4ff5faf68ac351",
+  "failureStage": "binding-validation",
+  "failureCode": "REPAIRED_BINDING_INVALID",
+  "failedChecks": [
+    "technicalManifestMatches"
+  ],
+  "providerRequestCount": 0,
+  "runtimeImage": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+  "runtimeImageDigestMatch": true,
+  "nodePathProbe": "NOT_RUN",
+  "containerUidGid": "NOT_OBSERVED",
+  "socketUidGid": "NOT_OBSERVED",
+  "socketMode": "NOT_OBSERVED",
+  "hostProxy": "NOT_STARTED",
+  "runtimeCanary": "NOT_RUN",
+  "credentialNamesObserved": []
+}

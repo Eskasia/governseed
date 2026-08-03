@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "repair-2",
+  "attempt": 4,
+  "entries": [
+    {
+      "path": ".github/workflows/external-oss-v8-runtime-identity.yml",
+      "sha256": "33adf28248f6762bfd64decd1f7a2b6899d6dd3f206d07b70dcbd88d929ba6f1"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/control/G2/runtime-canary-prep/canary-client.mjs",
+      "sha256": "0fcbc59d2c77d5e42174eaff375d183016f1f361a338b4e77c2b9e73cc4a6742"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/credential-transport/repair-2/design.json",
+      "sha256": "434da5f42ae9d5752b5db6641557cec6a3893a22988225947458d287d516d995"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json",
+      "sha256": "5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcce7182c5662c2a08e"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json",
+      "sha256": "5b36f410ebc898a34eb2d4e67814441c78d5331e1d0764750aeb98c9bfb7f528"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json",
+      "sha256": "630ee0eb7b1ca458b1562a676f318430b675b92b005a98c958cb3226b65afb51"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/credential-transport/repair-2/response.schema.json",
+      "sha256": "5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcce7182c5662c2a08e"
+    },
+    {
+      "path": "experimental/governance-impact/lib/credential-proxy.mjs",
+      "sha256": "0d77d9f7d74daffae64d30169755b049aa00f0c9d536c3cb228b755878c57eea"
+    },
+    {
+      "path": "experimental/governance-impact/lib/oci-proxy-facade.mjs",
+      "sha256": "463346868d6ab92357d88696b44356998b8ad32703a7b9095dc3dcb51b2fbdfe"
+    },
+    {
+      "path": "experimental/governance-impact/lib/oci-supervisor.mjs",
+      "sha256": "9e37e7ef72144c446a495eb1a42d126f94133b8310134fbd50f2eb9172622293"
+    },
+    {
+      "path": "experimental/governance-impact/lib/provider-response-validation.mjs",
+      "sha256": "980e8cef7e58028a017406b5ce776b292639bb756501cbbc002b01c4d2919711"
+    },
+    {
+      "path": "experimental/governance-impact/uds-relay.mjs",
+      "sha256": "decd68ec23bb3232e49f7fd3036626fed55e973d7149c399e0eb3ac606eaeb40"
+    }
+  ]
+}
