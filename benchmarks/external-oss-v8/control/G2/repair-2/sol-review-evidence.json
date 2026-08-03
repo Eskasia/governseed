@@ -12,7 +12,17 @@
   "providerRequests": 0,
   "workflowDispatch": "NOT_RUN",
   "runtimeCanary": "NOT_RUN",
-  "humanApproval": "PENDING_HUMAN_REAPPROVAL",
+  "humanApproval": "APPROVED",
+  "approvalRecordPath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.json",
+  "approvalSourcePath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-source.json",
+  "approvalRecordSha256": "0bd0869949786ba80e16c048b9275acf0d9328046b529a3ad793af9fa0852de0",
+  "approvalSourceSha256": "c9e8ea60d1cb72943663402c0c10adf9fb83f106fc999252b90db0fd31deafd3",
+  "approvalCommit": "faead157d6f7c6bd0e407761c63a53325d340540",
+  "approvalCommentId": 5163819162,
+  "approvalCommentUrl": "https://github.com/Eskasia/governseed/pull/77#issuecomment-5163819162",
+  "approvalAuthor": "Eskasia",
+  "approvalCreatedAt": "2026-08-03T08:06:22Z",
+  "approvedAt": "2026-08-03T08:04:00Z",
   "reviewer": {
     "agent": "Sol",
     "model": "gpt-5.6-sol",
@@ -59,14 +69,14 @@
     "providerRequests": 0,
     "workflowDispatch": "NOT_RUN",
     "runtimeCanary": "NOT_RUN",
-    "humanApproval": "PENDING_HUMAN_REAPPROVAL",
+    "humanApproval": "APPROVED",
     "exactModelCandidate": "gpt-5.6-luna",
     "aliasAllowed": false,
     "fallbackAllowed": false,
     "hashConsistency": "CONSISTENT",
     "oldRepair1ApprovalUnchanged": true,
     "oldRepair1ApprovalAppliesOnlyToOldHashes": true,
-    "repair2ApprovedRecordPresent": false,
+    "repair2ApprovedRecordPresent": true,
     "runtimeIdentityReceiptPresent": false,
     "noRealProviderTransport": true
   },
@@ -76,8 +86,17 @@
     "fixedInputBoundary": "PASS",
     "redactedEvidence": "PASS"
   },
-  "recommendation": "Proceed only to human reapproval review of the attempt-2 hashes; do not authorize runtime execution from this technical verdict.",
+  "recommendation": "Human reapproval is verified for the repair-2 hashes; do not authorize a provider request, workflow dispatch, or runtime execution from this evidence.",
   "readOnlyReviewAgentId": "019fc69a-dd9a-7f61-a74f-4ed761bd69ef",
+  "finalReadOnlyReview": {
+    "agent": "Sol",
+    "model": "gpt-5.6-sol",
+    "agentId": "019fc786-b39e-7460-b781-9b8452dbd888",
+    "reviewedHead": "faead157d6f7c6bd0e407761c63a53325d340540",
+    "reviewedTreeSha": "2d645e28c70df1bfc98eddcef962ddb4eb23981b",
+    "verdict": "ACCEPT",
+    "blockingFindings": 0
+  },
   "prStateAtReadOnlyReview": {
     "number": 77,
     "state": "OPEN",
@@ -98,7 +117,7 @@
     "mergeAuthorized": false,
     "providerRequestAuthorized": false,
     "runtimeCanaryAuthorized": false,
-    "humanApprovalCreated": false
+    "humanApprovalCreated": true
   },
-  "claimBoundary": "Technical offline and synthetic ACCEPT only. This is not provider evidence, runtime identity evidence, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance; human reapproval and any runtime canary remain separately gated."
+  "claimBoundary": "Approval verified plus technical offline and synthetic ACCEPT only. This is not provider evidence, runtime identity evidence, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance; provider request, workflow dispatch, and runtime canary remain NOT_RUN."
 }
