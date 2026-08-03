@@ -99,6 +99,24 @@ const STATUS_BY_CODE = Object.freeze({
   PROXY_CLOSED: 503,
 });
 
+export const PROXY_SUMMARY_STAGES = Object.freeze([
+  'CREATED',
+  'STARTING',
+  'LISTENING',
+  'REQUEST_VALIDATION',
+  'UPSTREAM_REQUEST',
+  'UPSTREAM_RESPONSE',
+  'PROVIDER_RESPONSE_VALIDATION',
+  'RECEIPT_ASSEMBLY',
+  'CLOSED',
+]);
+
+const PROXY_SUMMARY_ERROR_CODES = Object.freeze([
+  ...Object.keys(STATUS_BY_CODE),
+  'PROXY_SERVER_FAILED',
+  'PROXY_UNEXPECTED_ERROR',
+]);
+
 const defaultFs = Object.freeze({
   chmod: (value, mode) => fs.promises.chmod(value, mode),
   lstat: (value) => fs.promises.lstat(value),
@@ -689,7 +707,25 @@ export function createHostCredentialProxy(options) {
   let closeProof = null;
   let attemptUnsafe = false;
   let closeProxy = null;
+  let clientRequestObservedCount = 0;
+  let upstreamAttemptCount = 0;
+  let upstreamResponseCount = 0;
+  let successfulReceiptCount = 0;
+  let lastSafeStage = 'CREATED';
+  let lastSafeErrorCode = null;
+  let socketAcceptedConnection = false;
+  let proxyCleanupObserved = false;
   const activeControllers = new Set();
+
+  const setSafeStage = (stage) => {
+    if (PROXY_SUMMARY_STAGES.includes(stage)) lastSafeStage = stage;
+  };
+
+  const setSafeError = (code) => {
+    lastSafeErrorCode = PROXY_SUMMARY_ERROR_CODES.includes(code)
+      ? code
+      : 'PROXY_UNEXPECTED_ERROR';
+  };
 
   const safeLog = (event, code) => {
     const entry = code === undefined
@@ -705,6 +741,8 @@ export function createHostCredentialProxy(options) {
   const recordReceipt = (value) => {
     try {
       receiptSink(Object.freeze(value));
+      successfulReceiptCount += 1;
+      setSafeStage('RECEIPT_ASSEMBLY');
     } catch {
       fail('PROXY_RECEIPT_FAILED');
     }
@@ -752,6 +790,8 @@ export function createHostCredentialProxy(options) {
   };
 
   const callUpstream = async (body, signal) => {
+    setSafeStage('UPSTREAM_REQUEST');
+    upstreamAttemptCount += 1;
     const upstreamResponse = await dependencies.upstreamTransport({
       url: CREDENTIAL_PROXY_ENDPOINT,
       method: CREDENTIAL_PROXY_METHOD,
@@ -763,10 +803,13 @@ export function createHostCredentialProxy(options) {
       body,
       signal,
     });
+    upstreamResponseCount += 1;
+    setSafeStage('UPSTREAM_RESPONSE');
     validateUpstreamResponse(upstreamResponse);
     if (responseContentType(upstreamResponse.headers) !== 'application/json') {
       fail('PROXY_RESPONSE_INVALID');
     }
+    setSafeStage('PROVIDER_RESPONSE_VALIDATION');
     const responseBody = await readResponseBody(
       upstreamResponse.body,
       policy.maxResponseBytes,
@@ -820,6 +863,7 @@ export function createHostCredentialProxy(options) {
   };
 
   const handleRequest = async (request, response) => {
+    socketAcceptedConnection = true;
     const onRequestAborted = () => abortForClient(request, response);
     const onRequestClose = () => {
       if (request.aborted === true || request.complete !== true) {
@@ -839,10 +883,11 @@ export function createHostCredentialProxy(options) {
       assertRequestHeaders(request, policy);
       if (dependencies.clock.now() >= deadlineAt) fail('PROXY_DEADLINE_EXCEEDED');
       if (activeRequest) fail('PROXY_CONCURRENCY_EXCEEDED');
-      if (requestCount >= policy.requestLimit) fail('PROXY_REQUEST_QUOTA_EXCEEDED');
+      if (upstreamAttemptCount >= policy.requestLimit) fail('PROXY_REQUEST_QUOTA_EXCEEDED');
 
       requestCount += 1;
       activeRequest = true;
+      setSafeStage('REQUEST_VALIDATION');
       const requestStartedAt = dependencies.clock.now();
       try {
         const upstreamResponse = await withDeadline(async (signal) => {
@@ -851,6 +896,7 @@ export function createHostCredentialProxy(options) {
             policy.maxRequestBytes,
             signal,
           );
+          clientRequestObservedCount += 1;
           if (signal.aborted) fail('PROXY_DEADLINE_EXCEEDED');
           const sanitizedBody = validateBody(body, policy);
           return {
@@ -885,6 +931,7 @@ export function createHostCredentialProxy(options) {
         ? error.code
         : 'PROXY_UPSTREAM_FAILED';
       attemptUnsafe = true;
+      setSafeError(code);
       safeLog('PROXY_REQUEST_REJECTED', code);
       sendError(response, code);
       if (typeof closeProxy === 'function') {
@@ -900,6 +947,7 @@ export function createHostCredentialProxy(options) {
   const start = async () => {
     if (state !== 'created') fail('PROXY_LIFECYCLE_INVALID');
     state = 'starting';
+    setSafeStage('STARTING');
     if (await pathState(dependencies.fs, socketPath) !== 'absent') {
       state = 'failed';
       fail('PROXY_SOCKET_OCCUPIED');
@@ -921,11 +969,13 @@ export function createHostCredentialProxy(options) {
       }
       server.on('error', () => {
         attemptUnsafe = true;
+        setSafeError('PROXY_SERVER_FAILED');
         safeLog('PROXY_SERVER_ERROR', 'PROXY_SERVER_FAILED');
         if (typeof closeProxy === 'function') void closeProxy().catch(() => {});
       });
       server.on('clientError', () => {
         attemptUnsafe = true;
+        setSafeError('PROXY_BODY_INVALID');
         safeLog('PROXY_REQUEST_REJECTED', 'PROXY_BODY_INVALID');
         if (typeof closeProxy === 'function') void closeProxy().catch(() => {});
       });
@@ -944,6 +994,7 @@ export function createHostCredentialProxy(options) {
       deadlineAt = dependencies.clock.now() + policy.timeoutMs;
       if (!Number.isSafeInteger(deadlineAt)) fail('PROXY_POLICY_INVALID');
       state = 'started';
+      setSafeStage('LISTENING');
       safeLog('PROXY_STARTED');
       return Object.freeze({
         socketPath,
@@ -959,6 +1010,7 @@ export function createHostCredentialProxy(options) {
         : await pathState(dependencies.fs, socketPath) === 'absent';
       ownsSocket = false;
       state = 'failed';
+      setSafeError(error instanceof CredentialProxyError ? error.code : 'PROXY_START_FAILED');
       safeLog('PROXY_START_REJECTED');
       if (!serverClosed || !socketRemoved) fail('PROXY_CLEANUP_UNPROVEN');
       if (error instanceof CredentialProxyError) throw error;
@@ -978,11 +1030,14 @@ export function createHostCredentialProxy(options) {
         : await pathState(dependencies.fs, socketPath) === 'absent';
       if (!serverClosed || !socketRemoved) {
         state = 'failed';
+        setSafeError('PROXY_CLEANUP_UNPROVEN');
         safeLog('PROXY_CLOSE_REJECTED', 'PROXY_CLEANUP_UNPROVEN');
         fail('PROXY_CLEANUP_UNPROVEN');
       }
       ownsSocket = false;
       state = 'closed';
+      proxyCleanupObserved = true;
+      setSafeStage('CLOSED');
       closeProof = Object.freeze({ socketRemoved: true, requestCount });
       safeLog('PROXY_CLOSED');
       return closeProof;
@@ -1001,10 +1056,23 @@ export function createHostCredentialProxy(options) {
     return Object.freeze({ attemptSafe: true });
   };
 
+  const getSummary = () => Object.freeze({
+    schemaVersion: 2,
+    clientRequestObservedCount,
+    upstreamAttemptCount,
+    upstreamResponseCount,
+    successfulReceiptCount,
+    lastSafeStage,
+    lastSafeErrorCode,
+    socketAcceptedConnection,
+    proxyCleanupObserved,
+  });
+
   return Object.freeze({
     policyHash,
     start,
     close,
     proveSafe,
+    getSummary,
   });
 }
