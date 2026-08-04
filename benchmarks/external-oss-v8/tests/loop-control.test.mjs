@@ -145,7 +145,7 @@ test('G2 conflict remains fail-closed and forbidden runs cannot become active', 
 test('recorded GitHub state identifies the control PR without claiming a self-bound final head', () => {
   assert.equal(loopState.activePR, 83);
   assert.deepEqual(loopState.openPullRequests.active, [81, 83]);
-  assert.equal(loopState.latestRunIds.priorLoopControlTechnicalValidation, '30911942323');
+  assert.equal(loopState.latestRunIds.priorLoopControlTechnicalValidation, '30913116324');
   assert.equal('latestValidation' in loopState.latestRunIds, false);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').activePR, 83);
   assert.match(humanGates, /pull\/83/);
@@ -153,6 +153,10 @@ test('recorded GitHub state identifies the control PR without claiming a self-bo
   assert.match(humanGates, /not the final PR identity/);
   assert.match(humanGates, /GitHub PR comment/);
   assert.equal(loopState.finalHeadBinding.status, 'EXTERNAL_GITHUB_EVIDENCE_REQUIRED');
+  const priorHumanGateRun = humanGates.match(/Prior technical-head CI: run `(\d+)`/)?.[1];
+  assert.equal(priorHumanGateRun, loopState.latestRunIds.priorLoopControlTechnicalValidation);
+  assert.equal(ledgerEntries.at(-1).priorTechnicalValidationRun, priorHumanGateRun);
+  assert.equal(ledgerEntries.at(-1).evidence.includes(`https://github.com/Eskasia/governseed/actions/runs/${priorHumanGateRun}`), true);
   assert.doesNotMatch(humanGates, /PENDING_PR_CREATION/);
 });
 

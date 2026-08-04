@@ -13,13 +13,13 @@
     "acceptedG1": "30739570734",
     "forbiddenG2Reruns": ["30814159615", "30824406710", "30850478318"],
     "g2Repair6Validation": "30899414374",
-    "priorLoopControlTechnicalValidation": "30911942323"
+    "priorLoopControlTechnicalValidation": "30913116324"
   },
   "activeRunIds": [],
   "currentHumanGate": "CONTROL_PR_REVIEW_AND_MERGE",
   "completionPercentage": 21.5,
   "completionBasis": "Only PASS nodes count. Canonical phase weights are absent, so the requested fallback weights are divided equally across canonical subnodes; repair nodes have zero weight.",
-  "lastCycleId": "GS-LOOP-2026-08-04-C003",
+  "lastCycleId": "GS-LOOP-2026-08-04-C004",
   "readySetAtSelection": ["P0.4"],
   "nextReadyNodes": [],
   "evidenceConflicts": [
