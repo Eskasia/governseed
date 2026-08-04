@@ -13,13 +13,13 @@
     "acceptedG1": "30739570734",
     "forbiddenG2Reruns": ["30814159615", "30824406710", "30850478318"],
     "g2Repair6Validation": "30899414374",
-    "latestValidation": "30911942323"
+    "priorLoopControlTechnicalValidation": "30911942323"
   },
   "activeRunIds": [],
   "currentHumanGate": "CONTROL_PR_REVIEW_AND_MERGE",
   "completionPercentage": 21.5,
   "completionBasis": "Only PASS nodes count. Canonical phase weights are absent, so the requested fallback weights are divided equally across canonical subnodes; repair nodes have zero weight.",
-  "lastCycleId": "GS-LOOP-2026-08-04-C002",
+  "lastCycleId": "GS-LOOP-2026-08-04-C003",
   "readySetAtSelection": ["P0.4"],
   "nextReadyNodes": [],
   "evidenceConflicts": [
@@ -51,6 +51,10 @@
   "openPullRequests": {
     "active": [81, 83],
     "staleOrSupersededCandidates": [54, 55, 60, 62, 65, 66]
+  },
+  "finalHeadBinding": {
+    "status": "EXTERNAL_GITHUB_EVIDENCE_REQUIRED",
+    "reason": "A Git commit cannot contain its own commit SHA. The exact final PR head, tree, CI run, and independent verdicts must be bound in a GitHub PR comment and the HUMAN_GATE_PACKET before merge."
   },
   "providerRequests": "INDETERMINATE_FOR_RUN_30850478318",
   "workflowDispatch": "NOT_RUN_IN_THIS_CYCLE",

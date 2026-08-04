@@ -142,14 +142,17 @@ test('G2 conflict remains fail-closed and forbidden runs cannot become active', 
   assert.equal(loopState.evidenceConflicts.some((item) => item.conflictId === 'G2-REPAIR6-APPROVAL-LOCATION-001'), true);
 });
 
-test('recorded GitHub and human-gate state matches the current control PR', () => {
+test('recorded GitHub state identifies the control PR without claiming a self-bound final head', () => {
   assert.equal(loopState.activePR, 83);
   assert.deepEqual(loopState.openPullRequests.active, [81, 83]);
-  assert.equal(loopState.latestRunIds.latestValidation, '30911942323');
+  assert.equal(loopState.latestRunIds.priorLoopControlTechnicalValidation, '30911942323');
+  assert.equal('latestValidation' in loopState.latestRunIds, false);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').activePR, 83);
   assert.match(humanGates, /pull\/83/);
-  assert.match(humanGates, /c8cdfc3a608b3ff9b886ab516c3a29a67854b362/);
-  assert.match(humanGates, /f639e1a3673007146c1417897ab8abe09fd963bc/);
+  assert.match(humanGates, /Prior technical evidence head\/tree/);
+  assert.match(humanGates, /not the final PR identity/);
+  assert.match(humanGates, /GitHub PR comment/);
+  assert.equal(loopState.finalHeadBinding.status, 'EXTERNAL_GITHUB_EVIDENCE_REQUIRED');
   assert.doesNotMatch(humanGates, /PENDING_PR_CREATION/);
 });
 
@@ -197,14 +200,15 @@ test('validator rejects corrupted control records', async (t) => {
 });
 
 test('ledger accepts appended immutable records and binds the prior technical result', () => {
-  assert.equal(ledgerEntries.length >= 2, true);
+  assert.equal(ledgerEntries.length >= 3, true);
   assert.equal(new Set(ledgerEntries.map((entry) => entry.cycleId)).size, ledgerEntries.length);
   assert.deepEqual([...ledgerEntries].map((entry) => entry.timestamp).sort(), ledgerEntries.map((entry) => entry.timestamp));
   assert.equal(ledgerEntries.at(-1).cycleId, loopState.lastCycleId);
   assert.equal(ledgerEntries[0].startingSha, loopState.currentMainSha);
-  assert.equal(ledgerEntries.at(-1).reconcilesCycleId, ledgerEntries[0].cycleId);
-  assert.equal(ledgerEntries.at(-1).resultingSha, 'c8cdfc3a608b3ff9b886ab516c3a29a67854b362');
-  assert.equal(ledgerEntries.at(-1).resultingTreeSha, 'f639e1a3673007146c1417897ab8abe09fd963bc');
+  assert.equal(ledgerEntries[1].reconcilesCycleId, ledgerEntries[0].cycleId);
+  assert.equal(ledgerEntries.at(-1).reconcilesCycleId, ledgerEntries.at(-2).cycleId);
+  assert.equal(ledgerEntries.at(-1).priorTechnicalSha, ledgerEntries.at(-1).startingSha);
+  assert.equal(ledgerEntries.at(-1).resultingSha, 'EXTERNAL_GITHUB_PR_HEAD_BINDING_REQUIRED');
   for (const entry of ledgerEntries) {
     assert.equal(entry.selectedNode, loopState.activeNode);
     assert.equal(entry.providerRequests, 'NOT_RUN');

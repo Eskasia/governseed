@@ -48,6 +48,13 @@
 - Decision: preserve the technical head/tree in a new append-only reconciliation record; redact the unaccepted local path before merge; update PR `#83` state; and add deterministic coverage for multi-line ledger append semantics, current human-gate fields, decision-log markers, and local-path absence.
 - This repair changes only P0.4 control metadata and tests. It does not alter G1/G2 evidence or dispatch a workflow.
 
+## 2026-08-04 — Final-head binding is external
+
+- Status: `IN_PROGRESS`
+- A Git commit cannot include its own commit SHA. Therefore committed control files may bind only prior technical evidence; they must not label that SHA or its CI run as the current or final PR head.
+- Decision: the exact final PR head/tree, fresh CI run, and independent checker verdicts are bound in a GitHub PR comment and repeated in the human gate packet. Any subsequent push invalidates that external binding and requires a new one.
+- This rule prevents a passing local test from certifying stale PR metadata.
+
 ## 2026-08-04 — Local UDS relay processes are inadmissible evidence
 
 - A stale local `uds-relay.test.mjs` process tree from the repair-1 worktree has remained alive since 2026-08-02.

@@ -35,7 +35,7 @@
       "humanGate": null,
       "status": "BLOCKED",
       "blockerCode": "CANONICAL_EFFECTIVENESS_PLAN_NOT_FOUND",
-      "attempts": 1,
+      "attempts": 3,
       "activeIssue": 82,
       "activePR": null,
       "lastVerifiedMainSha": "502c92e76e111a4cffbfaf4c3e4bde7f9bf8ce08",
