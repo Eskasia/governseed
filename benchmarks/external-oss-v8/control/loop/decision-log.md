@@ -55,6 +55,13 @@
 - Decision: the exact final PR head/tree, fresh CI run, and independent checker verdicts are bound in a GitHub PR comment and repeated in the human gate packet. Any subsequent push invalidates that external binding and requires a new one.
 - This rule prevents a passing local test from certifying stale PR metadata.
 
+## 2026-08-04 — Attempt accounting repair
+
+- Status: `IN_PROGRESS`
+- A fresh resume audit found P0.4 recorded one attempt while its append-only ledger contained four selected-node cycles; P0.1 had been incorrectly raised from one to four by an ambiguous mechanical edit.
+- Decision: restore P0.1 to its evidence-backed count, record C005 as P0.4 attempt five, and require the active node attempt count to equal its ledger entry count.
+- The six-cycle ceiling remains fail-closed; this repair uses attempt five and leaves one bounded repair cycle available.
+
 ## 2026-08-04 — Local UDS relay processes are inadmissible evidence
 
 - A stale local `uds-relay.test.mjs` process tree from the repair-1 worktree has remained alive since 2026-08-02.

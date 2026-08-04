@@ -145,7 +145,7 @@ test('G2 conflict remains fail-closed and forbidden runs cannot become active', 
 test('recorded GitHub state identifies the control PR without claiming a self-bound final head', () => {
   assert.equal(loopState.activePR, 83);
   assert.deepEqual(loopState.openPullRequests.active, [81, 83]);
-  assert.equal(loopState.latestRunIds.priorLoopControlTechnicalValidation, '30913116324');
+  assert.equal(loopState.latestRunIds.priorLoopControlTechnicalValidation, '30913519842');
   assert.equal('latestValidation' in loopState.latestRunIds, false);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').activePR, 83);
   assert.match(humanGates, /pull\/83/);
@@ -204,7 +204,7 @@ test('validator rejects corrupted control records', async (t) => {
 });
 
 test('ledger accepts appended immutable records and binds the prior technical result', () => {
-  assert.equal(ledgerEntries.length >= 3, true);
+  assert.equal(ledgerEntries.length >= 5, true);
   assert.equal(new Set(ledgerEntries.map((entry) => entry.cycleId)).size, ledgerEntries.length);
   assert.deepEqual([...ledgerEntries].map((entry) => entry.timestamp).sort(), ledgerEntries.map((entry) => entry.timestamp));
   assert.equal(ledgerEntries.at(-1).cycleId, loopState.lastCycleId);
@@ -213,6 +213,11 @@ test('ledger accepts appended immutable records and binds the prior technical re
   assert.equal(ledgerEntries.at(-1).reconcilesCycleId, ledgerEntries.at(-2).cycleId);
   assert.equal(ledgerEntries.at(-1).priorTechnicalSha, ledgerEntries.at(-1).startingSha);
   assert.equal(ledgerEntries.at(-1).resultingSha, 'EXTERNAL_GITHUB_PR_HEAD_BINDING_REQUIRED');
+  const activeNode = taskGraph.nodes.find((node) => node.nodeId === loopState.activeNode);
+  const activeNodeLedgerEntries = ledgerEntries.filter((entry) => entry.selectedNode === loopState.activeNode);
+  assert.equal(activeNode.attempts, activeNodeLedgerEntries.length);
+  assert.equal(activeNode.attempts <= 6, true);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.1').attempts, 1);
   for (const entry of ledgerEntries) {
     assert.equal(entry.selectedNode, loopState.activeNode);
     assert.equal(entry.providerRequests, 'NOT_RUN');
