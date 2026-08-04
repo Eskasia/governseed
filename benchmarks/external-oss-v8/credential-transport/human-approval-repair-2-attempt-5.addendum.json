@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "repair-2",
+  "attempt": 5,
+  "approvalStatus": "PENDING_HUMAN_REVIEW",
+  "approvalType": "HUMAN_REAPPROVAL_ADDENDUM",
+  "reviewPacketPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-5/review-packet.json",
+  "workflowPath": ".github/workflows/external-oss-v8-runtime-identity.yml",
+  "technicalManifestPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-5/technical-manifest.json",
+  "technicalManifestSha256": "e71090b084ff17a964027d1a7288b43d526152852131ac866d64bd836705c809",
+  "reviewedTechnicalHead": "b7e7d34e68031671dee41fe7fe13800accae3e51",
+  "reviewedTreeSha": "2492683260127bc118f090a8f1808da367264dbc",
+  "solEvidencePath": "benchmarks/external-oss-v8/control/G2/runtime-canary-repair-5/sol-review-evidence.json",
+  "solVerdictPath": "benchmarks/external-oss-v8/control/G2/runtime-canary-repair-5/sol-verdict.json",
+  "approvedModelId": "gpt-5.6-luna",
+  "aliasAllowed": false,
+  "fallbackAllowed": false,
+  "inheritedHashes": {
+    "designSha256": "434da5f42ae9d5752b5db6641557cec6a3893a22988225947458d287d516d995",
+    "requestSchemaSha256": "630ee0eb7b1ca458b1562a676f318430b675b92b005a98c958cb3226b65afb51",
+    "responseSchemaSha256": "5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcce7182c5662c2a08e",
+    "providerResponseValidationSha256": "5b36f410ebc898a34eb2d4e67814441c78d5331e1d0764750aeb98c9bfb7f528",
+    "normalizedResponseSchemaSha256": "5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcce7182c5662c2a08e"
+  },
+  "newBindingHashes": {
+    "workflowSha256": "abfd7bbd8f8453e629e524dfc81451db3114139237c90d189be0277973ebb051",
+    "canaryClientSha256": "75c2f79c90e3f9897686e73f4a1cdadfcf297b9f2c1071ca909e0aee8a8454d9",
+    "hostProxySha256": "167ec3e9265995f6a6d100598d5685f9da22fb0415195e288fb646eb63c12e12",
+    "proxySourceSha256": "f9dd7b6a0778e69f123d060a8df8cef1ab97e63756e7f819cf70d8d6ed85790c",
+    "reviewPacketSha256": "0a215526da26ff3ec59df9ad5c696c70c33a9229ff092617aabe8e3b2577839d",
+    "technicalManifestSha256": "e71090b084ff17a964027d1a7288b43d526152852131ac866d64bd836705c809"
+  },
+  "failedRunEvidencePath": "benchmarks/external-oss-v8/control/G2/runtime-canary-repair-5/run-30850478318",
+  "attempt4ApprovalPath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-4.json",
+  "attempt4ApprovalMustRemainImmutable": true,
+  "scope": [
+    "credential-transport",
+    "runtime-identity-canary",
+    "v8-pilot"
+  ],
+  "limitationsAcknowledged": false,
+  "approvedRecordPath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5.json",
+  "approvalEvidence": {
+    "type": "manual-record",
+    "reference": ""
+  },
+  "providerRequests": 0,
+  "workflowDispatch": "NOT_RUN",
+  "runtimeCanary": "NOT_RUN",
+  "claimBoundary": "Pending human reapproval only; the preserved failed run is not rerun; no provider, runtime, G3, Pilot, scoring, or benchmark acceptance claim."
+}

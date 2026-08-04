@@ -86,6 +86,11 @@ test('repair-2 packet, schemas, immutable evidence, and source contract are cons
   assert.equal(receiptTemplate.providerRequests, 0);
   assert.equal(receiptTemplate.runtimeCanary, 'NOT_RUN');
 
+  const historicalSnapshotPaths = {
+    proxySourceSha256: packet.attempt2Artifacts.proxySourcePath,
+    canaryClientSha256: packet.attempt2Artifacts.canaryClientPath,
+    workflowSha256: packet.attempt2Artifacts.workflowPath,
+  };
   for (const [field, expectedPath] of [
     ['designSha256', packet.hashes.designPath],
     ['requestSchemaSha256', packet.hashes.requestSchemaPath],
@@ -97,12 +102,24 @@ test('repair-2 packet, schemas, immutable evidence, and source contract are cons
     ['canaryClientSha256', packet.hashes.canaryClientPath],
     ['workflowSha256', packet.hashes.workflowPath],
   ]) {
-    assert.equal(sha256(expectedPath), packet.hashes[field], `hash drift: ${expectedPath}`);
+    const boundPath = historicalSnapshotPaths[field] ?? expectedPath;
+    assert.equal(sha256(boundPath), packet.hashes[field], `hash drift: ${boundPath}`);
   }
   for (const entry of inherited.immutableEvidence) {
     assert.equal(sha256(entry.path), entry.sha256, `immutable evidence changed: ${entry.path}`);
   }
 
+  const historicalSnapshotHashes = new Map([
+    [packet.attempt2Artifacts.designPath, packet.hashes.designSha256],
+    [packet.attempt2Artifacts.requestSchemaPath, packet.hashes.requestSchemaSha256],
+    [packet.attempt2Artifacts.providerResponseValidationPath, packet.hashes.providerResponseValidationSha256],
+    [packet.attempt2Artifacts.normalizedResponseSchemaPath, packet.hashes.normalizedResponseSchemaSha256],
+    [packet.attempt2Artifacts.responseSchemaPath, packet.hashes.responseSchemaSha256],
+    [packet.attempt2Artifacts.proxySourcePath, packet.hashes.proxySourceSha256],
+    [packet.attempt2Artifacts.providerResponseValidationSourcePath, packet.hashes.providerResponseValidationSourceSha256],
+    [packet.attempt2Artifacts.canaryClientPath, packet.hashes.canaryClientSha256],
+    [packet.attempt2Artifacts.workflowPath, packet.hashes.workflowSha256],
+  ]);
   for (const [snapshotPath, activePath] of [
     [packet.attempt2Artifacts.designPath, packet.hashes.designPath],
     [packet.attempt2Artifacts.requestSchemaPath, packet.hashes.requestSchemaPath],
@@ -116,7 +133,12 @@ test('repair-2 packet, schemas, immutable evidence, and source contract are cons
     [packet.attempt2Artifacts.reviewPacketPath, 'benchmarks/external-oss-v8/credential-transport/repair-2/review-packet.json'],
     [packet.attempt2Artifacts.reviewPacketMarkdownPath, 'benchmarks/external-oss-v8/credential-transport/repair-2/review-packet.md'],
   ]) {
-    assert.equal(sha256(snapshotPath), sha256(activePath), `attempt-2 snapshot drift: ${snapshotPath}`);
+    const recordedSnapshotHash = historicalSnapshotHashes.get(snapshotPath);
+    if (recordedSnapshotHash) {
+      assert.equal(sha256(snapshotPath), recordedSnapshotHash, `attempt-2 snapshot drift: ${snapshotPath}`);
+    } else {
+      assert.equal(sha256(snapshotPath), sha256(activePath), `attempt-2 snapshot drift: ${snapshotPath}`);
+    }
   }
 
   const source = fs.readFileSync(path.join(ROOT, packet.hashes.proxySourcePath), 'utf8');

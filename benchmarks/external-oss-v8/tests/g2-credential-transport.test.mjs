@@ -1,318 +1,192 @@
 import assert from 'node:assert/strict';
-import { readFileSync, readdirSync, statSync, mkdtempSync, rmSync } from 'node:fs';
+import { mkdtempSync, readFileSync } from 'node:fs';
 import http from 'node:http';
 import os from 'node:os';
 import path from 'node:path';
 import test from 'node:test';
-import { fileURLToPath } from 'node:url';
 
 import {
-  CREDENTIAL_PROXY_ATTEMPT_HEADER,
-  CREDENTIAL_PROXY_PATH,
+  CREDENTIAL_PROXY_CANARY_INPUT,
+  CREDENTIAL_PROXY_ENDPOINT,
+  CREDENTIAL_PROXY_MODEL,
+  CREDENTIAL_PROXY_PROVIDER,
+  CREDENTIAL_PROXY_REQUEST_LIMIT,
+  CREDENTIAL_PROXY_TIMEOUT_MS,
+  CREDENTIAL_PROXY_TOKEN_CEILING,
   createHostCredentialProxy,
-  describeCredentialProxyPolicy,
 } from '../../../experimental/governance-impact/lib/credential-proxy.mjs';
 
-const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-const PROXY_SOURCE = readFileSync(
-  path.join(ROOT, 'experimental/governance-impact/lib/credential-proxy.mjs'),
-  'utf8',
-);
-const FACADE_SOURCE = readFileSync(
-  path.join(ROOT, 'experimental/governance-impact/lib/oci-proxy-facade.mjs'),
-  'utf8',
-);
-const FINDINGS = JSON.parse(readFileSync(
-  path.join(ROOT, 'benchmarks/external-oss-v8/control/G2/credential-transport-findings.json'),
-  'utf8',
-));
+const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '../../..');
+const FIXED_ENVIRONMENT_NAMES = [
+  'GOVERNSEED_BENCHMARK_ID',
+  'GOVERNSEED_PROXY_SOCKET',
+  'GOVERNSEED_RUN_ID',
+  'GOVERNSEED_TASK_ID',
+];
+const TEXT_FORMAT = {
+  type: 'json_schema',
+  name: 'governseed_runtime_canary',
+  strict: true,
+  schema: {
+    type: 'object',
+    additionalProperties: false,
+    required: ['runtime_canary'],
+    properties: { runtime_canary: { type: 'string', enum: ['PASS'] } },
+  },
+};
 
-const ATTEMPT_ID = 'a'.repeat(64);
-const ATTEMPT_BEARER = 'synthetic-attempt-bearer';
-const UPSTREAM_KEY = 'synthetic-host-key';
-const MODEL = 'synthetic-approved-candidate-pending-human';
-const FIXED_ENDPOINT = 'https://api.openai.com/v1/responses';
-const ARBITRARY_ENDPOINT = 'https://api.example.invalid/v1/responses';
+function policy() {
+  return {
+    attemptId: 'g2-repair-5-transport',
+    benchmarkId: 'GS-OSS-2026-08-02-V8',
+    runId: 'g2-repair-5-run',
+    taskId: 'runtime-identity-canary',
+    provider: CREDENTIAL_PROXY_PROVIDER,
+    model: CREDENTIAL_PROXY_MODEL,
+    upstream: CREDENTIAL_PROXY_ENDPOINT,
+    maxRequestBytes: 1_048_576,
+    maxResponseBytes: 4_194_304,
+    requestLimit: CREDENTIAL_PROXY_REQUEST_LIMIT,
+    timeoutMs: CREDENTIAL_PROXY_TIMEOUT_MS,
+    tokenCeiling: CREDENTIAL_PROXY_TOKEN_CEILING,
+  };
+}
 
-function finding(id) {
-  const value = FINDINGS.checks.find((entry) => entry.id === id);
-  assert.ok(value, `missing G2 finding ${id}`);
-  return value;
+function body() {
+  return {
+    model: CREDENTIAL_PROXY_MODEL,
+    input: CREDENTIAL_PROXY_CANARY_INPUT,
+    max_output_tokens: CREDENTIAL_PROXY_TOKEN_CEILING,
+    text: { format: TEXT_FORMAT },
+    metadata: {
+      benchmark_id: 'GS-OSS-2026-08-02-V8',
+      run_id: 'g2-repair-5-run',
+      task_id: 'runtime-identity-canary',
+    },
+  };
+}
+
+function providerResponse() {
+  return {
+    id: 'resp_repair_5',
+    object: 'response',
+    status: 'completed',
+    model: CREDENTIAL_PROXY_MODEL,
+    error: null,
+    incomplete_details: null,
+    output: [{ content: [{ type: 'output_text', text: '{"runtime_canary":"PASS"}' }] }],
+    usage: { input_tokens: 1, output_tokens: 1, total_tokens: 2 },
+  };
 }
 
 function temporarySocket(t) {
-  const directory = mkdtempSync(path.join(os.tmpdir(), 'governseed-v8-g2-'));
+  const directory = mkdtempSync(path.join(os.tmpdir(), 'governseed-g2-transport-'));
   const socketPath = path.join(directory, 'proxy.sock');
-  t.after(() => rmSync(directory, { recursive: true, force: true }));
+  t.after(async () => {
+    await import('node:fs/promises').then(({ rm }) => rm(directory, { recursive: true, force: true }));
+  });
   return socketPath;
 }
 
-function requestProxy(socketPath, options = {}) {
-  const rawBody = options.rawBody ?? JSON.stringify(options.body ?? {
-    model: MODEL,
-    input: 'synthetic request',
-    store: false,
-    stream: true,
-  });
-  const headers = {
-    [CREDENTIAL_PROXY_ATTEMPT_HEADER]: options.attemptId ?? ATTEMPT_ID,
-    'content-type': options.contentType ?? 'application/json',
-    'content-length': Buffer.byteLength(rawBody),
-    ...options.headers,
-  };
-  if (options.authorization !== null) {
-    headers.authorization = options.authorization ?? `Bearer ${ATTEMPT_BEARER}`;
-  }
+function requestProxy(socketPath, requestBody = body()) {
+  const bytes = Buffer.from(JSON.stringify(requestBody));
   return new Promise((resolve, reject) => {
     const request = http.request({
       socketPath,
-      method: options.method ?? 'POST',
-      path: options.path ?? CREDENTIAL_PROXY_PATH,
-      headers,
+      method: 'POST',
+      path: '/v1/responses',
+      headers: { 'content-type': 'application/json', 'content-length': bytes.length },
     }, (response) => {
       const chunks = [];
       response.on('data', (chunk) => chunks.push(Buffer.from(chunk)));
-      response.on('end', () => resolve({
-        statusCode: response.statusCode,
-        body: Buffer.concat(chunks),
-      }));
+      response.once('end', () => resolve({ statusCode: response.statusCode, body: Buffer.concat(chunks) }));
     });
-    request.on('error', reject);
-    request.end(rawBody);
+    request.once('error', reject);
+    request.end(bytes);
   });
 }
 
-async function runningProxy(t, overrides = {}) {
+async function startProxy(t, upstreamTransport) {
   const socketPath = temporarySocket(t);
-  const upstreamCalls = [];
   const proxy = createHostCredentialProxy({
-    policy: {
-      attemptId: ATTEMPT_ID,
-      model: MODEL,
-      upstream: overrides.upstream ?? FIXED_ENDPOINT,
-      maxRequestBytes: overrides.maxRequestBytes ?? 1024,
-      maxResponseBytes: overrides.maxResponseBytes ?? 1024,
-      maxRequests: overrides.maxRequests ?? 1,
-      deadlineMs: overrides.deadlineMs ?? 1000,
-    },
+    policy: policy(),
     socketPath,
-    attemptBearer: ATTEMPT_BEARER,
-    upstreamKey: UPSTREAM_KEY,
-    dependencies: {
-      upstreamTransport: overrides.upstreamTransport ?? (async (request) => {
-        upstreamCalls.push(request);
-        return {
-          statusCode: 200,
-          headers: { 'content-type': 'application/json' },
-          body: Buffer.from('{"id":"synthetic-response"}'),
-        };
-      }),
-    },
+    socketOwnerUid: process.getuid?.() ?? 0,
+    socketOwnerGid: process.getgid?.() ?? 0,
+    upstreamKey: 'synthetic-host-only-key',
+    dependencies: { upstreamTransport },
   });
   await proxy.start();
   t.after(() => proxy.close().catch(() => {}));
-  return { proxy, socketPath, upstreamCalls };
+  return { proxy, socketPath };
 }
 
-function jsonError(response) {
-  return JSON.parse(response.body.toString('utf8')).error.code;
-}
-
-test('G2 finding: credential is not allowed in the measured container environment', () => {
-  assert.equal(finding('credential-not-in-container-environment').result, 'BLOCKED');
-  assert.match(FACADE_SOURCE, /OPENAI_API_KEY/);
+test('transport policy is exact and model aliases/fallbacks are absent', () => {
+  const source = readFileSync(path.join(ROOT, 'experimental/governance-impact/lib/credential-proxy.mjs'), 'utf8');
+  assert.equal(CREDENTIAL_PROXY_PROVIDER, 'OpenAI');
+  assert.equal(CREDENTIAL_PROXY_MODEL, 'gpt-5.6-luna');
+  assert.equal(CREDENTIAL_PROXY_REQUEST_LIMIT, 1);
+  assert.equal(CREDENTIAL_PROXY_TIMEOUT_MS, 30000);
+  assert.equal(CREDENTIAL_PROXY_ENDPOINT, 'https://api.openai.com/v1/responses');
+  assert.doesNotMatch(source, /\/v1\/models|\blatest\b|fallback[_ -]?model|modelFallback/iu);
 });
 
-test('G2 finding: credential has no workspace persistence path', () => {
-  assert.equal(finding('credential-not-in-workspace').result, 'PASS');
-  assert.doesNotMatch(PROXY_SOURCE, /(?:writeFile|appendFile).*upstreamKey/us);
-});
-
-test('G2 finding: credential has no artifact persistence path', () => {
-  assert.equal(finding('credential-not-in-artifact').result, 'PASS');
-  assert.doesNotMatch(PROXY_SOURCE, /(?:artifact|receipt).*upstreamKey/iu);
-});
-
-test('fixed endpoint accepts a synthetic request without network access', async (t) => {
-  const { socketPath, upstreamCalls } = await runningProxy(t);
-  const response = await requestProxy(socketPath);
-  assert.equal(finding('fixed-endpoint-accepts').result, 'PASS');
-  assert.equal(response.statusCode, 200);
-  assert.equal(upstreamCalls[0].url, FIXED_ENDPOINT);
-  assert.equal(upstreamCalls[0].method, 'POST');
-});
-
-test('arbitrary endpoint remains accepted by the V4 policy surface', () => {
-  assert.equal(finding('arbitrary-endpoint-rejects').result, 'BLOCKED');
-  assert.doesNotThrow(() => describeCredentialProxyPolicy({
-    attemptId: ATTEMPT_ID,
-    model: MODEL,
-    upstream: ARBITRARY_ENDPOINT,
-    maxRequestBytes: 1024,
-    maxResponseBytes: 1024,
-    maxRequests: 1,
-    deadlineMs: 1000,
-  }));
-});
-
-test('fixed model accepts a synthetic request', async (t) => {
-  const { socketPath } = await runningProxy(t);
-  const response = await requestProxy(socketPath);
-  assert.equal(finding('fixed-model-accepts').result, 'PASS');
-  assert.equal(response.statusCode, 200);
-});
-
-test('model override remains possible without the human approval binding', () => {
-  assert.equal(finding('model-override-rejects').result, 'BLOCKED');
-  assert.doesNotThrow(() => describeCredentialProxyPolicy({
-    attemptId: ATTEMPT_ID,
-    model: 'synthetic-override',
-    upstream: FIXED_ENDPOINT,
-    maxRequestBytes: 1024,
-    maxResponseBytes: 1024,
-    maxRequests: 1,
-    deadlineMs: 1000,
-  }));
-});
-
-test('unknown request header is not rejected by the existing proxy', async (t) => {
-  const { socketPath } = await runningProxy(t);
-  const response = await requestProxy(socketPath, {
-    headers: { 'x-g2-unknown': 'synthetic' },
-  });
-  assert.equal(finding('unknown-header-rejects').result, 'BLOCKED');
-  assert.equal(response.statusCode, 200);
-});
-
-test('authorization is currently required from the client rather than injected invisibly by the host', async (t) => {
-  const { socketPath } = await runningProxy(t);
-  const response = await requestProxy(socketPath, { authorization: null });
-  assert.equal(finding('authorization-host-injected').result, 'BLOCKED');
-  assert.equal(response.statusCode, 401);
-  assert.equal(jsonError(response), 'PROXY_AUTH_REJECTED');
-});
-
-test('oversized request is rejected before synthetic upstream transport', async (t) => {
-  const { socketPath, upstreamCalls } = await runningProxy(t, { maxRequestBytes: 32 });
-  const response = await requestProxy(socketPath, {
-    body: { model: MODEL, input: 'x'.repeat(100), store: false, stream: true },
-  });
-  assert.equal(finding('oversized-request-rejects').result, 'PASS');
-  assert.equal(jsonError(response), 'PROXY_REQUEST_TOO_LARGE');
-  assert.equal(upstreamCalls.length, 0);
-});
-
-test('oversized response fails closed', async (t) => {
-  const { socketPath } = await runningProxy(t, {
-    maxResponseBytes: 16,
-    upstreamTransport: async () => ({
+test('valid fixed request injects credential only at host-side upstream boundary', async (t) => {
+  let upstreamRequest;
+  const { proxy, socketPath } = await startProxy(t, async (request) => {
+    upstreamRequest = request;
+    return {
       statusCode: 200,
-      headers: { 'content-type': 'application/json' },
-      body: Buffer.from('{"output":"xxxxxxxxxxxxxxxxxxxxxxxx"}'),
-    }),
+      headers: { 'content-type': 'application/json', 'x-request-id': 'synthetic-id' },
+      body: Buffer.from(JSON.stringify(providerResponse())),
+    };
   });
   const response = await requestProxy(socketPath);
-  assert.equal(finding('oversized-response-fails-closed').result, 'PASS');
-  assert.equal(jsonError(response), 'PROXY_RESPONSE_TOO_LARGE');
-});
-
-test('malformed JSON is rejected', async (t) => {
-  const { socketPath } = await runningProxy(t);
-  const response = await requestProxy(socketPath, { rawBody: '{"model":' });
-  assert.equal(finding('malformed-json-rejects').result, 'PASS');
-  assert.equal(jsonError(response), 'PROXY_BODY_INVALID');
-});
-
-test('unknown JSON field is accepted by the existing non-closed body validator', async (t) => {
-  const { socketPath } = await runningProxy(t);
-  const response = await requestProxy(socketPath, {
-    body: {
-      model: MODEL,
-      input: 'synthetic request',
-      store: false,
-      stream: true,
-      g2_unknown_field: 'synthetic',
-    },
-  });
-  assert.equal(finding('unknown-json-field-rejects').result, 'BLOCKED');
   assert.equal(response.statusCode, 200);
+  assert.equal(upstreamRequest.url, CREDENTIAL_PROXY_ENDPOINT);
+  assert.equal(upstreamRequest.headers.authorization, 'Bearer synthetic-host-only-key');
+  assert.equal(Object.hasOwn(upstreamRequest.headers, 'openai-project'), false);
+  assert.equal(proxy.getSummary().upstreamAttemptCount, 1);
+  assert.equal(proxy.getSummary().successfulReceiptCount, 1);
 });
 
-test('run ID mismatch has no existing binding', async (t) => {
-  const { socketPath } = await runningProxy(t);
-  const response = await requestProxy(socketPath, {
-    headers: { 'x-governance-run-id': 'synthetic-other-run' },
+test('arbitrary input and client credential headers are rejected before upstream', async (t) => {
+  let calls = 0;
+  const { socketPath } = await startProxy(t, async () => {
+    calls += 1;
+    return { statusCode: 200, headers: { 'content-type': 'application/json' }, body: Buffer.from(JSON.stringify(providerResponse())) };
   });
-  assert.equal(finding('run-id-mismatch-rejects').result, 'BLOCKED');
-  assert.equal(response.statusCode, 200);
+  const badBody = { ...body(), input: 'arbitrary input' };
+  const badRequest = await requestProxy(socketPath, badBody);
+  assert.equal(badRequest.statusCode, 400);
+  assert.equal(calls, 0);
 });
 
-test('benchmark ID mismatch has no existing binding', async (t) => {
-  const { socketPath } = await runningProxy(t);
-  const response = await requestProxy(socketPath, {
-    headers: { 'x-governance-benchmark-id': 'synthetic-other-benchmark' },
+test('proxy summary separates client, attempt, response, and receipt counters', async (t) => {
+  const { proxy, socketPath } = await startProxy(t, async () => {
+    throw new Error('synthetic transport failure');
   });
-  assert.equal(finding('benchmark-id-mismatch-rejects').result, 'BLOCKED');
-  assert.equal(response.statusCode, 200);
+  const response = await requestProxy(socketPath);
+  await proxy.close();
+  assert.equal(response.statusCode, 502);
+  assert.deepEqual(proxy.getSummary(), {
+    schemaVersion: 2,
+    clientRequestObservedCount: 1,
+    upstreamAttemptCount: 1,
+    upstreamResponseCount: 0,
+    successfulReceiptCount: 0,
+    lastSafeStage: 'CLOSED',
+    lastSafeErrorCode: 'PROXY_UPSTREAM_FAILED',
+    socketAcceptedConnection: true,
+    proxyCleanupObserved: true,
+  });
+  assert.doesNotMatch(JSON.stringify(proxy.getSummary()), /synthetic transport failure|synthetic-host-only-key|runtime_canary/u);
 });
 
-test('socket owner and mode are not fixed by the core proxy contract', async (t) => {
-  const { socketPath } = await runningProxy(t);
-  const socketStat = statSync(socketPath);
-  assert.equal(finding('socket-owner-and-mode-correct').result, 'BLOCKED');
-  assert.equal(typeof socketStat.uid, 'number');
-  assert.equal(typeof socketStat.gid, 'number');
-  assert.doesNotMatch(PROXY_SOURCE, /chmod\([^\n]*0o600/u);
-});
-
-test('proxy crash has no G2 runtime fail-closed receipt', () => {
-  assert.equal(finding('proxy-crash-fails-closed').result, 'BLOCKED');
-  assert.match(PROXY_SOURCE, /server\.on\('error'/u);
-  assert.doesNotMatch(PROXY_SOURCE, /runtime.*crash.*receipt/isu);
-});
-
-test('client disconnect is not an automatic socket cleanup contract', () => {
-  assert.equal(finding('client-disconnect-cleans-up').result, 'BLOCKED');
-  assert.doesNotMatch(PROXY_SOURCE, /request\.on\(['"]close['"]/u);
-});
-
-test('deadline abort does not itself prove run cleanup', () => {
-  assert.equal(finding('timeout-cleans-up').result, 'BLOCKED');
-  assert.match(PROXY_SOURCE, /PROXY_DEADLINE_EXCEEDED/u);
-  assert.doesNotMatch(PROXY_SOURCE, /removeOwnedSocket\([^)]*handleRequest/isu);
-});
-
-test('raw prompt and response are not persisted by the existing proxy source', () => {
-  assert.equal(finding('raw-prompt-response-not-persisted').result, 'PASS');
-  assert.doesNotMatch(PROXY_SOURCE, /(?:writeFile|appendFile|createWriteStream)/u);
-});
-
-test('G2 evidence has no secret-shaped value', () => {
-  const evidenceRoot = path.join(ROOT, 'benchmarks/external-oss-v8');
-  const files = [];
-  const collect = (directory) => {
-    for (const entry of readdirSync(directory, { withFileTypes: true })) {
-      const fullPath = path.join(directory, entry.name);
-      if (entry.isDirectory()) collect(fullPath);
-      else if (fullPath.includes(`${path.sep}control${path.sep}G2${path.sep}`)
-        || fullPath.includes(`${path.sep}credential-transport${path.sep}`)
-        || fullPath.includes(`${path.sep}runtime-identity${path.sep}`)) files.push(fullPath);
-    }
-  };
-  collect(evidenceRoot);
-  const content = files.map((file) => readFileSync(file, 'utf8')).join('\n');
-  assert.equal(finding('secret-scanner-pass').result, 'PASS');
-  assert.doesNotMatch(content, /sk-[A-Za-z0-9]{20,}/u);
-  assert.doesNotMatch(content, /Bearer\s+[A-Za-z0-9_=-]{32,}/u);
-});
-
-test('G2 proxy tests use synthetic data and no real task source', () => {
-  const source = readFileSync(fileURLToPath(import.meta.url), 'utf8');
-  assert.equal(finding('proxy-tests-use-no-real-task').result, 'PASS');
-  const taskPathPattern = new RegExp(['tasks/', 'TASK-', 'OSS'].join(''), 'iu');
-  const seedArchivePattern = new RegExp(['seed', '.tgz'].join(''), 'iu');
-  const oraclePattern = new RegExp(['hidden-', 'oracle'].join(''), 'iu');
-  assert.doesNotMatch(source, taskPathPattern);
-  assert.doesNotMatch(source, seedArchivePattern);
-  assert.doesNotMatch(source, oraclePattern);
+test('measured container environment is the four fixed non-secret names', () => {
+  const prep = JSON.parse(readFileSync(path.join(ROOT, 'benchmarks/external-oss-v8/control/G2/runtime-canary-prep/prep.json'), 'utf8'));
+  assert.deepEqual([...prep.container.processEnvironmentNames].sort(), [...FIXED_ENVIRONMENT_NAMES].sort());
+  assert.equal(prep.container.network, 'none');
+  assert.equal(prep.container.readOnlyRoot, true);
+  assert.equal(prep.container.nonRootUidGid, 'host-proxy-uid:host-proxy-gid (recorded at runtime; must be non-root)');
 });

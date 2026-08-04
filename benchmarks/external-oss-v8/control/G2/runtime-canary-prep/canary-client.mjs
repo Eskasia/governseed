@@ -17,6 +17,32 @@ export const CANARY_ENVIRONMENT_NAMES = Object.freeze([
   'GOVERNSEED_TASK_ID',
 ]);
 
+export const CANARY_FAILURE_STAGES = Object.freeze([
+  'container-environment-validation',
+  'uds-connect',
+  'proxy-request-validation',
+  'provider-response-validation',
+  'canary-output-validation',
+]);
+
+export const CANARY_FAILURE_CODES = Object.freeze([
+  'CANARY_CONTAINER_START_FAILED',
+  'CANARY_CONTAINER_EXIT_NONZERO',
+  'CANARY_ENVIRONMENT_INVALID',
+  'CANARY_CONTEXT_INVALID',
+  'CANARY_SOCKET_CONNECT_FAILED',
+  'CANARY_SOCKET_PERMISSION_DENIED',
+  'CANARY_PROXY_RESPONSE_NON_2XX',
+  'CANARY_PROXY_RESPONSE_INVALID',
+  'CANARY_UPSTREAM_ATTEMPTED_NO_RESPONSE',
+  'CANARY_UPSTREAM_NON_2XX',
+  'CANARY_PROVIDER_RESPONSE_INVALID',
+  'CANARY_MODEL_ID_MISMATCH',
+  'CANARY_OUTPUT_INVALID',
+  'CANARY_TIMEOUT',
+  'CANARY_UNEXPECTED_RUNTIME_ERROR',
+]);
+
 export const CANARY_TEXT_FORMAT = Object.freeze({
   type: 'json_schema',
   name: 'governseed_runtime_canary',
@@ -117,7 +143,75 @@ export function scrubbedEnvironmentNames(environment = process.env) {
   if (names.join(',') !== expected.join(',')) {
     throw new Error('CANARY_ENVIRONMENT_INVALID');
   }
-  return names;
+  return CANARY_ENVIRONMENT_NAMES.slice();
+}
+
+function canaryResult({
+  canaryAccepted = false,
+  failureStage = null,
+  errorCode = null,
+  requestConstructed = false,
+  proxyResponseObserved = false,
+  statusCode = null,
+  responseModelId = null,
+  responseEnvelopeValid = false,
+  normalizedResponseValid = false,
+  udsConnection = 'NOT_OBSERVED',
+  environmentVariableNames = CANARY_ENVIRONMENT_NAMES,
+}) {
+  return {
+    schemaVersion: 1,
+    canaryAccepted: canaryAccepted === true,
+    failureStage,
+    errorCode,
+    environmentVariableNames: [...environmentVariableNames],
+    requestConstructed: requestConstructed === true,
+    proxyResponseObserved: proxyResponseObserved === true,
+    statusCode: Number.isInteger(statusCode) ? statusCode : null,
+    responseModelId: typeof responseModelId === 'string' ? responseModelId : null,
+    responseEnvelopeValid: responseEnvelopeValid === true,
+    normalizedResponseValid: normalizedResponseValid === true,
+    udsConnection,
+  };
+}
+
+function safeErrorCode(error) {
+  if (error?.code === 'EACCES' || error?.errno === -13) {
+    return 'CANARY_SOCKET_PERMISSION_DENIED';
+  }
+  if (
+    error?.code === 'ENOENT'
+    || error?.code === 'ECONNREFUSED'
+    || error?.code === 'ECONNRESET'
+    || error?.errno === -2
+    || error?.errno === -111
+    || error?.errno === -104
+  ) {
+    return 'CANARY_SOCKET_CONNECT_FAILED';
+  }
+  if (error?.message === 'CANARY_TIMEOUT' || error?.code === 'CANARY_TIMEOUT') {
+    return 'CANARY_TIMEOUT';
+  }
+  if (error?.message === 'CANARY_RESPONSE_TOO_LARGE') return 'CANARY_PROXY_RESPONSE_INVALID';
+  if (error?.message === 'CANARY_RESPONSE_INVALID') return 'CANARY_PROXY_RESPONSE_INVALID';
+  return 'CANARY_UNEXPECTED_RUNTIME_ERROR';
+}
+
+export const classifyCanaryTransportError = safeErrorCode;
+
+function normalizedShape(response) {
+  if (!isExactObject(response, ['model', 'output_text', 'usage'])) return false;
+  if (
+    typeof response.model !== 'string'
+    || typeof response.output_text !== 'string'
+    || response.output_text.length === 0
+    || !isExactObject(response.usage, ['input_tokens', 'output_tokens', 'total_tokens'])
+  ) return false;
+  return [
+    response.usage.input_tokens,
+    response.usage.output_tokens,
+    response.usage.total_tokens,
+  ].every((value) => Number.isSafeInteger(value) && value >= 0);
 }
 
 function readBody(response) {
@@ -179,30 +273,129 @@ function requestOnce(socketPath, body) {
 
 export async function runCanary({ socketPath, benchmarkId, runId, taskId }) {
   if (typeof socketPath !== 'string' || !path.isAbsolute(socketPath)) {
-    throw new Error('CANARY_SOCKET_INVALID');
+    return canaryResult({
+      failureStage: 'uds-connect',
+      errorCode: 'CANARY_SOCKET_CONNECT_FAILED',
+      requestConstructed: false,
+      udsConnection: 'FAIL',
+    });
   }
-  const request = buildCanaryRequest({ benchmarkId, runId, taskId });
+  let request;
+  try {
+    request = buildCanaryRequest({ benchmarkId, runId, taskId });
+  } catch {
+    return canaryResult({
+      failureStage: 'container-environment-validation',
+      errorCode: 'CANARY_CONTEXT_INVALID',
+    });
+  }
   const body = Buffer.from(JSON.stringify(request));
   const requestMetadata = {
     requestSha256: sha256(body),
     requestBytes: body.length,
   };
-  const response = await requestOnce(socketPath, body);
-  const normalizedResponseValid = validateNormalizedProxyResponse(response.parsed);
-  const canary = response.statusCode >= 200 && response.statusCode <= 299
-    ? parseCanaryResponse(response.parsed)
+  let response;
+  try {
+    response = await requestOnce(socketPath, body);
+  } catch (error) {
+    const errorCode = safeErrorCode(error);
+    return canaryResult({
+      failureStage: 'uds-connect',
+      errorCode,
+      requestConstructed: true,
+      udsConnection: 'FAIL',
+    });
+  }
+
+  const statusCode = Number.isInteger(response.statusCode) ? response.statusCode : null;
+  const proxyResponseObserved = true;
+  if (statusCode === null || statusCode < 200 || statusCode > 299) {
+    const proxyCode = response.parsed?.error?.code;
+    const errorCode = proxyCode === 'PROXY_RESPONSE_INVALID'
+      || proxyCode === 'PROXY_RESPONSE_TOO_LARGE'
+      || proxyCode === 'PROXY_RECEIPT_FAILED'
+      ? 'CANARY_PROVIDER_RESPONSE_INVALID'
+      : proxyCode === 'PROXY_UPSTREAM_FAILED'
+        ? 'CANARY_UPSTREAM_NON_2XX'
+      : 'CANARY_PROXY_RESPONSE_NON_2XX';
+    return canaryResult({
+      failureStage: errorCode === 'CANARY_PROVIDER_RESPONSE_INVALID'
+        ? 'provider-response-validation'
+        : errorCode === 'CANARY_UPSTREAM_NON_2XX'
+          ? 'upstream-request'
+          : 'proxy-request-validation',
+      errorCode,
+      requestConstructed: true,
+      proxyResponseObserved,
+      statusCode,
+      udsConnection: 'PASS',
+    });
+  }
+
+  const envelopeValid = normalizedShape(response.parsed);
+  const responseModelId = typeof response.parsed?.model === 'string'
+    ? response.parsed.model
     : null;
+  if (!envelopeValid) {
+    return canaryResult({
+      failureStage: 'provider-response-validation',
+      errorCode: 'CANARY_PROVIDER_RESPONSE_INVALID',
+      requestConstructed: true,
+      proxyResponseObserved,
+      statusCode,
+      responseModelId,
+      udsConnection: 'PASS',
+    });
+  }
+
+  const normalizedResponseValid = validateNormalizedProxyResponse(response.parsed);
+  if (response.parsed.model !== MODEL_ID) {
+    return canaryResult({
+      failureStage: 'provider-response-validation',
+      errorCode: 'CANARY_MODEL_ID_MISMATCH',
+      requestConstructed: true,
+      proxyResponseObserved,
+      statusCode,
+      responseModelId,
+      responseEnvelopeValid: true,
+      udsConnection: 'PASS',
+    });
+  }
+  if (!normalizedResponseValid) {
+    return canaryResult({
+      failureStage: 'provider-response-validation',
+      errorCode: 'CANARY_PROXY_RESPONSE_INVALID',
+      requestConstructed: true,
+      proxyResponseObserved,
+      statusCode,
+      responseModelId,
+      responseEnvelopeValid: true,
+      udsConnection: 'PASS',
+    });
+  }
+
+  const canary = parseCanaryResponse(response.parsed);
+  const result = canaryResult({
+    canaryAccepted: canary !== null,
+    failureStage: canary === null ? 'canary-output-validation' : null,
+    errorCode: canary === null ? 'CANARY_OUTPUT_INVALID' : null,
+    requestConstructed: true,
+    proxyResponseObserved,
+    statusCode,
+    responseModelId,
+    responseEnvelopeValid: true,
+    normalizedResponseValid: true,
+    udsConnection: 'PASS',
+  });
+  if (canary === null) return result;
   return {
+    ...result,
     ...requestMetadata,
     ...sanitizeResponseMetadata({
       statusCode: response.statusCode,
       body: response.bytes,
-      canaryAccepted: canary !== null,
+      canaryAccepted: true,
     }),
-    responseModelId: normalizedResponseValid ? response.parsed.model : null,
-    responseEnvelopeValid: normalizedResponseValid,
-    normalizedResponseValid,
-    udsConnection: 'PASS',
   };
 }
 
@@ -211,20 +404,20 @@ async function main() {
   try {
     environmentVariableNames = scrubbedEnvironmentNames();
   } catch {
-    process.stdout.write(JSON.stringify({
-      canaryAccepted: false,
+    process.stdout.write(JSON.stringify(canaryResult({
+      failureStage: 'container-environment-validation',
       errorCode: 'CANARY_ENVIRONMENT_INVALID',
-    }) + '\n');
+    })) + '\n');
     process.exitCode = 64;
     return;
   }
   const required = CANARY_ENVIRONMENT_NAMES;
   if (required.some((name) => typeof process.env[name] !== 'string' || process.env[name].length === 0)) {
-    process.stdout.write(JSON.stringify({
-      canaryAccepted: false,
+    process.stdout.write(JSON.stringify(canaryResult({
+      failureStage: 'container-environment-validation',
       errorCode: 'CANARY_CONTEXT_INVALID',
       environmentVariableNames,
-    }) + '\n');
+    })) + '\n');
     process.exitCode = 64;
     return;
   }
@@ -238,11 +431,13 @@ async function main() {
     process.stdout.write(JSON.stringify({ ...result, environmentVariableNames }) + '\n');
     process.exitCode = result.canaryAccepted === true ? 0 : 1;
   } catch {
-    process.stdout.write(JSON.stringify({
-      canaryAccepted: false,
-      errorCode: 'CANARY_TRANSPORT_FAILED',
+    process.stdout.write(JSON.stringify(canaryResult({
+      failureStage: 'uds-connect',
+      errorCode: 'CANARY_UNEXPECTED_RUNTIME_ERROR',
+      requestConstructed: true,
+      udsConnection: 'FAIL',
       environmentVariableNames,
-    }) + '\n');
+    })) + '\n');
     process.exitCode = 1;
   }
 }

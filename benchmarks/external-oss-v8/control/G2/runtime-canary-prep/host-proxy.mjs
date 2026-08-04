@@ -102,20 +102,24 @@ async function main() {
   const shutdown = async (exitCode) => {
     if (shuttingDown) return;
     shuttingDown = true;
-    let cleanupObserved = false;
+    let summary;
     try {
       await proxy.close();
-      await proxy.proveSafe();
-      cleanupObserved = true;
+      summary = proxy.getSummary();
     } catch {
-      cleanupObserved = false;
+      summary = proxy.getSummary();
     }
+    const providerRequestAttempt = summary.upstreamAttemptCount === 0
+      ? 'NO'
+      : summary.upstreamAttemptCount === 1
+        ? 'YES'
+        : 'INDETERMINATE';
     const record = {
-      schemaVersion: 1,
-      providerRequestCount: receipts.length,
+      ...summary,
+      providerRequestAttempt,
       receipt: receipts.length === 1 ? receipts[0] : null,
-      proxyCleanupObserved: cleanupObserved,
     };
+    if (record.proxyCleanupObserved !== true) exitCode = 1;
     try {
       outputRecord(outputPath, record);
     } catch {
