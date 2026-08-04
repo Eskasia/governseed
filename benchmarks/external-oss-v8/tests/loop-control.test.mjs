@@ -5,7 +5,11 @@ import test from 'node:test';
 const CONTROL_ROOT = 'benchmarks/external-oss-v8/control/loop';
 const taskGraph = JSON.parse(readFileSync(`${CONTROL_ROOT}/task-graph.json`, 'utf8'));
 const loopState = JSON.parse(readFileSync(`${CONTROL_ROOT}/loop-state.json`, 'utf8'));
-const ledgerLines = readFileSync(`${CONTROL_ROOT}/run-ledger.jsonl`, 'utf8').trim().split('\n');
+const ledgerText = readFileSync(`${CONTROL_ROOT}/run-ledger.jsonl`, 'utf8');
+const ledgerLines = ledgerText.trim().split('\n');
+const ledgerEntries = ledgerLines.map((line) => JSON.parse(line));
+const decisionLog = readFileSync(`${CONTROL_ROOT}/decision-log.md`, 'utf8');
+const humanGates = readFileSync(`${CONTROL_ROOT}/human-gates.md`, 'utf8');
 const requiredNodeFields = [
   'nodeId',
   'phase',
@@ -138,6 +142,31 @@ test('G2 conflict remains fail-closed and forbidden runs cannot become active', 
   assert.equal(loopState.evidenceConflicts.some((item) => item.conflictId === 'G2-REPAIR6-APPROVAL-LOCATION-001'), true);
 });
 
+test('recorded GitHub and human-gate state matches the current control PR', () => {
+  assert.equal(loopState.activePR, 83);
+  assert.deepEqual(loopState.openPullRequests.active, [81, 83]);
+  assert.equal(loopState.latestRunIds.latestValidation, '30911942323');
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').activePR, 83);
+  assert.match(humanGates, /pull\/83/);
+  assert.match(humanGates, /c8cdfc3a608b3ff9b886ab516c3a29a67854b362/);
+  assert.match(humanGates, /f639e1a3673007146c1417897ab8abe09fd963bc/);
+  assert.doesNotMatch(humanGates, /PENDING_PR_CREATION/);
+});
+
+test('decision and human-gate records preserve required fail-closed markers', () => {
+  for (const marker of [
+    'BLOCKED_EXPERIMENT_CONTRACT_INCOMPLETE',
+    'EVIDENCE_CONFLICT',
+    'newProviderRequestAuthorized=false',
+    '30814159615',
+    '30824406710',
+    '30850478318',
+    'PR `#83`',
+  ]) assert.match(decisionLog, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+  assert.match(humanGates, /Explicitly unauthorized/);
+  assert.match(humanGates, /orchestration metadata only/);
+});
+
 test('validator rejects corrupted control records', async (t) => {
   await t.test('missing required field', () => {
     const graph = structuredClone(taskGraph);
@@ -167,13 +196,30 @@ test('validator rejects corrupted control records', async (t) => {
   });
 });
 
-test('ledger is append-only JSONL with the current cycle and no provider action', () => {
-  assert.equal(ledgerLines.length, 1);
-  const entry = JSON.parse(ledgerLines[0]);
-  assert.equal(entry.cycleId, loopState.lastCycleId);
-  assert.equal(entry.startingSha, loopState.currentMainSha);
-  assert.equal(entry.selectedNode, loopState.activeNode);
-  assert.equal(entry.providerRequests, 'NOT_RUN');
-  assert.equal(entry.workflowDispatch, 'NOT_RUN');
-  assert.match(entry.claimBoundary, /No provider|no provider/i);
+test('ledger accepts appended immutable records and binds the prior technical result', () => {
+  assert.equal(ledgerEntries.length >= 2, true);
+  assert.equal(new Set(ledgerEntries.map((entry) => entry.cycleId)).size, ledgerEntries.length);
+  assert.deepEqual([...ledgerEntries].map((entry) => entry.timestamp).sort(), ledgerEntries.map((entry) => entry.timestamp));
+  assert.equal(ledgerEntries.at(-1).cycleId, loopState.lastCycleId);
+  assert.equal(ledgerEntries[0].startingSha, loopState.currentMainSha);
+  assert.equal(ledgerEntries.at(-1).reconcilesCycleId, ledgerEntries[0].cycleId);
+  assert.equal(ledgerEntries.at(-1).resultingSha, 'c8cdfc3a608b3ff9b886ab516c3a29a67854b362');
+  assert.equal(ledgerEntries.at(-1).resultingTreeSha, 'f639e1a3673007146c1417897ab8abe09fd963bc');
+  for (const entry of ledgerEntries) {
+    assert.equal(entry.selectedNode, loopState.activeNode);
+    assert.equal(entry.providerRequests, 'NOT_RUN');
+    assert.equal(entry.workflowDispatch, 'NOT_RUN');
+    assert.match(entry.claimBoundary, /No provider|no provider/i);
+  }
+});
+
+test('committed control files contain no local user path', () => {
+  const combined = [
+    JSON.stringify(taskGraph),
+    JSON.stringify(loopState),
+    ledgerText,
+    decisionLog,
+    humanGates,
+  ].join('\n');
+  assert.doesNotMatch(combined, /\/Users\//);
 });

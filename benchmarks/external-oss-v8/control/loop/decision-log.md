@@ -37,8 +37,16 @@
 ## 2026-08-04 — GitHub reconciliation
 
 - Active G2 repair: PR `#81`, head `41383da9d292ed1e8220890cfa8bffca4f0cc2c0`, tree `f386cefe5d79c83675a3965fdaaa14bbddc46333`; three platform validation jobs passed in run `30899414374`.
+- Active loop-control PR: draft PR `#83`; technical head `c8cdfc3a608b3ff9b886ab516c3a29a67854b362`, tree `f639e1a3673007146c1417897ab8abe09fd963bc`; three platform validation jobs passed in run `30911942323`.
 - PRs `#54`, `#55`, `#60`, `#62`, `#65`, and `#66` are stale or superseded candidates because later repairs or merged V8 evidence are on main. They are not auto-closed by this node.
 - No open tracking Issue existed at intake. Issue `#82` now owns P0.4.
+
+## 2026-08-04 — P0.4 independent review repair
+
+- Status: `IN_PROGRESS`
+- Independent checker and evidence auditor rejected technical head `c8cdfc3a608b3ff9b886ab516c3a29a67854b362` for stale PR metadata, an unbound cycle result, one local absolute worktree path, and insufficient tests for append behavior and human-gate records.
+- Decision: preserve the technical head/tree in a new append-only reconciliation record; redact the unaccepted local path before merge; update PR `#83` state; and add deterministic coverage for multi-line ledger append semantics, current human-gate fields, decision-log markers, and local-path absence.
+- This repair changes only P0.4 control metadata and tests. It does not alter G1/G2 evidence or dispatch a workflow.
 
 ## 2026-08-04 — Local UDS relay processes are inadmissible evidence
 
