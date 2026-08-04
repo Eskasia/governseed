@@ -10,10 +10,10 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '.
 const CREDENTIAL_ROOT = 'benchmarks/external-oss-v8/credential-transport';
 const PREP = 'benchmarks/external-oss-v8/control/G2/runtime-canary-prep/prep.json';
 const WORKFLOW = '.github/workflows/external-oss-v8-runtime-identity.yml';
-const PACKET = `${CREDENTIAL_ROOT}/repair-2/attempt-5/review-packet.json`;
-const MANIFEST = `${CREDENTIAL_ROOT}/repair-2/attempt-5/technical-manifest.json`;
-const TEMPLATE = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-5.template.json`;
-const ADDENDUM = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-5.addendum.json`;
+const PACKET = `${CREDENTIAL_ROOT}/repair-2/attempt-6/review-packet.json`;
+const MANIFEST = `${CREDENTIAL_ROOT}/repair-2/attempt-6/technical-manifest.json`;
+const TEMPLATE = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-6.template.json`;
+const ADDENDUM = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-6.addendum.json`;
 const APPROVED = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-5.json`;
 const APPROVED_SOURCE = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-5-source.json`;
 const ATTEMPT_4_APPROVAL = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-4.json`;
@@ -42,7 +42,7 @@ test('prior human approvals and sanitized source records remain immutable', () =
   ]) assert.deepEqual(readFileSync(path.join(ROOT, relativePath)), originBytes(relativePath), relativePath);
 });
 
-test('repair-5 approval, pending inputs, and current hashes are distinct', () => {
+test('repair-6 preparation keeps attempt-5 approval immutable and binds current hashes', () => {
   const packet = readJson(PACKET);
   const addendum = readJson(ADDENDUM);
   const pending = readJson(TEMPLATE);
@@ -54,12 +54,12 @@ test('repair-5 approval, pending inputs, and current hashes are distinct', () =>
     aliasAllowed: false,
     fallbackAllowed: false,
   });
-  assert.equal(packet.status, 'PENDING_HUMAN_REAPPROVAL');
+  assert.equal(packet.status, 'PENDING_HUMAN_REPAIR_6_REVIEW');
   assert.equal(packet.hashes.workflowSha256, sha256(WORKFLOW));
   assert.equal(packet.hashes.technicalManifestSha256, sha256(MANIFEST));
-  assert.equal(addendum.newBindingHashes.workflowSha256, sha256(WORKFLOW));
-  assert.equal(addendum.newBindingHashes.reviewPacketSha256, sha256(PACKET));
-  assert.equal(addendum.newBindingHashes.technicalManifestSha256, sha256(MANIFEST));
+  assert.equal(addendum.workflowSha256, sha256(WORKFLOW));
+  assert.equal(addendum.reviewPacketSha256, sha256(PACKET));
+  assert.equal(addendum.technicalManifestSha256, sha256(MANIFEST));
   assert.equal(pending.approvalStatus, 'PENDING_HUMAN_REVIEW');
   assert.equal(pending.approvedBy, null);
   assert.equal(pending.approvedAt, null);
@@ -97,7 +97,7 @@ test('runtime workflow is manual, main-only, credential-hosted, and no model dis
   const workflow = readFileSync(path.join(ROOT, WORKFLOW), 'utf8');
   assert.match(workflow, /^on:\n  workflow_dispatch:/mu);
   assert.doesNotMatch(workflow, /^\s{2}(push|pull_request|workflow_call):/mu);
-  assert.match(workflow, /github\.ref\s*==\s*['"]refs\/heads\/main['"]/u);
+  assert.match(workflow, /AUTHORIZED_REF\s*!==\s*['"]refs\/heads\/main['"]/u);
   assert.match(workflow, /runs-on:\s*ubuntu-24\.04/u);
   assert.match(workflow, /persist-credentials:\s*false/u);
   assert.equal((workflow.match(/\$\{\{\s*secrets\.OPENAI_API_KEY\s*\}\}/gu) ?? []).length, 1);

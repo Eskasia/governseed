@@ -7,6 +7,10 @@ on:
         description: Exact reviewed OCI image reference containing /usr/local/bin/node
         required: true
         type: string
+      authorized_main_commit:
+        description: Exact main commit authorized for this one-time runtime identity run
+        required: true
+        type: string
 
 permissions:
   contents: read
@@ -20,7 +24,6 @@ env:
 
 jobs:
   runtime-identity:
-    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     environment:
@@ -47,7 +50,60 @@ jobs:
           printf '%s\n' "RUN_ROOT=$run_root" >> "$GITHUB_ENV"
           printf '%s\n' 'FAILURE_STAGE=binding-validation' 'FAILURE_CODE=BINDING_VALIDATION_PENDING' >> "$GITHUB_ENV"
 
-      - name: Validate attempt-5 bindings and pending human approval
+      - name: Validate one-time main runtime authorization
+        if: ${{ success() }}
+        shell: bash
+        env:
+          AUTHORIZED_MAIN_COMMIT: ${{ inputs.authorized_main_commit }}
+          AUTHORIZED_REF: ${{ github.ref }}
+          AUTHORIZED_SHA: ${{ github.sha }}
+          AUTHORIZED_RUN_ATTEMPT: ${{ github.run_attempt }}
+          AUTHORIZATION_RUN_ID: ${{ github.run_id }}
+        run: |
+          set -euo pipefail
+          RUN_ROOT="$RUN_ROOT" AUTHORIZED_MAIN_COMMIT="$AUTHORIZED_MAIN_COMMIT" AUTHORIZED_REF="$AUTHORIZED_REF" AUTHORIZED_SHA="$AUTHORIZED_SHA" AUTHORIZED_RUN_ATTEMPT="$AUTHORIZED_RUN_ATTEMPT" AUTHORIZATION_RUN_ID="$AUTHORIZATION_RUN_ID" node --input-type=module <<'NODE'
+          import { appendFileSync, writeFileSync } from 'node:fs';
+          import path from 'node:path';
+
+          const runRoot = process.env.RUN_ROOT;
+          const historicalRunIds = new Set(['30814159615', '30824406710', '30850478318']);
+          const setFailure = (failureCode) => {
+            appendFileSync(process.env.GITHUB_ENV, `FAILURE_STAGE=authorization-gate\nFAILURE_CODE=${failureCode}\n`);
+            writeFileSync(path.join(runRoot, 'authorization-diagnostic.json'), JSON.stringify({
+              failureStage: 'authorization-gate',
+              failureCode,
+              workflowRunId: process.env.AUTHORIZATION_RUN_ID,
+              authorizedMainCommit: process.env.AUTHORIZED_MAIN_COMMIT,
+              githubSha: process.env.AUTHORIZED_SHA,
+              githubRef: process.env.AUTHORIZED_REF,
+              runAttempt: Number(process.env.AUTHORIZED_RUN_ATTEMPT),
+              environment: 'governseed-v8-runtime',
+            }, null, 2) + '\n', { mode: 0o600 });
+            process.exit(1);
+          };
+          if (process.env.AUTHORIZED_REF !== 'refs/heads/main') setFailure('MAIN_BRANCH_REQUIRED');
+          if (historicalRunIds.has(process.env.AUTHORIZATION_RUN_ID)) setFailure('HISTORICAL_RERUN_FORBIDDEN');
+          if (process.env.AUTHORIZED_RUN_ATTEMPT !== '1') setFailure('RERUN_FORBIDDEN');
+          if (!/^[0-9a-f]{40}$/u.test(process.env.AUTHORIZED_MAIN_COMMIT)
+            || process.env.AUTHORIZED_SHA !== process.env.AUTHORIZED_MAIN_COMMIT) {
+            setFailure('AUTHORIZED_MAIN_COMMIT_MISMATCH');
+          }
+          writeFileSync(path.join(runRoot, 'authorization-identity.json'), JSON.stringify({
+            schemaVersion: 1,
+            authorizationIdentity: `github-run-${process.env.AUTHORIZATION_RUN_ID}`,
+            workflowRunId: process.env.AUTHORIZATION_RUN_ID,
+            authorizedMainCommit: process.env.AUTHORIZED_MAIN_COMMIT,
+            githubSha: process.env.AUTHORIZED_SHA,
+            githubRef: process.env.AUTHORIZED_REF,
+            runAttempt: Number(process.env.AUTHORIZED_RUN_ATTEMPT),
+            environment: 'governseed-v8-runtime',
+            providerRequests: 0,
+            workflowDispatch: 'RUN',
+            runtimeCanary: 'NOT_RUN',
+          }, null, 2) + '\n', { mode: 0o600 });
+          NODE
+
+      - name: Validate attempt-5 approval and repair-6 technical bindings
         if: ${{ success() }}
         shell: bash
         env:
@@ -56,7 +112,7 @@ jobs:
           set -euo pipefail
           printf '%s\n' 'FAILURE_STAGE=binding-validation' 'FAILURE_CODE=BINDING_VALIDATION_PENDING' >> "$GITHUB_ENV"
           RUNTIME_IMAGE="$RUNTIME_IMAGE" RUN_ROOT="$RUN_ROOT" GITHUB_RUN_ID="$GITHUB_RUN_ID" node --input-type=module <<'NODE'
-          import { appendFileSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
+          import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
           import { createHash } from 'node:crypto';
           import path from 'node:path';
 
@@ -82,38 +138,83 @@ jobs:
             aliasAllowed: false,
             fallbackAllowed: false,
           };
+          const requiredScope = ['credential-transport', 'runtime-identity-canary', 'v8-pilot'];
+          const expectedRuntimeImage = 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5';
+          const expectedFixedInput = 'Return exactly the JSON object {"runtime_canary":"PASS"}.';
+          const expectedDesignSha256 = '434da5f42ae9d5752b5db6641557cec6a3893a22988225947458d287d516d995';
+          const expectedRequestSchemaSha256 = '630ee0eb7b1ca458b1562a676f318430b675b92b005a98c958cb3226b65afb51';
+          const expectedResponseSchemaSha256 = '5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcce7182c5662c2a08e';
+          const expectedProviderResponseContractSha256 = '5b36f410ebc898a34eb2d4e67814441c78d5331e1d0764750aeb98c9bfb7f528';
+          const expectedNormalizedResponseSchemaSha256 = '5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcce7182c5662c2a08e';
+          const expectedProxySha256 = 'f9dd7b6a0778e69f123d060a8df8cef1ab97e63756e7f819cf70d8d6ed85790c';
+          const expectedCommentBodySha256 = '41a47521099af120135d4ddb65aa10cf6f4180b3271ed904cf95d277ecc58840';
+          const expectedTechnicalHead = 'b7e7d34e68031671dee41fe7fe13800accae3e51';
+          const expectedTechnicalTree = '2492683260127bc118f090a8f1808da367264dbc';
+          const expectedFailedRunId = '30850478318';
+          const attempt5ImmutableHashes = {
+            approvalSha256: 'f6fd0c2cb59f58ca5e49e570535ab50c810c0c77f56e1164945a3dad0562c75b',
+            sourceSha256: '35ea7be4664c021bf72d20264290359f426aac4c554455113a8a5ba504a60d1d',
+            templateSha256: '94fb9c5696d89aebf5cf849758f21201db06d2522191817e5ef4c0aa5cfb5af8',
+            addendumSha256: 'e8935018f446c468425c008cedb3ceba3002caadd566ed4f620522fe64295265',
+            packetSha256: '0a215526da26ff3ec59df9ad5c696c70c33a9229ff092617aabe8e3b2577839d',
+            manifestSha256: 'e71090b084ff17a964027d1a7288b43d526152852131ac866d64bd836705c809',
+          };
           const workflowPath = '.github/workflows/external-oss-v8-runtime-identity.yml';
           const designPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/design.json';
           const proxyPath = 'experimental/governance-impact/lib/credential-proxy.mjs';
           const clientPath = 'benchmarks/external-oss-v8/control/G2/runtime-canary-prep/canary-client.mjs';
           const proxyRunnerPath = 'benchmarks/external-oss-v8/control/G2/runtime-canary-prep/host-proxy.mjs';
-          const manifestPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-5/technical-manifest.json';
-          const packetPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-5/review-packet.json';
-          const pendingPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5.template.json';
-          const addendumPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5.addendum.json';
+          const manifestPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-6/technical-manifest.json';
+          const packetPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-6/review-packet.json';
+          const pendingPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-6.template.json';
+          const addendumPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-6.addendum.json';
           const approvedPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5.json';
-          const oldApprovalPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-4.json';
+          const sourcePath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5-source.json';
+          const attempt5ManifestPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-5/technical-manifest.json';
+          const attempt5PacketPath = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-5/review-packet.json';
+          const attempt5PendingPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5.template.json';
+          const attempt5AddendumPath = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5.addendum.json';
           const manifest = readJson(manifestPath);
           const packet = readJson(packetPath);
           const pending = readJson(pendingPath);
           const addendum = readJson(addendumPath);
-          const oldApproval = readJson(oldApprovalPath);
-          const expectedEntries = [
-            [workflowPath, sha256(workflowPath)],
-            [clientPath, sha256(clientPath)],
-            [proxyRunnerPath, sha256(proxyRunnerPath)],
-            [designPath, sha256(designPath)],
-            ['benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json', sha256('benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json')],
-            ['benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json', sha256('benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json')],
-            ['benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json', sha256('benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json')],
-            ['benchmarks/external-oss-v8/credential-transport/repair-2/response.schema.json', sha256('benchmarks/external-oss-v8/credential-transport/repair-2/response.schema.json')],
-            [proxyPath, sha256(proxyPath)],
-            ['experimental/governance-impact/lib/oci-proxy-facade.mjs', sha256('experimental/governance-impact/lib/oci-proxy-facade.mjs')],
-            ['experimental/governance-impact/lib/oci-supervisor.mjs', sha256('experimental/governance-impact/lib/oci-supervisor.mjs')],
-            ['experimental/governance-impact/lib/provider-response-validation.mjs', sha256('experimental/governance-impact/lib/provider-response-validation.mjs')],
-            ['experimental/governance-impact/uds-relay.mjs', sha256('experimental/governance-impact/uds-relay.mjs')],
+          let approval;
+          let source;
+          let attempt5Manifest;
+          let attempt5Packet;
+          let attempt5Pending;
+          let attempt5Addendum;
+          try {
+            approval = readJson(approvedPath);
+          } catch {
+            setFailure('ATTEMPT5_APPROVAL_INVALID', ['attempt5ApprovalMatches']);
+          }
+          try {
+            source = readJson(sourcePath);
+            attempt5Manifest = readJson(attempt5ManifestPath);
+            attempt5Packet = readJson(attempt5PacketPath);
+            attempt5Pending = readJson(attempt5PendingPath);
+            attempt5Addendum = readJson(attempt5AddendumPath);
+          } catch {
+            setFailure('ATTEMPT5_APPROVAL_SOURCE_INVALID', ['attempt5ApprovalSourceMatches']);
+          }
+          const technicalPaths = [
+            workflowPath,
+            clientPath,
+            proxyRunnerPath,
+            designPath,
+            'benchmarks/external-oss-v8/credential-transport/repair-2/normalized-proxy-response.schema.json',
+            'benchmarks/external-oss-v8/credential-transport/repair-2/provider-response-validation.json',
+            'benchmarks/external-oss-v8/credential-transport/repair-2/request.schema.json',
+            'benchmarks/external-oss-v8/credential-transport/repair-2/response.schema.json',
+            proxyPath,
+            'experimental/governance-impact/lib/oci-proxy-facade.mjs',
+            'experimental/governance-impact/lib/oci-supervisor.mjs',
+            'experimental/governance-impact/lib/provider-response-validation.mjs',
+            'experimental/governance-impact/uds-relay.mjs',
           ];
-          if (process.env.RUNTIME_IMAGE !== 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5') {
+          const expectedEntries = technicalPaths.map((filePath) => ({ path: filePath, sha256: sha256(filePath) }));
+          if (process.env.RUNTIME_IMAGE !== expectedRuntimeImage) {
             setFailure('RUNTIME_IMAGE_IDENTITY_MISMATCH', ['runtimeImageMatches']);
           }
           if (
@@ -121,27 +222,45 @@ jobs:
             || manifest.benchmarkId !== process.env.BENCHMARK_ID
             || manifest.gate !== 'G2'
             || manifest.repair !== 'repair-2'
-            || manifest.attempt !== 5
+            || manifest.attempt !== 6
             || !Array.isArray(manifest.entries)
             || manifest.entries.length !== expectedEntries.length
           ) setFailure('TECHNICAL_BINDING_INVALID', ['runtimeImageMatches', 'technicalManifestMatches']);
-          if (manifest.entries.some((entry, index) => entry?.path !== expectedEntries[index][0] || entry?.sha256 !== expectedEntries[index][1])) {
-            setFailure('TECHNICAL_MANIFEST_HASH_MISMATCH', ['technicalManifestMatches']);
-          }
+          if (manifest.entries.some((entry, index) => entry?.path !== expectedEntries[index].path || entry?.sha256 !== expectedEntries[index].sha256)) setFailure('TECHNICAL_MANIFEST_HASH_MISMATCH', ['technicalManifestMatches']);
           if (
             packet.schemaVersion !== 1
             || packet.benchmarkId !== process.env.BENCHMARK_ID
             || packet.gate !== 'G2'
             || packet.repair !== 'repair-2'
-            || packet.attempt !== 5
-            || packet.status !== 'PENDING_HUMAN_REAPPROVAL'
+            || packet.attempt !== 6
+            || packet.status !== 'PENDING_HUMAN_REPAIR_6_REVIEW'
             || JSON.stringify(packet.modelBinding) !== JSON.stringify(requiredModel)
             || packet.transport?.requestLimit !== 1
             || packet.transport?.timeoutMs !== 30000
+            || packet.transport?.retryAllowed !== false
             || packet.transport?.responseModelId !== 'gpt-5.6-luna'
             || packet.transport?.structuredOutputPath !== 'text.format'
             || packet.transport?.forbiddenRequestField !== 'response_format'
-            || packet.humanApproval?.status !== 'PENDING_HUMAN_REVIEW'
+            || packet.transport?.fixedInput !== expectedFixedInput
+            || packet.runtime?.image !== expectedRuntimeImage
+            || packet.runtime?.nodeExecutable !== '/usr/local/bin/node'
+            || packet.runtime?.nodeVersion !== 'v26.3.0'
+            || packet.runtime?.requestLimit !== 1
+            || packet.runtime?.timeoutMs !== 30000
+            || packet.runtime?.fixedCanaryInput !== expectedFixedInput
+            || packet.runtime?.containerCredentialValues !== false
+            || packet.authorizationGate?.environment !== 'governseed-v8-runtime'
+            || packet.authorizationGate?.workflowDispatchOnly !== true
+            || packet.authorizationGate?.mainRef !== 'refs/heads/main'
+            || packet.authorizationGate?.authorizedMainCommitInput !== 'authorized_main_commit'
+            || packet.authorizationGate?.runAttemptMustEqual !== 1
+            || packet.authorizationGate?.runIdentityField !== 'github.run_id'
+            || packet.authorizationGate?.rerunFailureCode !== 'RERUN_FORBIDDEN'
+            || packet.authorizationGate?.commitMismatchFailureCode !== 'AUTHORIZED_MAIN_COMMIT_MISMATCH'
+            || packet.authorizationGate?.requiredReviewer !== 'Eskasia'
+            || packet.authorizationGate?.adminBypassAllowed !== false
+            || packet.authorizationGate?.deploymentBranch !== 'main'
+            || packet.humanTechnicalReview?.status !== 'PENDING_HUMAN_REVIEW'
           ) setFailure('REVIEW_PACKET_BINDING_INVALID', ['modelBindingMatches', 'requestTransportMatches']);
           const packetHashChecks = [
             ['designSha256', designPath],
@@ -149,10 +268,97 @@ jobs:
             ['canaryClientSha256', clientPath],
             ['hostProxySha256', proxyRunnerPath],
             ['workflowSha256', workflowPath],
+            ['technicalManifestSha256', manifestPath],
           ];
-          if (packetHashChecks.some(([field, filePath]) => packet.hashes?.[field] !== sha256(filePath))) {
-            setFailure('REVIEW_PACKET_HASH_MISMATCH', ['reviewPacketHashMatches']);
-          }
+          if (packetHashChecks.some(([field, filePath]) => packet.hashes?.[field] !== sha256(filePath))) setFailure('REVIEW_PACKET_HASH_MISMATCH', ['reviewPacketHashMatches']);
+          const attempt5WorkflowEntry = attempt5Manifest.entries?.find((entry) => entry?.path === workflowPath);
+          const approvalValid = approval.schemaVersion === 1
+            && approval.benchmarkId === process.env.BENCHMARK_ID
+            && approval.approvalStatus === 'APPROVED'
+            && approval.approvedBy === 'Eskasia'
+            && approval.approvedAt === '2026-08-04T08:15:01Z'
+            && approval.approvedDesignSha256 === expectedDesignSha256
+            && approval.approvedProxySha256 === expectedProxySha256
+            && approval.approvedModelId === requiredModel.modelId
+            && JSON.stringify(approval.scope) === JSON.stringify(requiredScope)
+            && approval.limitationsAcknowledged === true
+            && approval.approvalEvidence?.type === 'github-comment'
+            && approval.approvalEvidence?.reference === 'https://github.com/Eskasia/governseed/pull/80#issuecomment-5176356972'
+            && approval.approvalEvidence?.commentId === 5176356972
+            && approval.approvalEvidence?.commentAuthor === 'Eskasia'
+            && approval.approvalEvidence?.commentCreatedAt === '2026-08-04T08:15:01Z'
+            && sha256(proxyPath) === expectedProxySha256;
+          if (!approvalValid) setFailure('ATTEMPT5_APPROVAL_INVALID', ['attempt5ApprovalMatches']);
+          const sourceValid = source.schemaVersion === 1
+            && source.benchmarkId === process.env.BENCHMARK_ID
+            && source.gate === 'G2'
+            && source.repair === 'runtime-canary-repair-5'
+            && source.attempt === 5
+            && source.approvalStatus === 'APPROVED'
+            && source.verificationStatus === 'VERIFIED_GITHUB_ISSUE_COMMENT'
+            && source.repository === 'Eskasia/governseed'
+            && source.pullRequest === 80
+            && source.commentId === 5176356972
+            && source.commentUrl === 'https://github.com/Eskasia/governseed/pull/80#issuecomment-5176356972'
+            && source.commentAuthor === 'Eskasia'
+            && source.commentCreatedAt === '2026-08-04T08:15:01Z'
+            && source.commentUpdatedAt === '2026-08-04T08:15:01Z'
+            && source.approvedAtDeclared === '2026-08-04T08:09:00Z'
+            && source.approvalEffectiveAt === '2026-08-04T08:15:01Z'
+            && source.commentBodySha256 === expectedCommentBodySha256
+            && source.reviewedTechnicalHead === expectedTechnicalHead
+            && source.reviewedTechnicalTreeSha === expectedTechnicalTree
+            && source.workflowSha256 === attempt5WorkflowEntry?.sha256
+            && source.canaryClientSha256 === sha256(clientPath)
+            && source.hostProxySha256 === sha256(proxyRunnerPath)
+            && source.technicalManifestEntries === 13
+            && source.credentialProxySha256 === expectedProxySha256
+            && source.reviewPacketSha256 === sha256(attempt5PacketPath)
+            && source.technicalManifestSha256 === sha256(attempt5ManifestPath)
+            && source.bodyClaims?.approvedModelId === requiredModel.modelId
+            && source.bodyClaims?.aliasAllowed === false
+            && source.bodyClaims?.fallbackAllowed === false
+            && source.bodyClaims?.designSha256 === expectedDesignSha256
+            && source.bodyClaims?.requestSchemaSha256 === expectedRequestSchemaSha256
+            && source.bodyClaims?.responseSchemaSha256 === expectedResponseSchemaSha256
+            && source.bodyClaims?.providerResponseContractSha256 === expectedProviderResponseContractSha256
+            && source.bodyClaims?.normalizedResponseSchemaSha256 === expectedNormalizedResponseSchemaSha256
+            && source.bodyClaims?.runtimeImage === expectedRuntimeImage
+            && source.bodyClaims?.nodeExecutable === '/usr/local/bin/node'
+            && source.bodyClaims?.nodeVersion === 'v26.3.0'
+            && source.bodyClaims?.requestLimit === 1
+            && source.bodyClaims?.timeoutMs === 30000
+            && source.bodyClaims?.fixedCanaryInput === expectedFixedInput
+            && JSON.stringify(source.bodyClaims?.scope) === JSON.stringify(requiredScope)
+            && source.bodyClaims?.limitationsAcknowledged === true
+            && source.failedRun?.runId === expectedFailedRunId
+            && source.failedRun?.providerRequestAttempt === 'INDETERMINATE'
+            && source.failedRun?.rerunPermitted === false
+            && source.newProviderRequestAuthorized === false
+            && source.credentialPresent === false
+            && source.rawApprovalBodyPersisted === false
+            && source.authorizationHeaderPersisted === false
+            && source.apiKeyPersisted === false
+            && !('body' in source);
+          if (!sourceValid) setFailure('ATTEMPT5_APPROVAL_SOURCE_INVALID', ['attempt5ApprovalSourceMatches']);
+          if (
+            sha256(approvedPath) !== attempt5ImmutableHashes.approvalSha256
+            || sha256(sourcePath) !== attempt5ImmutableHashes.sourceSha256
+          ) setFailure('ATTEMPT5_APPROVAL_SOURCE_INVALID', ['attempt5ApprovalSourceImmutable']);
+          if (
+            sha256(attempt5PendingPath) !== attempt5ImmutableHashes.templateSha256
+            || sha256(attempt5AddendumPath) !== attempt5ImmutableHashes.addendumSha256
+            || sha256(attempt5PacketPath) !== attempt5ImmutableHashes.packetSha256
+            || sha256(attempt5ManifestPath) !== attempt5ImmutableHashes.manifestSha256
+            || attempt5Manifest.entries?.length !== 13
+            || attempt5Pending.approvalStatus !== 'PENDING_HUMAN_REVIEW'
+            || attempt5Pending.approvedBy !== null
+            || attempt5Pending.approvedAt !== null
+            || attempt5Addendum.approvalStatus !== 'PENDING_HUMAN_REVIEW'
+            || attempt5Addendum.workflowDispatch !== 'NOT_RUN'
+            || attempt5Addendum.runtimeCanary !== 'NOT_RUN'
+            || attempt5Addendum.providerRequests !== 0
+          ) setFailure('ATTEMPT5_APPROVAL_SOURCE_INVALID', ['attempt5ApprovalSourceImmutable']);
           if (
             pending.approvalStatus !== 'PENDING_HUMAN_REVIEW'
             || pending.approvedBy !== null
@@ -160,20 +366,23 @@ jobs:
             || pending.approvedModelId !== 'gpt-5.6-luna'
             || pending.approvedProxySha256 !== sha256(proxyPath)
             || addendum.approvalStatus !== 'PENDING_HUMAN_REVIEW'
-            || addendum.attempt !== 5
+            || addendum.attempt !== 6
             || addendum.approvedModelId !== 'gpt-5.6-luna'
             || addendum.aliasAllowed !== false
             || addendum.fallbackAllowed !== false
+            || addendum.retryAllowed !== false
+            || addendum.workflowSha256 !== sha256(workflowPath)
+            || addendum.technicalManifestSha256 !== sha256(manifestPath)
+            || addendum.reviewPacketSha256 !== sha256(packetPath)
             || addendum.workflowDispatch !== 'NOT_RUN'
             || addendum.runtimeCanary !== 'NOT_RUN'
-            || oldApproval.approvedModelId !== 'gpt-5.6-luna'
-            || oldApproval.approvedProxySha256 === sha256(proxyPath)
-            || existsSync(path.join(root, approvedPath))
-          ) setFailure('HUMAN_REAPPROVAL_REQUIRED', ['humanApprovalMatches']);
+            || addendum.providerRequests !== 0
+          ) setFailure('REPAIR6_TECHNICAL_BINDING_INVALID', ['repair6HumanTechnicalReviewMatches']);
           writeFileSync(path.join(runRoot, 'validation-diagnostic.json'), JSON.stringify({
             failureStage: 'binding-validation',
             failureCode: 'BINDING_VALIDATION_PASS',
             runtimeImageDigestMatch: true,
+            authorizationIdentity: `github-run-${process.env.GITHUB_RUN_ID}`,
             providerRequestAttempt: 'NO',
             workflowDispatch: 'NOT_RUN',
             runtimeCanary: 'NOT_RUN',
@@ -414,6 +623,7 @@ jobs:
           const client = readJson('canary-summary.json');
           const state = readJson('container-state.json');
           const identity = readJson('socket-identity.json');
+          const authorization = readJson('authorization-identity.json');
           const uds = readJson('uds-evidence.json');
           const user = JSON.parse(readFileSync(path.join(root, 'container-user.json'), 'utf8'));
           const inspect = JSON.parse(readFileSync(path.join(root, 'container-state.json'), 'utf8'));
@@ -437,6 +647,7 @@ jobs:
           mkdirSync(output, { recursive: true, mode: 0o700 });
           writeFileSync(path.join(output, 'runtime-identity.json'), JSON.stringify({
             schemaVersion: 2,
+            authorizationIdentity: authorization,
             workflowRunId: process.env.GITHUB_RUN_ID,
             mainCommitSha: process.env.GITHUB_SHA,
             benchmarkId: 'GS-OSS-2026-08-02-V8',
@@ -504,6 +715,7 @@ jobs:
           const state = readJson('container-state.json', {});
           const nodeProbe = readJson('node-path-probe.json', { path: 'NOT_RUN', version: 'NOT_RUN' });
           const identity = readJson('socket-identity.json', {});
+          const authorization = readJson('authorization-identity.json', {});
           const expectedCodes = new Set([
             'CANARY_CONTAINER_START_FAILED',
             'CANARY_CONTAINER_EXIT_NONZERO',
@@ -572,6 +784,7 @@ jobs:
             : [];
           writeFileSync(path.join(root, 'failure-artifact.json'), JSON.stringify({
             schemaVersion: 2,
+            authorizationIdentity: authorization,
             workflowRunId: process.env.GITHUB_RUN_ID,
             mainCommitSha: process.env.GITHUB_SHA,
             failureStage,

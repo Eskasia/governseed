@@ -61,11 +61,13 @@ test('attempt-4 approval remains approved but cannot authorize changed attempt-5
   assert.equal(packet.status, 'PENDING_HUMAN_REAPPROVAL');
   assert.match(workflow, /attempt-5\/technical-manifest\.json/u);
   assert.match(workflow, /human-approval-repair-2-attempt-5\.template\.json/u);
-  assert.match(workflow, /HUMAN_REAPPROVAL_REQUIRED/u);
+  assert.match(workflow, /ATTEMPT5_APPROVAL_INVALID/u);
+  assert.match(workflow, /ATTEMPT5_APPROVAL_SOURCE_INVALID/u);
+  assert.doesNotMatch(workflow, /HUMAN_REAPPROVAL_REQUIRED/u);
   assert.doesNotMatch(workflow, /providerRequestCount/u);
 });
 
-test('attempt-5 manifest is exact, current, and excludes evidence-only paths', () => {
+test('attempt-5 manifest is exact, immutable, and excludes evidence-only paths', () => {
   const manifest = readJson(ATTEMPT_5_MANIFEST);
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.benchmarkId, 'GS-OSS-2026-08-02-V8');
@@ -73,7 +75,7 @@ test('attempt-5 manifest is exact, current, and excludes evidence-only paths', (
   assert.equal(manifest.repair, 'repair-2');
   assert.equal(manifest.attempt, 5);
   assert.equal(manifest.entries.length, 13);
-  for (const entry of manifest.entries) assert.equal(sha256File(entry.path), entry.sha256, entry.path);
+  assert.deepEqual(readFileSync(path.join(ROOT, ATTEMPT_5_MANIFEST)), originBytes(ATTEMPT_5_MANIFEST));
   const paths = new Set(manifest.entries.map((entry) => entry.path));
   for (const excluded of [ATTEMPT_5_PACKET, ATTEMPT_5_MANIFEST, ATTEMPT_5_ADDENDUM, `${ATTEMPT_5_TEMPLATE}`]) {
     assert.equal(paths.has(excluded), false, excluded);

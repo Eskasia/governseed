@@ -37,7 +37,7 @@ test('attempt-3 manual approval/source and failed-run evidence remain immutable'
   ]) assert.deepEqual(readFileSync(path.join(ROOT, relativePath)), originBytes(relativePath), relativePath);
 });
 
-test('attempt-3 approval does not authorize attempt-5 changed bindings', () => {
+test('attempt-3 approval does not authorize repair-6 changed bindings', () => {
   const approval = readJson(ATTEMPT_3_APPROVAL);
   const packet = readJson(ATTEMPT_5_PACKET);
   const attempt5Approval = readJson(ATTEMPT_5_APPROVAL);
@@ -48,7 +48,10 @@ test('attempt-3 approval does not authorize attempt-5 changed bindings', () => {
   assert.equal(packet.attempt, 5);
   assert.equal(packet.status, 'PENDING_HUMAN_REAPPROVAL');
   assert.match(workflow, /human-approval-repair-2-attempt-5\.template\.json/u);
-  assert.match(workflow, /HUMAN_REAPPROVAL_REQUIRED/u);
+  assert.match(workflow, /ATTEMPT5_APPROVAL_INVALID/u);
+  assert.match(workflow, /ATTEMPT5_APPROVAL_SOURCE_INVALID/u);
+  assert.match(workflow, /authorized_main_commit/u);
+  assert.doesNotMatch(workflow, /HUMAN_REAPPROVAL_REQUIRED/u);
   assert.equal(attempt5Approval.approvalStatus, 'APPROVED');
   assert.equal(attempt5Approval.approvedModelId, 'gpt-5.6-luna');
   assert.equal(attempt5Source.approvalEffectiveAt, attempt5Approval.approvedAt);

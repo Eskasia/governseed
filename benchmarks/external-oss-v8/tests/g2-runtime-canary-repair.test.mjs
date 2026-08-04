@@ -7,8 +7,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
 const WORKFLOW = '.github/workflows/external-oss-v8-runtime-identity.yml';
-const PACKET = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-5/review-packet.json';
-const MANIFEST = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-5/technical-manifest.json';
+const PACKET = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-6/review-packet.json';
+const MANIFEST = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-6/technical-manifest.json';
 const IMAGE = 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5';
 const MODEL = 'gpt-5.6-luna';
 const FIXED_INPUT = 'Return exactly the JSON object {"runtime_canary":"PASS"}.';
@@ -84,7 +84,7 @@ test('workflow failure evidence uses separated counters and fixed taxonomy', () 
   assert.doesNotMatch(workflow, /providerRequestCount/u);
 });
 
-test('attempt-5 packet and manifest hashes bind actual current bytes', () => {
+test('attempt-6 packet and manifest hashes bind actual current bytes', () => {
   const packet = readJson(PACKET);
   const manifest = readJson(MANIFEST);
   for (const entry of manifest.entries) assert.equal(sha256(entry.path), entry.sha256, entry.path);
