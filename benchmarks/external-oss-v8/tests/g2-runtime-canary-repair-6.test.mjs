@@ -34,6 +34,8 @@ const MAIN_COMMIT = '502c92e76e111a4cffbfaf4c3e4bde7f9bf8ce08';
 const COMMENT_HASH = '41a47521099af120135d4ddb65aa10cf6f4180b3271ed904cf95d277ecc58840';
 const TECHNICAL_HEAD = 'b7e7d34e68031671dee41fe7fe13800accae3e51';
 const TECHNICAL_TREE = '2492683260127bc118f090a8f1808da367264dbc';
+const REPAIR_6_TECHNICAL_HEAD = 'db85da98b2337aafd488ed64421b01e3a21422c6';
+const REPAIR_6_TECHNICAL_TREE = 'f76b266b42a4c5a04d0e4e8e062525614eacf7f3';
 const PROXY_SHA = 'f9dd7b6a0778e69f123d060a8df8cef1ab97e63756e7f819cf70d8d6ed85790c';
 const OLD_RUNS = ['30814159615', '30824406710', '30850478318'];
 
@@ -265,6 +267,8 @@ test('attempt-5 approved inputs remain byte-identical and repair-6 review stays 
   assert.equal(template.approvedBy, null);
   assert.equal(template.approvedAt, null);
   assert.equal(addendum.approvalStatus, 'PENDING_HUMAN_REVIEW');
+  assert.equal(addendum.reviewedTechnicalHead, REPAIR_6_TECHNICAL_HEAD);
+  assert.equal(addendum.reviewedTreeSha, REPAIR_6_TECHNICAL_TREE);
   assert.equal(addendum.providerRequests, 0);
   assert.equal(addendum.workflowDispatch, 'NOT_RUN');
   assert.equal(addendum.runtimeCanary, 'NOT_RUN');
