@@ -15,6 +15,7 @@ const MANIFEST = `${CREDENTIAL_ROOT}/repair-2/attempt-5/technical-manifest.json`
 const TEMPLATE = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-5.template.json`;
 const ADDENDUM = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-5.addendum.json`;
 const APPROVED = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-5.json`;
+const APPROVED_SOURCE = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-5-source.json`;
 const ATTEMPT_4_APPROVAL = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-4.json`;
 const ATTEMPT_4_SOURCE = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-4-source.json`;
 
@@ -41,10 +42,12 @@ test('prior human approvals and sanitized source records remain immutable', () =
   ]) assert.deepEqual(readFileSync(path.join(ROOT, relativePath)), originBytes(relativePath), relativePath);
 });
 
-test('repair-5 pending packet and addendum share exact model and current hashes', () => {
+test('repair-5 approval, pending inputs, and current hashes are distinct', () => {
   const packet = readJson(PACKET);
   const addendum = readJson(ADDENDUM);
   const pending = readJson(TEMPLATE);
+  const approval = readJson(APPROVED);
+  const source = readJson(APPROVED_SOURCE);
   assert.deepEqual(packet.modelBinding, {
     provider: 'OpenAI',
     modelId: 'gpt-5.6-luna',
@@ -61,7 +64,16 @@ test('repair-5 pending packet and addendum share exact model and current hashes'
   assert.equal(pending.approvedBy, null);
   assert.equal(pending.approvedAt, null);
   assert.equal(pending.approvedProxySha256, packet.hashes.proxySourceSha256);
-  assert.equal(existsSync(path.join(ROOT, APPROVED)), false);
+  assert.equal(approval.approvalStatus, 'APPROVED');
+  assert.equal(approval.approvedBy, 'Eskasia');
+  assert.equal(approval.approvedAt, '2026-08-04T08:15:01Z');
+  assert.equal(approval.approvedModelId, 'gpt-5.6-luna');
+  assert.equal(approval.limitationsAcknowledged, true);
+  assert.equal(approval.approvalEvidence.type, 'github-comment');
+  assert.equal(approval.approvalEvidence.commentId, 5176356972);
+  assert.equal(source.approvalEffectiveAt, approval.approvedAt);
+  assert.equal(source.commentBodySha256.length, 64);
+  assert.equal(existsSync(path.join(ROOT, APPROVED)), true);
 });
 
 test('exact model, transport, and runtime preparation remain provider-free', () => {

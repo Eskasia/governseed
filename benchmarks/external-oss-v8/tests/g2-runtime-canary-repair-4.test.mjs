@@ -21,6 +21,7 @@ const ATTEMPT_5_MANIFEST = 'benchmarks/external-oss-v8/credential-transport/repa
 const ATTEMPT_5_TEMPLATE = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5.template.json';
 const ATTEMPT_5_ADDENDUM = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5.addendum.json';
 const ATTEMPT_5_APPROVAL = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5.json';
+const ATTEMPT_5_SOURCE = 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5-source.json';
 
 function readJson(relativePath) {
   return JSON.parse(readFileSync(path.join(ROOT, relativePath), 'utf8'));
@@ -79,10 +80,12 @@ test('attempt-5 manifest is exact, current, and excludes evidence-only paths', (
   }
 });
 
-test('attempt-5 pending approval has no approved record and exact model binding', () => {
+test('attempt-5 approval record is verified without changing pending inputs', () => {
   const packet = readJson(ATTEMPT_5_PACKET);
   const pending = readJson(ATTEMPT_5_TEMPLATE);
   const addendum = readJson(ATTEMPT_5_ADDENDUM);
+  const approval = readJson(ATTEMPT_5_APPROVAL);
+  const source = readJson(ATTEMPT_5_SOURCE);
   assert.equal(packet.modelBinding.provider, 'OpenAI');
   assert.equal(packet.modelBinding.modelId, 'gpt-5.6-luna');
   assert.equal(packet.modelBinding.aliasAllowed, false);
@@ -96,7 +99,14 @@ test('attempt-5 pending approval has no approved record and exact model binding'
   assert.equal(addendum.runtimeCanary, 'NOT_RUN');
   assert.equal(addendum.providerRequests, 0);
   assert.equal(addendum.newBindingHashes.reviewPacketSha256, sha256File(ATTEMPT_5_PACKET));
-  assert.equal(existsSync(path.join(ROOT, ATTEMPT_5_APPROVAL)), false);
+  assert.equal(approval.approvalStatus, 'APPROVED');
+  assert.equal(approval.approvedBy, 'Eskasia');
+  assert.equal(approval.approvedModelId, 'gpt-5.6-luna');
+  assert.equal(approval.limitationsAcknowledged, true);
+  assert.equal(approval.approvalEvidence.commentId, 5176356972);
+  assert.equal(source.commentBodySha256, '41a47521099af120135d4ddb65aa10cf6f4180b3271ed904cf95d277ecc58840');
+  assert.equal(source.approvalEffectiveAt, approval.approvedAt);
+  assert.equal(existsSync(path.join(ROOT, ATTEMPT_5_APPROVAL)), true);
 });
 
 test('workflow has exact image, node, model, staged failures, and no alternate model path', () => {

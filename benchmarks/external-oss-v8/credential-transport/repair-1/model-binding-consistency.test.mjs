@@ -83,6 +83,9 @@ test('G2 repair-2 model binding is exact and consistent across every active surf
   assert.doesNotMatch(source, /gpt-5\.6(?!-luna)/u);
   assert.doesNotMatch(source, /fallbackModel|modelFallback|latest|response_format/u);
 
+  const historicalSnapshotPaths = {
+    proxySourceSha256: 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-2/credential-proxy.mjs',
+  };
   for (const [field, relativePath] of [
     ['designSha256', packet.hashes.designPath],
     ['requestSchemaSha256', packet.hashes.requestSchemaPath],
@@ -92,7 +95,8 @@ test('G2 repair-2 model binding is exact and consistent across every active surf
     ['normalizedResponseSchemaSha256', packet.hashes.normalizedResponseSchemaPath],
     ['proxySourceSha256', packet.hashes.proxySourcePath],
   ]) {
-    assert.equal(packet.hashes[field], sha256(relativePath), `hash drift: ${relativePath}`);
+    const boundPath = historicalSnapshotPaths[field] ?? relativePath;
+    assert.equal(packet.hashes[field], sha256(boundPath), `hash drift: ${boundPath}`);
   }
   assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/credential-transport/human-approval-repair-2.json')), true);
   assert.equal(fs.existsSync(path.join(ROOT, 'benchmarks/external-oss-v8/runtime-identity/runtime-identity-receipt.json')), false);

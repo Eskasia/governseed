@@ -13,6 +13,8 @@ const ATTEMPT_3_PACKET = `${CREDENTIAL_ROOT}/repair-2/attempt-3/review-packet.js
 const ATTEMPT_3_ADDENDUM = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-3.addendum.json`;
 const ATTEMPT_3_FAILURE_ROOT = 'benchmarks/external-oss-v8/control/G2/runtime-canary-repair-3/run-30814159615';
 const ATTEMPT_5_PACKET = `${CREDENTIAL_ROOT}/repair-2/attempt-5/review-packet.json`;
+const ATTEMPT_5_APPROVAL = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-5.json`;
+const ATTEMPT_5_SOURCE = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-5-source.json`;
 const WORKFLOW = '.github/workflows/external-oss-v8-runtime-identity.yml';
 
 function readJson(relativePath) {
@@ -38,6 +40,8 @@ test('attempt-3 manual approval/source and failed-run evidence remain immutable'
 test('attempt-3 approval does not authorize attempt-5 changed bindings', () => {
   const approval = readJson(ATTEMPT_3_APPROVAL);
   const packet = readJson(ATTEMPT_5_PACKET);
+  const attempt5Approval = readJson(ATTEMPT_5_APPROVAL);
+  const attempt5Source = readJson(ATTEMPT_5_SOURCE);
   const workflow = readFileSync(path.join(ROOT, WORKFLOW), 'utf8');
   assert.equal(approval.approvalStatus, 'APPROVED');
   assert.equal(approval.approvedModelId, 'gpt-5.6-luna');
@@ -45,7 +49,10 @@ test('attempt-3 approval does not authorize attempt-5 changed bindings', () => {
   assert.equal(packet.status, 'PENDING_HUMAN_REAPPROVAL');
   assert.match(workflow, /human-approval-repair-2-attempt-5\.template\.json/u);
   assert.match(workflow, /HUMAN_REAPPROVAL_REQUIRED/u);
-  assert.equal(existsSync(path.join(ROOT, `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-5.json`)), false);
+  assert.equal(attempt5Approval.approvalStatus, 'APPROVED');
+  assert.equal(attempt5Approval.approvedModelId, 'gpt-5.6-luna');
+  assert.equal(attempt5Source.approvalEffectiveAt, attempt5Approval.approvedAt);
+  assert.equal(existsSync(path.join(ROOT, ATTEMPT_5_APPROVAL)), true);
 });
 
 test('repair-5 keeps the inherited schema and exact model bindings while changing only repair sources', () => {
