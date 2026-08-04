@@ -68,6 +68,24 @@
 - It is not bound to a sanctioned G2 GitHub run or current main commit and therefore cannot satisfy any gate.
 - Decision: classify it as local leaked test residue. Do not use it as runtime, cleanup, credential-isolation, or request-count evidence.
 
+## 2026-08-04 — P0.4 merge reconciliation
+
+- Status: `PASS`
+- GitHub API reports PR `#83` merged at `2026-08-04T13:56:04Z` by repository owner `Eskasia` from exact head `f8bdf152c3d0481e4b4a391130f49f7266509efb`.
+- Git proves that reviewed head and merge commit `12f1802173c05e880139a2841900e6953d16d42d` both have tree `2eee3c5237d3ef7cda947e3cb843eddd50668f69`.
+- Owner approval comment <https://github.com/Eskasia/governseed/pull/83#issuecomment-5180050104> was created at `2026-08-04T13:55:12Z`, fifty-two seconds before merge, and authorizes only readying and merging that exact control-only head.
+- Issue `#82` closed through PR `#83`; main validation run `30916308174` passed on Ubuntu, macOS, and Windows.
+- The runtime-identity workflow has no run after `30850478318` on `2026-08-03T20:30:07Z`; this reconciliation dispatched no workflow and consumed no provider request.
+- Decision: P0.4 satisfies its acceptance criteria and contributes its `2.5%` canonical-node weight, raising evidence-weighted completion from `21.5%` to `24.0%`.
+
+## 2026-08-04 — P0.D1 experiment-contract decision gate
+
+- Status: `HUMAN_GATE`
+- Strict READY is empty after P0.4 closes because P0.1/P0.2 remain blocked by the missing canonical experiment contract, G2 retains evidence conflicts and human gates, and no later node has all dependencies satisfied.
+- P0.D1 is the only safe critical-path gate-preparation action that can unblock P0.1/P0.2 and later G3/Pilot work.
+- Issue `#84` records all missing preregistration fields, the non-authoritative V4 boundary, forbidden actions, acceptance criteria, and a paste-ready implementation-only decision template.
+- Decision: do not infer V4 values. Stop state-changing experiment work at `EXPERIMENT_CONTRACT_DECISION` until a complete repository-owner comment exists and is verified against its GitHub `created_at`.
+
 ## Claim boundary
 
 This log records gaps and decisions only. It does not authorize provider use, workflow dispatch, PR merge, G3, Pilot, confirmatory execution, scoring, or benchmark acceptance.

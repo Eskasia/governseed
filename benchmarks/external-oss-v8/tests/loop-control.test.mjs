@@ -126,9 +126,9 @@ test('weighted completion equals only canonical PASS node weights', () => {
   const calculated = taskGraph.nodes
     .filter((node) => canonicalIds.has(node.nodeId) && node.status === 'PASS')
     .reduce((sum, node) => sum + node.weightPercent, 0);
-  assert.equal(Number(calculated.toFixed(10)), 21.5);
-  assert.equal(loopState.completionPercentage, 21.5);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').status, 'IN_PROGRESS');
+  assert.equal(Number(calculated.toFixed(10)), 24);
+  assert.equal(loopState.completionPercentage, 24);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').status, 'PASS');
 });
 
 test('G2 conflict remains fail-closed and forbidden runs cannot become active', () => {
@@ -142,22 +142,28 @@ test('G2 conflict remains fail-closed and forbidden runs cannot become active', 
   assert.equal(loopState.evidenceConflicts.some((item) => item.conflictId === 'G2-REPAIR6-APPROVAL-LOCATION-001'), true);
 });
 
-test('recorded GitHub state identifies the control PR without claiming a self-bound final head', () => {
-  assert.equal(loopState.activePR, 83);
-  assert.deepEqual(loopState.openPullRequests.active, [81, 83]);
+test('recorded GitHub state closes P0.4 and binds the experiment-contract decision gate', () => {
+  assert.equal(loopState.activeNode, 'P0.D1');
+  assert.equal(loopState.activeIssue, 84);
+  assert.equal(loopState.currentHumanGate, 'EXPERIMENT_CONTRACT_DECISION');
+  assert.deepEqual(loopState.openPullRequests.active, [81]);
   assert.equal(loopState.latestRunIds.priorLoopControlTechnicalValidation, '30913519842');
+  assert.equal(loopState.latestRunIds.loopControlMergeValidation, '30916308174');
   assert.equal('latestValidation' in loopState.latestRunIds, false);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').activePR, 83);
-  assert.match(humanGates, /pull\/83/);
-  assert.match(humanGates, /Prior technical evidence head\/tree/);
-  assert.match(humanGates, /not the final PR identity/);
-  assert.match(humanGates, /GitHub PR comment/);
-  assert.equal(loopState.finalHeadBinding.status, 'EXTERNAL_GITHUB_EVIDENCE_REQUIRED');
-  const priorHumanGateRun = humanGates.match(/Prior technical-head CI: run `(\d+)`/)?.[1];
-  assert.equal(priorHumanGateRun, loopState.latestRunIds.priorLoopControlTechnicalValidation);
-  assert.equal(ledgerEntries.at(-1).priorTechnicalValidationRun, priorHumanGateRun);
-  assert.equal(ledgerEntries.at(-1).evidence.includes(`https://github.com/Eskasia/governseed/actions/runs/${priorHumanGateRun}`), true);
-  assert.doesNotMatch(humanGates, /PENDING_PR_CREATION/);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').status, 'PASS');
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.D1').status, 'HUMAN_GATE');
+  assert.match(humanGates, /issues\/84/);
+  assert.match(humanGates, /EXPERIMENT_CONTRACT_DECISION/);
+  assert.equal(loopState.finalHeadBinding.status, 'VERIFIED_MERGED');
+  assert.equal(loopState.finalHeadBinding.reviewedHeadSha, 'f8bdf152c3d0481e4b4a391130f49f7266509efb');
+  assert.equal(loopState.finalHeadBinding.reviewedTreeSha, '2eee3c5237d3ef7cda947e3cb843eddd50668f69');
+  assert.equal(loopState.finalHeadBinding.mergeCommitSha, loopState.currentMainSha);
+  assert.equal(loopState.finalHeadBinding.mergeValidationRun, loopState.latestRunIds.loopControlMergeValidation);
+  assert.equal(Date.parse(loopState.finalHeadBinding.approvalCreatedAt) < Date.parse(loopState.finalHeadBinding.mergedAt), true);
+  assert.deepEqual(loopState.readySetAtSelection, []);
+  assert.equal(loopState.selectedGatePreparationNode, 'P0.D1');
+  assert.deepEqual(loopState.nextReadyNodes, []);
 });
 
 test('decision and human-gate records preserve required fail-closed markers', () => {
@@ -169,9 +175,10 @@ test('decision and human-gate records preserve required fail-closed markers', ()
     '30824406710',
     '30850478318',
     'PR `#83`',
+    'Issue `#84`',
   ]) assert.match(decisionLog, new RegExp(marker.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
   assert.match(humanGates, /Explicitly unauthorized/);
-  assert.match(humanGates, /orchestration metadata only/);
+  assert.match(humanGates, /no experiment contract, runtime, effectiveness, scoring, or acceptance claim/i);
 });
 
 test('validator rejects corrupted control records', async (t) => {
@@ -203,23 +210,29 @@ test('validator rejects corrupted control records', async (t) => {
   });
 });
 
-test('ledger accepts appended immutable records and binds the prior technical result', () => {
-  assert.equal(ledgerEntries.length >= 5, true);
+test('ledger accepts appended immutable records and reconciles attempts per selected node', () => {
+  assert.equal(ledgerEntries.length >= 6, true);
   assert.equal(new Set(ledgerEntries.map((entry) => entry.cycleId)).size, ledgerEntries.length);
   assert.deepEqual([...ledgerEntries].map((entry) => entry.timestamp).sort(), ledgerEntries.map((entry) => entry.timestamp));
   assert.equal(ledgerEntries.at(-1).cycleId, loopState.lastCycleId);
-  assert.equal(ledgerEntries[0].startingSha, loopState.currentMainSha);
+  assert.equal(ledgerEntries.at(-1).startingSha, loopState.currentMainSha);
   assert.equal(ledgerEntries[1].reconcilesCycleId, ledgerEntries[0].cycleId);
   assert.equal(ledgerEntries.at(-1).reconcilesCycleId, ledgerEntries.at(-2).cycleId);
-  assert.equal(ledgerEntries.at(-1).priorTechnicalSha, ledgerEntries.at(-1).startingSha);
   assert.equal(ledgerEntries.at(-1).resultingSha, 'EXTERNAL_GITHUB_PR_HEAD_BINDING_REQUIRED');
-  const activeNode = taskGraph.nodes.find((node) => node.nodeId === loopState.activeNode);
-  const activeNodeLedgerEntries = ledgerEntries.filter((entry) => entry.selectedNode === loopState.activeNode);
-  assert.equal(activeNode.attempts, activeNodeLedgerEntries.length);
-  assert.equal(activeNode.attempts <= 6, true);
+  const ledgerByNode = new Map();
+  for (const entry of ledgerEntries) {
+    const entries = ledgerByNode.get(entry.selectedNode) ?? [];
+    entries.push(entry);
+    ledgerByNode.set(entry.selectedNode, entries);
+  }
+  for (const [nodeId, entries] of ledgerByNode) {
+    const node = taskGraph.nodes.find((candidate) => candidate.nodeId === nodeId);
+    assert.ok(node, `ledger references unknown node ${nodeId}`);
+    assert.equal(node.attempts, entries.length, `${nodeId} attempts do not match ledger`);
+    assert.equal(node.attempts <= 6, true, `${nodeId} exceeds six-cycle ceiling`);
+  }
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.1').attempts, 1);
   for (const entry of ledgerEntries) {
-    assert.equal(entry.selectedNode, loopState.activeNode);
     assert.equal(entry.providerRequests, 'NOT_RUN');
     assert.equal(entry.workflowDispatch, 'NOT_RUN');
     assert.match(entry.claimBoundary, /No provider|no provider/i);

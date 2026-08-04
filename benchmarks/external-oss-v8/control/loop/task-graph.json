@@ -1,8 +1,8 @@
 {
   "schemaVersion": 1,
   "benchmarkId": "GS-OSS-2026-08-02-V8",
-  "authoritativeMainSha": "502c92e76e111a4cffbfaf4c3e4bde7f9bf8ce08",
-  "authoritativeMainTreeSha": "244d6dae9cbcf3ad8941fc526aeb8d3e61914773",
+  "authoritativeMainSha": "12f1802173c05e880139a2841900e6953d16d42d",
+  "authoritativeMainTreeSha": "2eee3c5237d3ef7cda947e3cb843eddd50668f69",
   "phaseWeightsPercent": {
     "P0": 10,
     "P1": 10,
@@ -36,9 +36,9 @@
       "status": "BLOCKED",
       "blockerCode": "CANONICAL_EFFECTIVENESS_PLAN_NOT_FOUND",
       "attempts": 1,
-      "activeIssue": 82,
+      "activeIssue": 84,
       "activePR": null,
-      "lastVerifiedMainSha": "502c92e76e111a4cffbfaf4c3e4bde7f9bf8ce08",
+      "lastVerifiedMainSha": "12f1802173c05e880139a2841900e6953d16d42d",
       "weightPercent": 2.5
     },
     {
@@ -54,9 +54,9 @@
       "status": "BLOCKED",
       "blockerCode": "BLOCKED_EXPERIMENT_CONTRACT_INCOMPLETE",
       "attempts": 1,
-      "activeIssue": null,
+      "activeIssue": 84,
       "activePR": null,
-      "lastVerifiedMainSha": "502c92e76e111a4cffbfaf4c3e4bde7f9bf8ce08",
+      "lastVerifiedMainSha": "12f1802173c05e880139a2841900e6953d16d42d",
       "weightPercent": 2.5
     },
     {
@@ -67,14 +67,14 @@
       "entryCriteria": ["GitHub API access is available."],
       "acceptanceCriteria": ["All open PRs and Issues are classified against current main without mutating them."],
       "validationCommands": ["gh pr list --repo Eskasia/governseed --state open --limit 100", "gh issue list --repo Eskasia/governseed --state open --limit 100"],
-      "evidencePaths": ["https://github.com/Eskasia/governseed/pull/81", "https://github.com/Eskasia/governseed/pull/83", "https://github.com/Eskasia/governseed/issues/82"],
+      "evidencePaths": ["https://github.com/Eskasia/governseed/pull/81", "https://github.com/Eskasia/governseed/pull/83", "https://github.com/Eskasia/governseed/issues/82", "https://github.com/Eskasia/governseed/issues/84"],
       "humanGate": null,
       "status": "PASS",
       "blockerCode": null,
       "attempts": 1,
-      "activeIssue": 82,
+      "activeIssue": 84,
       "activePR": null,
-      "lastVerifiedMainSha": "502c92e76e111a4cffbfaf4c3e4bde7f9bf8ce08",
+      "lastVerifiedMainSha": "12f1802173c05e880139a2841900e6953d16d42d",
       "weightPercent": 2.5
     },
     {
@@ -86,13 +86,13 @@
       "acceptanceCriteria": ["Control records and deterministic validation are committed, independently accepted, and merged to main."],
       "validationCommands": ["node --test benchmarks/external-oss-v8/tests/loop-control.test.mjs", "npm run ci"],
       "evidencePaths": ["benchmarks/external-oss-v8/control/loop/", "https://github.com/Eskasia/governseed/issues/82", "https://github.com/Eskasia/governseed/pull/83"],
-      "humanGate": "CONTROL_PR_REVIEW_AND_MERGE",
-      "status": "IN_PROGRESS",
-      "blockerCode": "NOT_CANONICAL_UNTIL_MERGED",
+      "humanGate": null,
+      "status": "PASS",
+      "blockerCode": null,
       "attempts": 5,
       "activeIssue": 82,
       "activePR": 83,
-      "lastVerifiedMainSha": "502c92e76e111a4cffbfaf4c3e4bde7f9bf8ce08",
+      "lastVerifiedMainSha": "12f1802173c05e880139a2841900e6953d16d42d",
       "weightPercent": 2.5
     },
     {
@@ -103,14 +103,14 @@
       "entryCriteria": ["The loop control is canonical on main."],
       "acceptanceCriteria": ["A decision Issue supplies all missing pre-registration fields and identifies the canonical owner."],
       "validationCommands": ["gh issue view <decision-issue> --repo Eskasia/governseed"],
-      "evidencePaths": ["benchmarks/external-oss-v8/control/loop/decision-log.md"],
+      "evidencePaths": ["benchmarks/external-oss-v8/control/loop/decision-log.md", "https://github.com/Eskasia/governseed/issues/84"],
       "humanGate": "EXPERIMENT_CONTRACT_DECISION",
-      "status": "PENDING",
-      "blockerCode": "WAITING_FOR_P0.4",
-      "attempts": 0,
-      "activeIssue": null,
+      "status": "HUMAN_GATE",
+      "blockerCode": "EXPERIMENT_CONTRACT_DECISION_REQUIRED",
+      "attempts": 1,
+      "activeIssue": 84,
       "activePR": null,
-      "lastVerifiedMainSha": "502c92e76e111a4cffbfaf4c3e4bde7f9bf8ce08",
+      "lastVerifiedMainSha": "12f1802173c05e880139a2841900e6953d16d42d",
       "weightPercent": 0
     },
     {
