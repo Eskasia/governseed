@@ -67,7 +67,7 @@
       "entryCriteria": ["GitHub API access is available."],
       "acceptanceCriteria": ["All open PRs and Issues are classified against current main without mutating them."],
       "validationCommands": ["gh pr list --repo Eskasia/governseed --state open --limit 100", "gh issue list --repo Eskasia/governseed --state open --limit 100"],
-      "evidencePaths": ["https://github.com/Eskasia/governseed/pull/81", "https://github.com/Eskasia/governseed/pull/83", "https://github.com/Eskasia/governseed/issues/82", "https://github.com/Eskasia/governseed/issues/84"],
+      "evidencePaths": ["https://github.com/Eskasia/governseed/pull/81", "https://github.com/Eskasia/governseed/pull/83", "https://github.com/Eskasia/governseed/issues/82", "https://github.com/Eskasia/governseed/issues/84", "https://github.com/Eskasia/governseed/pull/85"],
       "humanGate": null,
       "status": "PASS",
       "blockerCode": null,
@@ -109,7 +109,7 @@
       "blockerCode": "EXPERIMENT_CONTRACT_DECISION_REQUIRED",
       "attempts": 1,
       "activeIssue": 84,
-      "activePR": null,
+      "activePR": 85,
       "lastVerifiedMainSha": "12f1802173c05e880139a2841900e6953d16d42d",
       "weightPercent": 0
     },

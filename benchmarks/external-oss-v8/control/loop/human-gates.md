@@ -5,6 +5,7 @@
 - Status: `BLOCKED_EXPERIMENT_CONTRACT_INCOMPLETE`
 - Current main SHA/tree: `12f1802173c05e880139a2841900e6953d16d42d` / `2eee3c5237d3ef7cda947e3cb843eddd50668f69`
 - Issue: <https://github.com/Eskasia/governseed/issues/84>
+- Draft control PR: <https://github.com/Eskasia/governseed/pull/85>; it remains draft and is not authorized for merge before the decision is complete and rebound to its final reviewed head.
 - Completed parent gate: PR `#83` head `f8bdf152c3d0481e4b4a391130f49f7266509efb`, reviewed tree `2eee3c5237d3ef7cda947e3cb843eddd50668f69`, owner approval <https://github.com/Eskasia/governseed/pull/83#issuecomment-5180050104> at `2026-08-04T13:55:12Z`, merge at `2026-08-04T13:56:04Z`, and main CI run `30916308174`.
 - Exact target: one repository-owner decision comment on Issue `#84` that supplies all thirteen required preregistration fields and identifies one canonical owner/path for the full P0-P8 experiment.
 - Evidence summary: V8 is explicitly limited to G1 external-observational evidence; the V4 lock remains a blocked draft and is not authoritative for V8 or a successor effectiveness revision.

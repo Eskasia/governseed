@@ -84,6 +84,7 @@
 - Strict READY is empty after P0.4 closes because P0.1/P0.2 remain blocked by the missing canonical experiment contract, G2 retains evidence conflicts and human gates, and no later node has all dependencies satisfied.
 - P0.D1 is the only safe critical-path gate-preparation action that can unblock P0.1/P0.2 and later G3/Pilot work.
 - Issue `#84` records all missing preregistration fields, the non-authoritative V4 boundary, forbidden actions, acceptance criteria, and a paste-ready implementation-only decision template.
+- Draft PR `#85` persists the P0.4 reconciliation and P0.D1 gate state; it is not authorized for ready/merge while the decision is missing.
 - Decision: do not infer V4 values. Stop state-changing experiment work at `EXPERIMENT_CONTRACT_DECISION` until a complete repository-owner comment exists and is verified against its GitHub `created_at`.
 
 ## Claim boundary

@@ -145,15 +145,18 @@ test('G2 conflict remains fail-closed and forbidden runs cannot become active', 
 test('recorded GitHub state closes P0.4 and binds the experiment-contract decision gate', () => {
   assert.equal(loopState.activeNode, 'P0.D1');
   assert.equal(loopState.activeIssue, 84);
+  assert.equal(loopState.activePR, 85);
   assert.equal(loopState.currentHumanGate, 'EXPERIMENT_CONTRACT_DECISION');
-  assert.deepEqual(loopState.openPullRequests.active, [81]);
+  assert.deepEqual(loopState.openPullRequests.active, [81, 85]);
   assert.equal(loopState.latestRunIds.priorLoopControlTechnicalValidation, '30913519842');
   assert.equal(loopState.latestRunIds.loopControlMergeValidation, '30916308174');
   assert.equal('latestValidation' in loopState.latestRunIds, false);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').activePR, 83);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').status, 'PASS');
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.D1').status, 'HUMAN_GATE');
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.D1').activePR, 85);
   assert.match(humanGates, /issues\/84/);
+  assert.match(humanGates, /pull\/85/);
   assert.match(humanGates, /EXPERIMENT_CONTRACT_DECISION/);
   assert.equal(loopState.finalHeadBinding.status, 'VERIFIED_MERGED');
   assert.equal(loopState.finalHeadBinding.reviewedHeadSha, 'f8bdf152c3d0481e4b4a391130f49f7266509efb');
