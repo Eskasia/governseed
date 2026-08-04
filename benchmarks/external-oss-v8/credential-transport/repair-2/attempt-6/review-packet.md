@@ -22,6 +22,15 @@ Historical runs `30814159615`, `30824406710`, and `30850478318` are permanently
 marked `rerunPermitted=false`; repair-6 does not rerun them. Provider requests,
 workflow dispatch, runtime canary, and runtime receipt remain `0`/`NOT_RUN`.
 
+## Offline validation evidence
+
+- Focused G2 tests: `58/58 PASS`
+- Repair-6 regression tests: `7/7 PASS`
+- Required GitHub CI: Ubuntu, macOS, and Windows `validate` checks `PASS`
+- Provider requests: `0`
+- Workflow dispatch: `NOT_RUN`
+- Runtime canary: `NOT_RUN`
+
 This packet is preparation for human repair-6 review only. It does not claim
 provider success, runtime identity, G2, G3, Pilot, scoring, formal benchmark
 lock, or benchmark acceptance.

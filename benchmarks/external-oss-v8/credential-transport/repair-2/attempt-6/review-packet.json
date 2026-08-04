@@ -139,7 +139,7 @@
     "runtimeReceiptPresent": false,
     "apiKeyPresent": false,
     "credentialValuesPersisted": false,
-    "localSyntheticTests": "PENDING_AFTER_REPAIR"
+    "localSyntheticTests": "PASS"
   },
   "overallGate": "BLOCKED",
   "prohibitedClaims": [

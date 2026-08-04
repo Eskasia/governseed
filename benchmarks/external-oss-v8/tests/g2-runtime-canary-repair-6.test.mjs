@@ -263,6 +263,7 @@ test('attempt-5 approved inputs remain byte-identical and repair-6 review stays 
   assert.equal(source.failedRun.rerunPermitted, false);
   assert.equal(packet.status, 'PENDING_HUMAN_REPAIR_6_REVIEW');
   assert.equal(packet.humanTechnicalReview.status, 'PENDING_HUMAN_REVIEW');
+  assert.equal(packet.evidence.localSyntheticTests, 'PASS');
   assert.equal(template.approvalStatus, 'PENDING_HUMAN_REVIEW');
   assert.equal(template.approvedBy, null);
   assert.equal(template.approvedAt, null);
