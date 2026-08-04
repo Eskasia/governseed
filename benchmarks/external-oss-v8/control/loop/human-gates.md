@@ -1,23 +1,29 @@
 # Current human gates
 
-## EXPERIMENT_CONTRACT_DECISION
+## EXPERIMENT_CONTRACT_TASK_IDENTITY_RESOLUTION
 
-- Status: `BLOCKED_EXPERIMENT_CONTRACT_INCOMPLETE`
+- Status: `BLOCKED_TASK_OSS_01_V4_SEED_HASH_REVALIDATION_FAILED`
 - Current main SHA/tree: `12f1802173c05e880139a2841900e6953d16d42d` / `2eee3c5237d3ef7cda947e3cb843eddd50668f69`
 - Issue: <https://github.com/Eskasia/governseed/issues/84>
-- Draft control PR: <https://github.com/Eskasia/governseed/pull/85>; it remains draft and is not authorized for merge before the decision is complete and rebound to its final reviewed head.
-- Completed parent gate: PR `#83` head `f8bdf152c3d0481e4b4a391130f49f7266509efb`, reviewed tree `2eee3c5237d3ef7cda947e3cb843eddd50668f69`, owner approval <https://github.com/Eskasia/governseed/pull/83#issuecomment-5180050104> at `2026-08-04T13:55:12Z`, merge at `2026-08-04T13:56:04Z`, and main CI run `30916308174`.
-- Exact target: one repository-owner decision comment on Issue `#84` that supplies all thirteen required preregistration fields and identifies one canonical owner/path for the full P0-P8 experiment.
-- Evidence summary: V8 is explicitly limited to G1 external-observational evidence; the V4 lock remains a blocked draft and is not authoritative for V8 or a successor effectiveness revision.
-- Risk: inferred run counts, thresholds, tasks, or scoring rules would contaminate preregistration and could invalidate every later Pilot or confirmatory result.
-- Authorized human action: post one complete decision comment on Issue `#84`; this authorizes contract implementation and review only.
-- Explicitly unauthorized: provider requests, workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring execution, final acceptance, or reuse of a prior runtime authorization.
-- Expected GitHub evidence: an owner-associated comment with immutable `created_at`, complete field values, canonical owner/path, and explicit implementation-only scope.
-- Resume condition: fetch main and Issue `#84`; verify the decision comment predates implementing commits and contains every required field without conflict or range; then implement the contract in an isolated branch and draft PR.
-- Claim boundary: decision-gate preparation and P0.4 merge reconciliation only; no experiment contract, runtime, effectiveness, scoring, or acceptance claim.
+- Owner decision: <https://github.com/Eskasia/governseed/issues/84#issuecomment-5185865928>; comment ID `5185865928`, `OWNER` author `Eskasia`, created at `2026-08-04T23:48:25Z`, body SHA-256 `0aca84e3a9468235cb1a96ab14e200d8f3dd4cc1540c4f61e9e0c1f151e588c3`.
+- Draft control PR: <https://github.com/Eskasia/governseed/pull/85>; it remains draft and is not authorized for ready or merge.
+- Exact conflict: R1 conditionally adopts the V4 TASK-OSS-01 seed commit `0ad23a4f16331512f49c570acc2e9ff8093c8248` and seed-tree SHA-256 `88c4510ad2c5825cad031671e8188fe8f6164324fd4eccd98f5160fc81a676fa`, but committed V5 evidence records `legacyV3SeedTreeHashReproduced=false` and instead reconstructs commit `15ba6bed78feebe392dfbe13cf0be4065b260af7` with tree SHA-256 `3ebafacc713e37ea6939f08b1205198b415c5ae62dcbddb9f11ce4ab732ee70e`.
+- Evidence summary: scorer hashes match `2/2`; TASK-OSS-03 and TASK-OSS-09 identities reconcile; TASK-OSS-01 public test, path policy, hidden-oracle identity, and parent-red/fix-green evidence reconcile, but its V4 seed tree does not reproduce.
+- Risk: using the V4 seed would violate the comment's revalidation condition; substituting the V5 seed would change a task identity and therefore require R2 under the same decision.
+- Authorized human action: choose exactly one resolution below and post it as a repository-owner comment on Issue `#84`.
+- Explicitly unauthorized: contract implementation, PR readiness, merge, provider requests, workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring execution, or benchmark acceptance.
+- Expected GitHub evidence: an owner-associated comment with immutable `created_at`, one exact revision/seed choice, exact commit and tree SHA-256, and implementation-only scope.
+- Resume condition: fetch Issue `#84`; verify a new owner comment selects one exact resolution and predates every contract-implementation commit; then implement that revision without changing any other decision field.
+- Claim boundary: pre-implementation identity reconciliation only; no R1/R2 contract, runtime, effectiveness, scoring, or acceptance claim.
 
-Paste-ready decision template:
+Paste-ready resolution A — retain R1 only after new reproduction evidence exists:
 
 ```text
-APPROVE EXPERIMENT_CONTRACT_DECISION for Issue #84 on main 12f1802173c05e880139a2841900e6953d16d42d. Canonical owner/path: <owner and repository path>. Experiment ID/revision: <value>. Pilot tasks/count: <exact values>. Confirmatory tasks/count: <exact values>. Baseline definition: <value>. Sole GovernSeed treatment difference: <value>. Randomization/ordering/blinding: <exact values>. Runtime/model/provider/fallback policy: <exact values>. Timeout/token/cost/stop rules: <exact values>. Metrics/effect-size/statistical method/missing-data rules: <exact values>. Scoring schema/aggregation/acceptance threshold/safety vetoes: <exact values>. Evidence retention and hash bindings: <exact values>. Formal-lock, Pilot-to-confirmatory, independent-review, and final-acceptance owners: <values>. Claim boundary: <value>. This approval authorizes implementation and review of the contract only; it does not authorize provider requests, workflow dispatch, G3 formal lock, Pilot, confirmatory execution, scoring execution, or benchmark acceptance.
+APPROVE EXPERIMENT_CONTRACT_TASK_IDENTITY_RESOLUTION for Issue #84. Retain experiment GS-OSS-2026-08-05-EFFECT-R1 and TASK-OSS-01 V4 seed commit 0ad23a4f16331512f49c570acc2e9ff8093c8248 with seed-tree SHA-256 88c4510ad2c5825cad031671e8188fe8f6164324fd4eccd98f5160fc81a676fa. The reviewed reproduction evidence is <immutable evidence path, commit, and SHA-256> and proves that exact seed tree. This approval authorizes contract implementation and review only; it does not authorize provider requests, workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring execution, PR readiness, merge, or benchmark acceptance.
+```
+
+Paste-ready resolution B — create R2 using the committed V5 reconstruction:
+
+```text
+APPROVE EXPERIMENT_CONTRACT_TASK_IDENTITY_RESOLUTION for Issue #84. Supersede GS-OSS-2026-08-05-EFFECT-R1 before execution and create GS-OSS-2026-08-05-EFFECT-R2. Bind TASK-OSS-01 to V5 reconstructed sealed seed commit 15ba6bed78feebe392dfbe13cf0be4065b260af7 and seed-tree SHA-256 3ebafacc713e37ea6939f08b1205198b415c5ae62dcbddb9f11ce4ab732ee70e. Preserve every other field from owner comment 5185865928 unchanged. R1 and R2 evidence must never be pooled. This approval authorizes R2 contract implementation and review only; it does not authorize provider requests, workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring execution, PR readiness, merge, or benchmark acceptance.
 ```

@@ -3,7 +3,7 @@
   "benchmarkId": "GS-OSS-2026-08-02-V8",
   "currentMainSha": "12f1802173c05e880139a2841900e6953d16d42d",
   "currentMainTreeSha": "2eee3c5237d3ef7cda947e3cb843eddd50668f69",
-  "observedAt": "2026-08-04T14:00:55Z",
+  "observedAt": "2026-08-04T23:51:51Z",
   "activePhase": "P0",
   "activeNode": "P0.D1",
   "activeBranch": "benchmark/p0-p0.d1-experiment-contract-decision",
@@ -17,10 +17,10 @@
     "loopControlMergeValidation": "30916308174"
   },
   "activeRunIds": [],
-  "currentHumanGate": "EXPERIMENT_CONTRACT_DECISION",
+  "currentHumanGate": "EXPERIMENT_CONTRACT_TASK_IDENTITY_RESOLUTION",
   "completionPercentage": 24,
   "completionBasis": "Only PASS nodes count. Canonical phase weights are absent, so the requested fallback weights are divided equally across canonical subnodes; repair nodes have zero weight.",
-  "lastCycleId": "GS-LOOP-2026-08-04-C006",
+  "lastCycleId": "GS-LOOP-2026-08-04-C007",
   "readySetAtSelection": [],
   "selectedGatePreparationNode": "P0.D1",
   "nextReadyNodes": [],
@@ -48,6 +48,19 @@
         "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-6/review-packet.json"
       ],
       "resolution": "The human comment binds PR 81 head/tree but is attached to PR 80. PR 81 remains BLOCKED until formal sanitized approval/source evidence is committed and independently verified."
+    },
+    {
+      "conflictId": "EFFECT-R1-TASK-OSS-01-SEED-IDENTITY-001",
+      "status": "EVIDENCE_CONFLICT",
+      "fields": ["v4SeedCommit", "v4SeedTreeSha256", "legacySeedTreeHashReproduced", "r1Revision"],
+      "sources": [
+        "https://github.com/Eskasia/governseed/issues/84#issuecomment-5185865928",
+        "benchmarks/external-oss-v4/dependency-cache/task-identities.json",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-01/task-seed-identity.json",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-01/reconstruction-evidence.json",
+        "benchmarks/external-oss-v8/control/loop/reconciliation/issue-84-comment-5185865928.json"
+      ],
+      "resolution": "Do not implement the R1 contract. Reproduce the V4 TASK-OSS-01 seed tree hash or obtain an owner decision creating a new revision bound to the V5 reconstructed seed identity."
     }
   ],
   "openPullRequests": {
@@ -67,5 +80,5 @@
   },
   "providerRequests": "INDETERMINATE_FOR_RUN_30850478318",
   "workflowDispatch": "NOT_RUN_IN_THIS_CYCLE",
-  "claimBoundary": "P0.4 merge reconciliation and P0.D1 decision-gate preparation only. No provider call, workflow dispatch, G2/G3, Pilot, confirmatory, scoring, or effectiveness result is claimed."
+  "claimBoundary": "P0.D1 pre-implementation reconciliation only. The owner comment and scorer hashes were verified, but TASK-OSS-01 fails the required V4 seed-hash revalidation condition. No R1 contract implementation, provider call, workflow dispatch, G2/G3, Pilot, confirmatory, scoring, or effectiveness result is claimed."
 }

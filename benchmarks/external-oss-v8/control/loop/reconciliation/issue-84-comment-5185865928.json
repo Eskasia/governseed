@@ -1,0 +1,117 @@
+{
+  "schemaVersion": 1,
+  "cycleId": "GS-LOOP-2026-08-04-C007",
+  "observedAt": "2026-08-04T23:51:51Z",
+  "decision": {
+    "issue": 84,
+    "commentId": 5185865928,
+    "url": "https://github.com/Eskasia/governseed/issues/84#issuecomment-5185865928",
+    "author": "Eskasia",
+    "authorAssociation": "OWNER",
+    "createdAt": "2026-08-04T23:48:25Z",
+    "updatedAt": "2026-08-04T23:48:25Z",
+    "bodySha256": "0aca84e3a9468235cb1a96ab14e200d8f3dd4cc1540c4f61e9e0c1f151e588c3",
+    "decisionMainSha": "12f1802173c05e880139a2841900e6953d16d42d",
+    "authorizationScope": "CONTRACT_IMPLEMENTATION_AND_REVIEW_ONLY"
+  },
+  "repository": {
+    "mainSha": "12f1802173c05e880139a2841900e6953d16d42d",
+    "mainTreeSha": "2eee3c5237d3ef7cda947e3cb843eddd50668f69",
+    "pullRequest": 85,
+    "pullRequestState": "OPEN_DRAFT",
+    "pullRequestHeadSha": "b8336944ca7724648a9b8defed524d1d1d738889",
+    "pullRequestHeadTreeSha": "f32e16185e569226575ccea7d129e5ab1bd0bd7e"
+  },
+  "sourceRecords": {
+    "v4TaskIdentities": {
+      "path": "benchmarks/external-oss-v4/dependency-cache/task-identities.json",
+      "sha256": "e15b6452589aba457baba05c19a13a40998646756c66ac9abdb7ab21d315d0d0"
+    },
+    "v4InheritedEvidence": {
+      "path": "benchmarks/external-oss-v4/inherited-evidence.json",
+      "sha256": "10c65e3d799a7dcf7037573b83fe313b8341b8b8d700f8f71fd7877640da29e9"
+    }
+  },
+  "taskIdentityReconciliation": [
+    {
+      "taskId": "TASK-OSS-01",
+      "repository": "immich-app/immich",
+      "status": "EVIDENCE_CONFLICT",
+      "v4SeedCommit": "0ad23a4f16331512f49c570acc2e9ff8093c8248",
+      "v4SeedTreeSha256": "88c4510ad2c5825cad031671e8188fe8f6164324fd4eccd98f5160fc81a676fa",
+      "v5IdentityPath": "benchmarks/external-oss-v5/tasks/TASK-OSS-01/task-seed-identity.json",
+      "v5IdentitySha256": "07a38afcdc6cd46b1509df0bccb3d6941f3a95e137aa2de1f6293b3b91d73887",
+      "legacySeedCommitMatch": true,
+      "legacySeedTreeHashMatch": true,
+      "legacySeedTreeHashReproduced": false,
+      "v5SealedSeedCommit": "15ba6bed78feebe392dfbe13cf0be4065b260af7",
+      "v5SealedSeedTreeSha256": "3ebafacc713e37ea6939f08b1205198b415c5ae62dcbddb9f11ce4ab732ee70e",
+      "publicTestMatch": true,
+      "pathPolicyMatch": true,
+      "hiddenOracleIdentityMatch": true,
+      "parentRedFixGreen": true,
+      "blockerCode": "V4_SEED_TREE_HASH_NOT_REPRODUCED"
+    },
+    {
+      "taskId": "TASK-OSS-03",
+      "repository": "louislam/uptime-kuma",
+      "status": "PASS",
+      "v4SeedCommit": "2ccc49b77ba0c0e9dc159fcce5516efa7c0e7a18",
+      "v4SeedTreeSha256": "5fdbf067da484e3778a1345297a33d984779be73c020ded93198a1c84f5a07ca",
+      "v5IdentityPath": "benchmarks/external-oss-v5/tasks/TASK-OSS-03/task-seed-identity.json",
+      "v5IdentitySha256": "6ca94ddef9e6f2e8a7acaa5da7733aacddd426e6313b4bf800d8cd68a35ead15",
+      "legacySeedCommitMatch": true,
+      "legacySeedTreeHashMatch": true,
+      "legacySeedTreeHashReproduced": true,
+      "publicTestMatch": true,
+      "pathPolicyMatch": true,
+      "hiddenOracleIdentityMatch": true,
+      "parentRedFixGreen": true
+    },
+    {
+      "taskId": "TASK-OSS-09",
+      "repository": "paperless-ngx/paperless-ngx",
+      "status": "PASS",
+      "v4SeedCommit": "5f5ab1beea4feaaecee7131b4b36185f09e2f53c",
+      "v4SeedTreeSha256": "64d046e9abad54f4f10d2e489d4385e5ca6df1e0d5b8d67ecf48ad560bf4ad42",
+      "v5IdentityPath": "benchmarks/external-oss-v5/tasks/TASK-OSS-09/task-seed-identity.json",
+      "v5IdentitySha256": "9735771f442b4962b83c8c7323c2707f30e570f27202ac86d4db810876cd98d3",
+      "legacySeedCommitMatch": true,
+      "legacySeedTreeHashMatch": true,
+      "legacySeedTreeHashReproduced": true,
+      "publicTestMatch": true,
+      "pathPolicyMatch": true,
+      "hiddenOracleIdentityMatch": true,
+      "parentRedFixGreen": true
+    }
+  ],
+  "scorerReconciliation": {
+    "schema": {
+      "path": "schemas/governance-impact-result.schema.json",
+      "expectedSha256": "90fd773ccad80fafc23d6b51a003821efa04a08f9a441639a3a0b4af3a63c955",
+      "observedSha256": "90fd773ccad80fafc23d6b51a003821efa04a08f9a441639a3a0b4af3a63c955",
+      "status": "PASS"
+    },
+    "implementation": {
+      "path": "scripts/lib/governance-impact-core.mjs",
+      "expectedSha256": "cf5789192f6630dc7686c6c393a28eff5b23f896a3658ca626a6cb6296fd9daa",
+      "observedSha256": "cf5789192f6630dc7686c6c393a28eff5b23f896a3658ca626a6cb6296fd9daa",
+      "status": "PASS"
+    }
+  },
+  "workflowHistory": {
+    "runsCreatedAtOrAfterDecision": [],
+    "runtimeIdentityRuns": [30814159615, 30824406710, 30850478318],
+    "latestRuntimeIdentityRun": 30850478318,
+    "providerConsumingWorkflowDispatched": false
+  },
+  "gateDecision": {
+    "status": "BLOCKED",
+    "blockerCode": "TASK_OSS_01_V4_SEED_HASH_REVALIDATION_FAILED",
+    "contractImplementation": "NOT_RUN",
+    "providerRequests": "NOT_RUN",
+    "workflowDispatch": "NOT_RUN",
+    "resolutionRequired": "Provide evidence that reproduces the V4 TASK-OSS-01 seed tree SHA-256, or approve a new experiment revision that binds the V5 reconstructed seed identity."
+  },
+  "claimBoundary": "Pre-implementation reconciliation only. The owner decision exists, but its V4 identity-adoption condition is not satisfied for TASK-OSS-01. No canonical R1 contract, provider request, workflow dispatch, G2/G3, Pilot, confirmatory execution, scoring, or acceptance is claimed."
+}
