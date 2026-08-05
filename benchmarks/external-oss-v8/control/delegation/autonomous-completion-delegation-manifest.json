@@ -1,0 +1,398 @@
+{
+  "schemaVersion": 1,
+  "manifestId": "GS-EFFECT-R2-AUTONOMOUS-COMPLETION-DELEGATION-V1",
+  "governanceMode": "BOUNDED_STANDING_AUTONOMOUS_COMPLETION",
+  "status": "PENDING_OWNER_SHA256_APPROVAL",
+  "repository": "Eskasia/governseed",
+  "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
+  "experimentRevision": 2,
+  "manifestPath": "benchmarks/external-oss-v8/control/delegation/autonomous-completion-delegation-manifest.json",
+  "activation": {
+    "effectiveOnlyAfter": "A new unedited GitHub Issue comment by Eskasia with OWNER association approves this exact manifest SHA-256 and cites its exact frozen Git commit and tree.",
+    "approvalCanonicalization": "SHA-256 over the exact UTF-8 GitHub API .body string with no added delimiter",
+    "approvalMustBind": [
+      "manifest SHA-256",
+      "frozen manifest commit",
+      "frozen manifest tree",
+      "experiment ID and revision",
+      "absolute cost ceiling",
+      "provider-request ceiling",
+      "workflow-dispatch ceiling",
+      "checker-task ceiling",
+      "merge ceiling",
+      "mandatory stop conditions"
+    ],
+    "authorityBeforeActivation": "No authority in this manifest is active while status is PENDING_OWNER_SHA256_APPROVAL.",
+    "supersedesRoutinePerActionApprovalRequests": [
+      "fresh read-only checker tasks",
+      "exact-head merge commits",
+      "formal lock",
+      "Pilot execution",
+      "Pilot-to-confirmatory transition",
+      "confirmatory execution",
+      "deterministic scoring",
+      "final disposition"
+    ],
+    "doesNotSupersedeMandatoryStops": true
+  },
+  "canonicalStateBinding": {
+    "mainCommit": "4e1347e510a0068efbdff6942748671490c798ea",
+    "mainTree": "07dd3171a00791db0c006cbe0e73a069ab3a8aa6",
+    "weightedCompletionPercent": 33,
+    "activeNode": "P3.1",
+    "contract": {
+      "path": "benchmarks/external-oss-effectiveness-r2/experiment-contract.json",
+      "sha256": "994ca60db879d0ea9966a5dbb1b76ebb63f5e00d1d3bdf2f552e1765f8bcadcc"
+    },
+    "contractDecision": {
+      "mainCommit": "12f1802173c05e880139a2841900e6953d16d42d",
+      "mainTree": "2eee3c5237d3ef7cda947e3cb843eddd50668f69",
+      "decisionCommentId": 5185865928,
+      "decisionCommentBodySha256": "12263c44592a5e7a038e51ede76beeccc637ea4904681b3a03817a66b386a3f5",
+      "identityResolutionCommentId": 5186392861,
+      "identityResolutionCommentBodySha256": "e8ceeb21c85538a8f279db2626f66bed541cfe8476afbcf4604507f4ebff4191"
+    },
+    "currentWaitingRun": {
+      "issue": 92,
+      "workflowId": 325585082,
+      "runId": 31014045209,
+      "runNumber": 4,
+      "runAttempt": 1,
+      "event": "workflow_dispatch",
+      "createdAt": "2026-08-05T14:12:55Z",
+      "headBranch": "main",
+      "headSha": "4e1347e510a0068efbdff6942748671490c798ea",
+      "statusRequiredAtActivation": "waiting",
+      "deploymentId": 5763229348,
+      "environmentId": 19156855843,
+      "environmentName": "governseed-v8-runtime",
+      "jobId": 92333346031,
+      "jobName": "runtime-identity",
+      "executedStepCountRequiredAtActivation": 0,
+      "stageAReceiptCommentId": 5192890681,
+      "stageAReceiptBodySha256": "325d3e8bfd97f32fd306cc63b4d48b0a50447593215bdc7ac589b0083c5c4e71"
+    }
+  },
+  "candidateControlPlanePolicyBinding": {
+    "policyId": "GS-CANDIDATE-CONTROL-PLANE-SEPARATION-V1",
+    "ownerDecision": {
+      "commentId": 5190734870,
+      "url": "https://github.com/Eskasia/governseed/issues/88#issuecomment-5190734870",
+      "author": "Eskasia",
+      "authorAssociation": "OWNER",
+      "createdAt": "2026-08-05T10:42:25Z",
+      "updatedAt": "2026-08-05T10:42:25Z",
+      "bodySha256": "ab9b60a1a5020884134dfb6109dc82c76187a38aacd2066a7bbc69010923e99c"
+    },
+    "implementationCandidate": {
+      "issue": 90,
+      "pullRequest": 91,
+      "baseSha": "220c2d8d816194eb77da94e182258a0875202f3b",
+      "headSha": "1319a3396f018e2992722c0726128ae5741a755c",
+      "treeSha": "bf9604b64f58eee9862d3d18a09cbb106af59e3c",
+      "pullRequestBodySha256": "d5652e8fba33ec2c5393e98a74d37491c65ff54f6e241ce6d5ef60aea9147fe9",
+      "validationRun": 30999019425,
+      "technicalCommentId": 5190837964,
+      "technicalCommentBodySha256": "ee82bd2aba98ff242d2d8b35e8c8c9e3f0ae531ef4754761020a3b54e485c699",
+      "issueControlCommentId": 5190840842,
+      "issueControlCommentBodySha256": "1908a8c6353918c8af9ac38fcff56b3627f35f9ec791e30b9bfb1af7503d5b20",
+      "mergeStatus": "PENDING_INDEPENDENT_REVIEW_AND_MERGE"
+    },
+    "artifactHashes": [
+      {"path": "benchmarks/external-oss-v8/control/policy/candidate-control-plane-policy.json", "sha256": "128d58ab58523f28b789f3a223df4c6978fe592393ea72e44a767d81f09b74e8"},
+      {"path": "benchmarks/external-oss-v8/control/policy/candidate-control-plane-policy.schema.json", "sha256": "f6116cc2d6de9aa004600eb5bc1f35126efe8ceed82abb69149fe99a443db560"},
+      {"path": "benchmarks/external-oss-v8/control/policy/external-comment-event.schema.json", "sha256": "9d15c68134f99beb2a6d3bccde513e13614a89318d185fff69582add8981b0f6"},
+      {"path": "benchmarks/external-oss-v8/control/policy/README.md", "sha256": "a1c4f14e09658055ab754c5b6e9af9531360cf24086daa6e6fc4d8fa22297e1b"},
+      {"path": "scripts/lib/candidate-control-plane.mjs", "sha256": "413f2757015195ea8e7c005de6184b3e4fe95877193eb23654e8906f21c05d6d"},
+      {"path": "scripts/verify-candidate-control-plane.mjs", "sha256": "1ec391739a2830e2a04328e166099d05f390c79dd8c31cbdce475e2d0182d241"},
+      {"path": "tests/governance/candidate-control-plane-separation.test.mjs", "sha256": "e37dc407f5fe5f8b881f28d27667b0f05e7781f9fab3291e1dec4be7edf2f0f7"}
+    ],
+    "liveEvents": "Append-only GitHub Issue and PR comments, each bound by API ID, URL, author, association, created_at, updated_at, and exact API-body SHA-256.",
+    "repositorySynchronization": "Only separately frozen batched control-checkpoint branches may update benchmarks/external-oss-v8/control/loop/."
+  },
+  "canonicalArtifactInventory": [
+    {"path": "benchmarks/external-oss-effectiveness-r2/experiment-contract.json", "sha256": "994ca60db879d0ea9966a5dbb1b76ebb63f5e00d1d3bdf2f552e1765f8bcadcc"},
+    {"path": "benchmarks/external-oss-effectiveness-r2/experiment-contract.schema.json", "sha256": "5831456b1d7143ae0e9fde9c93266f5716cecfb4bc80e4f395f9f8a64ded54a2"},
+    {"path": "benchmarks/external-oss-effectiveness-r2/task-package.schema.json", "sha256": "ac48a6f901cc7a634078e4a95542893c9d296d4bde280bd7b7b887a952515bd7"},
+    {"path": "benchmarks/external-oss-effectiveness-r2/execution-agent-surface.json", "sha256": "a0e150e2828491270f07d61bad9a386de067a8d763e6c020df69e26f3734eb9c"},
+    {"path": "benchmarks/external-oss-effectiveness-r2/execution-agent-surface.schema.json", "sha256": "e5092a4ff424d192b38f0e1c6145432f6aea4bb1e5940ff625d8bcd254b7fbf6"},
+    {"path": "benchmarks/external-oss-effectiveness-r2/attempt-manifest.json", "sha256": "f82a2e2a881a606bf66c4e59b2cb8ccca7af80d524ddefffed27df04733e9575"},
+    {"path": "benchmarks/external-oss-effectiveness-r2/gate-policy.json", "sha256": "3f00a506c5fd2f3981838a1c1307595f95a53f245e5c2c3b6fe159cb93636af6"},
+    {"path": "benchmarks/external-oss-effectiveness-r2/evidence-index.json", "sha256": "4b25ed9116f25f78cfb7dd251916436ada5dfd89c251a1d43bce26f9f31d11d8"},
+    {"path": "benchmarks/external-oss-effectiveness-r2/report.md", "sha256": "c701640b83f0b0c399c1ed5d57fcac62dc304b7f76a6c301bca205a26b8f2e3b"},
+    {"path": "schemas/governance-impact-result.schema.json", "sha256": "90fd773ccad80fafc23d6b51a003821efa04a08f9a441639a3a0b4af3a63c955"},
+    {"path": "scripts/lib/governance-impact-core.mjs", "sha256": "cf5789192f6630dc7686c6c393a28eff5b23f896a3658ca626a6cb6296fd9daa"}
+  ],
+  "taskPlan": {
+    "pilot": {
+      "taskCount": 3,
+      "taskIds": ["TASK-OSS-01", "TASK-OSS-03", "TASK-OSS-09"],
+      "pairedRepetitionsPerTask": 3,
+      "pairedAttemptCount": 9,
+      "armExecutionCount": 18
+    },
+    "confirmatory": {
+      "taskCount": 8,
+      "taskIds": ["TASK-OSS-11", "TASK-OSS-12", "TASK-OSS-13", "TASK-OSS-14", "TASK-OSS-15", "TASK-OSS-16", "TASK-OSS-17", "TASK-OSS-18"],
+      "pairedRepetitionsPerTask": 3,
+      "pairedAttemptCount": 24,
+      "armExecutionCount": 48,
+      "disjointFromPilot": true
+    },
+    "totalPairedAttempts": 33,
+    "totalArmExecutions": 66,
+    "masterSeed": 2026080501,
+    "attemptSeedFormula": "unsigned 32-bit integer from the first 8 hexadecimal characters of SHA-256 over UTF-8 GS-OSS-2026-08-05-EFFECT-R2|TASK-ID|rep-N|2026080501",
+    "armOrderRule": "even attempt seed: baseline then governed; odd attempt seed: governed then baseline",
+    "manifestOrder": "task ID ascending, then repetition ascending"
+  },
+  "treatmentContract": {
+    "baseline": "Exact sealed seed, public task and facts, criteria, model, runtime, Codex, boundary, timeout, token, provider, tool, cache, environment, and oracle of the governed arm, with no GovernSeed overlay or generated governance artifact.",
+    "governed": "The baseline plus one task-specific, hash-bound GovernSeed base-profile Codex overlay generated from the formally locked starter commit.",
+    "soleTreatmentDifference": "governedOverlay generated by node /opt/governseed/scripts/init.mjs /workspace --agent codex --profile base",
+    "mustRemainIdenticalBetweenArms": ["task facts", "prompt", "model", "provider", "runtime", "timeout", "token ceiling", "tools", "network", "dependencies", "oracle", "seed", "public criteria", "repair allowance"],
+    "executionAgentCannotAccess": ["hidden oracle", "scoring policy", "acceptance threshold", "arm label", "prior attempt results"],
+    "blinding": "Execution agent is label-blinded; scorer receives immutable A/B labels read-only; arm mapping is disclosed only after scores and hashes are frozen."
+  },
+  "runtimeAndProvider": {
+    "agent": "Codex",
+    "model": "gpt-5.6-luna",
+    "provider": "OpenAI",
+    "endpoint": "POST https://api.openai.com/v1/responses",
+    "runtimeBoundary": "reviewed Linux OCI Scheme A schema-version-2",
+    "g2RuntimeImage": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+    "aliasAllowed": false,
+    "fallbackAllowed": false,
+    "retryAllowed": false,
+    "backgroundModeAllowed": false,
+    "providerHeldConversationAllowed": false,
+    "serverHostedToolsAllowed": false,
+    "credentialPolicy": "Credential remains in the host proxy and never enters the container, workspace, log, artifact, or child environment.",
+    "requestPolicy": {
+      "store": false,
+      "progressiveStream": true,
+      "clientExecutedToolsOnly": true,
+      "maxSequentialRequestsPerArm": 32,
+      "maxActiveRequests": 1,
+      "maxOutputTokensPerRequest": 8192,
+      "maxRequestBytes": 1048576,
+      "maxResponseBytes": 4194304
+    }
+  },
+  "workflowIdentitiesAndDispatchCeilings": {
+    "totalManualDispatchCeilingIncludingPreActivation": 35,
+    "preActivationDispatchesConsumed": 1,
+    "remainingPotentialDispatches": 34,
+    "workflows": [
+      {
+        "purpose": "G2 runtime identity",
+        "id": 325585082,
+        "path": ".github/workflows/external-oss-v8-runtime-identity.yml",
+        "sha256": "e5d77bea6ff50fcffff9da3115f650c952979a024f1d911ecce7799e04f6df86",
+        "manualDispatchCeiling": 1,
+        "dispatchesConsumed": 1,
+        "remainingDispatches": 0,
+        "authorizedContinuation": "Approve only the exact waiting run 31014045209 if every activation binding still matches."
+      },
+      {
+        "purpose": "credential-free formal-lock preflight",
+        "id": 322642961,
+        "path": ".github/workflows/governance-impact-preflight.yml",
+        "sha256": "a4457070efa2dc7fe32481625c6a034a71fad7f52167cdf3abad4081da6d0c09",
+        "manualDispatchCeiling": 1,
+        "dispatchesConsumed": 0,
+        "remainingDispatches": 1,
+        "authorizedOnlyAfter": "All formal-lock input hashes and runtime identities are frozen and independently accepted."
+      },
+      {
+        "purpose": "paired Pilot and confirmatory evaluator",
+        "id": 322642963,
+        "path": ".github/workflows/governance-impact-real.yml",
+        "sha256": "c633a543c7059f0fd53b88e1e4c7b314c9b716be75e8732141ceb2981481fe24",
+        "manualDispatchCeiling": 33,
+        "dispatchesConsumed": 0,
+        "remainingDispatches": 33,
+        "compatibilityStatus": "BLOCKED_PROTOCOL_CHANGE_REQUIRED",
+        "blockingConflict": "The workflow accepts at most 600000 ms and has a 30-minute job timeout, while the canonical R2 contract requires 2700 seconds per arm for a paired two-arm attempt.",
+        "dispatchAuthorizedUnderCurrentHash": false
+      },
+      {
+        "purpose": "required pull-request and main validation",
+        "id": 287166889,
+        "path": ".github/workflows/validate-starter.yml",
+        "sha256": "85ced045cc60d12c468a1de0b25d2b020b2f57d9d0be1d31a9c9e38da835599d",
+        "manualDispatchCeiling": 0,
+        "trigger": "pull_request or push only"
+      }
+    ],
+    "unknownOrNewWorkflowIdPolicy": "Any new workflow, changed workflow hash, changed workflow ID, or use of an unlisted workflow is manifest drift and requires an explicit stop."
+  },
+  "providerAndCostCeilings": {
+    "maximumProviderRequests": 2120,
+    "providerRequestCountingRule": "2113 direct Responses API requests are available to G2, Pilot, and confirmatory execution; each of the seven named checker tasks consumes one additional provider-request authorization unit and may not spawn, retry, or replace another provider-consuming task.",
+    "measuredRuntimeProviderRequests": {
+      "g2Canary": 1,
+      "pilot": 576,
+      "confirmatory": 1536,
+      "total": 2113,
+      "derivation": "1 G2 request plus 18 Pilot arms times 32 requests plus 48 confirmatory arms times 32 requests."
+    },
+    "freshReadOnlyCheckerTasks": {
+      "maximum": 7,
+      "names": [
+        "GS-AUTONOMOUS-CONTROL-POLICY-CHECKER",
+        "GS-AUTONOMOUS-DELEGATION-MANIFEST-CHECKER",
+        "GS-AUTONOMOUS-G2-EVIDENCE-CHECKER",
+        "GS-AUTONOMOUS-G3-LOCK-CHECKER",
+        "GS-AUTONOMOUS-PILOT-CHECKER",
+        "GS-AUTONOMOUS-CONFIRMATORY-SCORING-CHECKER",
+        "GS-AUTONOMOUS-FINAL-AUDIT-CHECKER"
+      ],
+      "oneTaskPerName": true,
+      "readOnly": true,
+      "retryOrReplacementAllowed": false,
+      "rejectionPolicy": "Stop on the first unresolved rejection; do not start a replacement checker."
+    },
+    "totalAuthorizedProviderConsumingUnits": 2120,
+    "costUsd": {
+      "perArmCeiling": 5,
+      "pilotArmExecutionCeiling": 90,
+      "confirmatoryArmExecutionCeiling": 240,
+      "contractExperimentCeiling": 330,
+      "governanceOverheadCeiling": 20,
+      "absoluteTotalCeiling": 350,
+      "g2CanaryOverheadAllocation": 1,
+      "checkerTaskOverheadAllocationEach": 2,
+      "unallocatedOverheadContingency": 5,
+      "currency": "USD",
+      "hardStopOnUnknownOrUnboundedCost": true,
+      "priceSnapshotRequiredBeforeFormalLock": true
+    }
+  },
+  "timeoutsTokensAndFailureRules": {
+    "timeoutSecondsPerArm": 2700,
+    "providerTokenCeilingPerArm": 150000,
+    "maxOutputTokensPerRequest": 8192,
+    "g2CanaryTimeoutMs": 30000,
+    "retryOrReplacementAllowed": false,
+    "attemptRerunAllowed": false,
+    "crossRevisionPoolingAllowed": false,
+    "failedEvidenceRetention": "Every failure is preserved and cannot be erased, overwritten, replaced, or silently rerun.",
+    "missingData": "Timeout or nonzero exit with intact containment, privacy, oracle, and cleanup evidence is deliveryPass=false. Privacy, containment, oracle-integrity, persistence, identity, or cleanup failure produces no eligible pair. Missing, rejected, duplicate, unregistered, or mismatched attempts are never imputed."
+  },
+  "mergeAuthority": {
+    "maximumMergeCommitsAfterActivation": 8,
+    "mergeMethod": "merge commit only",
+    "allowedClasses": ["delegation manifest", "candidate-control-plane policy", "control-only checkpoint", "formal-lock artifacts", "Pilot evidence", "confirmatory evidence", "scoring report", "final closeout"],
+    "preconditions": [
+      "candidate head and tree are frozen",
+      "full diff and current-main compatibility are independently reviewed",
+      "fresh named read-only checker returns ACCEPT for the exact head and tree",
+      "required pull-request CI is successful on Ubuntu, macOS, and Windows",
+      "pull request is mergeable and mergeable_state is clean",
+      "no unresolved review finding or evidence conflict exists",
+      "candidate branch contains no forbidden live control-plane paths",
+      "approval, checker, readiness, and merge events are recorded append-only outside the frozen candidate",
+      "main, head, tree, artifact hashes, and CI are revalidated immediately before merge",
+      "the merge does not introduce a protocol change or exceed any manifest ceiling"
+    ],
+    "forbidden": ["squash merge", "rebase merge", "force push", "history rewrite", "merge after head drift", "merge with failing or pending required CI", "admin bypass"]
+  },
+  "formalLockPreconditions": [
+    "G2 runtime identity succeeds with one hash-valid redacted receipt and zero credential leakage",
+    "candidate-control-plane policy is independently accepted and canonical on main",
+    "delegation manifest is owner-approved by exact SHA-256 and canonical on main",
+    "all Pilot and confirmatory task, seed, public-test, hidden-oracle, and path-policy identities match the canonical contract and evidence index",
+    "all governed overlays are generated from one exact starter commit and their closed path inventories and SHA-256 values are frozen",
+    "exact runtime image digest, Codex version, Codex binary SHA-256, containment policy SHA-256, network policy SHA-256, proxy SHA-256, and executionBoundaryId are frozen",
+    "an official price snapshot proves every per-arm, stage, overhead, and absolute cost ceiling",
+    "the exact preflight and execution workflow IDs, paths, hashes, inputs, timeout semantics, and job timeout support the 2700-second per-arm contract",
+    "credential-free preflight receipt is committed, hash-valid, and independently accepted",
+    "fresh formal-lock checker returns ACCEPT",
+    "no manifest drift, protocol conflict, safety veto, or unresolved evidence conflict exists"
+  ],
+  "stageTransitions": {
+    "pilotEntry": ["formal lock is complete", "9-pair Pilot manifest is exact and frozen", "all runtime, provider, task, overlay, order, budget, and workflow bindings match this manifest"],
+    "pilotToConfirmatory": ["all 9 Pilot pairs present and hash-valid", "zero rejected attempts", "zero credential, privacy, containment, oracle, cleanup, or critical-regression failures", "zero protocol drift", "complete task-level reporting", "fresh read-only Pilot checker ACCEPT"],
+    "confirmatoryEntry": ["all Pilot transition criteria pass", "exact 24-pair confirmatory manifest remains unchanged", "no Pilot result is used to modify protocol, task identity, threshold, scorer, ordering, or analysis"],
+    "scoringEntry": ["all 24 confirmatory pairs are present, eligible, hash-valid, nonduplicate, and bound to the exact formal lock", "all scoring inputs are frozen before arm-label disclosure"]
+  },
+  "scoringAndAcceptance": {
+    "llmJudge": false,
+    "schemaPath": "schemas/governance-impact-result.schema.json",
+    "schemaSha256": "90fd773ccad80fafc23d6b51a003821efa04a08f9a441639a3a0b4af3a63c955",
+    "implementationPath": "scripts/lib/governance-impact-core.mjs",
+    "implementationSha256": "cf5789192f6630dc7686c6c393a28eff5b23f896a3658ca626a6cb6296fd9daa",
+    "primaryMetric": "equally weighted mean paired deliveryPass risk difference, governed minus baseline",
+    "secondaryMetrics": ["deliveryScore", "repair rounds", "wall time", "tokens", "cost", "intervention", "scope regressions", "prohibition regressions", "privacy regressions", "critical-document regressions"],
+    "statisticalMethod": "deterministic nonparametric paired bootstrap",
+    "bootstrapIterations": 2000,
+    "confidence": 0.95,
+    "bootstrapSeed": 2026080501,
+    "confirmatoryAcceptance": ["all 8 scenarios present", "3 complete pairs per scenario", "pair completeness equals 1.0", "zero rejected attempts", "zero duplicate attempts", "expected manifest and bootstrap seed pinned", "exact report reproduction", "mean deliveryPass difference is nonnegative", "lower 95 percent confidence bound is strictly greater than zero"],
+    "positiveFinalDisposition": "ACCEPTED only when every confirmatory acceptance condition passes, every safety veto is false, and the final independent audit returns ACCEPT.",
+    "negativeFinalDisposition": "A complete and conflict-free experiment that fails only the effectiveness threshold may be recorded as NOT_ACCEPTED_EFFECTIVENESS_THRESHOLD; missing or conflicting evidence cannot be converted into a final disposition."
+  },
+  "safetyVetoes": [
+    "credential exposure or credential value persistence",
+    "hidden-oracle exposure",
+    "direct container egress",
+    "runtime, model, provider, workflow, task, seed, overlay, scorer, or manifest identity mismatch",
+    "privacy-scan failure",
+    "forbidden-path mutation",
+    "surviving process, non-empty cgroup, uncertain cleanup, or artifact overwrite",
+    "unregistered provider request or workflow dispatch",
+    "governed critical scope regression increase",
+    "governed prohibition regression increase",
+    "governed privacy regression increase",
+    "governed critical-document drift increase"
+  ],
+  "mandatoryStopConditions": [
+    "manifest drift, including any changed bound byte, SHA, task identity, workflow ID, workflow hash, model, provider, runtime, scorer, threshold, budget, or action ceiling",
+    "budget exhaustion or inability to prove cost remains within the USD 350 absolute ceiling",
+    "protocol change, including the currently identified evaluator timeout incompatibility",
+    "any additional provider retry, rerun, replacement attempt, or replacement checker",
+    "unresolved checker rejection",
+    "any safety veto",
+    "missing credential, missing secret, missing repository permission, or unavailable required Environment approval",
+    "evidence conflict, missing required evidence, ambiguous authorization, or edited control-plane comment",
+    "current waiting run 31014045209 is not still waiting at attempt 1 with zero executed steps when this manifest activates",
+    "a required workflow, runtime image, model, provider endpoint, price snapshot, task seed, oracle, overlay, or scorer is unavailable",
+    "a stage contains a rejected, duplicate, unregistered, mismatched, overwritten, or ineligible attempt",
+    "Pilot transition criteria do not all pass",
+    "confirmatory evidence is incomplete or cannot reproduce exactly",
+    "a positive final disposition is not supported by every acceptance threshold and independent audit"
+  ],
+  "standingAuthorityAfterActivation": {
+    "authorized": [
+      "read-only reconciliation and deterministic local validation",
+      "append-only GitHub control comments",
+      "bounded control-only file edits, commits, pushes, and draft pull requests",
+      "the seven named fresh read-only checker tasks",
+      "mark-ready and merge actions satisfying every merge precondition and merge ceiling",
+      "approval of the exact waiting governseed-v8-runtime deployment and continuation of run 31014045209",
+      "manual dispatches using only exact listed workflow IDs and hashes within their per-workflow and total ceilings",
+      "formal lock after every formal-lock precondition passes",
+      "Pilot, Pilot-to-confirmatory transition, confirmatory execution, deterministic scoring, and final disposition after their exact preconditions pass",
+      "sanitized evidence retention and batched control-plane checkpoint synchronization"
+    ],
+    "notAuthorized": [
+      "protocol revision or silent repair of the evaluator timeout conflict",
+      "new or unlisted workflow",
+      "changed model, provider, fallback, runtime, task, seed, overlay, scorer, metric, threshold, randomization, or claim boundary",
+      "retry, rerun, replacement attempt, cross-revision pooling, or selective omission",
+      "destructive Git or data operations",
+      "secret extraction, display, copying, rotation, or persistence",
+      "deployment outside the listed GitHub Environments",
+      "cost beyond any per-arm, stage, overhead, or absolute ceiling",
+      "claim of universal effectiveness, adoption, production readiness, certification, attestation, provider compliance, zero-data-retention, generalization, or independent-human validation"
+    ]
+  },
+  "evidenceRetentionAndClaimBoundary": {
+    "githubArtifactRetentionDays": 90,
+    "sanitizedCommittedIndexesPermanent": true,
+    "forbiddenEvidenceContent": ["raw model body", "transcript", "tool trace", "environment dump", "credential", "private prompt", "absolute user path", "raw hidden oracle"],
+    "claimBoundary": "No effectiveness claim may be made from G0, G1, G2, preflight, lock preparation, contracts, offline tests, or Pilot. Any positive claim is limited to the exact eight confirmatory tasks and locked model, runtime, budgets, scorer, and dates. This delegation is operational authority, not evidence of effectiveness or independent human validation.",
+    "selfBinding": "The manifest does not self-hash. Its immutable identity is the SHA-256 of these exact UTF-8 bytes, externally bound by the OWNER approval comment and frozen Git commit/tree."
+  }
+}
