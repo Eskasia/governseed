@@ -37,7 +37,12 @@
     }
   ],
   "repair": {
-    "status": "LOCAL_REPAIR_PENDING_COMMIT_CI_AND_FRESH_REVIEW",
+    "status": "REPAIR_COMMITTED_CI_PASSED_EXTERNAL_BINDING_PUBLISHED_FRESH_REVIEW_REQUIRED",
+    "implementationHeadSha": "169e7ac947603e4b124fd113b89ca65f1feaea79",
+    "implementationTreeSha": "d1bd717e970dab3c7c11e433d0cd19248ee49b64",
+    "validationRun": 30996735553,
+    "technicalComment": "https://github.com/Eskasia/governseed/pull/89#issuecomment-5190529563",
+    "controlComment": "https://github.com/Eskasia/governseed/issues/88#issuecomment-5190531656",
     "taskSeedOracleHashesChanged": false,
     "scorerHashesChanged": false,
     "runtimeOrWorkflowChanged": false,

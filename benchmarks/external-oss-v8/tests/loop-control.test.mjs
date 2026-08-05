@@ -176,6 +176,7 @@ test('recorded GitHub state closes P1.2 and gates P1.4 on fresh independent revi
   assert.equal(loopState.latestRunIds.taskIdentityPullRequestValidation, '30976115630');
   assert.equal(loopState.latestRunIds.taskIdentityMergeValidation, '30988393468');
   assert.equal(loopState.latestRunIds.publicHiddenSeparationRejectedHeadValidation, '30989625066');
+  assert.equal(loopState.latestRunIds.publicHiddenSeparationRepairValidation, '30996735553');
   assert.equal('experimentContractEvidenceValidation' in loopState.latestRunIds, false);
   assert.equal('latestValidation' in loopState.latestRunIds, false);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').activePR, 83);
@@ -206,10 +207,15 @@ test('recorded GitHub state closes P1.2 and gates P1.4 on fresh independent revi
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').attempts, 3);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').activeIssue, 88);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').activePR, 89);
-  assert.equal(loopState.pendingReviewBinding.status, 'LOCAL_REPAIR_PENDING_COMMIT_AND_CI_BINDING');
+  assert.equal(loopState.pendingReviewBinding.status, 'REPAIR_COMMITTED_CI_PASSED_EXTERNAL_BINDING_PUBLISHED');
   assert.equal(loopState.pendingReviewBinding.pullRequest, 89);
   assert.equal(loopState.pendingReviewBinding.priorIndependentReview.status, 'ACCEPT');
-  assert.equal(loopState.pendingReviewBinding.currentIndependentReview, 'REJECT_ON_19A4405_REPAIRED_REQUIRES_NEW_AUTHORIZATION');
+  assert.equal(loopState.pendingReviewBinding.currentIndependentReview, 'NOT_RUN_ON_REPAIRED_CANDIDATE_REQUIRES_NEW_AUTHORIZATION');
+  assert.equal(loopState.pendingReviewBinding.repairBinding.implementationHeadSha, '169e7ac947603e4b124fd113b89ca65f1feaea79');
+  assert.equal(loopState.pendingReviewBinding.repairBinding.implementationTreeSha, 'd1bd717e970dab3c7c11e433d0cd19248ee49b64');
+  assert.equal(loopState.pendingReviewBinding.repairBinding.validationRun, '30996735553');
+  assert.equal(loopState.pendingReviewBinding.repairBinding.technicalCommentBodySha256, 'a940f59bb3133547eae5776ded83ae0434e19343c234797b6d99391da2d1f942');
+  assert.equal(loopState.pendingReviewBinding.repairBinding.controlCommentBodySha256, '75fe110d37db811cb3466c33bf63011480ae10b9be085975a32e8834e8852736');
   assert.equal(loopState.pendingReviewBinding.rejectedReviewBinding.status, 'REJECT');
   assert.equal(loopState.pendingReviewBinding.rejectedReviewBinding.reviewedHeadSha, '19a4405abdeb25c20a919897ec092e85dfcbf78f');
   assert.equal(loopState.pendingReviewBinding.rejectedReviewBinding.reviewedTreeSha, '0ce658e5bb35c84db4b7573d7193fe88366a67da');
@@ -227,7 +233,9 @@ test('P1.4 independent-review rejection binds one authorized checker and one bou
   assert.equal(publicHiddenReview.target.validationRun, 30989625066);
   assert.equal(publicHiddenReview.verdict, 'REJECT');
   assert.deepEqual(publicHiddenReview.findings.map((finding) => finding.id), ['P1_4_HASH_ONLY_CLAIM_MISMATCH']);
-  assert.equal(publicHiddenReview.repair.status, 'LOCAL_REPAIR_PENDING_COMMIT_CI_AND_FRESH_REVIEW');
+  assert.equal(publicHiddenReview.repair.status, 'REPAIR_COMMITTED_CI_PASSED_EXTERNAL_BINDING_PUBLISHED_FRESH_REVIEW_REQUIRED');
+  assert.equal(publicHiddenReview.repair.implementationHeadSha, '169e7ac947603e4b124fd113b89ca65f1feaea79');
+  assert.equal(publicHiddenReview.repair.validationRun, 30996735553);
   assert.equal(publicHiddenReview.repair.providerRequestsAfterChecker, 0);
 });
 

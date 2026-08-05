@@ -20,7 +20,8 @@
     "experimentContractMergeValidation": "30971703749",
     "taskIdentityPullRequestValidation": "30976115630",
     "taskIdentityMergeValidation": "30988393468",
-    "publicHiddenSeparationRejectedHeadValidation": "30989625066"
+    "publicHiddenSeparationRejectedHeadValidation": "30989625066",
+    "publicHiddenSeparationRepairValidation": "30996735553"
   },
   "activeRunIds": [],
   "currentHumanGate": "PUBLIC_HIDDEN_SEPARATION_INDEPENDENT_REVIEW_AUTHORIZATION",
@@ -89,7 +90,7 @@
     "mergeValidationRun": "30988393468"
   },
   "pendingReviewBinding": {
-    "status": "LOCAL_REPAIR_PENDING_COMMIT_AND_CI_BINDING",
+    "status": "REPAIR_COMMITTED_CI_PASSED_EXTERNAL_BINDING_PUBLISHED",
     "pullRequest": 89,
     "issue": 88,
     "baseMainSha": "220c2d8d816194eb77da94e182258a0875202f3b",
@@ -100,7 +101,17 @@
       "reviewedTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
       "receiptPath": "benchmarks/external-oss-v8/control/loop/reconciliation/pr-87-task-identity-merge.json"
     },
-    "currentIndependentReview": "REJECT_ON_19A4405_REPAIRED_REQUIRES_NEW_AUTHORIZATION",
+    "currentIndependentReview": "NOT_RUN_ON_REPAIRED_CANDIDATE_REQUIRES_NEW_AUTHORIZATION",
+    "repairBinding": {
+      "implementationHeadSha": "169e7ac947603e4b124fd113b89ca65f1feaea79",
+      "implementationTreeSha": "d1bd717e970dab3c7c11e433d0cd19248ee49b64",
+      "pullRequestBodySha256": "8eafee72c3060864e149c25a1ae8e5bf38dd8a39b41cc6976b1d4211a5960a8e",
+      "validationRun": "30996735553",
+      "technicalComment": "https://github.com/Eskasia/governseed/pull/89#issuecomment-5190529563",
+      "technicalCommentBodySha256": "a940f59bb3133547eae5776ded83ae0434e19343c234797b6d99391da2d1f942",
+      "controlComment": "https://github.com/Eskasia/governseed/issues/88#issuecomment-5190531656",
+      "controlCommentBodySha256": "75fe110d37db811cb3466c33bf63011480ae10b9be085975a32e8834e8852736"
+    },
     "rejectedReviewBinding": {
       "status": "REJECT",
       "reviewId": "GS-EFFECT-R2-P1.4-INDEPENDENT-CHECKER",
