@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "cycleId": "GS-LOOP-2026-08-05-C020",
+  "observedAt": "2026-08-05T15:05:00Z",
+  "pullRequest": {"number": 94, "state": "MERGED", "baseSha": "4e1347e510a0068efbdff6942748671490c798ea", "headSha": "bb8adc4b5203cd235ca4542ef8511090deeace2a", "treeSha": "bc118138747195712585adcefe9d92e0550f123b", "mergeCommitSha": "3e0cca4fd86ba0aad735249dcefa6df15514b40d"},
+  "manifest": {"experimentId": "GS-OSS-2026-08-05-EFFECT-R2", "revision": 1, "sha256": "480b30d6f01ca529eb095a58075959a2abc08bf1a9acb9f864371df17c7b59d7"},
+  "ownerApproval": {"commentId": 5193412763, "url": "https://github.com/Eskasia/governseed/issues/93#issuecomment-5193412763", "author": "Eskasia", "authorAssociation": "OWNER", "createdAt": "2026-08-05T14:57:03Z", "updatedAt": "2026-08-05T14:57:03Z"},
+  "validation": {"mainRunId": 31018400020, "result": "SUCCESS"},
+  "stateTransition": "BOUNDED_STANDING_AUTONOMOUS_COMPLETION_ACTIVATED_THEN_STOPPED_ON_G2_FAILURE",
+  "claimBoundary": "Delegation V1 provenance only; its mandatory stop fired on failed runtime run 31014045209."
+}

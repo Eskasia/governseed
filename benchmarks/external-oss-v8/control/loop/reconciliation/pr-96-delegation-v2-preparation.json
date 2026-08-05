@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "cycleId": "GS-LOOP-2026-08-05-C021",
+  "observedAt": "2026-08-05T16:41:22Z",
+  "pullRequest": {"number": 96, "state": "OPEN", "isDraft": true, "mergeable": "MERGEABLE", "baseSha": "9c83280cec2d9f8fedd15455cfa261680452969f", "headSha": "9bd3371147726b5274ea6ad528f0ca4a35b017ec", "treeSha": "6b8e8252e012ac10857188f13be76de6cf3e0079", "bodySha256": "9bf488184b34ee6a5e8bba3d19d459ef9a890dceb6131a9e68ae701f087aa8e7"},
+  "manifest": {"experimentId": "GS-OSS-2026-08-05-EFFECT-R2", "revision": 2, "sha256": "1dfc6a73651030fd75658e61df3e022c8354976e36803a03f8165c2af287c29f", "dispatchAuthorityActive": false},
+  "bindings": {"technicalComment": {"id": 5194540357, "url": "https://github.com/Eskasia/governseed/pull/96#issuecomment-5194540357", "author": "Eskasia", "authorAssociation": "OWNER", "createdAt": "2026-08-05T16:35:07Z", "updatedAt": "2026-08-05T16:35:07Z", "bodySha256": "5037f4994b89765c315664efb58586c5acfc87b75e6e242a83b74f5ff54fc64b"}, "controlComment": {"id": 5194542908, "url": "https://github.com/Eskasia/governseed/issues/92#issuecomment-5194542908", "author": "Eskasia", "authorAssociation": "OWNER", "createdAt": "2026-08-05T16:35:23Z", "updatedAt": "2026-08-05T16:35:23Z", "bodySha256": "ff1080d74774d19a740abf6b34a3a541d26f4ee009a0976fa53ab026e7ee3af2"}},
+  "validation": {"runId": 31025680909, "platforms": {"ubuntu": "SUCCESS", "macos": "SUCCESS", "windows": "SUCCESS"}},
+  "requiredGate": "AUTONOMOUS_COMPLETION_DELEGATION_MANIFEST_V2_ACTIVATION",
+  "claimBoundary": "Immutable V2 preparation only. It is not active and authorizes no provider request, workflow dispatch, merge, formal lock, execution, scoring, or acceptance."
+}

@@ -186,3 +186,11 @@
 - Decision: retain P1.4 as `HUMAN_GATE` at `31.0%`. A fresh independent review is `NOT_RUN` for the repaired head and requires a new exact one-request authorization after final head/tree and CI are externally bound.
 
 This log records gaps and decisions only. It does not authorize provider use, workflow dispatch, PR merge, G3, Pilot, confirmatory execution, scoring, or benchmark acceptance.
+
+## 2026-08-05 — C018-C021 control-plane catch-up
+
+- PR `#89` merged exact head/tree `e162c71f47c11bb9eb745f6eb463cd9652e2c615` / `1d6c723f22bcf92d37e16fdb23277d86ef35a762` after independent `ACCEPT` and OWNER approval. P1.4 is `PASS`; weighted completion is `33%`.
+- PR `#81` merged repair-6 as `4e1347e510a0068efbdff6942748671490c798ea`; this resolves the repair-6 approval-source conflict but does not establish G2 success.
+- Delegation V1 authorized exactly one Runtime Identity dispatch; run `31014045209` failed `CANARY_UPSTREAM_NON_2XX`. Provider-request consumption is `INDETERMINATE`, and the run is forbidden from rerun.
+- PR `#95` merged privacy-safe diagnostics as `9c83280cec2d9f8fedd15455cfa261680452969f`. Draft PR `#96` prepares inactive V2 at head/tree `9bd3371147726b5274ea6ad528f0ca4a35b017ec` / `6b8e8252e012ac10857188f13be76de6cf3e0079`, manifest SHA-256 `1dfc6a73651030fd75658e61df3e022c8354976e36803a03f8165c2af287c29f`.
+- Decision: keep the stale top-level G2 record as `EVIDENCE_CONFLICT`, select P3.1, and stop at `AUTONOMOUS_COMPLETION_DELEGATION_MANIFEST_V2_ACTIVATION`. No dispatch occurred after run `31014045209`.

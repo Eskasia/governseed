@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "cycleId": "GS-LOOP-2026-08-05-C019",
+  "observedAt": "2026-08-05T13:50:00Z",
+  "pullRequest": {"number": 81, "state": "MERGED", "apiBaseSha": "502c92e76e111a4cffbfaf4c3e4bde7f9bf8ce08", "mainBeforeMergeSha": "8f7edae19bb2c29ae2deacef07ae2734d1d61b3f", "reviewedHeadSha": "d93103a4374e8cb715bce241ad0ab7c9ca7af515", "reviewedTreeSha": "da2856d4bf49b44aecae7b4937e516f43db7f573", "mergeCommitSha": "4e1347e510a0068efbdff6942748671490c798ea", "mergeCommitTreeSha": "07dd3171a00791db0c006cbe0e73a069ab3a8aa6", "mergedAt": "2026-08-05T13:49:11Z"},
+  "independentReview": {"verdict": "ACCEPT", "commentId": 5192377610, "url": "https://github.com/Eskasia/governseed/pull/81#issuecomment-5192377610", "author": "Eskasia", "authorAssociation": "OWNER", "createdAt": "2026-08-05T13:31:15Z", "updatedAt": "2026-08-05T13:31:15Z", "bodySha256": "23548598e063f77b6c3607c0bac1c1e62c52816b0b689ce9bab6595ff683fd11"},
+  "approval": {"commentId": 5192589326, "url": "https://github.com/Eskasia/governseed/pull/81#issuecomment-5192589326", "author": "Eskasia", "authorAssociation": "OWNER", "createdAt": "2026-08-05T13:48:36Z", "updatedAt": "2026-08-05T13:48:36Z", "bodySha256": "64513654f6cdf278b2b44ac43ab65ab9af3f4239821770b0677df605c36cf37e", "approvalPredatesMerge": true, "secondsBeforeMerge": 35},
+  "validation": {"pullRequestRunId": 31001861998, "mainRunId": 31012062053, "mainPlatforms": {"ubuntu": "SUCCESS", "macos": "SUCCESS", "windows": "SUCCESS"}},
+  "gateDecision": {"P3_R6": "PASS", "weightedCompletionPercent": 33, "nextReadyNode": "P3.1"},
+  "claimBoundary": "Repair-6 implementation and merge provenance only. This is not G2 success and authorizes no dispatch, Environment approval, or provider request."
+}

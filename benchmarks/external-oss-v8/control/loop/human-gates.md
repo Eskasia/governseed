@@ -1,5 +1,14 @@
 # Current human gates
 
+## AUTONOMOUS_COMPLETION_DELEGATION_MANIFEST_V2_ACTIVATION
+
+- Status: `HUMAN_GATE`; active Issue <https://github.com/Eskasia/governseed/issues/92>, inactive draft PR <https://github.com/Eskasia/governseed/pull/96>.
+- Exact V2 target: base/head/tree `9c83280cec2d9f8fedd15455cfa261680452969f` / `9bd3371147726b5274ea6ad528f0ca4a35b017ec` / `6b8e8252e012ac10857188f13be76de6cf3e0079`; manifest SHA-256 `1dfc6a73651030fd75658e61df3e022c8354976e36803a03f8165c2af287c29f`.
+- Preconditions: durable candidate/control-plane policy and this batched checkpoint must be canonical; V2 bindings and CI must remain unchanged; stale G2 evidence remains fail-closed until superseded by canonical successful evidence.
+- Required owner decision: publish one exact OWNER approval that activates V2 and separately authorizes exact-target review/readiness/merge under its ceilings and mandatory stops.
+- Explicitly unauthorized: provider request, workflow dispatch/rerun, Environment approval, PR `#96` readiness/merge, formal lock, Pilot, confirmatory execution, scoring, benchmark acceptance, or final acceptance.
+- Claim boundary: V2 preparation and control reconciliation only; `dispatchAuthorityActive=false`.
+
 ## PUBLIC_HIDDEN_SEPARATION_INDEPENDENT_REVIEW_AUTHORIZATION
 
 - Status: `REPAIRED_CANDIDATE_EXTERNALLY_BOUND_PENDING_FRESH_REVIEW_AUTHORIZATION`; Issue <https://github.com/Eskasia/governseed/issues/88> and draft PR <https://github.com/Eskasia/governseed/pull/89> track P1.4.
