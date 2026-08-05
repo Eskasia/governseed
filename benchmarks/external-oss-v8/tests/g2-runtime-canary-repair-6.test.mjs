@@ -29,6 +29,9 @@ const ATTEMPT_6_TEMPLATE = `${ATTEMPT_5_ROOT}/human-approval-repair-2-attempt-6.
 const ATTEMPT_6_ADDENDUM = `${ATTEMPT_5_ROOT}/human-approval-repair-2-attempt-6.addendum.json`;
 const ATTEMPT_6_APPROVAL = `${ATTEMPT_5_ROOT}/human-approval-repair-2-attempt-6.json`;
 const ATTEMPT_6_SOURCE = `${ATTEMPT_5_ROOT}/human-approval-repair-2-attempt-6-source.json`;
+const ATTEMPT_7_ROOT = `${ATTEMPT_5_ROOT}/repair-2/attempt-7`;
+const ATTEMPT_7_AUTHORIZATION = `${ATTEMPT_7_ROOT}/authorization-source.json`;
+const ATTEMPT_7_MANIFEST = `${ATTEMPT_7_ROOT}/technical-manifest.json`;
 const IMAGE = 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5';
 const MODEL = 'gpt-5.6-luna';
 const FIXED_INPUT = 'Return exactly the JSON object {"runtime_canary":"PASS"}.';
@@ -135,7 +138,7 @@ function runAuthorizationAndBinding(workflow, options = {}) {
   );
   assert.equal(authorization.status, 0, authorization.output);
   return runInlineScript(
-    extractNodeScript(workflow, '- name: Validate attempt-5 approval and repair-6 technical bindings'),
+    extractNodeScript(workflow, '- name: Validate diagnostic repair authorization and technical bindings'),
     { ...options, runRoot },
   );
 }
@@ -171,7 +174,7 @@ test('repair-6 workflow is manual, main-bound, environment-gated, and single-att
   assert.doesNotMatch(workflow, /fallback[_ -]?model|modelFallback|\bretry\b|\bretries\b/iu);
 });
 
-test('valid attempt-5 approval/source passes the committed repair-6 binding validator', () => {
+test('valid diagnostic authorization/source passes the active attempt-7 binding validator', () => {
   const workflow = readFileSync(path.join(ROOT, WORKFLOW), 'utf8');
   const result = runAuthorizationAndBinding(workflow);
   assert.equal(result.status, 0, result.output);
@@ -183,35 +186,28 @@ test('valid attempt-5 approval/source passes the committed repair-6 binding vali
   rmSync(result.runRoot, { recursive: true, force: true });
 });
 
-test('attempt-5 approval/source binding failures are fail-closed with stable codes', (t) => {
+test('attempt-7 authorization and manifest failures are fail-closed with stable codes', (t) => {
   const workflow = readFileSync(path.join(ROOT, WORKFLOW), 'utf8');
-  const script = extractNodeScript(workflow, '- name: Validate attempt-5 approval and repair-6 technical bindings');
-  const missingApprovalRoot = copyBindingFixture(t);
-  rmSync(path.join(missingApprovalRoot, ATTEMPT_5_APPROVAL));
-  const missing = runInlineScript(script, { root: missingApprovalRoot });
+  const script = extractNodeScript(workflow, '- name: Validate diagnostic repair authorization and technical bindings');
+  const missingAuthorizationRoot = copyBindingFixture(t);
+  rmSync(path.join(missingAuthorizationRoot, ATTEMPT_7_AUTHORIZATION));
+  const missing = runInlineScript(script, { root: missingAuthorizationRoot });
   assert.equal(missing.status, 1);
-  assert.equal(diagnostic(missing.runRoot, 'validation-diagnostic.json').failureCode, 'ATTEMPT5_APPROVAL_INVALID');
-  const approvalTamperedRoot = copyBindingFixture(t);
-  const approval = readJson(ATTEMPT_5_APPROVAL, approvalTamperedRoot);
-  approval.approvedAt = '2026-08-04T08:09:00Z';
-  writeFileSync(path.join(approvalTamperedRoot, ATTEMPT_5_APPROVAL), `${JSON.stringify(approval, null, 2)}\n`);
-  const tamperedApproval = runInlineScript(script, { root: approvalTamperedRoot });
-  assert.equal(tamperedApproval.status, 1);
-  assert.equal(diagnostic(tamperedApproval.runRoot, 'validation-diagnostic.json').failureCode, 'ATTEMPT5_APPROVAL_INVALID');
-  const sourceTamperedRoot = copyBindingFixture(t);
-  const source = readJson(ATTEMPT_5_SOURCE, sourceTamperedRoot);
-  source.commentBodySha256 = '0'.repeat(64);
-  writeFileSync(path.join(sourceTamperedRoot, ATTEMPT_5_SOURCE), `${JSON.stringify(source, null, 2)}\n`);
-  const tamperedSource = runInlineScript(script, { root: sourceTamperedRoot });
-  assert.equal(tamperedSource.status, 1);
-  assert.equal(diagnostic(tamperedSource.runRoot, 'validation-diagnostic.json').failureCode, 'ATTEMPT5_APPROVAL_SOURCE_INVALID');
-  const sourceClaimTamperedRoot = copyBindingFixture(t);
-  const sourceClaimTampered = readJson(ATTEMPT_5_SOURCE, sourceClaimTamperedRoot);
-  sourceClaimTampered.bodyClaims.approvedModelId = 'gpt-5.6';
-  writeFileSync(path.join(sourceClaimTamperedRoot, ATTEMPT_5_SOURCE), `${JSON.stringify(sourceClaimTampered, null, 2)}\n`);
-  const tamperedSourceClaim = runInlineScript(script, { root: sourceClaimTamperedRoot });
-  assert.equal(tamperedSourceClaim.status, 1);
-  assert.equal(diagnostic(tamperedSourceClaim.runRoot, 'validation-diagnostic.json').failureCode, 'ATTEMPT5_APPROVAL_SOURCE_INVALID');
+  assert.match(missing.output, /ENOENT/u);
+  const authorizationTamperedRoot = copyBindingFixture(t);
+  const authorization = readJson(ATTEMPT_7_AUTHORIZATION, authorizationTamperedRoot);
+  authorization.commentBodySha256 = '0'.repeat(64);
+  writeFileSync(path.join(authorizationTamperedRoot, ATTEMPT_7_AUTHORIZATION), `${JSON.stringify(authorization, null, 2)}\n`);
+  const tamperedAuthorization = runInlineScript(script, { root: authorizationTamperedRoot });
+  assert.equal(tamperedAuthorization.status, 1);
+  assert.equal(diagnostic(tamperedAuthorization.runRoot, 'validation-diagnostic.json').failureCode, 'DIAGNOSTIC_REPAIR_AUTHORIZATION_SOURCE_MISMATCH');
+  const manifestTamperedRoot = copyBindingFixture(t);
+  const manifest = readJson(ATTEMPT_7_MANIFEST, manifestTamperedRoot);
+  manifest.entries[0].sha256 = '0'.repeat(64);
+  writeFileSync(path.join(manifestTamperedRoot, ATTEMPT_7_MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`);
+  const tamperedManifest = runInlineScript(script, { root: manifestTamperedRoot });
+  assert.equal(tamperedManifest.status, 1);
+  assert.equal(diagnostic(tamperedManifest.runRoot, 'validation-diagnostic.json').failureCode, 'DIAGNOSTIC_TECHNICAL_MANIFEST_MISMATCH');
 });
 
 test('authorization identity rejects wrong main commit, reruns, wrong ref, and historical runs', () => {
@@ -231,7 +227,7 @@ test('authorization identity rejects wrong main commit, reruns, wrong ref, and h
   assert.equal(diagnostic(oldRun.runRoot, 'authorization-diagnostic.json').failureCode, 'HISTORICAL_RERUN_FORBIDDEN');
 });
 
-test('repair-6 manifest is exact, current, and excludes evidence-only files', () => {
+test('repair-6 manifest remains an exact immutable historical snapshot', () => {
   const manifest = readJson(ATTEMPT_6_MANIFEST);
   assert.equal(manifest.schemaVersion, 1);
   assert.equal(manifest.benchmarkId, 'GS-OSS-2026-08-02-V8');
@@ -240,7 +236,10 @@ test('repair-6 manifest is exact, current, and excludes evidence-only files', ()
   assert.equal(manifest.attempt, 6);
   assert.deepEqual(manifest.entries.map((entry) => entry.path), TECHNICAL_PATHS);
   assert.equal(manifest.entries.length, 13);
-  for (const entry of manifest.entries) assert.equal(sha256(entry.path), entry.sha256, entry.path);
+  for (const entry of manifest.entries) {
+    const historical = createHash('sha256').update(gitBytes('origin/main', entry.path)).digest('hex');
+    assert.equal(historical, entry.sha256, entry.path);
+  }
   for (const excluded of [ATTEMPT_6_PACKET, ATTEMPT_6_MANIFEST, ATTEMPT_6_TEMPLATE, ATTEMPT_6_ADDENDUM, ATTEMPT_5_APPROVAL, ATTEMPT_5_SOURCE]) {
     assert.equal(manifest.entries.some((entry) => entry.path === excluded), false, excluded);
   }
@@ -300,7 +299,9 @@ test('repair-6 formal approval and sanitized source bind the owner comment witho
   assert.equal(source.commentBodySha256, REPAIR_6_COMMENT_HASH);
   assert.equal(source.bodyClaims.finalEvidenceHead, '41383da9d292ed1e8220890cfa8bffca4f0cc2c0');
   assert.equal(source.bodyClaims.finalEvidenceTreeSha, 'f386cefe5d79c83675a3965fdaaa14bbddc46333');
-  assert.equal(source.bodyClaims.workflowSha256, sha256(WORKFLOW));
+  const historicalWorkflowSha256 = readJson(ATTEMPT_6_MANIFEST).entries
+    .find((entry) => entry.path === WORKFLOW).sha256;
+  assert.equal(source.bodyClaims.workflowSha256, historicalWorkflowSha256);
   assert.equal(source.bodyClaims.reviewPacketSha256, sha256(ATTEMPT_6_PACKET));
   assert.equal(source.bodyClaims.technicalManifestSha256, sha256(ATTEMPT_6_MANIFEST));
   assert.deepEqual(source.forbiddenHistoricalRuns, OLD_RUNS);

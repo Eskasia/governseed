@@ -1,0 +1,37 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "non-2xx-diagnostic-repair",
+  "attempt": 7,
+  "entries": [
+    {
+      "path": "experimental/governance-impact/lib/credential-proxy.mjs",
+      "sha256": "9024f101ba789fbe1613177e83a7ced08662f0b610e02a7fa9b7763b9d205eae"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/control/G2/runtime-canary-prep/host-proxy.mjs",
+      "sha256": "167ec3e9265995f6a6d100598d5685f9da22fb0415195e288fb646eb63c12e12"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/control/G2/runtime-canary-prep/canary-client.mjs",
+      "sha256": "75c2f79c90e3f9897686e73f4a1cdadfcf297b9f2c1071ca909e0aee8a8454d9"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/control/G2/runtime-canary-prep/non-2xx-diagnostic.schema.json",
+      "sha256": "48ad93e50d9dc4c1b8ebd9c13e88a0fdff0dc427db32ca13dbf6cc18452db324"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/tests/g2-non-2xx-diagnostics.test.mjs",
+      "sha256": "227dfbf1b01c4acff345dad6cf369574eb24fcbc2e8854cb40335126e47ec5ae"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/tests/g2-credential-transport.test.mjs",
+      "sha256": "587d10a40eeffd2d1f1fa01d8f0c23fa58aad6823f8daafa39332c543289c93f"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/tests/g2-runtime-canary-repair-5.test.mjs",
+      "sha256": "b7c569370c241740adebb94e352d2364f6d683f5264e7b4f8bf3140b2f3b1dbc"
+    }
+  ]
+}
