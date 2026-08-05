@@ -3,7 +3,7 @@
   "benchmarkId": "GS-OSS-2026-08-02-V8",
   "currentMainSha": "220c2d8d816194eb77da94e182258a0875202f3b",
   "currentMainTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
-  "observedAt": "2026-08-05T08:25:35Z",
+  "observedAt": "2026-08-05T10:10:44Z",
   "activePhase": "P1",
   "activeNode": "P1.4",
   "activeBranch": "benchmark/p1.4-public-hidden-separation",
@@ -19,13 +19,14 @@
     "experimentContractPullRequestValidation": "30966317154",
     "experimentContractMergeValidation": "30971703749",
     "taskIdentityPullRequestValidation": "30976115630",
-    "taskIdentityMergeValidation": "30988393468"
+    "taskIdentityMergeValidation": "30988393468",
+    "publicHiddenSeparationRejectedHeadValidation": "30989625066"
   },
   "activeRunIds": [],
   "currentHumanGate": "PUBLIC_HIDDEN_SEPARATION_INDEPENDENT_REVIEW_AUTHORIZATION",
   "completionPercentage": 31,
   "completionBasis": "Only PASS nodes count. Canonical phase weights are absent, so the requested fallback weights are divided equally across canonical subnodes; repair nodes have zero weight.",
-  "lastCycleId": "GS-LOOP-2026-08-05-C016",
+  "lastCycleId": "GS-LOOP-2026-08-05-C017",
   "readySetAtSelection": ["P1.4", "P3.R6"],
   "selectedGatePreparationNode": "P1.4",
   "nextReadyNodes": ["P3.R6"],
@@ -88,7 +89,7 @@
     "mergeValidationRun": "30988393468"
   },
   "pendingReviewBinding": {
-    "status": "EXTERNAL_CI_BINDING_REQUIRED",
+    "status": "LOCAL_REPAIR_PENDING_COMMIT_AND_CI_BINDING",
     "pullRequest": 89,
     "issue": 88,
     "baseMainSha": "220c2d8d816194eb77da94e182258a0875202f3b",
@@ -99,13 +100,21 @@
       "reviewedTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
       "receiptPath": "benchmarks/external-oss-v8/control/loop/reconciliation/pr-87-task-identity-merge.json"
     },
-    "currentIndependentReview": "NOT_RUN_ON_P1_4_CANDIDATE_REQUIRES_NEW_AUTHORIZATION",
+    "currentIndependentReview": "REJECT_ON_19A4405_REPAIRED_REQUIRES_NEW_AUTHORIZATION",
+    "rejectedReviewBinding": {
+      "status": "REJECT",
+      "reviewId": "GS-EFFECT-R2-P1.4-INDEPENDENT-CHECKER",
+      "agentId": "019fd160-2b6e-79c2-9657-cc98d1c068ea",
+      "reviewedHeadSha": "19a4405abdeb25c20a919897ec092e85dfcbf78f",
+      "reviewedTreeSha": "0ce658e5bb35c84db4b7573d7193fe88366a67da",
+      "receiptPath": "benchmarks/external-oss-v8/control/loop/reconciliation/pr-89-independent-review-rejection.json"
+    },
     "requiredEvidence": ["exact final P1.4 head", "exact final P1.4 tree", "green three-platform CI", "fresh independent read-only review", "owner approval predating merge"],
     "authorizedActions": ["offline deterministic evidence implementation", "commit", "push", "draft PR"],
     "unauthorizedActions": ["PR readiness", "merge", "provider request", "workflow dispatch", "G2", "G3", "formal lock", "Pilot", "confirmatory execution", "scoring", "benchmark acceptance"]
   },
-  "thisCycleProviderRequests": 0,
+  "thisCycleProviderRequests": 1,
   "providerRequests": "INDETERMINATE_FOR_RUN_30850478318",
   "workflowDispatch": "NOT_RUN_IN_THIS_CYCLE",
-  "claimBoundary": "P1.2 is canonical on main after exact-head independent ACCEPT, OWNER approval, merge, and three-platform main CI. P1.4 contains deterministic Git-surface separation evidence pending fresh independent review and merge. No provider request in C016, provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, effectiveness, or benchmark acceptance is claimed."
+  "claimBoundary": "P1.2 remains canonical on main. One authorized read-only checker rejected PR 89 head 19a4405 for one bounded hash-only metadata mismatch; the local P1.4 repair removes hidden parent/fix result objects while preserving task, seed, oracle, scorer, runtime, and workflow identities. No second provider request, provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, effectiveness, PR readiness, merge, or benchmark acceptance is claimed."
 }

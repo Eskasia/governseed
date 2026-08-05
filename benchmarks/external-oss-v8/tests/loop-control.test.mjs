@@ -25,6 +25,9 @@ const taskIdentityReview = JSON.parse(
 const taskIdentityMerge = JSON.parse(
   readFileSync(`${CONTROL_ROOT}/reconciliation/pr-87-task-identity-merge.json`, 'utf8'),
 );
+const publicHiddenReview = JSON.parse(
+  readFileSync(`${CONTROL_ROOT}/reconciliation/pr-89-independent-review-rejection.json`, 'utf8'),
+);
 const requiredNodeFields = [
   'nodeId',
   'phase',
@@ -172,6 +175,7 @@ test('recorded GitHub state closes P1.2 and gates P1.4 on fresh independent revi
   assert.equal(loopState.latestRunIds.experimentContractMergeValidation, '30971703749');
   assert.equal(loopState.latestRunIds.taskIdentityPullRequestValidation, '30976115630');
   assert.equal(loopState.latestRunIds.taskIdentityMergeValidation, '30988393468');
+  assert.equal(loopState.latestRunIds.publicHiddenSeparationRejectedHeadValidation, '30989625066');
   assert.equal('experimentContractEvidenceValidation' in loopState.latestRunIds, false);
   assert.equal('latestValidation' in loopState.latestRunIds, false);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').activePR, 83);
@@ -199,15 +203,32 @@ test('recorded GitHub state closes P1.2 and gates P1.4 on fresh independent revi
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').attempts, 6);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').blockerCode, null);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').status, 'HUMAN_GATE');
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').attempts, 2);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').attempts, 3);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').activeIssue, 88);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').activePR, 89);
-  assert.equal(loopState.pendingReviewBinding.status, 'EXTERNAL_CI_BINDING_REQUIRED');
+  assert.equal(loopState.pendingReviewBinding.status, 'LOCAL_REPAIR_PENDING_COMMIT_AND_CI_BINDING');
   assert.equal(loopState.pendingReviewBinding.pullRequest, 89);
   assert.equal(loopState.pendingReviewBinding.priorIndependentReview.status, 'ACCEPT');
-  assert.equal(loopState.pendingReviewBinding.currentIndependentReview, 'NOT_RUN_ON_P1_4_CANDIDATE_REQUIRES_NEW_AUTHORIZATION');
-  assert.equal(loopState.thisCycleProviderRequests, 0);
+  assert.equal(loopState.pendingReviewBinding.currentIndependentReview, 'REJECT_ON_19A4405_REPAIRED_REQUIRES_NEW_AUTHORIZATION');
+  assert.equal(loopState.pendingReviewBinding.rejectedReviewBinding.status, 'REJECT');
+  assert.equal(loopState.pendingReviewBinding.rejectedReviewBinding.reviewedHeadSha, '19a4405abdeb25c20a919897ec092e85dfcbf78f');
+  assert.equal(loopState.pendingReviewBinding.rejectedReviewBinding.reviewedTreeSha, '0ce658e5bb35c84db4b7573d7193fe88366a67da');
+  assert.equal(loopState.thisCycleProviderRequests, 1);
   assert.ok(loopState.pendingReviewBinding.unauthorizedActions.includes('merge'));
+});
+
+test('P1.4 independent-review rejection binds one authorized checker and one bounded repair', () => {
+  assert.equal(publicHiddenReview.reviewTask.name, 'GS-EFFECT-R2-P1.4-INDEPENDENT-CHECKER');
+  assert.equal(publicHiddenReview.reviewTask.agentId, '019fd160-2b6e-79c2-9657-cc98d1c068ea');
+  assert.equal(publicHiddenReview.reviewTask.providerRequestCount, 1);
+  assert.equal(publicHiddenReview.target.pullRequest, 89);
+  assert.equal(publicHiddenReview.target.headSha, '19a4405abdeb25c20a919897ec092e85dfcbf78f');
+  assert.equal(publicHiddenReview.target.treeSha, '0ce658e5bb35c84db4b7573d7193fe88366a67da');
+  assert.equal(publicHiddenReview.target.validationRun, 30989625066);
+  assert.equal(publicHiddenReview.verdict, 'REJECT');
+  assert.deepEqual(publicHiddenReview.findings.map((finding) => finding.id), ['P1_4_HASH_ONLY_CLAIM_MISMATCH']);
+  assert.equal(publicHiddenReview.repair.status, 'LOCAL_REPAIR_PENDING_COMMIT_CI_AND_FRESH_REVIEW');
+  assert.equal(publicHiddenReview.repair.providerRequestsAfterChecker, 0);
 });
 
 test('sanitized independent-review receipt binds the rejected exact target and one authorized request', () => {
@@ -386,7 +407,7 @@ test('ledger accepts appended immutable records and reconciles attempts per sele
   assert.equal(ledgerEntries.at(-1).startingSha, loopState.currentMainSha);
   assert.equal(ledgerEntries[1].reconcilesCycleId, ledgerEntries[0].cycleId);
   assert.equal(ledgerEntries.at(-1).reconcilesCycleId, ledgerEntries.at(-2).cycleId);
-  assert.equal(ledgerEntries.at(-1).resultingSha, 'EXTERNAL_GITHUB_PR_HEAD_BINDING_REQUIRED');
+  assert.equal(ledgerEntries.at(-1).resultingSha, 'EXTERNAL_GITHUB_REPAIRED_HEAD_BINDING_REQUIRED');
   const ledgerByNode = new Map();
   for (const entry of ledgerEntries) {
     const entries = ledgerByNode.get(entry.selectedNode) ?? [];
@@ -402,11 +423,12 @@ test('ledger accepts appended immutable records and reconciles attempts per sele
   }
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.1').attempts, 2);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').attempts, 6);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').attempts, 2);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').attempts, 3);
   const providerEntries = ledgerEntries.filter((entry) => entry.providerRequests !== 'NOT_RUN');
   assert.deepEqual(providerEntries.map((entry) => [entry.cycleId, entry.providerRequests]), [
     ['GS-LOOP-2026-08-05-C013', 'ONE_AUTHORIZED_READ_ONLY_CODEX_CHECKER_TASK'],
     ['GS-LOOP-2026-08-05-C014', 'TWO_SEPARATELY_AUTHORIZED_READ_ONLY_CODEX_CHECKER_TASKS'],
+    ['GS-LOOP-2026-08-05-C017', 'ONE_AUTHORIZED_READ_ONLY_CODEX_CHECKER_TASK'],
   ]);
   for (const entry of ledgerEntries) {
     assert.equal(entry.workflowDispatch, 'NOT_RUN');

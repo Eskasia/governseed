@@ -2,10 +2,12 @@
 
 ## PUBLIC_HIDDEN_SEPARATION_INDEPENDENT_REVIEW_AUTHORIZATION
 
-- Status: `PENDING_FINAL_HEAD_AND_CI_BINDING`; Issue <https://github.com/Eskasia/governseed/issues/88> and draft PR <https://github.com/Eskasia/governseed/pull/89> track P1.4.
-- Review scope: P1.2 merge reconciliation, closed execution-agent-surface manifest/schema, Git-tracked public task/test accessibility, hidden-oracle hash-only metadata, negative mutations, evidence-index bindings, and C014-C016 loop controls.
+- Status: `PENDING_REPAIRED_FINAL_HEAD_AND_CI_BINDING`; Issue <https://github.com/Eskasia/governseed/issues/88> and draft PR <https://github.com/Eskasia/governseed/pull/89> track P1.4.
+- Prior checker: authorized read-only task `GS-EFFECT-R2-P1.4-INDEPENDENT-CHECKER` returned `REJECT` for exact head/tree `19a4405abdeb25c20a919897ec092e85dfcbf78f` / `0ce658e5bb35c84db4b7573d7193fe88366a67da`; sanitized receipt `pr-89-independent-review-rejection.json` records its one bounded hash-only metadata finding.
+- Repair scope: remove hidden parent/fix result objects from the eight agent-visible task packages, close schema/tests around hash-only hidden-oracle identities, refresh dependent hashes, and retain PR `#87` reviewed-tree provenance for parent-red/fix-green evidence.
+- Review scope: P1.2 merge reconciliation, closed execution-agent-surface manifest/schema, Git-tracked public task/test accessibility, hidden-oracle hash-only metadata, negative mutations, evidence-index bindings, and C014-C017 loop controls.
 - Required evidence before authorization: exact final draft-PR head/tree, successful Ubuntu/macOS/Windows validation, unchanged task/seed/oracle/scorer/runtime/workflow identities, and unchanged Runtime Identity workflow history.
-- Authorized human action after external binding: authorize exactly one fresh read-only checker for the exact final head/tree.
+- Authorized human action after repaired external binding: authorize exactly one fresh read-only checker for the exact repaired final head/tree; the consumed authorization does not carry forward.
 - Explicitly unauthorized: editing, push, PR readiness, merge, another agent/provider request, workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, or benchmark acceptance.
 - Completion boundary: P1.4 remains non-PASS and weighted completion remains `31.0%` until a fresh checker accepts the exact final candidate and that exact head is separately owner-approved and merged.
 

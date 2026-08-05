@@ -82,8 +82,8 @@ function separationErrors(candidateSurface, candidatePackages, candidateTrackedP
     if (!new RegExp(`^${taskPrefix}public-test\\.(?:py|cjs|ts)$`, 'u').test(item.publicTest.path)) errors.push(`${taskId}:publicTestRebound`);
     const hiddenKeys = Object.keys(item.hiddenOracle).sort();
     const allowedHiddenKeys = [
-      'commandIdentitySha256', 'exposedToExecutionAgent', 'fix', 'identitySeparatedFromPublicTest',
-      'parent', 'runnerOwned', 'sha256', 'sourceCommitted',
+      'commandIdentitySha256', 'exposedToExecutionAgent', 'identitySeparatedFromPublicTest',
+      'runnerOwned', 'sha256', 'sourceCommitted',
     ].sort();
     if (JSON.stringify(hiddenKeys) !== JSON.stringify(allowedHiddenKeys)) errors.push(`${taskId}:hiddenFields`);
     if (item.hiddenOracle.runnerOwned !== true) errors.push(`${taskId}:hiddenOwner`);
@@ -138,6 +138,10 @@ test('separation fails closed on public drift, rebinding, hidden injection, expo
   const injected = clone(packages);
   injected[0].hiddenOracle.source = 'forbidden';
   assert.ok(separationErrors(surface, injected, trackedTaskPaths).includes('TASK-OSS-11:hiddenFields'));
+
+  const resultInjected = clone(packages);
+  resultInjected[0].hiddenOracle.parent = { commit: '0'.repeat(40), exitCode: 1, status: 'FAIL_EXPECTED' };
+  assert.ok(separationErrors(surface, resultInjected, trackedTaskPaths).includes('TASK-OSS-11:hiddenFields'));
 
   const exposed = clone(packages);
   exposed[0].hiddenOracle.exposedToExecutionAgent = true;

@@ -177,4 +177,12 @@
 - The claim is limited to committed execution-agent surface separation. It does not claim runtime mount enforcement, formal lock, provider execution, Pilot, confirmatory execution, scoring, effectiveness, or acceptance.
 - Decision: stop at `PUBLIC_HIDDEN_SEPARATION_INDEPENDENT_REVIEW_AUTHORIZATION` after final head/tree and three-platform CI are externally bound. Queue P3.R6 separately; do not dispatch or merge it under this gate.
 
+## 2026-08-05 — P1.4 independent review rejected and bounded repair applied
+
+- One explicitly authorized provider request created fresh read-only checker `GS-EFFECT-R2-P1.4-INDEPENDENT-CHECKER`; sanitized receipt `pr-89-independent-review-rejection.json` binds its `REJECT` verdict to PR `#89` head/tree `19a4405abdeb25c20a919897ec092e85dfcbf78f` / `0ce658e5bb35c84db4b7573d7193fe88366a67da`.
+- Finding `P1_4_HASH_ONLY_CLAIM_MISMATCH`: the surface claimed hash-only hidden-oracle metadata while each agent-visible task package still included sanitized parent/fix result objects.
+- The bounded repair removes those result objects from all eight hidden-oracle package records and from the closed schema/tests, then refreshes package, contract, surface, and evidence-index hashes. Task, seed, public-test, hidden-oracle, scorer, runtime, provider, workflow, and formal-lock identities remain unchanged.
+- Historical parent-red/fix-green evidence remains bound to the independently accepted PR `#87` reviewed tree; no result object is silently rewritten.
+- Decision: retain P1.4 as `HUMAN_GATE` at `31.0%`. A fresh independent review is `NOT_RUN` for the repaired head and requires a new exact one-request authorization after final head/tree and CI are externally bound.
+
 This log records gaps and decisions only. It does not authorize provider use, workflow dispatch, PR merge, G3, Pilot, confirmatory execution, scoring, or benchmark acceptance.
