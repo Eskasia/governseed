@@ -90,8 +90,6 @@ function semanticErrors(values) {
     if (item.seed.sealedSeedCommit !== item.upstream.baseCommit) errors.push(`${item.taskId}:seedCommit`);
     if (item.publicTest.parent.commit !== item.upstream.baseCommit) errors.push(`${item.taskId}:publicParent`);
     if (item.publicTest.fix.commit !== item.upstream.fixCommit) errors.push(`${item.taskId}:publicFix`);
-    if (item.hiddenOracle.parent.commit !== item.upstream.baseCommit) errors.push(`${item.taskId}:oracleParent`);
-    if (item.hiddenOracle.fix.commit !== item.upstream.fixCommit) errors.push(`${item.taskId}:oracleFix`);
     if (item.publicTask.path !== `${taskRoot}/public-task.md`) errors.push(`${item.taskId}:publicTaskPath`);
     if (!new RegExp(`^${taskRoot}/public-test\\.(?:py|cjs|ts)$`, 'u').test(item.publicTest.path)) errors.push(`${item.taskId}:publicTestPath`);
     if (fileSha256(item.publicTask.path) !== item.publicTask.sha256) errors.push(`${item.taskId}:taskHash`);
@@ -122,12 +120,14 @@ test('all eight R2 confirmatory packages validate and bind immutable identities'
   assert.deepEqual(semanticErrors(packages), []);
 });
 
-test('public and hidden tests are independently parent-red and fix-green', () => {
+test('public tests are parent-red/fix-green and hidden-oracle records are hash-only identities', () => {
   for (const item of packages) {
     assert.deepEqual([item.publicTest.parent.status, item.publicTest.parent.exitCode], ['FAIL_EXPECTED', 1]);
     assert.deepEqual([item.publicTest.fix.status, item.publicTest.fix.exitCode], ['PASS', 0]);
-    assert.deepEqual([item.hiddenOracle.parent.status, item.hiddenOracle.parent.exitCode], ['FAIL_EXPECTED', 1]);
-    assert.deepEqual([item.hiddenOracle.fix.status, item.hiddenOracle.fix.exitCode], ['PASS', 0]);
+    assert.deepEqual(Object.keys(item.hiddenOracle).sort(), [
+      'commandIdentitySha256', 'exposedToExecutionAgent', 'identitySeparatedFromPublicTest',
+      'runnerOwned', 'sha256', 'sourceCommitted',
+    ].sort());
     assert.equal(item.hiddenOracle.runnerOwned, true);
     assert.equal(item.hiddenOracle.sourceCommitted, false);
     assert.equal(item.hiddenOracle.exposedToExecutionAgent, false);
@@ -144,9 +144,15 @@ test('schema rejects missing and unexpected task, seed, test, oracle, and path f
     delete parent[path.at(-1)];
     assert.notEqual(validate(schema, value).length, 0, path.join('.'));
   }
-  const unexpected = clone(packages[0]);
-  unexpected.hiddenOracle.rawSource = 'forbidden';
-  assert.notEqual(validate(schema, unexpected).length, 0);
+  for (const [key, value] of [
+    ['rawSource', 'forbidden'],
+    ['parent', { commit: '0'.repeat(40), exitCode: 1, status: 'FAIL_EXPECTED' }],
+    ['fix', { commit: '1'.repeat(40), exitCode: 0, status: 'PASS' }],
+  ]) {
+    const unexpected = clone(packages[0]);
+    unexpected.hiddenOracle[key] = value;
+    assert.notEqual(validate(schema, unexpected).length, 0, key);
+  }
 });
 
 test('semantic validation rejects duplicates, mismatches, exposure, and path-policy drift', () => {

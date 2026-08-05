@@ -1,0 +1,97 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://governseed.dev/schemas/external-oss-effectiveness-r2/execution-agent-surface.schema.json",
+  "title": "GovernSeed effectiveness R2 execution-agent surface",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion", "experimentId", "revision", "surfaceId", "evidenceClass",
+    "sourceMainSha", "sourceMainTreeSha", "taskPackageSchemaSha256", "experimentContractSha256",
+    "reviewBinding", "taskIds", "taskDirectoryContract", "visibility",
+    "forbiddenTrackedPathPatterns", "negativeRequirements", "status", "claimBoundary"
+  ],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "experimentId": { "const": "GS-OSS-2026-08-05-EFFECT-R2" },
+    "revision": { "const": 2 },
+    "surfaceId": { "const": "GS-EFFECT-R2-P1.4-EXECUTION-AGENT-SURFACE-1" },
+    "evidenceClass": { "const": "external-observational" },
+    "sourceMainSha": { "$ref": "#/$defs/sha1" },
+    "sourceMainTreeSha": { "$ref": "#/$defs/sha1" },
+    "taskPackageSchemaSha256": { "$ref": "#/$defs/sha256" },
+    "experimentContractSha256": { "$ref": "#/$defs/sha256" },
+    "reviewBinding": { "$ref": "#/$defs/reviewBinding" },
+    "taskIds": {
+      "type": "array",
+      "minItems": 8,
+      "maxItems": 8,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^TASK-OSS-1[1-8]$" }
+    },
+    "taskDirectoryContract": { "$ref": "#/$defs/taskDirectoryContract" },
+    "visibility": { "$ref": "#/$defs/visibility" },
+    "forbiddenTrackedPathPatterns": { "$ref": "#/$defs/stringArray" },
+    "negativeRequirements": { "$ref": "#/$defs/stringArray" },
+    "status": { "const": "PREPARED_PENDING_REVIEW_AND_MERGE" },
+    "claimBoundary": { "type": "string", "minLength": 1 }
+  },
+  "$defs": {
+    "sha1": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "stringArray": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "reviewBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pullRequest", "reviewedHeadSha", "reviewedTreeSha", "acceptCommentUrl", "acceptCommentBodySha256", "mergeCommitSha", "mergeTreeSha", "mainValidationRun"],
+      "properties": {
+        "pullRequest": { "const": 87 },
+        "reviewedHeadSha": { "$ref": "#/$defs/sha1" },
+        "reviewedTreeSha": { "$ref": "#/$defs/sha1" },
+        "acceptCommentUrl": { "type": "string", "pattern": "^https://github\\.com/Eskasia/governseed/pull/87#issuecomment-[0-9]+$" },
+        "acceptCommentBodySha256": { "$ref": "#/$defs/sha256" },
+        "mergeCommitSha": { "$ref": "#/$defs/sha1" },
+        "mergeTreeSha": { "$ref": "#/$defs/sha1" },
+        "mainValidationRun": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "taskDirectoryContract": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["root", "trackedFilesPerTask", "publicTaskFile", "publicTestPattern", "sanitizedPackageFile"],
+      "properties": {
+        "root": { "const": "benchmarks/external-oss-effectiveness-r2/tasks" },
+        "trackedFilesPerTask": { "const": 3 },
+        "publicTaskFile": { "const": "public-task.md" },
+        "publicTestPattern": { "const": "^public-test\\.(py|cjs|ts)$" },
+        "sanitizedPackageFile": { "const": "task-package.json" }
+      }
+    },
+    "hiddenOracleMetadata": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["hashOnly", "runnerOwned", "sourceCommitted", "exposedToExecutionAgent", "identitySeparatedFromPublicTest"],
+      "properties": {
+        "hashOnly": { "const": true },
+        "runnerOwned": { "const": true },
+        "sourceCommitted": { "const": false },
+        "exposedToExecutionAgent": { "const": false },
+        "identitySeparatedFromPublicTest": { "const": true }
+      }
+    },
+    "visibility": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["executionAgentVisible", "runnerPrivate", "hiddenOracleMetadata"],
+      "properties": {
+        "executionAgentVisible": { "$ref": "#/$defs/stringArray" },
+        "runnerPrivate": { "$ref": "#/$defs/stringArray" },
+        "hiddenOracleMetadata": { "$ref": "#/$defs/hiddenOracleMetadata" }
+      }
+    }
+  }
+}

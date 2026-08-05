@@ -67,17 +67,7 @@
     "runnerOwned": true,
     "sourceCommitted": false,
     "exposedToExecutionAgent": false,
-    "identitySeparatedFromPublicTest": true,
-    "parent": {
-      "commit": "1d5c40392ea42db38582b096f639eb762a5527c8",
-      "exitCode": 1,
-      "status": "FAIL_EXPECTED"
-    },
-    "fix": {
-      "commit": "224e9ef86758841a716c43a2bc711e1f56934528",
-      "exitCode": 0,
-      "status": "PASS"
-    }
+    "identitySeparatedFromPublicTest": true
   },
   "reconstruction": {
     "mode": "exact-upstream-parent",

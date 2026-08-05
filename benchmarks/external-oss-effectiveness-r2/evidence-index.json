@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
-  "status": "CONTRACT_AND_TASK_IDENTITY_IMPLEMENTATION_EVIDENCE_ONLY",
+  "status": "CONTRACT_TASK_IDENTITY_AND_SURFACE_IMPLEMENTATION_EVIDENCE_ONLY",
   "artifacts": [
     {
       "path": "benchmarks/external-oss-effectiveness-r2/experiment-contract.schema.json",
@@ -9,11 +9,19 @@
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/task-package.schema.json",
-      "sha256": "73e6875481bf1defffe53d25fd8bfa3a07b35a8cea0290940ac84c064e742150"
+      "sha256": "ac48a6f901cc7a634078e4a95542893c9d296d4bde280bd7b7b887a952515bd7"
+    },
+    {
+      "path": "benchmarks/external-oss-effectiveness-r2/execution-agent-surface.schema.json",
+      "sha256": "e5092a4ff424d192b38f0e1c6145432f6aea4bb1e5940ff625d8bcd254b7fbf6"
+    },
+    {
+      "path": "benchmarks/external-oss-effectiveness-r2/execution-agent-surface.json",
+      "sha256": "a0e150e2828491270f07d61bad9a386de067a8d763e6c020df69e26f3734eb9c"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/experiment-contract.json",
-      "sha256": "8b127152205b0d958ceae9a79ac061ce99ef5d7e8b3543032d75b030c6b8f052"
+      "sha256": "994ca60db879d0ea9966a5dbb1b76ebb63f5e00d1d3bdf2f552e1765f8bcadcc"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/attempt-manifest.json",
@@ -37,7 +45,7 @@
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-11/task-package.json",
-      "sha256": "61d364f3ddf386bfb552b94b21ec8e0db5459fc3be26d9c2bbfab96b4ff67a02"
+      "sha256": "f728cd1903fc7d18f9949a6acd41bb4d7e07b30a739f19d9ea4e571a279d08d0"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-12/public-task.md",
@@ -49,7 +57,7 @@
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-12/task-package.json",
-      "sha256": "3784ef0c3bdacdc682728128fb0d64196978e4ba0eaa6d20863175b5187c27ac"
+      "sha256": "7eae3d7bd17f1a2624bca326d32cc7bc6adaa8521a4d149581825e9717620ed2"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-13/public-task.md",
@@ -61,7 +69,7 @@
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-13/task-package.json",
-      "sha256": "bbfd270e605f3f0a5d5b89f5fa9ecea718f54dc1c21696a31ebee2c91398f8f5"
+      "sha256": "d5f3c91f187b65c19716dcb2b625f6abfcbe71daaa1083c1e12f1a427b26e245"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-14/public-task.md",
@@ -73,7 +81,7 @@
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-14/task-package.json",
-      "sha256": "779a69eaaaceb5375e9a9adcfc9474bed868ec4ccbeac406eb336c18922fe8ff"
+      "sha256": "aee6fe56727956efddc310b647c04a9d77bb13c5ae2e2312b07cacd8aff51e47"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-15/public-task.md",
@@ -85,7 +93,7 @@
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-15/task-package.json",
-      "sha256": "8e1fed69af80af9aa82445f93e1ec0f6a1156e3133a1679aa2df0323672b0bc2"
+      "sha256": "0e6d218274495a8de22ecad9d221655022046313063d3b73060e2d67d63e6e07"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-16/public-task.md",
@@ -97,7 +105,7 @@
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-16/task-package.json",
-      "sha256": "d87b258eb3ccdaf5de4bd9a92b3a03421a375716b3aaac930b823423b9febd7a"
+      "sha256": "5c29c8a2807b3fd0083456d43e2378ecd41739a7a0ce1528744471a26f9f7df7"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-17/public-task.md",
@@ -109,7 +117,7 @@
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-17/task-package.json",
-      "sha256": "6f3e610a730b7191aa0ae997fef454584c494946dd7e7709a5f617931319548a"
+      "sha256": "609eff4c1cac6647f8f1beea041d6747f0b9da70cf57761fc526b050d4a84cba"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-18/public-task.md",
@@ -121,7 +129,7 @@
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-18/task-package.json",
-      "sha256": "eecab2d06b447318002cb9afcbe5a67a8463d66ef18c19fb7cde738968b54e1f"
+      "sha256": "8708c3f90d33fb815906536f5be333c1105cc5d46d82e8dea85a43e22f1ea7e5"
     }
   ],
   "sourceBindings": [

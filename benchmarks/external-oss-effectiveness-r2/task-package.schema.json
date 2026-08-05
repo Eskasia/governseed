@@ -160,16 +160,14 @@
     },
     "hiddenOracle": {
       "type": "object", "additionalProperties": false,
-      "required": ["sha256", "commandIdentitySha256", "runnerOwned", "sourceCommitted", "exposedToExecutionAgent", "identitySeparatedFromPublicTest", "parent", "fix"],
+      "required": ["sha256", "commandIdentitySha256", "runnerOwned", "sourceCommitted", "exposedToExecutionAgent", "identitySeparatedFromPublicTest"],
       "properties": {
         "sha256": { "$ref": "#/$defs/sha256" },
         "commandIdentitySha256": { "$ref": "#/$defs/sha256" },
         "runnerOwned": { "const": true },
         "sourceCommitted": { "const": false },
         "exposedToExecutionAgent": { "const": false },
-        "identitySeparatedFromPublicTest": { "const": true },
-        "parent": { "$ref": "#/$defs/result" },
-        "fix": { "$ref": "#/$defs/result" }
+        "identitySeparatedFromPublicTest": { "const": true }
       }
     },
     "reconstructionItem": {

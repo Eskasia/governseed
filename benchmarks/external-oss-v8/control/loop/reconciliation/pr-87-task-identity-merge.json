@@ -1,0 +1,87 @@
+{
+  "schemaVersion": 1,
+  "cycleId": "GS-LOOP-2026-08-05-C015",
+  "observedAt": "2026-08-05T08:20:13Z",
+  "pullRequest": {
+    "number": 87,
+    "url": "https://github.com/Eskasia/governseed/pull/87",
+    "reviewedHeadSha": "d5b1c32138496a91931b20f065c39f4404505d01",
+    "reviewedTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
+    "baseShaBeforeMerge": "b812fe7e9096beee4ae8310482055648ad022d4a",
+    "state": "MERGED",
+    "mergedAt": "2026-08-05T08:17:06Z",
+    "mergedBy": "Eskasia",
+    "mergeCommitSha": "220c2d8d816194eb77da94e182258a0875202f3b",
+    "mergeCommitTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
+    "exactTreePreserved": true
+  },
+  "independentReview": {
+    "taskName": "GS-EFFECT-R2-INDEPENDENT-CHECKER-REPAIR-2",
+    "taskId": "019fd0c5-3c58-7901-ad36-7ac32858a02f",
+    "providerRequestCount": 1,
+    "verdict": "ACCEPT",
+    "commentId": 5188871233,
+    "url": "https://github.com/Eskasia/governseed/pull/87#issuecomment-5188871233",
+    "bodySha256": "d0e09d1f788d4cb8e35e520bd18c1caccd3108429e1f01a54581ad04ddfe9648",
+    "bodyHashCanonicalization": "SHA-256 over the exact UTF-8 GitHub API .body string with no added delimiter",
+    "reviewedHeadSha": "d5b1c32138496a91931b20f065c39f4404505d01",
+    "reviewedTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
+    "blockingFindings": []
+  },
+  "approval": {
+    "commentId": 5189326581,
+    "url": "https://github.com/Eskasia/governseed/pull/87#issuecomment-5189326581",
+    "author": "Eskasia",
+    "authorAssociation": "OWNER",
+    "createdAt": "2026-08-05T08:16:34Z",
+    "updatedAt": "2026-08-05T08:16:34Z",
+    "bodySha256": "2f08758e31ebb706375cd046097270ce86c9cc4203e3ba0c684467e1b71f6a93",
+    "bodyHashCanonicalization": "SHA-256 over the exact UTF-8 GitHub API .body string with no added delimiter",
+    "approvalPredatesMerge": true,
+    "secondsBeforeMerge": 32,
+    "scope": "PR_87_READINESS_AND_MERGE_ONLY"
+  },
+  "validation": {
+    "pullRequestRunId": 30976115630,
+    "pullRequestPlatforms": {
+      "ubuntu": "SUCCESS",
+      "macos": "SUCCESS",
+      "windows": "SUCCESS"
+    },
+    "mainRunId": 30988393468,
+    "mainPlatforms": {
+      "ubuntu": "SUCCESS",
+      "macos": "SUCCESS",
+      "windows": "SUCCESS"
+    },
+    "taskPackageSchemaPath": "benchmarks/external-oss-effectiveness-r2/task-package.schema.json",
+    "taskPackageSchemaSha256": "73e6875481bf1defffe53d25fd8bfa3a07b35a8cea0290940ac84c064e742150",
+    "evidenceIndexPath": "benchmarks/external-oss-effectiveness-r2/evidence-index.json",
+    "reviewedEvidenceIndexSha256": "a4d7d187b6c1b344b55fa5cc5b47ebcb87c685275454fad5b83a186cc42bd7f9"
+  },
+  "issue": {
+    "number": 86,
+    "state": "CLOSED",
+    "externalControlState": "https://github.com/Eskasia/governseed/issues/86#issuecomment-5188875754",
+    "externalControlStateUpdatedAt": "2026-08-05T08:30:42Z",
+    "externalControlStateBodySha256": "c3d1fc47ec24580ba5ae9ca69cccfe70baf5156189e1334114dc649da7db1bfc"
+  },
+  "workflowHistory": {
+    "runtimeIdentityRuns": [
+      30814159615,
+      30824406710,
+      30850478318
+    ],
+    "latestRuntimeIdentityRun": 30850478318,
+    "historicalLatestRunProviderRequestAttempt": "INDETERMINATE",
+    "historicalLatestRunApprovedSingleRequestPossiblyConsumed": true,
+    "providerConsumingWorkflowDispatchedInCyclesC014OrC015": false
+  },
+  "gateDecision": {
+    "P1_2": "PASS",
+    "weightedCompletionPercent": 31,
+    "nextReadyNode": "P1.4",
+    "nextIssue": 88
+  },
+  "claimBoundary": "Canonical P1.2 task-identity and oracle-validation merge reconciliation only. The one authorized read-only checker request returned ACCEPT; no provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, effectiveness, or benchmark acceptance is claimed."
+}

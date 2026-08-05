@@ -1,0 +1,53 @@
+{
+  "schemaVersion": 1,
+  "cycleId": "GS-LOOP-2026-08-05-C017",
+  "observedAt": "2026-08-05T10:10:44Z",
+  "reviewTask": {
+    "name": "GS-EFFECT-R2-P1.4-INDEPENDENT-CHECKER",
+    "agentId": "019fd160-2b6e-79c2-9657-cc98d1c068ea",
+    "providerRequestCount": 1,
+    "readOnly": true
+  },
+  "target": {
+    "pullRequest": 89,
+    "baseSha": "220c2d8d816194eb77da94e182258a0875202f3b",
+    "headSha": "19a4405abdeb25c20a919897ec092e85dfcbf78f",
+    "treeSha": "0ce658e5bb35c84db4b7573d7193fe88366a67da",
+    "pullRequestBodySha256": "fabee2efa8f8105f2306287cc2ff268ac948bd8a3a6d7caf0e22bc89e0ff807a",
+    "technicalComment": "https://github.com/Eskasia/governseed/pull/89#issuecomment-5189538767",
+    "technicalCommentBodySha256": "edd2b81e729ccfe6781e5f529f8ced96e0f1bc8ddf778324ac2532fb0f5b4638",
+    "controlComment": "https://github.com/Eskasia/governseed/issues/88#issuecomment-5189542611",
+    "controlCommentBodySha256": "fc5a8849fb295e8f1eaa066ade941356e29e704a0d849545585e26278bcfeda0",
+    "validationRun": 30989625066
+  },
+  "verdict": "REJECT",
+  "findings": [
+    {
+      "id": "P1_4_HASH_ONLY_CLAIM_MISMATCH",
+      "severity": "BLOCKING",
+      "summary": "The execution-agent surface claimed hash-only hidden-oracle metadata while the agent-visible task packages still exposed parent and fix result objects.",
+      "evidencePaths": [
+        "benchmarks/external-oss-effectiveness-r2/task-package.schema.json",
+        "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-11/task-package.json",
+        "benchmarks/external-oss-effectiveness-r2/tests/task-package.test.mjs",
+        "benchmarks/external-oss-effectiveness-r2/execution-agent-surface.json",
+        "benchmarks/external-oss-v8/control/loop/human-gates.md"
+      ],
+      "smallestRepair": "Remove parent and fix result objects from all eight agent-visible hiddenOracle records and from their schema/tests, refresh dependent hashes, and retain historical PR 87 reviewed-tree provenance for the already verified parent-red/fix-green evidence."
+    }
+  ],
+  "repair": {
+    "status": "REPAIR_COMMITTED_CI_PASSED_EXTERNAL_BINDING_PUBLISHED_FRESH_REVIEW_REQUIRED",
+    "implementationHeadSha": "169e7ac947603e4b124fd113b89ca65f1feaea79",
+    "implementationTreeSha": "d1bd717e970dab3c7c11e433d0cd19248ee49b64",
+    "validationRun": 30996735553,
+    "technicalComment": "https://github.com/Eskasia/governseed/pull/89#issuecomment-5190529563",
+    "controlComment": "https://github.com/Eskasia/governseed/issues/88#issuecomment-5190531656",
+    "taskSeedOracleHashesChanged": false,
+    "scorerHashesChanged": false,
+    "runtimeOrWorkflowChanged": false,
+    "providerRequestsAfterChecker": 0
+  },
+  "unauthorizedActionsPerformed": [],
+  "claimBoundary": "One authorized read-only checker rejected the exact PR 89 target for one bounded metadata-exposure mismatch. The verdict does not authorize another provider request, PR readiness, merge, workflow dispatch, formal lock, Pilot, confirmatory execution, scoring, effectiveness, or benchmark acceptance."
+}
