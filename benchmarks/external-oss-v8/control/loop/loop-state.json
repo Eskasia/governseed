@@ -3,9 +3,9 @@
   "benchmarkId": "GS-OSS-2026-08-02-V8",
   "currentMainSha": "12f1802173c05e880139a2841900e6953d16d42d",
   "currentMainTreeSha": "2eee3c5237d3ef7cda947e3cb843eddd50668f69",
-  "observedAt": "2026-08-05T00:05:10Z",
+  "observedAt": "2026-08-05T01:18:57Z",
   "activePhase": "P0",
-  "activeNode": "P0.D1",
+  "activeNode": "P0.1",
   "activeBranch": "benchmark/p0-p0.d1-experiment-contract-decision",
   "activePR": 85,
   "activeIssue": 84,
@@ -18,12 +18,12 @@
     "priorExperimentContractEvidenceValidation": "30961663119"
   },
   "activeRunIds": [],
-  "currentHumanGate": "EXPERIMENT_CONTRACT_TASK_IDENTITY_RESOLUTION",
+  "currentHumanGate": "CONTRACT_PR_REVIEW_AND_MERGE",
   "completionPercentage": 24,
   "completionBasis": "Only PASS nodes count. Canonical phase weights are absent, so the requested fallback weights are divided equally across canonical subnodes; repair nodes have zero weight.",
-  "lastCycleId": "GS-LOOP-2026-08-05-C008",
-  "readySetAtSelection": [],
-  "selectedGatePreparationNode": "P0.D1",
+  "lastCycleId": "GS-LOOP-2026-08-05-C009",
+  "readySetAtSelection": ["P0.1"],
+  "selectedGatePreparationNode": "P0.1",
   "nextReadyNodes": [],
   "evidenceConflicts": [
     {
@@ -52,16 +52,19 @@
     },
     {
       "conflictId": "EFFECT-R1-TASK-OSS-01-SEED-IDENTITY-001",
-      "status": "EVIDENCE_CONFLICT",
+      "status": "RESOLVED_BY_OWNER_R2",
       "fields": ["v4SeedCommit", "v4SeedTreeSha256", "legacySeedTreeHashReproduced", "r1Revision"],
       "sources": [
         "https://github.com/Eskasia/governseed/issues/84#issuecomment-5185865928",
         "benchmarks/external-oss-v4/dependency-cache/task-identities.json",
         "benchmarks/external-oss-v5/tasks/TASK-OSS-01/task-seed-identity.json",
         "benchmarks/external-oss-v5/tasks/TASK-OSS-01/reconstruction-evidence.json",
-        "benchmarks/external-oss-v8/control/loop/reconciliation/issue-84-comment-5185865928.json"
+        "benchmarks/external-oss-v8/control/loop/reconciliation/issue-84-comment-5185865928.json",
+        "https://github.com/Eskasia/governseed/issues/84#issuecomment-5186392861",
+        "benchmarks/external-oss-v8/control/loop/reconciliation/issue-84-comment-5186392861.json",
+        "benchmarks/external-oss-effectiveness-r2/experiment-contract.json"
       ],
-      "resolution": "Do not implement the R1 contract. Reproduce the V4 TASK-OSS-01 seed tree hash or obtain an owner decision creating a new revision bound to the V5 reconstructed seed identity."
+      "resolution": "Owner comment 5186392861 supersedes R1 before execution and creates R2 bound to the V5 reconstructed TASK-OSS-01 seed. R1 and R2 evidence cannot be pooled."
     }
   ],
   "openPullRequests": {

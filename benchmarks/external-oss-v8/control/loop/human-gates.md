@@ -1,5 +1,17 @@
 # Current human gates
 
+## CONTRACT_PR_REVIEW_AND_MERGE
+
+- Status: `HUMAN_GATE`; no readiness or merge authorization exists.
+- Draft PR: <https://github.com/Eskasia/governseed/pull/85>
+- Decision sources: <https://github.com/Eskasia/governseed/issues/84#issuecomment-5185865928> and <https://github.com/Eskasia/governseed/issues/84#issuecomment-5186392861>.
+- Exact review scope: R2 contract artifacts under `benchmarks/external-oss-effectiveness-r2/`, resolution reconciliation record, C009 control-state transition, and associated offline tests.
+- Required review decision: approve or reject the exact final PR head/tree after CI and independent read-only review. Approval may authorize PR readiness and merge only; it must not authorize provider requests, workflow dispatch, G2/G3, formal lock, Pilot, confirmatory execution, scoring, or benchmark acceptance.
+- Remaining fail-closed inputs: eight confirmatory task identities/oracles, runtime/formal-lock bindings, immutable overlay hashes, and price snapshot are not supplied by this gate.
+- Claim boundary: contract implementation evidence only; no runtime, effectiveness, scoring, or acceptance claim.
+
+The prior `EXPERIMENT_CONTRACT_TASK_IDENTITY_RESOLUTION` gate was satisfied by owner comment `5186392861`; the historical conflict and resolution remain preserved below.
+
 ## EXPERIMENT_CONTRACT_TASK_IDENTITY_RESOLUTION
 
 - Status: `BLOCKED_TASK_OSS_01_V4_SEED_HASH_REVALIDATION_FAILED`

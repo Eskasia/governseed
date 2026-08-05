@@ -13,6 +13,9 @@ const humanGates = readFileSync(`${CONTROL_ROOT}/human-gates.md`, 'utf8');
 const decisionReconciliation = JSON.parse(
   readFileSync(`${CONTROL_ROOT}/reconciliation/issue-84-comment-5185865928.json`, 'utf8'),
 );
+const identityResolution = JSON.parse(
+  readFileSync(`${CONTROL_ROOT}/reconciliation/issue-84-comment-5186392861.json`, 'utf8'),
+);
 const requiredNodeFields = [
   'nodeId',
   'phase',
@@ -145,11 +148,11 @@ test('G2 conflict remains fail-closed and forbidden runs cannot become active', 
   assert.equal(loopState.evidenceConflicts.some((item) => item.conflictId === 'G2-REPAIR6-APPROVAL-LOCATION-001'), true);
 });
 
-test('recorded GitHub state closes P0.4 and fails closed on the experiment identity conflict', () => {
-  assert.equal(loopState.activeNode, 'P0.D1');
+test('recorded GitHub state closes P0.D1 and stops at R2 contract review and merge', () => {
+  assert.equal(loopState.activeNode, 'P0.1');
   assert.equal(loopState.activeIssue, 84);
   assert.equal(loopState.activePR, 85);
-  assert.equal(loopState.currentHumanGate, 'EXPERIMENT_CONTRACT_TASK_IDENTITY_RESOLUTION');
+  assert.equal(loopState.currentHumanGate, 'CONTRACT_PR_REVIEW_AND_MERGE');
   assert.deepEqual(loopState.openPullRequests.active, [81, 85]);
   assert.equal(loopState.latestRunIds.priorLoopControlTechnicalValidation, '30913519842');
   assert.equal(loopState.latestRunIds.loopControlMergeValidation, '30916308174');
@@ -158,11 +161,8 @@ test('recorded GitHub state closes P0.4 and fails closed on the experiment ident
   assert.equal('latestValidation' in loopState.latestRunIds, false);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').activePR, 83);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').status, 'PASS');
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.D1').status, 'EVIDENCE_CONFLICT');
-  assert.equal(
-    taskGraph.nodes.find((node) => node.nodeId === 'P0.D1').blockerCode,
-    'TASK_OSS_01_V4_SEED_HASH_REVALIDATION_FAILED',
-  );
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.D1').status, 'PASS');
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.D1').blockerCode, null);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.D1').activePR, 85);
   assert.match(humanGates, /issues\/84/);
   assert.match(humanGates, /pull\/85/);
@@ -173,8 +173,8 @@ test('recorded GitHub state closes P0.4 and fails closed on the experiment ident
   assert.equal(loopState.finalHeadBinding.mergeCommitSha, loopState.currentMainSha);
   assert.equal(loopState.finalHeadBinding.mergeValidationRun, loopState.latestRunIds.loopControlMergeValidation);
   assert.equal(Date.parse(loopState.finalHeadBinding.approvalCreatedAt) < Date.parse(loopState.finalHeadBinding.mergedAt), true);
-  assert.deepEqual(loopState.readySetAtSelection, []);
-  assert.equal(loopState.selectedGatePreparationNode, 'P0.D1');
+  assert.deepEqual(loopState.readySetAtSelection, ['P0.1']);
+  assert.equal(loopState.selectedGatePreparationNode, 'P0.1');
   assert.deepEqual(loopState.nextReadyNodes, []);
 });
 
@@ -243,6 +243,24 @@ test('owner decision reconciliation binds provenance, scorer hashes, and negativ
   assert.equal(decisionReconciliation.gateDecision.contractImplementation, 'NOT_RUN');
   assert.equal(decisionReconciliation.gateDecision.providerRequests, 'NOT_RUN');
   assert.equal(decisionReconciliation.gateDecision.workflowDispatch, 'NOT_RUN');
+});
+
+test('owner R2 resolution closes the identity conflict without authorizing execution', () => {
+  assert.equal(identityResolution.resolution.commentId, 5186392861);
+  assert.equal(identityResolution.resolution.author, 'Eskasia');
+  assert.equal(identityResolution.resolution.authorAssociation, 'OWNER');
+  assert.equal(identityResolution.resolution.bodySha256, 'e8ceeb21c85538a8f279db2626f66bed541cfe8476afbcf4604507f4ebff4191');
+  assert.equal(identityResolution.taskIdentityResolution.createdExperimentId, 'GS-OSS-2026-08-05-EFFECT-R2');
+  assert.equal(identityResolution.taskIdentityResolution.poolEvidenceAcrossRevisions, false);
+  assert.equal(identityResolution.taskIdentityResolution.status, 'RESOLVED_BY_OWNER_NEW_REVISION');
+  assert.equal(identityResolution.workflowHistory.providerConsumingWorkflowDispatched, false);
+  assert.deepEqual(identityResolution.workflowHistory.providerConsumingRunsCreatedAfterResolution, []);
+  assert.equal(identityResolution.gateDecision.providerRequests, 'NOT_RUN');
+  assert.equal(identityResolution.gateDecision.workflowDispatch, 'NOT_RUN');
+  assert.equal(identityResolution.gateDecision.nextHumanGate, 'CONTRACT_PR_REVIEW_AND_MERGE');
+  const conflict = loopState.evidenceConflicts.find((item) => item.conflictId === 'EFFECT-R1-TASK-OSS-01-SEED-IDENTITY-001');
+  assert.equal(conflict.status, 'RESOLVED_BY_OWNER_R2');
+  assert.match(humanGates, /CONTRACT_PR_REVIEW_AND_MERGE/);
 });
 
 test('validator rejects corrupted control records', async (t) => {

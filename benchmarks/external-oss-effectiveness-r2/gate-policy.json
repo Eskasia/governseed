@@ -1,0 +1,18 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
+  "contractImplementation": "PASS_PENDING_INDEPENDENT_REVIEW",
+  "providerRequests": "NOT_RUN",
+  "workflowDispatch": "NOT_RUN",
+  "gates": {
+    "G2": {"status": "BLOCKED", "requires": "separate reconciled authorization and evidence"},
+    "G3_FORMAL_LOCK": {"status": "BLOCKED", "requires": "complete confirmatory identities, runtime bindings, price snapshot, immutable overlay hashes, independent ACCEPT, and explicit owner approval"},
+    "PILOT": {"status": "BLOCKED", "requires": "G3 formal lock and explicit Pilot authorization"},
+    "PILOT_TO_CONFIRMATORY": {"status": "BLOCKED", "requires": "all Pilot transition criteria and a separate owner comment binding the exact confirmatory manifest"},
+    "CONFIRMATORY": {"status": "BLOCKED", "requires": "Pilot-to-confirmatory approval"},
+    "SCORING": {"status": "BLOCKED", "requires": "complete authorized evidence and scoring authorization"},
+    "FINAL_ACCEPTANCE": {"status": "BLOCKED", "requires": "independent review and explicit owner acceptance"}
+  },
+  "failClosedOn": ["missing binding", "hash drift", "identity conflict", "authorization ambiguity", "provider or workflow activity without authorization", "attempt replacement", "cross-revision pooling", "safety-integrity failure"],
+  "claimBoundary": "Contract implementation and review only. No execution, scoring, effectiveness, readiness, merge, or acceptance claim."
+}

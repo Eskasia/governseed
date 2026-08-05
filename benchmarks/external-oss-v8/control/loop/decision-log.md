@@ -108,4 +108,14 @@
 
 ## Claim boundary
 
+## 2026-08-05 — R2 task identity resolution and contract implementation
+
+- Status: `P0.D1 PASS`; `P0.1 HUMAN_GATE` pending canonical merge.
+- Owner comment <https://github.com/Eskasia/governseed/issues/84#issuecomment-5186392861> is by `Eskasia` with `OWNER` association, created at `2026-08-05T01:13:51Z`, and exact UTF-8 API-body SHA-256 `e8ceeb21c85538a8f279db2626f66bed541cfe8476afbcf4604507f4ebff4191`.
+- The decision supersedes R1 before execution, creates `GS-OSS-2026-08-05-EFFECT-R2`, binds TASK-OSS-01 to V5 reconstructed commit `15ba6bed78feebe392dfbe13cf0be4065b260af7` and tree SHA-256 `3ebafacc713e37ea6939f08b1205198b415c5ae62dcbddb9f11ce4ab732ee70e`, preserves every other owner-contract field, and prohibits R1/R2 evidence pooling.
+- R2 contract, closed top-level schema, deterministic 33-pair manifest, fail-closed gate policy, evidence hash index, report, and negative tests are implemented under `benchmarks/external-oss-effectiveness-r2/`.
+- Confirmatory task identities remain explicitly missing and block formal lock. Contract implementation does not authorize provider requests, workflow dispatch, G2/G3, formal lock, Pilot, confirmatory execution, scoring, PR readiness, merge, or acceptance.
+- Runtime Identity workflow history remains exactly runs `30814159615`, `30824406710`, and `30850478318`; no provider-consuming workflow was dispatched.
+- Decision: close zero-weight repair node P0.D1, retain weighted completion at `24.0%`, and select P0.1 as the next READY critical-path node. Stop at `CONTRACT_PR_REVIEW_AND_MERGE` because the R2 plan is not canonical on main.
+
 This log records gaps and decisions only. It does not authorize provider use, workflow dispatch, PR merge, G3, Pilot, confirmatory execution, scoring, or benchmark acceptance.
