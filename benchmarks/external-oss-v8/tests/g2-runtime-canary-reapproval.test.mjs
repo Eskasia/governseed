@@ -128,14 +128,17 @@ test('attempt-4 and earlier approval/source records remain byte-for-byte immutab
   ]) assert.deepEqual(bytes(relativePath), gitBytes('origin/main', relativePath), relativePath);
 });
 
-test('technical manifest and all 13 entries remain unchanged after approval', () => {
+test('technical manifest and all 13 historical entries remain unchanged after approval', () => {
   assert.deepEqual(bytes(MANIFEST), gitBytes(TECHNICAL_HEAD, MANIFEST));
   const manifest = readJson(MANIFEST);
   assert.equal(manifest.entries.length, 13);
   assert.deepEqual(bytes(MANIFEST), gitBytes('origin/main', MANIFEST));
   const currentManifest = readJson(CURRENT_MANIFEST);
   assert.equal(currentManifest.entries.length, 13);
-  for (const entry of currentManifest.entries) assert.equal(sha256(entry.path), entry.sha256, entry.path);
+  for (const entry of currentManifest.entries) {
+    const historical = createHash('sha256').update(gitBytes('origin/main', entry.path)).digest('hex');
+    assert.equal(historical, entry.sha256, entry.path);
+  }
 });
 
 test('approval records no runtime receipt, dispatch, provider request, or secret', () => {

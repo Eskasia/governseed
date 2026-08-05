@@ -117,6 +117,22 @@ const PROXY_SUMMARY_ERROR_CODES = Object.freeze([
   'PROXY_UNEXPECTED_ERROR',
 ]);
 
+export const PROVIDER_ERROR_TYPES = Object.freeze([
+  'authentication_error',
+  'invalid_request_error',
+  'permission_error',
+  'rate_limit_error',
+  'server_error',
+]);
+
+export const PROVIDER_ERROR_CODES = Object.freeze([
+  'insufficient_quota',
+  'invalid_api_key',
+  'model_not_found',
+  'rate_limit_exceeded',
+  'unsupported_value',
+]);
+
 const defaultFs = Object.freeze({
   chmod: (value, mode) => fs.promises.chmod(value, mode),
   lstat: (value) => fs.promises.lstat(value),
@@ -664,11 +680,57 @@ function validateUpstreamResponse(response) {
   if (
     !response
     || !Number.isInteger(response.statusCode)
-    || response.statusCode < 200
-    || response.statusCode > 299
+    || response.statusCode < 100
+    || response.statusCode > 599
   ) {
     fail('PROXY_UPSTREAM_FAILED');
   }
+}
+
+function allowlistedProviderValue(value, allowed) {
+  if (value === null || value === undefined) return null;
+  return typeof value === 'string' && allowed.includes(value)
+    ? value
+    : 'UNRECOGNIZED';
+}
+
+function classifyNon2xx(statusCode, type, code) {
+  if (statusCode === 401 || type === 'authentication_error' || code === 'invalid_api_key') {
+    return 'AUTHENTICATION';
+  }
+  if (statusCode === 403 || type === 'permission_error') return 'AUTHORIZATION';
+  if (statusCode === 404 || code === 'model_not_found') return 'MODEL_OR_ENDPOINT';
+  if (
+    statusCode === 429
+    || type === 'rate_limit_error'
+    || code === 'rate_limit_exceeded'
+    || code === 'insufficient_quota'
+  ) return 'RATE_LIMIT_OR_QUOTA';
+  if (statusCode === 400 || type === 'invalid_request_error') return 'INVALID_REQUEST';
+  if (statusCode >= 500 || type === 'server_error') return 'UPSTREAM_SERVER';
+  return 'OTHER_NON_2XX';
+}
+
+function sanitizeNon2xxDiagnostic(statusCode, bytes) {
+  let error = null;
+  try {
+    const parsed = JSON.parse(bytes.toString('utf8'));
+    if (isPlainObject(parsed) && isPlainObject(parsed.error)) error = parsed.error;
+  } catch {
+    // A non-JSON provider body is discarded and represented only by closed tokens.
+  }
+  const providerErrorType = allowlistedProviderValue(error?.type, PROVIDER_ERROR_TYPES);
+  const providerErrorCode = allowlistedProviderValue(error?.code, PROVIDER_ERROR_CODES);
+  return Object.freeze({
+    providerHttpStatus: statusCode,
+    providerErrorType,
+    providerErrorCode,
+    failureClassification: classifyNon2xx(
+      statusCode,
+      providerErrorType,
+      providerErrorCode,
+    ),
+  });
 }
 
 export function createHostCredentialProxy(options) {
@@ -715,6 +777,10 @@ export function createHostCredentialProxy(options) {
   let lastSafeErrorCode = null;
   let socketAcceptedConnection = false;
   let proxyCleanupObserved = false;
+  let providerHttpStatus = null;
+  let providerErrorType = null;
+  let providerErrorCode = null;
+  let failureClassification = null;
   const activeControllers = new Set();
 
   const setSafeStage = (stage) => {
@@ -806,14 +872,22 @@ export function createHostCredentialProxy(options) {
     upstreamResponseCount += 1;
     setSafeStage('UPSTREAM_RESPONSE');
     validateUpstreamResponse(upstreamResponse);
-    if (responseContentType(upstreamResponse.headers) !== 'application/json') {
-      fail('PROXY_RESPONSE_INVALID');
-    }
-    setSafeStage('PROVIDER_RESPONSE_VALIDATION');
+    providerHttpStatus = upstreamResponse.statusCode;
     const responseBody = await readResponseBody(
       upstreamResponse.body,
       policy.maxResponseBytes,
     );
+    if (upstreamResponse.statusCode < 200 || upstreamResponse.statusCode > 299) {
+      const diagnostic = sanitizeNon2xxDiagnostic(upstreamResponse.statusCode, responseBody);
+      providerErrorType = diagnostic.providerErrorType;
+      providerErrorCode = diagnostic.providerErrorCode;
+      failureClassification = diagnostic.failureClassification;
+      fail('PROXY_UPSTREAM_FAILED');
+    }
+    if (responseContentType(upstreamResponse.headers) !== 'application/json') {
+      fail('PROXY_RESPONSE_INVALID');
+    }
+    setSafeStage('PROVIDER_RESPONSE_VALIDATION');
     let normalizedResponse;
     try {
       normalizedResponse = validateProviderResponse(
@@ -1057,7 +1131,7 @@ export function createHostCredentialProxy(options) {
   };
 
   const getSummary = () => Object.freeze({
-    schemaVersion: 2,
+    schemaVersion: 3,
     clientRequestObservedCount,
     upstreamAttemptCount,
     upstreamResponseCount,
@@ -1066,6 +1140,19 @@ export function createHostCredentialProxy(options) {
     lastSafeErrorCode,
     socketAcceptedConnection,
     proxyCleanupObserved,
+    providerHttpStatus,
+    providerErrorType,
+    providerErrorCode,
+    requestObservationState: successfulReceiptCount === 1
+      ? 'SUCCESS_RECEIPT_RECORDED'
+      : upstreamResponseCount === 1
+        ? 'UPSTREAM_RESPONSE_OBSERVED'
+        : upstreamAttemptCount === 1
+          ? 'UPSTREAM_ATTEMPTED'
+          : clientRequestObservedCount === 1
+            ? 'CLIENT_REQUEST_OBSERVED'
+            : 'NOT_OBSERVED',
+    failureClassification,
   });
 
   return Object.freeze({

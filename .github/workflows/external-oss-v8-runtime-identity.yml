@@ -103,8 +103,118 @@ jobs:
           }, null, 2) + '\n', { mode: 0o600 });
           NODE
 
-      - name: Validate attempt-5 approval and repair-6 technical bindings
+      - name: Validate diagnostic repair authorization and technical bindings
         if: ${{ success() }}
+        shell: bash
+        env:
+          RUNTIME_IMAGE: ${{ inputs.runtime_image }}
+        run: |
+          set -euo pipefail
+          printf '%s\n' 'FAILURE_STAGE=binding-validation' 'FAILURE_CODE=BINDING_VALIDATION_PENDING' >> "$GITHUB_ENV"
+          RUNTIME_IMAGE="$RUNTIME_IMAGE" RUN_ROOT="$RUN_ROOT" node --input-type=module <<'NODE'
+          import { appendFileSync, readFileSync, writeFileSync } from 'node:fs';
+          import { createHash } from 'node:crypto';
+          import path from 'node:path';
+
+          const root = process.cwd();
+          const runRoot = process.env.RUN_ROOT;
+          const readJson = (relativePath) => JSON.parse(readFileSync(path.join(root, relativePath), 'utf8'));
+          const sha256 = (relativePath) => createHash('sha256')
+            .update(readFileSync(path.join(root, relativePath)))
+            .digest('hex');
+          const fail = (failureCode, failedChecks) => {
+            appendFileSync(process.env.GITHUB_ENV, `FAILURE_STAGE=binding-validation\nFAILURE_CODE=${failureCode}\n`);
+            writeFileSync(path.join(runRoot, 'validation-diagnostic.json'), JSON.stringify({
+              failureStage: 'binding-validation',
+              failureCode,
+              failedChecks,
+              runtimeImageDigestMatch: false,
+            }, null, 2) + '\n', { mode: 0o600 });
+            process.exit(1);
+          };
+          const expectedRuntimeImage = 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5';
+          const attemptRoot = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-7';
+          const manifestPath = `${attemptRoot}/technical-manifest.json`;
+          const packetPath = `${attemptRoot}/review-packet.json`;
+          const authorizationPath = `${attemptRoot}/authorization-source.json`;
+          const failurePath = `${attemptRoot}/failed-run-source.json`;
+          const workflowPath = '.github/workflows/external-oss-v8-runtime-identity.yml';
+          const manifest = readJson(manifestPath);
+          const packet = readJson(packetPath);
+          const authorization = readJson(authorizationPath);
+          const failedRun = readJson(failurePath);
+          if (process.env.RUNTIME_IMAGE !== expectedRuntimeImage) {
+            fail('RUNTIME_IMAGE_IDENTITY_MISMATCH', ['runtimeImageMatches']);
+          }
+          if (
+            manifest.schemaVersion !== 1
+            || manifest.benchmarkId !== 'GS-OSS-2026-08-02-V8'
+            || manifest.gate !== 'G2'
+            || manifest.repair !== 'non-2xx-diagnostic-repair'
+            || manifest.attempt !== 7
+            || !Array.isArray(manifest.entries)
+            || manifest.entries.length === 0
+            || manifest.entries.some((entry) => (
+              typeof entry?.path !== 'string'
+              || !/^[0-9a-f]{64}$/u.test(entry?.sha256)
+              || sha256(entry.path) !== entry.sha256
+            ))
+          ) fail('DIAGNOSTIC_TECHNICAL_MANIFEST_MISMATCH', ['technicalManifestMatches']);
+          if (
+            authorization.commentId !== 5193631262
+            || authorization.commentUrl !== 'https://github.com/Eskasia/governseed/issues/92#issuecomment-5193631262'
+            || authorization.commentAuthor !== 'Eskasia'
+            || authorization.commentCreatedAt !== '2026-08-05T15:15:50Z'
+            || authorization.commentUpdatedAt !== '2026-08-05T15:15:50Z'
+            || authorization.commentBodySha256 !== '0cacc6164223196ea46f13b2101bae8622c9b172bf90feeb2de60d6e35bfca0a'
+            || authorization.providerRequestAuthorized !== false
+            || authorization.workflowDispatchAuthorized !== false
+          ) fail('DIAGNOSTIC_REPAIR_AUTHORIZATION_SOURCE_MISMATCH', ['authorizationSourceMatches']);
+          if (
+            failedRun.workflowId !== 325585082
+            || failedRun.runId !== 31014045209
+            || failedRun.runAttempt !== 1
+            || failedRun.headSha !== '4e1347e510a0068efbdff6942748671490c798ea'
+            || failedRun.failureReceiptCommentId !== 5193562726
+            || failedRun.failureReceiptBodySha256 !== '4a1d95b883a90bc98faadae41c4cf4bea656d5e3cf390fb3cc5625485f08e361'
+            || failedRun.artifactId !== 8935651599
+            || failedRun.artifactDigest !== 'sha256:567ca3d9e79d72da8c69508b686f85ea0baabdf61d860495001478f5f12777be'
+            || failedRun.failureArtifactSha256 !== '1cc4353eef786e8541d55a8d2b9a39770518037b132a60e68c0aaa50141c99fd'
+            || failedRun.providerRequestAttempt !== 'INDETERMINATE'
+            || failedRun.possiblyConsumedRequestCount !== 1
+            || failedRun.rerunPermitted !== false
+          ) fail('FAILED_RUN_PROVENANCE_MISMATCH', ['failedRunSourceMatches']);
+          if (
+            packet.schemaVersion !== 1
+            || packet.status !== 'PENDING_OWNER_REVIEW'
+            || packet.benchmarkId !== 'GS-OSS-2026-08-02-V8'
+            || packet.modelBinding?.provider !== 'OpenAI'
+            || packet.modelBinding?.modelId !== 'gpt-5.6-luna'
+            || packet.modelBinding?.aliasAllowed !== false
+            || packet.modelBinding?.fallbackAllowed !== false
+            || packet.transport?.endpoint !== 'https://api.openai.com/v1/responses'
+            || packet.transport?.requestLimit !== 1
+            || packet.transport?.timeoutMs !== 30000
+            || packet.transport?.retryAllowed !== false
+            || packet.transport?.tokenCeiling !== 8192
+            || packet.runtime?.image !== expectedRuntimeImage
+            || packet.hashes?.workflowSha256 !== sha256(workflowPath)
+            || packet.hashes?.technicalManifestSha256 !== sha256(manifestPath)
+            || packet.hashes?.authorizationSourceSha256 !== sha256(authorizationPath)
+            || packet.hashes?.failedRunSourceSha256 !== sha256(failurePath)
+          ) fail('DIAGNOSTIC_REVIEW_PACKET_MISMATCH', ['reviewPacketMatches']);
+          writeFileSync(path.join(runRoot, 'validation-diagnostic.json'), JSON.stringify({
+            failureStage: 'binding-validation',
+            failureCode: 'BINDING_VALIDATION_PASS',
+            runtimeImageDigestMatch: true,
+            providerRequestAttempt: 'NO',
+            workflowDispatch: 'NOT_RUN',
+            runtimeCanary: 'NOT_RUN',
+          }, null, 2) + '\n', { mode: 0o600 });
+          NODE
+
+      - name: Historical repair-6 validator retained but non-executable
+        if: ${{ false }}
         shell: bash
         env:
           RUNTIME_IMAGE: ${{ inputs.runtime_image }}
@@ -605,6 +715,7 @@ jobs:
               sleep 0.1
             done
           fi
+          test -s "$RUN_ROOT/proxy-receipt.json"
 
       - name: Assemble redacted runtime identity evidence
         if: ${{ success() }}
@@ -782,8 +893,40 @@ jobs:
               'GOVERNSEED_TASK_ID',
             ].includes(name))
             : [];
+          const providerErrorTypes = new Set([
+            'authentication_error',
+            'invalid_request_error',
+            'permission_error',
+            'rate_limit_error',
+            'server_error',
+            'UNRECOGNIZED',
+          ]);
+          const providerErrorCodes = new Set([
+            'insufficient_quota',
+            'invalid_api_key',
+            'model_not_found',
+            'rate_limit_exceeded',
+            'unsupported_value',
+            'UNRECOGNIZED',
+          ]);
+          const requestObservationStates = new Set([
+            'NOT_OBSERVED',
+            'CLIENT_REQUEST_OBSERVED',
+            'UPSTREAM_ATTEMPTED',
+            'UPSTREAM_RESPONSE_OBSERVED',
+            'SUCCESS_RECEIPT_RECORDED',
+          ]);
+          const failureClassifications = new Set([
+            'AUTHENTICATION',
+            'AUTHORIZATION',
+            'MODEL_OR_ENDPOINT',
+            'RATE_LIMIT_OR_QUOTA',
+            'INVALID_REQUEST',
+            'UPSTREAM_SERVER',
+            'OTHER_NON_2XX',
+          ]);
           writeFileSync(path.join(root, 'failure-artifact.json'), JSON.stringify({
-            schemaVersion: 2,
+            schemaVersion: 3,
             authorizationIdentity: authorization,
             workflowRunId: process.env.GITHUB_RUN_ID,
             mainCommitSha: process.env.GITHUB_SHA,
@@ -796,6 +939,23 @@ jobs:
             successfulReceiptCount: Number.isSafeInteger(proxy.successfulReceiptCount) ? proxy.successfulReceiptCount : null,
             providerRequestAttempt,
             approvedSingleRequestPossiblyConsumed: providerRequestAttempt !== 'NO',
+            providerHttpStatus: Number.isSafeInteger(proxy.providerHttpStatus)
+              && proxy.providerHttpStatus >= 100
+              && proxy.providerHttpStatus <= 599
+              ? proxy.providerHttpStatus
+              : null,
+            providerErrorType: providerErrorTypes.has(proxy.providerErrorType)
+              ? proxy.providerErrorType
+              : null,
+            providerErrorCode: providerErrorCodes.has(proxy.providerErrorCode)
+              ? proxy.providerErrorCode
+              : null,
+            requestObservationState: requestObservationStates.has(proxy.requestObservationState)
+              ? proxy.requestObservationState
+              : 'NOT_OBSERVED',
+            failureClassification: failureClassifications.has(proxy.failureClassification)
+              ? proxy.failureClassification
+              : null,
             runtimeImage: process.env.RUNTIME_IMAGE || null,
             runtimeImageDigestMatch: diagnostic.runtimeImageDigestMatch === true,
             nodePath: nodeProbe.path,
@@ -814,6 +974,10 @@ jobs:
             rawProviderResponsePersisted: false,
             rawPromptPersisted: false,
             providerErrorTextPersisted: false,
+            providerHeadersPersisted: false,
+            authorizationDataPersisted: false,
+            environmentDumpPersisted: false,
+            credentialsPersisted: false,
             secretScanPassed: true,
           }, null, 2) + '\n', { mode: 0o600 });
           NODE

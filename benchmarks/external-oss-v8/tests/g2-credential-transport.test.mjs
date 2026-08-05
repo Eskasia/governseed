@@ -170,7 +170,7 @@ test('proxy summary separates client, attempt, response, and receipt counters', 
   await proxy.close();
   assert.equal(response.statusCode, 502);
   assert.deepEqual(proxy.getSummary(), {
-    schemaVersion: 2,
+    schemaVersion: 3,
     clientRequestObservedCount: 1,
     upstreamAttemptCount: 1,
     upstreamResponseCount: 0,
@@ -179,6 +179,11 @@ test('proxy summary separates client, attempt, response, and receipt counters', 
     lastSafeErrorCode: 'PROXY_UPSTREAM_FAILED',
     socketAcceptedConnection: true,
     proxyCleanupObserved: true,
+    providerHttpStatus: null,
+    providerErrorType: null,
+    providerErrorCode: null,
+    requestObservationState: 'UPSTREAM_ATTEMPTED',
+    failureClassification: null,
   });
   assert.doesNotMatch(JSON.stringify(proxy.getSummary()), /synthetic transport failure|synthetic-host-only-key|runtime_canary/u);
 });
