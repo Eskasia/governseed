@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "reviewId": "GS-EFFECT-R2-INDEPENDENT-CHECKER-2026-08-05-01",
+  "reviewTask": {
+    "name": "GS-EFFECT-R2-INDEPENDENT-CHECKER",
+    "threadId": "019fd027-8f4a-7ee3-aeeb-b135e3a5aa00",
+    "providerRequestCount": 1,
+    "authorizedScope": "Fresh read-only independent review of the exact PR 87 target only.",
+    "completedAt": "2026-08-05T04:36:06Z"
+  },
+  "target": {
+    "pullRequest": 87,
+    "baseSha": "b812fe7e9096beee4ae8310482055648ad022d4a",
+    "headSha": "86cdae157e8eec3656569790aca62c5cc61aa81a",
+    "treeSha": "2f80b3d0f1106341e0002b33c19147518d206943"
+  },
+  "verdict": "REJECT",
+  "blockingFindings": [
+    {
+      "findingId": "P1-CROSS-TASK-ARTIFACT-REBINDING",
+      "severity": "P1",
+      "status": "REPAIR_IMPLEMENTED_PENDING_FRESH_REVIEW",
+      "summary": "The schema and semantic validator did not bind public artifact paths to taskId or reject every duplicate and cross-class artifact identity."
+    },
+    {
+      "findingId": "P1-DIFF-CHECK-FALSE-CLAIM",
+      "severity": "P1",
+      "status": "REPAIR_IMPLEMENTED_PENDING_FRESH_REVIEW",
+      "summary": "The exact reviewed diff failed git diff --check because fourteen new public task or test files had blank lines at EOF."
+    }
+  ],
+  "verifiedEvidence": {
+    "upstreamPairs": "PASS_8_OF_8",
+    "focusedTests": "PASS_32_OF_32",
+    "fullCi": "PASS",
+    "experimentalTests": "PASS_122_OF_122",
+    "exactHeadGitHubCiRun": "30973544511",
+    "runtimeIdentityRunIds": ["30814159615", "30824406710", "30850478318"]
+  },
+  "retention": {
+    "rawPromptCommitted": false,
+    "rawProviderBodyCommitted": false,
+    "rawHiddenOracleCommitted": false,
+    "sanitizedReceiptOnly": true
+  },
+  "workflowDispatch": "NOT_RUN",
+  "claimBoundary": "This receipt proves one authorized read-only checker request and a REJECT verdict for the exact old PR head only. It is not approval of any repair head, PR readiness, merge, workflow dispatch, formal lock, Pilot, confirmatory execution, scoring, effectiveness, or acceptance."
+}

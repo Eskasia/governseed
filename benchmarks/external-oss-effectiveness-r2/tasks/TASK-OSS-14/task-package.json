@@ -1,0 +1,119 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
+  "revision": 2,
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-14",
+  "repository": "eslint/eslint",
+  "upstream": {
+    "repositoryUrl": "https://github.com/eslint/eslint.git",
+    "pullRequestUrl": "https://github.com/eslint/eslint/pull/21166",
+    "baseCommit": "4d7db6628e2badf0857cb88734fe641c3874bce9",
+    "fixCommit": "6898df9364639ee64b9448a4cb6b08a30c16bd37",
+    "baseReachable": true,
+    "fixReachable": true,
+    "fixGitTree": "73e77e0a25d5ec09333bf686820f12e926731347"
+  },
+  "seed": {
+    "sealedSeedCommit": "4d7db6628e2badf0857cb88734fe641c3874bce9",
+    "sealedSeedGitTree": "981a328725e6800d17abdd9549ed60e7c27fb08c",
+    "sealedSeedTreeSha256": "a2f0d3670c0e5ba3e7a0ffaf6bda87cb179a1bf4a7c930a2c2a25fd2b54cf28a",
+    "overlayApplied": false
+  },
+  "publicTask": {
+    "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-14/public-task.md",
+    "sha256": "dce9f59ee7b0cf46fd6da0fe1de538cad92e9d5d6cfe2e40fee2d5bbb4137e71"
+  },
+  "publicTest": {
+    "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-14/public-test.cjs",
+    "sha256": "7bf2d3589c849366deefd93455ed7f4bfaa213d9895e4e5fce5db8f656ea7bae",
+    "command": [
+      "node",
+      "/public-test/public-test.cjs"
+    ],
+    "commandIdentitySha256": "7232ed178f05294b2af93d37601b0a6bf5ee77e73538622fba9fd4c9c2261c71",
+    "parent": {
+      "commit": "4d7db6628e2badf0857cb88734fe641c3874bce9",
+      "exitCode": 1,
+      "status": "FAIL_EXPECTED"
+    },
+    "fix": {
+      "commit": "6898df9364639ee64b9448a4cb6b08a30c16bd37",
+      "exitCode": 0,
+      "status": "PASS"
+    }
+  },
+  "pathPolicy": {
+    "allowOnly": true,
+    "allowedPaths": [
+      "lib/rules/id-denylist.js"
+    ],
+    "forbiddenPaths": [
+      ".github/**",
+      "tests/**",
+      "testing/**",
+      "**/tests/**",
+      "**/node_modules/**",
+      "**/.venv/**",
+      "credentials/**",
+      "/public-test/**",
+      "/runner-private/**"
+    ],
+    "sha256": "fa64acca3c95e7d962f0157902b5d75be566809735e882d2373960d1c45f888f"
+  },
+  "hiddenOracle": {
+    "sha256": "9b3dca5a9fe50ae05423ecb5b5c37b748e511cd784a2dca421bceadb1b616fd5",
+    "commandIdentitySha256": "4eb480dd2ce8586913975db6b387903bed883007eb042a8c73b5b8b221cec05c",
+    "runnerOwned": true,
+    "sourceCommitted": false,
+    "exposedToExecutionAgent": false,
+    "identitySeparatedFromPublicTest": true,
+    "parent": {
+      "commit": "4d7db6628e2badf0857cb88734fe641c3874bce9",
+      "exitCode": 1,
+      "status": "FAIL_EXPECTED"
+    },
+    "fix": {
+      "commit": "6898df9364639ee64b9448a4cb6b08a30c16bd37",
+      "exitCode": 0,
+      "status": "PASS"
+    }
+  },
+  "reconstruction": {
+    "mode": "exact-upstream-parent",
+    "exactShaFetchVerified": true,
+    "runs": [
+      {
+        "ordinal": 1,
+        "sealedSeedCommit": "4d7db6628e2badf0857cb88734fe641c3874bce9",
+        "sealedSeedGitTree": "981a328725e6800d17abdd9549ed60e7c27fb08c",
+        "sealedSeedTreeSha256": "a2f0d3670c0e5ba3e7a0ffaf6bda87cb179a1bf4a7c930a2c2a25fd2b54cf28a"
+      },
+      {
+        "ordinal": 2,
+        "sealedSeedCommit": "4d7db6628e2badf0857cb88734fe641c3874bce9",
+        "sealedSeedGitTree": "981a328725e6800d17abdd9549ed60e7c27fb08c",
+        "sealedSeedTreeSha256": "a2f0d3670c0e5ba3e7a0ffaf6bda87cb179a1bf4a7c930a2c2a25fd2b54cf28a"
+      }
+    ],
+    "stable": true,
+    "status": "PASS"
+  },
+  "runtime": {
+    "language": "JavaScript",
+    "runtimeVersion": "Node.js v26.3.0; npm 11.16.0",
+    "dependencyInstallCommand": [
+      "npm",
+      "install",
+      "--omit=dev",
+      "--ignore-scripts",
+      "--no-audit",
+      "--no-fund"
+    ],
+    "preTestCommand": null,
+    "environment": {},
+    "publicTestWorkingDirectory": "."
+  },
+  "status": "PASS",
+  "claimBoundary": "Offline public-repository task preparation only. This receipt is not formal lock, provider execution, Pilot, confirmatory, scoring, effectiveness, or acceptance evidence."
+}

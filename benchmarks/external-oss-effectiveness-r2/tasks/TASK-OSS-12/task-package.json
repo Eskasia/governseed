@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
+  "revision": 2,
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-12",
+  "repository": "django/django",
+  "upstream": {
+    "repositoryUrl": "https://github.com/django/django.git",
+    "pullRequestUrl": "https://github.com/django/django/pull/21700",
+    "baseCommit": "1c5927f04a853c79ac9b098eab92fb328ff9e4ad",
+    "fixCommit": "ca14173f968cf36115f22d6c6785f738de4391ed",
+    "baseReachable": true,
+    "fixReachable": true,
+    "fixGitTree": "1b68096d5e68e98ddc41b261d1a622e8b6308204"
+  },
+  "seed": {
+    "sealedSeedCommit": "1c5927f04a853c79ac9b098eab92fb328ff9e4ad",
+    "sealedSeedGitTree": "7250a1d7281e42e94b9594019d06624059530b52",
+    "sealedSeedTreeSha256": "966cec8e3a74ed326dd98294ceb48998a7ee34f5589b891ac816fa8f1ed0ccef",
+    "overlayApplied": false
+  },
+  "publicTask": {
+    "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-12/public-task.md",
+    "sha256": "472957bd1e6f1f744922a0bc3e9b69be8fe62be1978764f81e00dc18a2cb53e4"
+  },
+  "publicTest": {
+    "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-12/public-test.py",
+    "sha256": "75eefa2fe43523a61c100ec58d7a25a166db3bc2b42af6b7291de9471e6a866a",
+    "command": [
+      ".venv/bin/python",
+      "/public-test/public-test.py"
+    ],
+    "commandIdentitySha256": "93f541f3bcee9ec978ea46965e925cdf69d701cb0332d291557a4988954aaf40",
+    "parent": {
+      "commit": "1c5927f04a853c79ac9b098eab92fb328ff9e4ad",
+      "exitCode": 1,
+      "status": "FAIL_EXPECTED"
+    },
+    "fix": {
+      "commit": "ca14173f968cf36115f22d6c6785f738de4391ed",
+      "exitCode": 0,
+      "status": "PASS"
+    }
+  },
+  "pathPolicy": {
+    "allowOnly": true,
+    "allowedPaths": [
+      "django/urls/utils.py"
+    ],
+    "forbiddenPaths": [
+      ".github/**",
+      "tests/**",
+      "testing/**",
+      "**/tests/**",
+      "**/node_modules/**",
+      "**/.venv/**",
+      "credentials/**",
+      "/public-test/**",
+      "/runner-private/**"
+    ],
+    "sha256": "f18a1f9b8830df7a6a860c3e84dc8b46c191c0c5dfd34e558c0fee2b00540443"
+  },
+  "hiddenOracle": {
+    "sha256": "91350c45e49b511276361d796f7649820f0af1a3405429c330fcb645a9eed553",
+    "commandIdentitySha256": "d96f768b5fe8084ec30529c4ef5ec1919df2d19f6f26fe7d3ddbb30c505a6ae1",
+    "runnerOwned": true,
+    "sourceCommitted": false,
+    "exposedToExecutionAgent": false,
+    "identitySeparatedFromPublicTest": true,
+    "parent": {
+      "commit": "1c5927f04a853c79ac9b098eab92fb328ff9e4ad",
+      "exitCode": 1,
+      "status": "FAIL_EXPECTED"
+    },
+    "fix": {
+      "commit": "ca14173f968cf36115f22d6c6785f738de4391ed",
+      "exitCode": 0,
+      "status": "PASS"
+    }
+  },
+  "reconstruction": {
+    "mode": "exact-upstream-parent",
+    "exactShaFetchVerified": true,
+    "runs": [
+      {
+        "ordinal": 1,
+        "sealedSeedCommit": "1c5927f04a853c79ac9b098eab92fb328ff9e4ad",
+        "sealedSeedGitTree": "7250a1d7281e42e94b9594019d06624059530b52",
+        "sealedSeedTreeSha256": "966cec8e3a74ed326dd98294ceb48998a7ee34f5589b891ac816fa8f1ed0ccef"
+      },
+      {
+        "ordinal": 2,
+        "sealedSeedCommit": "1c5927f04a853c79ac9b098eab92fb328ff9e4ad",
+        "sealedSeedGitTree": "7250a1d7281e42e94b9594019d06624059530b52",
+        "sealedSeedTreeSha256": "966cec8e3a74ed326dd98294ceb48998a7ee34f5589b891ac816fa8f1ed0ccef"
+      }
+    ],
+    "stable": true,
+    "status": "PASS"
+  },
+  "runtime": {
+    "language": "Python",
+    "runtimeVersion": "Python 3.14.6",
+    "dependencyInstallCommand": [
+      "uv",
+      "pip",
+      "install",
+      "--python",
+      ".venv/bin/python",
+      "-e",
+      "."
+    ],
+    "preTestCommand": null,
+    "environment": {
+      "PYTHONPATH": "."
+    },
+    "publicTestWorkingDirectory": "."
+  },
+  "status": "PASS",
+  "claimBoundary": "Offline public-repository task preparation only. This receipt is not formal lock, provider execution, Pilot, confirmatory, scoring, effectiveness, or acceptance evidence."
+}

@@ -1,30 +1,32 @@
 {
   "schemaVersion": 1,
   "benchmarkId": "GS-OSS-2026-08-02-V8",
-  "currentMainSha": "12f1802173c05e880139a2841900e6953d16d42d",
-  "currentMainTreeSha": "2eee3c5237d3ef7cda947e3cb843eddd50668f69",
-  "observedAt": "2026-08-05T01:18:57Z",
-  "activePhase": "P0",
-  "activeNode": "P0.1",
-  "activeBranch": "benchmark/p0-p0.d1-experiment-contract-decision",
-  "activePR": 85,
-  "activeIssue": 84,
+  "currentMainSha": "b812fe7e9096beee4ae8310482055648ad022d4a",
+  "currentMainTreeSha": "e2c4dcafdcd8f5f5e2962031979039ce70432615",
+  "observedAt": "2026-08-05T04:43:09Z",
+  "activePhase": "P1",
+  "activeNode": "P1.2",
+  "activeBranch": "benchmark/p0-p0.1-contract-merge-reconciliation",
+  "activePR": 87,
+  "activeIssue": 86,
   "latestRunIds": {
     "acceptedG1": "30739570734",
     "forbiddenG2Reruns": ["30814159615", "30824406710", "30850478318"],
     "g2Repair6Validation": "30899414374",
     "priorLoopControlTechnicalValidation": "30913519842",
     "loopControlMergeValidation": "30916308174",
-    "priorExperimentContractEvidenceValidation": "30961663119"
+    "priorExperimentContractEvidenceValidation": "30961663119",
+    "experimentContractPullRequestValidation": "30966317154",
+    "experimentContractMergeValidation": "30971703749"
   },
   "activeRunIds": [],
-  "currentHumanGate": "CONTRACT_PR_REVIEW_AND_MERGE",
-  "completionPercentage": 24,
+  "currentHumanGate": "TASK_IDENTITY_INDEPENDENT_REVIEW_AUTHORIZATION",
+  "completionPercentage": 29,
   "completionBasis": "Only PASS nodes count. Canonical phase weights are absent, so the requested fallback weights are divided equally across canonical subnodes; repair nodes have zero weight.",
-  "lastCycleId": "GS-LOOP-2026-08-05-C009",
-  "readySetAtSelection": ["P0.1"],
-  "selectedGatePreparationNode": "P0.1",
-  "nextReadyNodes": [],
+  "lastCycleId": "GS-LOOP-2026-08-05-C013",
+  "readySetAtSelection": ["P1.2", "P3.R6"],
+  "selectedGatePreparationNode": "P1.2",
+  "nextReadyNodes": ["P3.R6"],
   "evidenceConflicts": [
     {
       "conflictId": "G2-TOP-LEVEL-GATE-STALE-001",
@@ -68,21 +70,40 @@
     }
   ],
   "openPullRequests": {
-    "active": [81, 85],
+    "active": [81, 87],
     "staleOrSupersededCandidates": [54, 55, 60, 62, 65, 66]
   },
   "finalHeadBinding": {
     "status": "VERIFIED_MERGED",
-    "pullRequest": 83,
-    "reviewedHeadSha": "f8bdf152c3d0481e4b4a391130f49f7266509efb",
-    "reviewedTreeSha": "2eee3c5237d3ef7cda947e3cb843eddd50668f69",
-    "approvalComment": "https://github.com/Eskasia/governseed/pull/83#issuecomment-5180050104",
-    "approvalCreatedAt": "2026-08-04T13:55:12Z",
-    "mergedAt": "2026-08-04T13:56:04Z",
-    "mergeCommitSha": "12f1802173c05e880139a2841900e6953d16d42d",
-    "mergeValidationRun": "30916308174"
+    "pullRequest": 85,
+    "reviewedHeadSha": "bc0faecf12360b510ca3c4cfb6770f8fcdaffbaa",
+    "reviewedTreeSha": "e2c4dcafdcd8f5f5e2962031979039ce70432615",
+    "approvalComment": "https://github.com/Eskasia/governseed/pull/85#issuecomment-5187112324",
+    "approvalCommentBodySha256": "7d06ff69617a039ac95a6113a23f440f18de4f3716016eb0eace45e9abe593f5",
+    "approvalCreatedAt": "2026-08-05T03:14:32Z",
+    "mergedAt": "2026-08-05T03:14:53Z",
+    "mergeCommitSha": "b812fe7e9096beee4ae8310482055648ad022d4a",
+    "mergeValidationRun": "30971703749"
   },
+  "pendingReviewBinding": {
+    "status": "EXTERNAL_GITHUB_HEAD_BINDING_REQUIRED",
+    "pullRequest": 87,
+    "issue": 86,
+    "baseMainSha": "b812fe7e9096beee4ae8310482055648ad022d4a",
+    "priorIndependentReview": {
+      "status": "REJECT",
+      "reviewId": "GS-EFFECT-R2-INDEPENDENT-CHECKER-2026-08-05-01",
+      "reviewedHeadSha": "86cdae157e8eec3656569790aca62c5cc61aa81a",
+      "reviewedTreeSha": "2f80b3d0f1106341e0002b33c19147518d206943",
+      "receiptPath": "benchmarks/external-oss-v8/control/loop/reconciliation/pr-87-independent-review-rejection.json"
+    },
+    "currentIndependentReview": "NOT_RUN_ON_REPAIR_HEAD_REQUIRES_NEW_AUTHORIZATION",
+    "requiredEvidence": ["exact repaired final head", "exact repaired final tree", "green three-platform CI", "fresh independent read-only review", "owner approval predating merge"],
+    "authorizedActions": ["bounded remediation"],
+    "unauthorizedActions": ["PR readiness", "merge", "provider request", "workflow dispatch", "G2", "G3", "formal lock", "Pilot", "confirmatory execution", "scoring", "benchmark acceptance"]
+  },
+  "thisCycleProviderRequests": 1,
   "providerRequests": "INDETERMINATE_FOR_RUN_30850478318",
   "workflowDispatch": "NOT_RUN_IN_THIS_CYCLE",
-  "claimBoundary": "P0.D1 pre-implementation reconciliation only. The owner comment and scorer hashes were verified, but TASK-OSS-01 fails the required V4 seed-hash revalidation condition. No R1 contract implementation, provider call, workflow dispatch, G2/G3, Pilot, confirmatory, scoring, or effectiveness result is claimed."
+  "claimBoundary": "One authorized read-only checker request returned REJECT for the prior PR 87 head. Both bounded findings are repaired locally, but the repair head is not independently reviewed or approved. No provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory arm execution, scoring, effectiveness, PR readiness, merge, or benchmark acceptance is claimed."
 }

@@ -1,14 +1,35 @@
 # Current human gates
 
+## TASK_IDENTITY_INDEPENDENT_REVIEW_AUTHORIZATION
+
+- Status: `HUMAN_GATE`; the authorized checker returned `REJECT` for PR `#87` head `86cdae157e8eec3656569790aca62c5cc61aa81a` and tree `2f80b3d0f1106341e0002b33c19147518d206943`.
+- Sanitized verdict receipt: `benchmarks/external-oss-v8/control/loop/reconciliation/pr-87-independent-review-rejection.json`.
+- Bounded repairs: bind each public artifact path to its `taskId`, reject duplicate and cross-class artifact identities, add negative mutations, and remove all fourteen EOF blank-line violations.
+- Required evidence before another review: exact repaired PR head/tree, successful Ubuntu/macOS/Windows validation, unchanged Runtime Identity workflow history, and a new one-request authorization for a fresh read-only checker.
+- Authorized human action: authorize exactly one fresh read-only checker for the exact repaired head/tree after the external binding is posted.
+- Explicitly unauthorized: PR readiness, merge, workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, benchmark acceptance, or approval of a later pushed head.
+- Completion boundary: P1.2 remains non-PASS and weighted completion remains `29.0%` until a fresh checker accepts the repaired exact head and that exact head is owner-approved and merged.
+
+## TASK_IDENTITY_PR_REVIEW_AND_MERGE
+
+- Status: `BLOCKED_BY_REJECTED_INDEPENDENT_REVIEW`; draft PR <https://github.com/Eskasia/governseed/pull/87> implements Issue <https://github.com/Eskasia/governseed/issues/86>.
+- Review scope: TASK-OSS-11 through TASK-OSS-18 package schema, public task/test identities, exact upstream parent/fix and seed-tree bindings, allow-only path policies, runner-owned hidden-oracle hashes, parent-red/fix-green receipts, R2 contract/evidence-index updates, and C012 control records.
+- Required evidence before approval: exact final PR head and tree, successful Ubuntu/macOS/Windows validation, independent read-only review of the final diff and hashes, and unchanged Runtime Identity workflow history.
+- Authorized human action: approve PR readiness and merge for that exact final head/tree only.
+- Explicitly unauthorized: provider request, provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, benchmark acceptance, or approval of any later pushed head.
+- Completion boundary: P1.2 remains non-PASS and weighted completion remains `29.0%` until the exact reviewed evidence is canonical on main.
+
 ## CONTRACT_PR_REVIEW_AND_MERGE
 
-- Status: `HUMAN_GATE`; no readiness or merge authorization exists.
+- Status: `SATISFIED` by owner comment `5187112324`; PR `#85` merged as `b812fe7e9096beee4ae8310482055648ad022d4a` with exact reviewed tree `e2c4dcafdcd8f5f5e2962031979039ce70432615`.
 - Draft PR: <https://github.com/Eskasia/governseed/pull/85>
 - Decision sources: <https://github.com/Eskasia/governseed/issues/84#issuecomment-5185865928> and <https://github.com/Eskasia/governseed/issues/84#issuecomment-5186392861>.
 - Exact review scope: R2 contract artifacts under `benchmarks/external-oss-effectiveness-r2/`, resolution reconciliation record, C009 control-state transition, and associated offline tests.
 - Required review decision: approve or reject the exact final PR head/tree after CI and independent read-only review. Approval may authorize PR readiness and merge only; it must not authorize provider requests, workflow dispatch, G2/G3, formal lock, Pilot, confirmatory execution, scoring, or benchmark acceptance.
 - Remaining fail-closed inputs: eight confirmatory task identities/oracles, runtime/formal-lock bindings, immutable overlay hashes, and price snapshot are not supplied by this gate.
 - Claim boundary: contract implementation evidence only; no runtime, effectiveness, scoring, or acceptance claim.
+
+Issue `#86` authorizes offline/public-repository task and hidden-oracle preparation only. PR `#87` is now the current P1.2 review gate. The separate READY `G2_REPAIR6_TECHNICAL_REVIEW_AND_MERGE` gate for PR `#81` remains queued and is not authorized by the PR `#85` approval.
 
 The prior `EXPERIMENT_CONTRACT_TASK_IDENTITY_RESOLUTION` gate was satisfied by owner comment `5186392861`; the historical conflict and resolution remain preserved below.
 

@@ -66,11 +66,20 @@ test('task counts and deterministic R2 randomization manifest are exact', () => 
   }
 });
 
-test('confirmatory identities and execution gates fail closed', () => {
-  assert.equal(contract.taskSets.confirmatory.identityStatus, 'BLOCKED_PENDING_FORMAL_LOCK_INPUTS');
+test('confirmatory identities are prepared while execution gates remain fail closed', () => {
+  assert.equal(contract.taskSets.confirmatory.identityStatus, 'PREPARED_PENDING_REVIEW_AND_FORMAL_LOCK');
   for (const task of contract.taskSets.confirmatory.tasks) {
-    assert.equal('sealedSeedCommit' in task, false);
-    assert.equal('hiddenOracleSha256' in task, false);
+    const taskPackage = readJson(task.taskPackagePath);
+    assert.equal(task.identitySource, 'R2_PREPARED');
+    assert.equal(task.sealedSeedCommit, taskPackage.seed.sealedSeedCommit);
+    assert.equal(task.sealedSeedGitTree, taskPackage.seed.sealedSeedGitTree);
+    assert.equal(task.sealedSeedTreeSha256, taskPackage.seed.sealedSeedTreeSha256);
+    assert.equal(task.taskBriefSha256, taskPackage.publicTask.sha256);
+    assert.equal(task.publicTestSha256, taskPackage.publicTest.sha256);
+    assert.equal(task.hiddenOracleSha256, taskPackage.hiddenOracle.sha256);
+    assert.equal(task.pathPolicySha256, taskPackage.pathPolicy.sha256);
+    assert.equal(task.taskPackageSha256, sha256(task.taskPackagePath));
+    assert.equal(task.parentRedFixGreen, true);
   }
   for (const [name, gate] of Object.entries(gates.gates)) assert.equal(gate.status, 'BLOCKED', name);
   assert.equal(gates.providerRequests, 'NOT_RUN');

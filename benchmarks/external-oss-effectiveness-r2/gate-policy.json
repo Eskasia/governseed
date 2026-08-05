@@ -6,7 +6,7 @@
   "workflowDispatch": "NOT_RUN",
   "gates": {
     "G2": {"status": "BLOCKED", "requires": "separate reconciled authorization and evidence"},
-    "G3_FORMAL_LOCK": {"status": "BLOCKED", "requires": "complete confirmatory identities, runtime bindings, price snapshot, immutable overlay hashes, independent ACCEPT, and explicit owner approval"},
+    "G3_FORMAL_LOCK": {"status": "BLOCKED", "requires": "reviewed and merged confirmatory identities, runtime bindings, price snapshot, immutable overlay hashes, independent ACCEPT, and explicit owner approval"},
     "PILOT": {"status": "BLOCKED", "requires": "G3 formal lock and explicit Pilot authorization"},
     "PILOT_TO_CONFIRMATORY": {"status": "BLOCKED", "requires": "all Pilot transition criteria and a separate owner comment binding the exact confirmatory manifest"},
     "CONFIRMATORY": {"status": "BLOCKED", "requires": "Pilot-to-confirmatory approval"},

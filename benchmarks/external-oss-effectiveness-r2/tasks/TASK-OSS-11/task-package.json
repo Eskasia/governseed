@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
+  "revision": 2,
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-11",
+  "repository": "fastapi/fastapi",
+  "upstream": {
+    "repositoryUrl": "https://github.com/fastapi/fastapi.git",
+    "pullRequestUrl": "https://github.com/fastapi/fastapi/pull/15077",
+    "baseCommit": "98b12fe56f97107e71a20fc1cf334ccfa590efb5",
+    "fixCommit": "ad03e117c0010a563067740c97cb7ab011cb5174",
+    "baseReachable": true,
+    "fixReachable": true,
+    "fixGitTree": "a071db78bde4b937f0b56f0af0d731f6c1bb380f"
+  },
+  "seed": {
+    "sealedSeedCommit": "98b12fe56f97107e71a20fc1cf334ccfa590efb5",
+    "sealedSeedGitTree": "70107d58f66273de0012e7b7e0b30c954bf87dff",
+    "sealedSeedTreeSha256": "4a0aa2b3efcab50232200f20c0f10c6c755945df129dfa11d0e23d274b60a35c",
+    "overlayApplied": false
+  },
+  "publicTask": {
+    "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-11/public-task.md",
+    "sha256": "757f3ec7c85e65f5d762f4a9bf6b45fc96fba6f9a138007a4a2298ba0a58b0a0"
+  },
+  "publicTest": {
+    "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-11/public-test.py",
+    "sha256": "b10523e858fb014e140d50fec82e41924bc5565a0ccaf2dce9b3d0e58b426df3",
+    "command": [
+      ".venv/bin/python",
+      "/public-test/public-test.py"
+    ],
+    "commandIdentitySha256": "93f541f3bcee9ec978ea46965e925cdf69d701cb0332d291557a4988954aaf40",
+    "parent": {
+      "commit": "98b12fe56f97107e71a20fc1cf334ccfa590efb5",
+      "exitCode": 1,
+      "status": "FAIL_EXPECTED"
+    },
+    "fix": {
+      "commit": "ad03e117c0010a563067740c97cb7ab011cb5174",
+      "exitCode": 0,
+      "status": "PASS"
+    }
+  },
+  "pathPolicy": {
+    "allowOnly": true,
+    "allowedPaths": [
+      "fastapi/routing.py"
+    ],
+    "forbiddenPaths": [
+      ".github/**",
+      "tests/**",
+      "testing/**",
+      "**/tests/**",
+      "**/node_modules/**",
+      "**/.venv/**",
+      "credentials/**",
+      "/public-test/**",
+      "/runner-private/**"
+    ],
+    "sha256": "7884a28b0a6879108d8d7c2ba4df81593eb7494d128c5d721829929e395b239a"
+  },
+  "hiddenOracle": {
+    "sha256": "9d72fc8a26cc0ed005a612f355b76d85605d11ef846b187773e4d61de91eee71",
+    "commandIdentitySha256": "f7530236f7439a4836d1cd9dc1315082f58f7b6d8bddccecc928c6a4ad99aa00",
+    "runnerOwned": true,
+    "sourceCommitted": false,
+    "exposedToExecutionAgent": false,
+    "identitySeparatedFromPublicTest": true,
+    "parent": {
+      "commit": "98b12fe56f97107e71a20fc1cf334ccfa590efb5",
+      "exitCode": 1,
+      "status": "FAIL_EXPECTED"
+    },
+    "fix": {
+      "commit": "ad03e117c0010a563067740c97cb7ab011cb5174",
+      "exitCode": 0,
+      "status": "PASS"
+    }
+  },
+  "reconstruction": {
+    "mode": "exact-upstream-parent",
+    "exactShaFetchVerified": true,
+    "runs": [
+      {
+        "ordinal": 1,
+        "sealedSeedCommit": "98b12fe56f97107e71a20fc1cf334ccfa590efb5",
+        "sealedSeedGitTree": "70107d58f66273de0012e7b7e0b30c954bf87dff",
+        "sealedSeedTreeSha256": "4a0aa2b3efcab50232200f20c0f10c6c755945df129dfa11d0e23d274b60a35c"
+      },
+      {
+        "ordinal": 2,
+        "sealedSeedCommit": "98b12fe56f97107e71a20fc1cf334ccfa590efb5",
+        "sealedSeedGitTree": "70107d58f66273de0012e7b7e0b30c954bf87dff",
+        "sealedSeedTreeSha256": "4a0aa2b3efcab50232200f20c0f10c6c755945df129dfa11d0e23d274b60a35c"
+      }
+    ],
+    "stable": true,
+    "status": "PASS"
+  },
+  "runtime": {
+    "language": "Python",
+    "runtimeVersion": "Python 3.14.6",
+    "dependencyInstallCommand": [
+      "uv",
+      "pip",
+      "install",
+      "--python",
+      ".venv/bin/python",
+      "-e",
+      "."
+    ],
+    "preTestCommand": null,
+    "environment": {
+      "PYTHONPATH": "."
+    },
+    "publicTestWorkingDirectory": "."
+  },
+  "status": "PASS",
+  "claimBoundary": "Offline public-repository task preparation only. This receipt is not formal lock, provider execution, Pilot, confirmatory, scoring, effectiveness, or acceptance evidence."
+}

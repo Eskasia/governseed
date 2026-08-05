@@ -118,4 +118,38 @@
 - Runtime Identity workflow history remains exactly runs `30814159615`, `30824406710`, and `30850478318`; no provider-consuming workflow was dispatched.
 - Decision: close zero-weight repair node P0.D1, retain weighted completion at `24.0%`, and select P0.1 as the next READY critical-path node. Stop at `CONTRACT_PR_REVIEW_AND_MERGE` because the R2 plan is not canonical on main.
 
+## 2026-08-05 — R2 contract merged and canonical
+
+- Status: `P0.1 PASS`; `P0.2 PASS`.
+- Owner approval <https://github.com/Eskasia/governseed/pull/85#issuecomment-5187112324> is comment `5187112324`, author association `OWNER`, created at `2026-08-05T03:14:32Z`, with exact UTF-8 API-body SHA-256 `7d06ff69617a039ac95a6113a23f440f18de4f3716016eb0eace45e9abe593f5`.
+- PR `#85` merged exact reviewed head `bc0faecf12360b510ca3c4cfb6770f8fcdaffbaa` at `2026-08-05T03:14:53Z`, twenty-one seconds after approval.
+- Merge commit `b812fe7e9096beee4ae8310482055648ad022d4a` and reviewed head share exact tree `e2c4dcafdcd8f5f5e2962031979039ce70432615`; main validation run `30971703749` passed on Ubuntu, macOS, and Windows.
+- Issue `#84` was closed after merge provenance was posted. Runtime Identity still has no run after `30850478318`; no provider-consuming workflow was dispatched.
+- Decision: the R2 contract and complete preregistration fields are canonical on main. Close P0.1 and P0.2, raising weighted completion from `24.0%` to `29.0%`.
+
+## 2026-08-05 — P1.2 confirmatory task/oracle preparation intake
+
+- Status: `IN_PROGRESS`.
+- Strict READY contains P1.2 and human-gated repair node P3.R6. P1.2 is selected first because it is the lower-phase non-provider critical-path node.
+- Issue `#86` defines exact acceptance criteria for TASK-OSS-11 through TASK-OSS-18: public provenance, parent/fix identities, sealed seed, public task/test, path policy, runner-owned hidden oracle, parent-red/fix-green evidence, and fail-closed hash validation.
+- Decision: prepare and review candidate task/oracle identities offline. Do not perform formal lock, provider requests, workflow dispatch, Pilot, confirmatory arm execution, scoring, or benchmark acceptance.
+
+## 2026-08-05 — P1.2 confirmatory task/oracle identities prepared
+
+- Status: `HUMAN_GATE`; weighted completion remains `29.0%` until the evidence is reviewed and merged to main.
+- TASK-OSS-11 through TASK-OSS-18 bind eight distinct public repositories, exact parent/fix commits, exact seed Git trees, tracked-tree SHA-256 values, public task/test hashes, allow-only path-policy hashes, and runner-owned hidden-oracle hashes.
+- Each public test and each identity-separated hidden oracle was executed against its exact upstream pair: all eight parents failed and all eight fixes passed. Fresh second clones reproduced every parent commit, Git tree, and tracked-tree SHA-256.
+- The recursively closed package schema and negative tests reject missing, duplicate, mismatched, exposed, cross-revision, and drifted identities. Raw hidden-oracle source is absent from the committed execution-agent surface.
+- Draft PR <https://github.com/Eskasia/governseed/pull/87> carries the implementation. Runtime Identity workflow history remains exactly the three historical forbidden runs; no provider-consuming workflow was dispatched.
+- Decision: stop at `TASK_IDENTITY_PR_REVIEW_AND_MERGE`. Do not count P1.2 as PASS, select P1.4, mark PR ready, merge, formal-lock, or execute any arm until an owner approves the exact final PR head/tree after green CI and independent review.
+
+## 2026-08-05 — P1.2 independent review rejected and bounded repair applied
+
+- One explicitly authorized provider request created fresh read-only checker `GS-EFFECT-R2-INDEPENDENT-CHECKER`; sanitized receipt `pr-87-independent-review-rejection.json` binds its `REJECT` verdict to head `86cdae157e8eec3656569790aca62c5cc61aa81a` and tree `2f80b3d0f1106341e0002b33c19147518d206943`.
+- Finding `P1-CROSS-TASK-ARTIFACT-REBINDING`: the original schema allowed a package to point at another task's public artifacts, and negatives did not cover every duplicate or cross-class identity collision.
+- Finding `P1-DIFF-CHECK-FALSE-CLAIM`: the original exact diff had fourteen new blank lines at EOF despite the PR body listing `git diff --check` as passing.
+- Bounded repair adds schema-level taskId-to-path binding, semantic path and public-task uniqueness, cross-class artifact collision rejection, corresponding negative mutations, and EOF normalization with all dependent hashes updated.
+- The rejected verdict cannot approve the repair head. A fresh independent review is `NOT_RUN` and requires a new exact one-request authorization after final head/tree and CI are externally bound.
+- Decision: retain P1.2 as `HUMAN_GATE` at `29.0%`; do not mark ready, merge, dispatch a workflow, formal-lock, execute either arm, score, or accept the benchmark.
+
 This log records gaps and decisions only. It does not authorize provider use, workflow dispatch, PR merge, G3, Pilot, confirmatory execution, scoring, or benchmark acceptance.
