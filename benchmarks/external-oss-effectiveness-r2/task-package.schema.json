@@ -27,6 +27,68 @@
     "status": { "const": "PASS" },
     "claimBoundary": { "type": "string", "minLength": 1 }
   },
+  "allOf": [
+    {
+      "oneOf": [
+        {
+          "properties": {
+            "taskId": { "const": "TASK-OSS-11" },
+            "publicTask": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-11/public-task.md" } } },
+            "publicTest": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-11/public-test.py" } } }
+          }
+        },
+        {
+          "properties": {
+            "taskId": { "const": "TASK-OSS-12" },
+            "publicTask": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-12/public-task.md" } } },
+            "publicTest": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-12/public-test.py" } } }
+          }
+        },
+        {
+          "properties": {
+            "taskId": { "const": "TASK-OSS-13" },
+            "publicTask": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-13/public-task.md" } } },
+            "publicTest": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-13/public-test.ts" } } }
+          }
+        },
+        {
+          "properties": {
+            "taskId": { "const": "TASK-OSS-14" },
+            "publicTask": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-14/public-task.md" } } },
+            "publicTest": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-14/public-test.cjs" } } }
+          }
+        },
+        {
+          "properties": {
+            "taskId": { "const": "TASK-OSS-15" },
+            "publicTask": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-15/public-task.md" } } },
+            "publicTest": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-15/public-test.py" } } }
+          }
+        },
+        {
+          "properties": {
+            "taskId": { "const": "TASK-OSS-16" },
+            "publicTask": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-16/public-task.md" } } },
+            "publicTest": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-16/public-test.py" } } }
+          }
+        },
+        {
+          "properties": {
+            "taskId": { "const": "TASK-OSS-17" },
+            "publicTask": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-17/public-task.md" } } },
+            "publicTest": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-17/public-test.py" } } }
+          }
+        },
+        {
+          "properties": {
+            "taskId": { "const": "TASK-OSS-18" },
+            "publicTask": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-18/public-task.md" } } },
+            "publicTest": { "properties": { "path": { "const": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-18/public-test.py" } } }
+          }
+        }
+      ]
+    }
+  ],
   "$defs": {
     "sha1": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
     "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },

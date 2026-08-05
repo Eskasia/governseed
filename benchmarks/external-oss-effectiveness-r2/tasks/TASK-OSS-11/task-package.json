@@ -22,11 +22,11 @@
   },
   "publicTask": {
     "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-11/public-task.md",
-    "sha256": "c235418e7fd633795cf45998435605a115a6d28a9ed32a11198c2f3f51df2964"
+    "sha256": "757f3ec7c85e65f5d762f4a9bf6b45fc96fba6f9a138007a4a2298ba0a58b0a0"
   },
   "publicTest": {
     "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-11/public-test.py",
-    "sha256": "85347da1252e374c62fbb49653f33a494c6c5c12b78a2ca3a3e74cf8d496d206",
+    "sha256": "b10523e858fb014e140d50fec82e41924bc5565a0ccaf2dce9b3d0e58b426df3",
     "command": [
       ".venv/bin/python",
       "/public-test/public-test.py"

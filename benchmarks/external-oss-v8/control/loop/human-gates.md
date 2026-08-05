@@ -1,8 +1,18 @@
 # Current human gates
 
+## TASK_IDENTITY_INDEPENDENT_REVIEW_AUTHORIZATION
+
+- Status: `HUMAN_GATE`; the authorized checker returned `REJECT` for PR `#87` head `86cdae157e8eec3656569790aca62c5cc61aa81a` and tree `2f80b3d0f1106341e0002b33c19147518d206943`.
+- Sanitized verdict receipt: `benchmarks/external-oss-v8/control/loop/reconciliation/pr-87-independent-review-rejection.json`.
+- Bounded repairs: bind each public artifact path to its `taskId`, reject duplicate and cross-class artifact identities, add negative mutations, and remove all fourteen EOF blank-line violations.
+- Required evidence before another review: exact repaired PR head/tree, successful Ubuntu/macOS/Windows validation, unchanged Runtime Identity workflow history, and a new one-request authorization for a fresh read-only checker.
+- Authorized human action: authorize exactly one fresh read-only checker for the exact repaired head/tree after the external binding is posted.
+- Explicitly unauthorized: PR readiness, merge, workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, benchmark acceptance, or approval of a later pushed head.
+- Completion boundary: P1.2 remains non-PASS and weighted completion remains `29.0%` until a fresh checker accepts the repaired exact head and that exact head is owner-approved and merged.
+
 ## TASK_IDENTITY_PR_REVIEW_AND_MERGE
 
-- Status: `HUMAN_GATE`; draft PR <https://github.com/Eskasia/governseed/pull/87> implements Issue <https://github.com/Eskasia/governseed/issues/86>.
+- Status: `BLOCKED_BY_REJECTED_INDEPENDENT_REVIEW`; draft PR <https://github.com/Eskasia/governseed/pull/87> implements Issue <https://github.com/Eskasia/governseed/issues/86>.
 - Review scope: TASK-OSS-11 through TASK-OSS-18 package schema, public task/test identities, exact upstream parent/fix and seed-tree bindings, allow-only path policies, runner-owned hidden-oracle hashes, parent-red/fix-green receipts, R2 contract/evidence-index updates, and C012 control records.
 - Required evidence before approval: exact final PR head and tree, successful Ubuntu/macOS/Windows validation, independent read-only review of the final diff and hashes, and unchanged Runtime Identity workflow history.
 - Authorized human action: approve PR readiness and merge for that exact final head/tree only.

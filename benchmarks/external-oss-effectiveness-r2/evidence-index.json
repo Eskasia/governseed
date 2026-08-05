@@ -9,11 +9,11 @@
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/task-package.schema.json",
-      "sha256": "734baddbd8b1baea0b55d15f8b7fcef4f7db586a788cb3c92304d7838df12bf6"
+      "sha256": "73e6875481bf1defffe53d25fd8bfa3a07b35a8cea0290940ac84c064e742150"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/experiment-contract.json",
-      "sha256": "c8d09af1f0d0855bafcb899f20e5fcc133b39c76e4de5418ee524c6044437ad2"
+      "sha256": "8b127152205b0d958ceae9a79ac061ce99ef5d7e8b3543032d75b030c6b8f052"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/attempt-manifest.json",
@@ -29,31 +29,31 @@
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-11/public-task.md",
-      "sha256": "c235418e7fd633795cf45998435605a115a6d28a9ed32a11198c2f3f51df2964"
+      "sha256": "757f3ec7c85e65f5d762f4a9bf6b45fc96fba6f9a138007a4a2298ba0a58b0a0"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-11/public-test.py",
-      "sha256": "85347da1252e374c62fbb49653f33a494c6c5c12b78a2ca3a3e74cf8d496d206"
+      "sha256": "b10523e858fb014e140d50fec82e41924bc5565a0ccaf2dce9b3d0e58b426df3"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-11/task-package.json",
-      "sha256": "71674c4f4af6110d053f1ef28fe2c3cbb03bee5757e830ea85cedb920e4d608d"
+      "sha256": "61d364f3ddf386bfb552b94b21ec8e0db5459fc3be26d9c2bbfab96b4ff67a02"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-12/public-task.md",
-      "sha256": "5a66fef6f00e322ce00adf528df8c06f235b60dda76518005fa4c53211ff04d3"
+      "sha256": "472957bd1e6f1f744922a0bc3e9b69be8fe62be1978764f81e00dc18a2cb53e4"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-12/public-test.py",
-      "sha256": "3e3e0da59a545d7bf98cd4d0dda53238de47fc932ddb53120785c0cf7e1a2416"
+      "sha256": "75eefa2fe43523a61c100ec58d7a25a166db3bc2b42af6b7291de9471e6a866a"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-12/task-package.json",
-      "sha256": "69b85e2ab00ce4187a598dc2c4652741204f607525cc653efa54dfaae376c602"
+      "sha256": "3784ef0c3bdacdc682728128fb0d64196978e4ba0eaa6d20863175b5187c27ac"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-13/public-task.md",
-      "sha256": "95b28187b6e8121d99de6a8a339dc6c48be2aa6a1737ad2765aa2a065ba4fa34"
+      "sha256": "83635829c388f80341dfd2250871b75bae4e35e2870a1d22c12178497da0d2f7"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-13/public-test.ts",
@@ -61,11 +61,11 @@
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-13/task-package.json",
-      "sha256": "4292d5eb69a1906757a5c9dd343f4ca2eb918863e8819c3463aefbf6689bbf11"
+      "sha256": "bbfd270e605f3f0a5d5b89f5fa9ecea718f54dc1c21696a31ebee2c91398f8f5"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-14/public-task.md",
-      "sha256": "b4a6992573f9220ba96344b8acb184ecfdec1e0c1db7dcf38ad93f2d44b0b870"
+      "sha256": "dce9f59ee7b0cf46fd6da0fe1de538cad92e9d5d6cfe2e40fee2d5bbb4137e71"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-14/public-test.cjs",
@@ -73,55 +73,55 @@
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-14/task-package.json",
-      "sha256": "035c14324375737735555709e23e3efc575cd96116822e674c6949f7f72e6bf1"
+      "sha256": "779a69eaaaceb5375e9a9adcfc9474bed868ec4ccbeac406eb336c18922fe8ff"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-15/public-task.md",
-      "sha256": "d428cf7f0ff89fcdbacf8817bcb1e1d920fcb0509e175c70242243eee535be01"
+      "sha256": "a77d579b92e81a7f7175ae0a8071a730f87a896fdead5feda5826d6e21131e56"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-15/public-test.py",
-      "sha256": "f2b167115ee867b55d3df5fc18f67e4cc4fc123df86426b9a876ca90adfc21eb"
+      "sha256": "6d5a4afb72c456195f9bc421974b11e8e8961244a9991851cb65099983a7dd73"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-15/task-package.json",
-      "sha256": "8addfe343c3f0fa28d51df13a1763005faf15ccf23cd7b30fecf96e937607933"
+      "sha256": "8e1fed69af80af9aa82445f93e1ec0f6a1156e3133a1679aa2df0323672b0bc2"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-16/public-task.md",
-      "sha256": "5b73a7d9b81a5aa4508dd5c8a6a3703d5007883cb514aaf364e42229a821c15e"
+      "sha256": "080c092ca451e3bc568a88c9ecdd0195b3d5fdf8d38dfda743eb2907617476f6"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-16/public-test.py",
-      "sha256": "cf6a7b1f755bf7ef49182955e86e632b093a648cedba040a46e7d724ad145b04"
+      "sha256": "5a6fa593f1ada9086facf09da1e5bb5c657d187abe476f7e549c4c022c8ef31e"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-16/task-package.json",
-      "sha256": "457b795fa1d497b6cabfcff7dc2e6f5f55ab458d7a1863f19e03198303d693b2"
+      "sha256": "d87b258eb3ccdaf5de4bd9a92b3a03421a375716b3aaac930b823423b9febd7a"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-17/public-task.md",
-      "sha256": "2650237523dbc2189dccf891eb92787216edad6f93b6452def6e9eda30dda62c"
+      "sha256": "ef716c25eb7953b3e04d806553c778973b216c62414225db80bc01e6188664b9"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-17/public-test.py",
-      "sha256": "80e67276da5e3933598e1b85c7f9e47c43966369a5cb13031ddf2cf16d63e6e8"
+      "sha256": "9f56a1e11df9062c7f0db4d4c9ff3155a5bd2d836751cb52019b07752636e576"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-17/task-package.json",
-      "sha256": "1e91a8b36ff048a608f5f6890b3990891103c5c76b8d3a181d469a1193eeb206"
+      "sha256": "6f3e610a730b7191aa0ae997fef454584c494946dd7e7709a5f617931319548a"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-18/public-task.md",
-      "sha256": "ed4af733d77a887c931b5ca60538926964ccb2f8f8bb4cce649f83b1181cbcd9"
+      "sha256": "6e469e7014163e23c1d483135febe4708b7d09aff539c0f6fe624f79646b32f1"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-18/public-test.py",
-      "sha256": "f9f709bc8400029e79ab3c52f481f1bc3d9962dec1df294c3df5b2875f11114d"
+      "sha256": "967e79c49bffe04ef133db157cac59a426b0f81a84cc7122b6092f3c526732b7"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-18/task-package.json",
-      "sha256": "cc7e7e2ef2c319154270ec34f7271c79581a585f3f9b5807873c1eadc05cbf34"
+      "sha256": "eecab2d06b447318002cb9afcbe5a67a8463d66ef18c19fb7cde738968b54e1f"
     }
   ],
   "sourceBindings": [

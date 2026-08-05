@@ -22,7 +22,7 @@
   },
   "publicTask": {
     "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-13/public-task.md",
-    "sha256": "95b28187b6e8121d99de6a8a339dc6c48be2aa6a1737ad2765aa2a065ba4fa34"
+    "sha256": "83635829c388f80341dfd2250871b75bae4e35e2870a1d22c12178497da0d2f7"
   },
   "publicTest": {
     "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-13/public-test.ts",

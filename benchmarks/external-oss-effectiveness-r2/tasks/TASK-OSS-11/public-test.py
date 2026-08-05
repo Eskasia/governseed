@@ -22,4 +22,3 @@ response = app.openapi()["paths"]["/api/events"]["get"]["responses"]["200"]
 assert response["content"]["application/jsonl"]["itemSchema"] == {
     "$ref": "#/components/schemas/Item"
 }
-

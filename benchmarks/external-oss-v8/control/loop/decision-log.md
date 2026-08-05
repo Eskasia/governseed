@@ -143,4 +143,13 @@
 - Draft PR <https://github.com/Eskasia/governseed/pull/87> carries the implementation. Runtime Identity workflow history remains exactly the three historical forbidden runs; no provider-consuming workflow was dispatched.
 - Decision: stop at `TASK_IDENTITY_PR_REVIEW_AND_MERGE`. Do not count P1.2 as PASS, select P1.4, mark PR ready, merge, formal-lock, or execute any arm until an owner approves the exact final PR head/tree after green CI and independent review.
 
+## 2026-08-05 — P1.2 independent review rejected and bounded repair applied
+
+- One explicitly authorized provider request created fresh read-only checker `GS-EFFECT-R2-INDEPENDENT-CHECKER`; sanitized receipt `pr-87-independent-review-rejection.json` binds its `REJECT` verdict to head `86cdae157e8eec3656569790aca62c5cc61aa81a` and tree `2f80b3d0f1106341e0002b33c19147518d206943`.
+- Finding `P1-CROSS-TASK-ARTIFACT-REBINDING`: the original schema allowed a package to point at another task's public artifacts, and negatives did not cover every duplicate or cross-class identity collision.
+- Finding `P1-DIFF-CHECK-FALSE-CLAIM`: the original exact diff had fourteen new blank lines at EOF despite the PR body listing `git diff --check` as passing.
+- Bounded repair adds schema-level taskId-to-path binding, semantic path and public-task uniqueness, cross-class artifact collision rejection, corresponding negative mutations, and EOF normalization with all dependent hashes updated.
+- The rejected verdict cannot approve the repair head. A fresh independent review is `NOT_RUN` and requires a new exact one-request authorization after final head/tree and CI are externally bound.
+- Decision: retain P1.2 as `HUMAN_GATE` at `29.0%`; do not mark ready, merge, dispatch a workflow, formal-lock, execute either arm, score, or accept the benchmark.
+
 This log records gaps and decisions only. It does not authorize provider use, workflow dispatch, PR merge, G3, Pilot, confirmatory execution, scoring, or benchmark acceptance.

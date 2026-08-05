@@ -28,6 +28,7 @@ function matchesType(type, value) {
 
 function validate(node, value, root = schema, at = '$', errors = []) {
   if (node.$ref) return validate(resolveRef(root, node.$ref), value, root, at, errors);
+  for (const candidate of node.allOf ?? []) validate(candidate, value, root, at, errors);
   if (node.oneOf) {
     const matches = node.oneOf.filter((candidate) => validate(candidate, value, root, at, []).length === 0);
     if (matches.length !== 1) errors.push(`${at}:oneOf`);
@@ -75,15 +76,24 @@ function semanticErrors(values) {
   unique((item) => item.taskId, 'taskId');
   unique((item) => item.repository, 'repository');
   unique((item) => item.seed.sealedSeedCommit, 'seed');
+  unique((item) => item.publicTask.path, 'publicTaskPath');
+  unique((item) => item.publicTask.sha256, 'publicTask');
+  unique((item) => item.publicTest.path, 'publicTestPath');
   unique((item) => item.publicTest.sha256, 'publicTest');
   unique((item) => item.hiddenOracle.sha256, 'hiddenOracle');
+  unique((item) => item.hiddenOracle.commandIdentitySha256, 'hiddenOracleCommand');
+  const artifactHashes = values.flatMap((item) => [item.publicTask.sha256, item.publicTest.sha256, item.hiddenOracle.sha256]);
+  if (new Set(artifactHashes).size !== artifactHashes.length) errors.push('duplicate:artifactIdentity');
   for (const item of values) {
+    const taskRoot = `${ROOT}/tasks/${item.taskId}`;
     if (contractTasks.get(item.taskId) !== item.repository) errors.push(`${item.taskId}:contractIdentity`);
     if (item.seed.sealedSeedCommit !== item.upstream.baseCommit) errors.push(`${item.taskId}:seedCommit`);
     if (item.publicTest.parent.commit !== item.upstream.baseCommit) errors.push(`${item.taskId}:publicParent`);
     if (item.publicTest.fix.commit !== item.upstream.fixCommit) errors.push(`${item.taskId}:publicFix`);
     if (item.hiddenOracle.parent.commit !== item.upstream.baseCommit) errors.push(`${item.taskId}:oracleParent`);
     if (item.hiddenOracle.fix.commit !== item.upstream.fixCommit) errors.push(`${item.taskId}:oracleFix`);
+    if (item.publicTask.path !== `${taskRoot}/public-task.md`) errors.push(`${item.taskId}:publicTaskPath`);
+    if (!new RegExp(`^${taskRoot}/public-test\\.(?:py|cjs|ts)$`, 'u').test(item.publicTest.path)) errors.push(`${item.taskId}:publicTestPath`);
     if (fileSha256(item.publicTask.path) !== item.publicTask.sha256) errors.push(`${item.taskId}:taskHash`);
     if (fileSha256(item.publicTest.path) !== item.publicTest.sha256) errors.push(`${item.taskId}:publicTestHash`);
     if (sha256(JSON.stringify(item.publicTest.command)) !== item.publicTest.commandIdentitySha256) errors.push(`${item.taskId}:publicCommandHash`);
@@ -155,6 +165,33 @@ test('semantic validation rejects duplicates, mismatches, exposure, and path-pol
   const drifted = clone(packages);
   drifted[0].pathPolicy.allowedPaths.push('tests/**');
   assert.ok(semanticErrors(drifted).includes('TASK-OSS-11:pathPolicyHash'));
+
+  const reboundTask = clone(packages);
+  reboundTask[0].publicTask = clone(reboundTask[1].publicTask);
+  assert.notEqual(validate(schema, reboundTask[0]).length, 0);
+  assert.ok(semanticErrors(reboundTask).includes('TASK-OSS-11:publicTaskPath'));
+
+  const reboundTest = clone(packages);
+  reboundTest[0].publicTest.path = reboundTest[1].publicTest.path;
+  reboundTest[0].publicTest.sha256 = reboundTest[1].publicTest.sha256;
+  assert.notEqual(validate(schema, reboundTest[0]).length, 0);
+  assert.ok(semanticErrors(reboundTest).includes('TASK-OSS-11:publicTestPath'));
+
+  for (const [field, label] of [
+    ['publicTask', 'duplicate:publicTask'],
+    ['publicTest', 'duplicate:publicTest'],
+    ['hiddenOracle', 'duplicate:hiddenOracle'],
+  ]) {
+    const duplicatedArtifact = clone(packages);
+    duplicatedArtifact[1][field].sha256 = duplicatedArtifact[0][field].sha256;
+    const errors = semanticErrors(duplicatedArtifact);
+    assert.ok(errors.includes(label));
+    assert.ok(errors.includes('duplicate:artifactIdentity'));
+  }
+
+  const crossClassCollision = clone(packages);
+  crossClassCollision[1].hiddenOracle.sha256 = crossClassCollision[0].publicTask.sha256;
+  assert.ok(semanticErrors(crossClassCollision).includes('duplicate:artifactIdentity'));
 });
 
 test('R1 evidence cannot enter the R2 package surface', () => {

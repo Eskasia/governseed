@@ -3,7 +3,7 @@
   "benchmarkId": "GS-OSS-2026-08-02-V8",
   "currentMainSha": "b812fe7e9096beee4ae8310482055648ad022d4a",
   "currentMainTreeSha": "e2c4dcafdcd8f5f5e2962031979039ce70432615",
-  "observedAt": "2026-08-05T03:51:31Z",
+  "observedAt": "2026-08-05T04:43:09Z",
   "activePhase": "P1",
   "activeNode": "P1.2",
   "activeBranch": "benchmark/p0-p0.1-contract-merge-reconciliation",
@@ -20,10 +20,10 @@
     "experimentContractMergeValidation": "30971703749"
   },
   "activeRunIds": [],
-  "currentHumanGate": "TASK_IDENTITY_PR_REVIEW_AND_MERGE",
+  "currentHumanGate": "TASK_IDENTITY_INDEPENDENT_REVIEW_AUTHORIZATION",
   "completionPercentage": 29,
   "completionBasis": "Only PASS nodes count. Canonical phase weights are absent, so the requested fallback weights are divided equally across canonical subnodes; repair nodes have zero weight.",
-  "lastCycleId": "GS-LOOP-2026-08-05-C012",
+  "lastCycleId": "GS-LOOP-2026-08-05-C013",
   "readySetAtSelection": ["P1.2", "P3.R6"],
   "selectedGatePreparationNode": "P1.2",
   "nextReadyNodes": ["P3.R6"],
@@ -90,11 +90,20 @@
     "pullRequest": 87,
     "issue": 86,
     "baseMainSha": "b812fe7e9096beee4ae8310482055648ad022d4a",
-    "requiredEvidence": ["exact final head", "exact final tree", "green three-platform CI", "independent read-only review", "owner approval predating merge"],
-    "authorizedActions": ["implementation", "review"],
+    "priorIndependentReview": {
+      "status": "REJECT",
+      "reviewId": "GS-EFFECT-R2-INDEPENDENT-CHECKER-2026-08-05-01",
+      "reviewedHeadSha": "86cdae157e8eec3656569790aca62c5cc61aa81a",
+      "reviewedTreeSha": "2f80b3d0f1106341e0002b33c19147518d206943",
+      "receiptPath": "benchmarks/external-oss-v8/control/loop/reconciliation/pr-87-independent-review-rejection.json"
+    },
+    "currentIndependentReview": "NOT_RUN_ON_REPAIR_HEAD_REQUIRES_NEW_AUTHORIZATION",
+    "requiredEvidence": ["exact repaired final head", "exact repaired final tree", "green three-platform CI", "fresh independent read-only review", "owner approval predating merge"],
+    "authorizedActions": ["bounded remediation"],
     "unauthorizedActions": ["PR readiness", "merge", "provider request", "workflow dispatch", "G2", "G3", "formal lock", "Pilot", "confirmatory execution", "scoring", "benchmark acceptance"]
   },
+  "thisCycleProviderRequests": 1,
   "providerRequests": "INDETERMINATE_FOR_RUN_30850478318",
   "workflowDispatch": "NOT_RUN_IN_THIS_CYCLE",
-  "claimBoundary": "R2 confirmatory task/oracle identities are implemented on draft PR 87 and await exact-head human review and merge. No provider request, provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory arm execution, scoring, effectiveness, or benchmark acceptance is claimed."
+  "claimBoundary": "One authorized read-only checker request returned REJECT for the prior PR 87 head. Both bounded findings are repaired locally, but the repair head is not independently reviewed or approved. No provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory arm execution, scoring, effectiveness, PR readiness, merge, or benchmark acceptance is claimed."
 }
