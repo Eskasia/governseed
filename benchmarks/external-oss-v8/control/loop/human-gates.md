@@ -5,7 +5,7 @@
 - Status: `BLOCKED_TASK_OSS_01_V4_SEED_HASH_REVALIDATION_FAILED`
 - Current main SHA/tree: `12f1802173c05e880139a2841900e6953d16d42d` / `2eee3c5237d3ef7cda947e3cb843eddd50668f69`
 - Issue: <https://github.com/Eskasia/governseed/issues/84>
-- Owner decision: <https://github.com/Eskasia/governseed/issues/84#issuecomment-5185865928>; comment ID `5185865928`, `OWNER` author `Eskasia`, created at `2026-08-04T23:48:25Z`, body SHA-256 `0aca84e3a9468235cb1a96ab14e200d8f3dd4cc1540c4f61e9e0c1f151e588c3`.
+- Owner decision: <https://github.com/Eskasia/governseed/issues/84#issuecomment-5185865928>; comment ID `5185865928`, `OWNER` author `Eskasia`, created at `2026-08-04T23:48:25Z`, exact UTF-8 API-body SHA-256 `12263c44592a5e7a038e51ede76beeccc637ea4904681b3a03817a66b386a3f5` (the previously reported `0aca84e3a9468235cb1a96ab14e200d8f3dd4cc1540c4f61e9e0c1f151e588c3` includes a CLI-added trailing LF and is non-canonical).
 - Draft control PR: <https://github.com/Eskasia/governseed/pull/85>; it remains draft and is not authorized for ready or merge.
 - Exact conflict: R1 conditionally adopts the V4 TASK-OSS-01 seed commit `0ad23a4f16331512f49c570acc2e9ff8093c8248` and seed-tree SHA-256 `88c4510ad2c5825cad031671e8188fe8f6164324fd4eccd98f5160fc81a676fa`, but committed V5 evidence records `legacyV3SeedTreeHashReproduced=false` and instead reconstructs commit `15ba6bed78feebe392dfbe13cf0be4065b260af7` with tree SHA-256 `3ebafacc713e37ea6939f08b1205198b415c5ae62dcbddb9f11ce4ab732ee70e`.
 - Evidence summary: scorer hashes match `2/2`; TASK-OSS-03 and TASK-OSS-09 identities reconcile; TASK-OSS-01 public test, path policy, hidden-oracle identity, and parent-red/fix-green evidence reconcile, but its V4 seed tree does not reproduce.

@@ -90,13 +90,21 @@
 ## 2026-08-04 — Owner decision exists but TASK-OSS-01 fails its adoption condition
 
 - Status: `EVIDENCE_CONFLICT`
-- GitHub comment <https://github.com/Eskasia/governseed/issues/84#issuecomment-5185865928> is an `OWNER` comment by `Eskasia`, created and last updated at `2026-08-04T23:48:25Z`; its body SHA-256 is `0aca84e3a9468235cb1a96ab14e200d8f3dd4cc1540c4f61e9e0c1f151e588c3`.
+- GitHub comment <https://github.com/Eskasia/governseed/issues/84#issuecomment-5185865928> is an `OWNER` comment by `Eskasia`, created and last updated at `2026-08-04T23:48:25Z`; the exact UTF-8 API `.body` string without an added delimiter has SHA-256 `12263c44592a5e7a038e51ede76beeccc637ea4904681b3a03817a66b386a3f5`.
 - The comment authorizes contract implementation and review only, binds main `12f1802173c05e880139a2841900e6953d16d42d`, and conditions R1 adoption of V4 task identities on revalidation of their committed hashes.
 - The declared scorer hashes match current main exactly: schema `90fd773ccad80fafc23d6b51a003821efa04a08f9a441639a3a0b4af3a63c955` and implementation `cf5789192f6630dc7686c6c393a28eff5b23f896a3658ca626a6cb6296fd9daa`.
 - TASK-OSS-03 and TASK-OSS-09 match across V4 and V5 for repository, legacy seed identity, public test, path policy, hidden-oracle identity, and parent-red/fix-green evidence.
 - TASK-OSS-01 matches those fields except seed-tree reproduction: V4 binds seed commit `0ad23a4f16331512f49c570acc2e9ff8093c8248` and tree SHA-256 `88c4510ad2c5825cad031671e8188fe8f6164324fd4eccd98f5160fc81a676fa`, while committed V5 evidence records `legacyV3SeedTreeHashReproduced=false` and reconstructs seed `15ba6bed78feebe392dfbe13cf0be4065b260af7` with tree SHA-256 `3ebafacc713e37ea6939f08b1205198b415c5ae62dcbddb9f11ce4ab732ee70e`.
-- No GitHub Actions run was created at or after the decision timestamp; no provider-consuming workflow was dispatched.
+- At the pre-implementation observation no Actions run existed after the decision. The later evidence-only push created non-provider `Validate GovernSeed` run `30961663119`; the Runtime Identity workflow still has no run after historical `30850478318`, and no provider-consuming workflow was dispatched.
 - Decision: do not implement R1 with an unverified V4 seed and do not silently substitute the V5 seed, because the owner comment says a task-identity change creates R2. Require either reproducible evidence for the V4 TASK-OSS-01 seed tree or an owner-approved new revision bound to the V5 identity.
+
+## 2026-08-05 — Owner-comment hash canonicalization correction
+
+- Status: `PASS_EVIDENCE_REPAIR`; the task-identity gate remains `EVIDENCE_CONFLICT`.
+- The prior digest `0aca84e3a9468235cb1a96ab14e200d8f3dd4cc1540c4f61e9e0c1f151e588c3` was reproduced only after appending one LF byte to the API body. It is retained as `cliBodyWithTrailingLfSha256`, not as the canonical body hash.
+- The canonical provenance digest is `12263c44592a5e7a038e51ede76beeccc637ea4904681b3a03817a66b386a3f5`, computed over the exact UTF-8 JSON `.body` string with no output delimiter.
+- Fresh GitHub reconciliation confirms main and PR `#85` are unchanged, Issue `#84` has no new task-identity resolution comment, scorer hashes remain `2/2` exact, and Runtime Identity still contains only the three forbidden historical runs.
+- Decision: correct the provenance and workflow-history records without interpreting the absent resolution as authorization. Contract implementation remains `NOT_RUN`.
 
 ## Claim boundary
 

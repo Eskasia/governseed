@@ -107,7 +107,7 @@
       "humanGate": "EXPERIMENT_CONTRACT_TASK_IDENTITY_RESOLUTION",
       "status": "EVIDENCE_CONFLICT",
       "blockerCode": "TASK_OSS_01_V4_SEED_HASH_REVALIDATION_FAILED",
-      "attempts": 2,
+      "attempts": 3,
       "activeIssue": 84,
       "activePR": 85,
       "lastVerifiedMainSha": "12f1802173c05e880139a2841900e6953d16d42d",

@@ -153,6 +153,8 @@ test('recorded GitHub state closes P0.4 and fails closed on the experiment ident
   assert.deepEqual(loopState.openPullRequests.active, [81, 85]);
   assert.equal(loopState.latestRunIds.priorLoopControlTechnicalValidation, '30913519842');
   assert.equal(loopState.latestRunIds.loopControlMergeValidation, '30916308174');
+  assert.equal(loopState.latestRunIds.priorExperimentContractEvidenceValidation, '30961663119');
+  assert.equal('experimentContractEvidenceValidation' in loopState.latestRunIds, false);
   assert.equal('latestValidation' in loopState.latestRunIds, false);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').activePR, 83);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').status, 'PASS');
@@ -199,6 +201,14 @@ test('owner decision reconciliation binds provenance, scorer hashes, and negativ
   assert.equal(decisionReconciliation.decision.authorAssociation, 'OWNER');
   assert.equal(
     decisionReconciliation.decision.bodySha256,
+    '12263c44592a5e7a038e51ede76beeccc637ea4904681b3a03817a66b386a3f5',
+  );
+  assert.equal(
+    decisionReconciliation.decision.bodyHashCanonicalization,
+    'SHA-256 over the exact UTF-8 GitHub API .body string with no added delimiter',
+  );
+  assert.equal(
+    decisionReconciliation.decision.cliBodyWithTrailingLfSha256,
     '0aca84e3a9468235cb1a96ab14e200d8f3dd4cc1540c4f61e9e0c1f151e588c3',
   );
   assert.equal(decisionReconciliation.repository.mainSha, loopState.currentMainSha);
@@ -217,7 +227,18 @@ test('owner decision reconciliation binds provenance, scorer hashes, and negativ
       .map((item) => item.status),
     ['PASS', 'PASS'],
   );
-  assert.deepEqual(decisionReconciliation.workflowHistory.runsCreatedAtOrAfterDecision, []);
+  assert.deepEqual(
+    decisionReconciliation.workflowHistory.runsCreatedAtOrAfterDecision.map((run) => run.runId),
+    [30961663119],
+  );
+  assert.equal(decisionReconciliation.workflowHistory.observedThrough, decisionReconciliation.observedAt);
+  assert.equal(
+    decisionReconciliation.workflowHistory.runsCreatedAtOrAfterDecision.every(
+      (run) => run.providerConsuming === false,
+    ),
+    true,
+  );
+  assert.deepEqual(decisionReconciliation.workflowHistory.providerConsumingRunsCreatedAtOrAfterDecision, []);
   assert.equal(decisionReconciliation.workflowHistory.providerConsumingWorkflowDispatched, false);
   assert.equal(decisionReconciliation.gateDecision.contractImplementation, 'NOT_RUN');
   assert.equal(decisionReconciliation.gateDecision.providerRequests, 'NOT_RUN');

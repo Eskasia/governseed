@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
-  "cycleId": "GS-LOOP-2026-08-04-C007",
-  "observedAt": "2026-08-04T23:51:51Z",
+  "cycleId": "GS-LOOP-2026-08-05-C008",
+  "observedAt": "2026-08-05T00:05:10Z",
   "decision": {
     "issue": 84,
     "commentId": 5185865928,
@@ -10,7 +10,9 @@
     "authorAssociation": "OWNER",
     "createdAt": "2026-08-04T23:48:25Z",
     "updatedAt": "2026-08-04T23:48:25Z",
-    "bodySha256": "0aca84e3a9468235cb1a96ab14e200d8f3dd4cc1540c4f61e9e0c1f151e588c3",
+    "bodySha256": "12263c44592a5e7a038e51ede76beeccc637ea4904681b3a03817a66b386a3f5",
+    "bodyHashCanonicalization": "SHA-256 over the exact UTF-8 GitHub API .body string with no added delimiter",
+    "cliBodyWithTrailingLfSha256": "0aca84e3a9468235cb1a96ab14e200d8f3dd4cc1540c4f61e9e0c1f151e588c3",
     "decisionMainSha": "12f1802173c05e880139a2841900e6953d16d42d",
     "authorizationScope": "CONTRACT_IMPLEMENTATION_AND_REVIEW_ONLY"
   },
@@ -100,7 +102,18 @@
     }
   },
   "workflowHistory": {
-    "runsCreatedAtOrAfterDecision": [],
+    "observedThrough": "2026-08-05T00:05:10Z",
+    "runsCreatedAtOrAfterDecision": [
+      {
+        "runId": 30961663119,
+        "workflowName": "Validate GovernSeed",
+        "event": "pull_request",
+        "headSha": "ed0860ad954030f7e7d1fd7ced5d4d5fc94ec4de",
+        "createdAt": "2026-08-04T23:56:28Z",
+        "providerConsuming": false
+      }
+    ],
+    "providerConsumingRunsCreatedAtOrAfterDecision": [],
     "runtimeIdentityRuns": [30814159615, 30824406710, 30850478318],
     "latestRuntimeIdentityRun": 30850478318,
     "providerConsumingWorkflowDispatched": false
