@@ -15,6 +15,7 @@ const ADDENDUM = `${CREDENTIAL_ROOT}/human-approval-repair-2-attempt-5.addendum.
 const SCHEMA = `${CREDENTIAL_ROOT}/human-approval.schema.json`;
 const PACKET = `${CREDENTIAL_ROOT}/repair-2/attempt-5/review-packet.json`;
 const MANIFEST = `${CREDENTIAL_ROOT}/repair-2/attempt-5/technical-manifest.json`;
+const CURRENT_MANIFEST = `${CREDENTIAL_ROOT}/repair-2/attempt-6/technical-manifest.json`;
 const TECHNICAL_HEAD = 'b7e7d34e68031671dee41fe7fe13800accae3e51';
 const PRE_APPROVAL_HEAD = '1a37ec4b92b8eafbae04e347ccad0788a2e99dca';
 const COMMENT_BODY_SHA256 = '41a47521099af120135d4ddb65aa10cf6f4180b3271ed904cf95d277ecc58840';
@@ -131,7 +132,10 @@ test('technical manifest and all 13 entries remain unchanged after approval', ()
   assert.deepEqual(bytes(MANIFEST), gitBytes(TECHNICAL_HEAD, MANIFEST));
   const manifest = readJson(MANIFEST);
   assert.equal(manifest.entries.length, 13);
-  for (const entry of manifest.entries) assert.equal(sha256(entry.path), entry.sha256, entry.path);
+  assert.deepEqual(bytes(MANIFEST), gitBytes('origin/main', MANIFEST));
+  const currentManifest = readJson(CURRENT_MANIFEST);
+  assert.equal(currentManifest.entries.length, 13);
+  for (const entry of currentManifest.entries) assert.equal(sha256(entry.path), entry.sha256, entry.path);
 });
 
 test('approval records no runtime receipt, dispatch, provider request, or secret', () => {

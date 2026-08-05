@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "repair-2",
+  "attempt": 6,
+  "evidenceClass": "external-observational",
+  "status": "PENDING_HUMAN_REPAIR_6_REVIEW",
+  "technicalDisposition": "TECHNICALLY_REPAIRED_PENDING_HUMAN_REPAIR_6_REVIEW",
+  "parent": {
+    "mainCommit": "502c92e76e111a4cffbfaf4c3e4bde7f9bf8ce08",
+    "previousApprovedRepair": "repair-2 attempt-5",
+    "previousApprovedRecordPath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5.json"
+  },
+  "attemptHistory": {
+    "attempt5ApprovalPath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5.json",
+    "attempt5ApprovalMustRemainImmutable": true,
+    "attempt5SourcePath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5-source.json",
+    "attempt5SourceMustRemainImmutable": true,
+    "forbiddenHistoricalRuns": [
+      {
+        "runId": "30814159615",
+        "rerunPermitted": false
+      },
+      {
+        "runId": "30824406710",
+        "rerunPermitted": false
+      },
+      {
+        "runId": "30850478318",
+        "providerRequestAttempt": "INDETERMINATE",
+        "rerunPermitted": false
+      }
+    ]
+  },
+  "attempt6Artifacts": {
+    "technicalManifestPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-6/technical-manifest.json",
+    "reviewPacketPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-6/review-packet.json",
+    "reviewPacketMarkdownPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-6/review-packet.md",
+    "pendingApprovalTemplatePath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-6.template.json",
+    "approvalAddendumPath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-6.addendum.json"
+  },
+  "attempt5Bindings": {
+    "approvalRecordPath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5.json",
+    "sourceEvidencePath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5-source.json",
+    "commentId": 5176356972,
+    "commentAuthor": "Eskasia",
+    "approvalEffectiveAt": "2026-08-04T08:15:01Z",
+    "commentBodySha256": "41a47521099af120135d4ddb65aa10cf6f4180b3271ed904cf95d277ecc58840",
+    "approvedModelId": "gpt-5.6-luna",
+    "approvedProxySha256": "f9dd7b6a0778e69f123d060a8df8cef1ab97e63756e7f819cf70d8d6ed85790c",
+    "reviewedTechnicalHead": "b7e7d34e68031671dee41fe7fe13800accae3e51",
+    "reviewedTechnicalTreeSha": "2492683260127bc118f090a8f1808da367264dbc",
+    "technicalManifestEntries": 13,
+    "failedRun": {
+      "runId": "30850478318",
+      "providerRequestAttempt": "INDETERMINATE",
+      "rerunPermitted": false
+    },
+    "immutableHashes": {
+      "approvalSha256": "f6fd0c2cb59f58ca5e49e570535ab50c810c0c77f56e1164945a3dad0562c75b",
+      "sourceSha256": "35ea7be4664c021bf72d20264290359f426aac4c554455113a8a5ba504a60d1d",
+      "templateSha256": "94fb9c5696d89aebf5cf849758f21201db06d2522191817e5ef4c0aa5cfb5af8",
+      "addendumSha256": "e8935018f446c468425c008cedb3ceba3002caadd566ed4f620522fe64295265",
+      "reviewPacketSha256": "0a215526da26ff3ec59df9ad5c696c70c33a9229ff092617aabe8e3b2577839d",
+      "technicalManifestSha256": "e71090b084ff17a964027d1a7288b43d526152852131ac866d64bd836705c809"
+    }
+  },
+  "hashes": {
+    "designSha256": "434da5f42ae9d5752b5db6641557cec6a3893a22988225947458d287d516d995",
+    "requestSchemaSha256": "630ee0eb7b1ca458b1562a676f318430b675b92b005a98c958cb3226b65afb51",
+    "responseSchemaSha256": "5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcce7182c5662c2a08e",
+    "providerResponseValidationSha256": "5b36f410ebc898a34eb2d4e67814441c78d5331e1d0764750aeb98c9bfb7f528",
+    "normalizedResponseSchemaSha256": "5900d37c01493a0e7ca1712936a52fbf2514296c1edb0fcce7182c5662c2a08e",
+    "proxySourceSha256": "f9dd7b6a0778e69f123d060a8df8cef1ab97e63756e7f819cf70d8d6ed85790c",
+    "canaryClientSha256": "75c2f79c90e3f9897686e73f4a1cdadfcf297b9f2c1071ca909e0aee8a8454d9",
+    "hostProxySha256": "167ec3e9265995f6a6d100598d5685f9da22fb0415195e288fb646eb63c12e12",
+    "workflowSha256": "e5d77bea6ff50fcffff9da3115f650c952979a024f1d911ecce7799e04f6df86",
+    "technicalManifestSha256": "605dc306402f75cae93424e835d12849cb040f9cae6f7066ad5ff4d2180f6d48"
+  },
+  "modelBinding": {
+    "provider": "OpenAI",
+    "modelId": "gpt-5.6-luna",
+    "aliasAllowed": false,
+    "fallbackAllowed": false
+  },
+  "transport": {
+    "method": "POST",
+    "endpoint": "https://api.openai.com/v1/responses",
+    "requestLimit": 1,
+    "timeoutMs": 30000,
+    "retryAllowed": false,
+    "tokenCeiling": 8192,
+    "requestAllowedFields": [
+      "model",
+      "input",
+      "max_output_tokens",
+      "text",
+      "metadata"
+    ],
+    "fixedInput": "Return exactly the JSON object {\"runtime_canary\":\"PASS\"}.",
+    "structuredOutputPath": "text.format",
+    "structuredOutputName": "governseed_runtime_canary",
+    "responseModelId": "gpt-5.6-luna",
+    "forbiddenRequestField": "response_format"
+  },
+  "runtime": {
+    "image": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+    "nodeExecutable": "/usr/local/bin/node",
+    "nodeVersion": "v26.3.0",
+    "requestLimit": 1,
+    "timeoutMs": 30000,
+    "fixedCanaryInput": "Return exactly the JSON object {\"runtime_canary\":\"PASS\"}.",
+    "containerCredentialValues": false
+  },
+  "authorizationGate": {
+    "workflowDispatchOnly": true,
+    "mainRef": "refs/heads/main",
+    "environment": "governseed-v8-runtime",
+    "authorizedMainCommitInput": "authorized_main_commit",
+    "runAttemptMustEqual": 1,
+    "runIdentityField": "github.run_id",
+    "rerunFailureCode": "RERUN_FORBIDDEN",
+    "commitMismatchFailureCode": "AUTHORIZED_MAIN_COMMIT_MISMATCH",
+    "requiredReviewer": "Eskasia",
+    "adminBypassAllowed": false,
+    "deploymentBranch": "main"
+  },
+  "humanTechnicalReview": {
+    "status": "PENDING_HUMAN_REVIEW",
+    "templatePath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-6.template.json",
+    "addendumPath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-6.addendum.json",
+    "approvedRecordPresent": false
+  },
+  "evidence": {
+    "providerRequests": 0,
+    "workflowDispatch": "NOT_RUN",
+    "runtimeCanary": "NOT_RUN",
+    "runtimeReceiptPresent": false,
+    "apiKeyPresent": false,
+    "credentialValuesPersisted": false,
+    "localSyntheticTests": "PASS"
+  },
+  "overallGate": "BLOCKED",
+  "prohibitedClaims": [
+    "No provider request, runtime identity, G2, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance is claimed."
+  ],
+  "claimBoundary": "Repair-6 activation-gate preparation only. The attempt-5 approval/source are verified inputs, the runtime Environment remains the per-run human authorization point, and no workflow dispatch, rerun, provider request, runtime receipt, runtime identity, G2, G3, Pilot, scoring, or benchmark acceptance is established."
+}

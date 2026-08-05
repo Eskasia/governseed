@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "repair-2",
+  "attempt": 6,
+  "approvalStatus": "PENDING_HUMAN_REVIEW",
+  "approvalType": "HUMAN_TECHNICAL_REVIEW_ADDENDUM",
+  "reviewPacketPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-6/review-packet.json",
+  "workflowPath": ".github/workflows/external-oss-v8-runtime-identity.yml",
+  "technicalManifestPath": "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-6/technical-manifest.json",
+  "workflowSha256": "e5d77bea6ff50fcffff9da3115f650c952979a024f1d911ecce7799e04f6df86",
+  "technicalManifestSha256": "605dc306402f75cae93424e835d12849cb040f9cae6f7066ad5ff4d2180f6d48",
+  "reviewPacketSha256": "c621c03f71e0546604433ff8125a7c02eea2e36c675ed680b9379888088bdc5c",
+  "reviewedTechnicalHead": "db85da98b2337aafd488ed64421b01e3a21422c6",
+  "reviewedTreeSha": "f76b266b42a4c5a04d0e4e8e062525614eacf7f3",
+  "attempt5ApprovalPath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5.json",
+  "attempt5SourcePath": "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5-source.json",
+  "attempt5ApprovalEffectiveAt": "2026-08-04T08:15:01Z",
+  "attempt5CommentId": 5176356972,
+  "attempt5CommentBodySha256": "41a47521099af120135d4ddb65aa10cf6f4180b3271ed904cf95d277ecc58840",
+  "approvedModelId": "gpt-5.6-luna",
+  "aliasAllowed": false,
+  "fallbackAllowed": false,
+  "retryAllowed": false,
+  "authorizationGate": {
+    "environment": "governseed-v8-runtime",
+    "requiredReviewer": "Eskasia",
+    "deploymentBranch": "main",
+    "authorizedMainCommitInput": "authorized_main_commit",
+    "runAttemptMustEqual": 1,
+    "rerunFailureCode": "RERUN_FORBIDDEN",
+    "commitMismatchFailureCode": "AUTHORIZED_MAIN_COMMIT_MISMATCH"
+  },
+  "forbiddenHistoricalRuns": [
+    "30814159615",
+    "30824406710",
+    "30850478318"
+  ],
+  "providerRequests": 0,
+  "workflowDispatch": "NOT_RUN",
+  "runtimeCanary": "NOT_RUN",
+  "approvalEvidence": {
+    "type": "manual-record",
+    "reference": ""
+  },
+  "claimBoundary": "Pending human technical review only; this addendum does not authorize workflow dispatch, rerun, provider transport, runtime identity, G2, G3, Pilot, scoring, formal benchmark lock, or benchmark acceptance."
+}
