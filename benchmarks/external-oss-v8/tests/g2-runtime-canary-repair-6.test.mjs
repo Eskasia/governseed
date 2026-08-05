@@ -27,6 +27,8 @@ const ATTEMPT_6_PACKET = `${ATTEMPT_5_ROOT}/repair-2/attempt-6/review-packet.jso
 const ATTEMPT_6_MANIFEST = `${ATTEMPT_5_ROOT}/repair-2/attempt-6/technical-manifest.json`;
 const ATTEMPT_6_TEMPLATE = `${ATTEMPT_5_ROOT}/human-approval-repair-2-attempt-6.template.json`;
 const ATTEMPT_6_ADDENDUM = `${ATTEMPT_5_ROOT}/human-approval-repair-2-attempt-6.addendum.json`;
+const ATTEMPT_6_APPROVAL = `${ATTEMPT_5_ROOT}/human-approval-repair-2-attempt-6.json`;
+const ATTEMPT_6_SOURCE = `${ATTEMPT_5_ROOT}/human-approval-repair-2-attempt-6-source.json`;
 const IMAGE = 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5';
 const MODEL = 'gpt-5.6-luna';
 const FIXED_INPUT = 'Return exactly the JSON object {"runtime_canary":"PASS"}.';
@@ -38,6 +40,7 @@ const REPAIR_6_TECHNICAL_HEAD = 'db85da98b2337aafd488ed64421b01e3a21422c6';
 const REPAIR_6_TECHNICAL_TREE = 'f76b266b42a4c5a04d0e4e8e062525614eacf7f3';
 const PROXY_SHA = 'f9dd7b6a0778e69f123d060a8df8cef1ab97e63756e7f819cf70d8d6ed85790c';
 const OLD_RUNS = ['30814159615', '30824406710', '30850478318'];
+const REPAIR_6_COMMENT_HASH = '63e52786c572b5827ba52646119cfc6b7d7df267474ba76601cc55dd2a6d7867';
 
 const TECHNICAL_PATHS = [
   WORKFLOW,
@@ -275,6 +278,40 @@ test('attempt-5 approved inputs remain byte-identical and repair-6 review stays 
   assert.equal(addendum.runtimeCanary, 'NOT_RUN');
   assert.equal(addendum.reviewPacketSha256, sha256(ATTEMPT_6_PACKET));
   assert.equal(addendum.technicalManifestSha256, sha256(ATTEMPT_6_MANIFEST));
+});
+
+test('repair-6 formal approval and sanitized source bind the owner comment without runtime authorization', () => {
+  const schema = readJson(`${ATTEMPT_5_ROOT}/human-approval.schema.json`);
+  const approval = readJson(ATTEMPT_6_APPROVAL);
+  const source = readJson(ATTEMPT_6_SOURCE);
+  assert.deepEqual(Object.keys(approval).sort(), Object.keys(schema.properties).sort());
+  assert.deepEqual(
+    Object.keys(approval.approvalEvidence).sort(),
+    Object.keys(schema.properties.approvalEvidence.properties).sort(),
+  );
+  assert.equal(approval.approvalStatus, 'APPROVED');
+  assert.equal(approval.approvedBy, 'Eskasia');
+  assert.equal(approval.approvedAt, '2026-08-04T11:39:58Z');
+  assert.equal(approval.approvalEvidence.commentId, 5178485510);
+  assert.equal(approval.approvalEvidence.reference, 'https://github.com/Eskasia/governseed/pull/80#issuecomment-5178485510');
+  assert.equal(source.verificationStatus, 'VERIFIED_GITHUB_ISSUE_COMMENT');
+  assert.equal(source.sourcePullRequest, 80);
+  assert.equal(source.reviewedPullRequest, 81);
+  assert.equal(source.commentBodySha256, REPAIR_6_COMMENT_HASH);
+  assert.equal(source.bodyClaims.finalEvidenceHead, '41383da9d292ed1e8220890cfa8bffca4f0cc2c0');
+  assert.equal(source.bodyClaims.finalEvidenceTreeSha, 'f386cefe5d79c83675a3965fdaaa14bbddc46333');
+  assert.equal(source.bodyClaims.workflowSha256, sha256(WORKFLOW));
+  assert.equal(source.bodyClaims.reviewPacketSha256, sha256(ATTEMPT_6_PACKET));
+  assert.equal(source.bodyClaims.technicalManifestSha256, sha256(ATTEMPT_6_MANIFEST));
+  assert.deepEqual(source.forbiddenHistoricalRuns, OLD_RUNS);
+  assert.equal(source.providerRequests, 0);
+  assert.equal(source.workflowDispatch, 'NOT_RUN');
+  assert.equal(source.runtimeCanary, 'NOT_RUN');
+  assert.equal(source.runtimeReceiptPresent, false);
+  assert.equal(source.newProviderRequestAuthorized, false);
+  assert.equal(source.credentialPresent, false);
+  assert.equal(source.rawApprovalBodyPersisted, false);
+  assert.equal('body' in source, false);
 });
 
 test('exact model, runtime, fixed input, credential boundary, and no-provider state remain locked', () => {
