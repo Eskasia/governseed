@@ -1,36 +1,36 @@
 {
   "schemaVersion": 1,
   "benchmarkId": "GS-OSS-2026-08-02-V8",
-  "currentMainSha": "220c2d8d816194eb77da94e182258a0875202f3b",
-  "currentMainTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
-  "observedAt": "2026-08-05T10:10:44Z",
-  "activePhase": "P1",
-  "activeNode": "P1.4",
-  "activeBranch": "benchmark/p1.4-public-hidden-separation",
-  "activePR": 89,
-  "activeIssue": 88,
+  "currentMainSha": "9c83280cec2d9f8fedd15455cfa261680452969f",
+  "currentMainTreeSha": "f1f89f4dcb1d06cfd4e9af76df8fbaf7722cd64b",
+  "observedAt": "2026-08-05T16:41:22Z",
+  "activePhase": "P3",
+  "activeNode": "P3.1",
+  "activeBranch": "control/autonomous-completion-delegation-v2",
+  "activePR": 96,
+  "activeIssue": 92,
   "latestRunIds": {
     "acceptedG1": "30739570734",
-    "forbiddenG2Reruns": ["30814159615", "30824406710", "30850478318"],
-    "g2Repair6Validation": "30899414374",
-    "priorLoopControlTechnicalValidation": "30913519842",
-    "loopControlMergeValidation": "30916308174",
-    "priorExperimentContractEvidenceValidation": "30961663119",
-    "experimentContractPullRequestValidation": "30966317154",
-    "experimentContractMergeValidation": "30971703749",
-    "taskIdentityPullRequestValidation": "30976115630",
-    "taskIdentityMergeValidation": "30988393468",
-    "publicHiddenSeparationRejectedHeadValidation": "30989625066",
-    "publicHiddenSeparationRepairValidation": "30996735553"
+    "forbiddenG2Reruns": ["30814159615", "30824406710", "30850478318", "31014045209"],
+    "g2Repair6Validation": "31001861998",
+    "publicHiddenSeparationValidation": "30997044086",
+    "publicHiddenSeparationMainValidation": "31001341813",
+    "g2Repair6MainValidation": "31012062053",
+    "delegationV1MainValidation": "31018400020",
+    "failedRuntimeIdentity": "31014045209",
+    "diagnosticRepairExperimentalValidation": "31020127005",
+    "diagnosticRepairCrossPlatformValidation": "31020127157",
+    "diagnosticRepairMainValidation": "31025047970",
+    "delegationV2Validation": "31025680909"
   },
   "activeRunIds": [],
-  "currentHumanGate": "PUBLIC_HIDDEN_SEPARATION_INDEPENDENT_REVIEW_AUTHORIZATION",
-  "completionPercentage": 31,
-  "completionBasis": "Only PASS nodes count. Canonical phase weights are absent, so the requested fallback weights are divided equally across canonical subnodes; repair nodes have zero weight.",
-  "lastCycleId": "GS-LOOP-2026-08-05-C017",
-  "readySetAtSelection": ["P1.4", "P3.R6"],
-  "selectedGatePreparationNode": "P1.4",
-  "nextReadyNodes": ["P3.R6"],
+  "currentHumanGate": "AUTONOMOUS_COMPLETION_DELEGATION_MANIFEST_V2_ACTIVATION",
+  "completionPercentage": 33,
+  "completionBasis": "Only PASS canonical nodes count. Fallback phase weights are divided equally across canonical subnodes; repair nodes have zero weight.",
+  "lastCycleId": "GS-LOOP-2026-08-05-C021",
+  "readySetAtSelection": ["P3.1"],
+  "selectedGatePreparationNode": "P3.1",
+  "nextReadyNodes": [],
   "evidenceConflicts": [
     {
       "conflictId": "G2-TOP-LEVEL-GATE-STALE-001",
@@ -41,91 +41,57 @@
         "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5.json",
         "benchmarks/external-oss-v8/credential-transport/human-approval-repair-2-attempt-5-source.json",
         "benchmarks/external-oss-v8/control/G2/runtime-canary-repair-5/run-30850478318/run.json",
+        "benchmarks/external-oss-v8/control/loop/reconciliation/run-31014045209-g2-failure.json",
         ".github/workflows/external-oss-v8-runtime-identity.yml"
       ],
-      "resolution": "Do not select a side. Preserve G2 as BLOCKED until a reconciled gate record is independently reviewed and canonical on main."
+      "resolution": "Do not select the stale top-level record. Preserve G2 as non-PASS until a canonical reconciled gate record and successful fresh runtime evidence exist."
     },
     {
       "conflictId": "G2-REPAIR6-APPROVAL-LOCATION-001",
-      "status": "EVIDENCE_CONFLICT",
+      "status": "RESOLVED_BY_PR81_FORMAL_RECORDS",
       "fields": ["pullRequest", "approvalRecordPresent", "approvalSourcePresent"],
       "sources": [
         "https://github.com/Eskasia/governseed/pull/80#issuecomment-5178485510",
-        "https://github.com/Eskasia/governseed/pull/81",
-        "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-6/review-packet.json"
+        "https://github.com/Eskasia/governseed/pull/81#issuecomment-5192589326",
+        "benchmarks/external-oss-v8/control/loop/reconciliation/pr-81-g2-repair6-merge.json"
       ],
-      "resolution": "The human comment binds PR 81 head/tree but is attached to PR 80. PR 81 remains BLOCKED until formal sanitized approval/source evidence is committed and independently verified."
+      "resolution": "PR 81 formal sanitized records, independent ACCEPT, exact-target OWNER approval, merge provenance, and main validation supersede the earlier missing-source state for repair-6 only."
     },
     {
       "conflictId": "EFFECT-R1-TASK-OSS-01-SEED-IDENTITY-001",
       "status": "RESOLVED_BY_OWNER_R2",
       "fields": ["v4SeedCommit", "v4SeedTreeSha256", "legacySeedTreeHashReproduced", "r1Revision"],
-      "sources": [
-        "https://github.com/Eskasia/governseed/issues/84#issuecomment-5185865928",
-        "benchmarks/external-oss-v4/dependency-cache/task-identities.json",
-        "benchmarks/external-oss-v5/tasks/TASK-OSS-01/task-seed-identity.json",
-        "benchmarks/external-oss-v5/tasks/TASK-OSS-01/reconstruction-evidence.json",
-        "benchmarks/external-oss-v8/control/loop/reconciliation/issue-84-comment-5185865928.json",
-        "https://github.com/Eskasia/governseed/issues/84#issuecomment-5186392861",
-        "benchmarks/external-oss-v8/control/loop/reconciliation/issue-84-comment-5186392861.json",
-        "benchmarks/external-oss-effectiveness-r2/experiment-contract.json"
-      ],
-      "resolution": "Owner comment 5186392861 supersedes R1 before execution and creates R2 bound to the V5 reconstructed TASK-OSS-01 seed. R1 and R2 evidence cannot be pooled."
+      "sources": ["https://github.com/Eskasia/governseed/issues/84#issuecomment-5186392861", "benchmarks/external-oss-effectiveness-r2/experiment-contract.json"],
+      "resolution": "Owner comment 5186392861 supersedes R1 before execution and creates R2. R1 and R2 evidence cannot be pooled."
     }
   ],
   "openPullRequests": {
-    "active": [81, 89],
+    "active": [91, 96],
     "staleOrSupersededCandidates": [54, 55, 60, 62, 65, 66]
   },
-  "finalHeadBinding": {
-    "status": "VERIFIED_MERGED",
-    "pullRequest": 87,
-    "reviewedHeadSha": "d5b1c32138496a91931b20f065c39f4404505d01",
-    "reviewedTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
-    "approvalComment": "https://github.com/Eskasia/governseed/pull/87#issuecomment-5189326581",
-    "approvalCommentBodySha256": "2f08758e31ebb706375cd046097270ce86c9cc4203e3ba0c684467e1b71f6a93",
-    "approvalCreatedAt": "2026-08-05T08:16:34Z",
-    "mergedAt": "2026-08-05T08:17:06Z",
-    "mergeCommitSha": "220c2d8d816194eb77da94e182258a0875202f3b",
-    "mergeValidationRun": "30988393468"
+  "completedBindings": {
+    "publicHiddenSeparation": "benchmarks/external-oss-v8/control/loop/reconciliation/pr-89-public-hidden-merge.json",
+    "g2Repair6": "benchmarks/external-oss-v8/control/loop/reconciliation/pr-81-g2-repair6-merge.json",
+    "delegationV1": "benchmarks/external-oss-v8/control/loop/reconciliation/pr-94-autonomous-delegation-merge.json",
+    "failedRuntimeIdentity": "benchmarks/external-oss-v8/control/loop/reconciliation/run-31014045209-g2-failure.json",
+    "diagnosticRepair": "benchmarks/external-oss-v8/control/loop/reconciliation/pr-95-non-2xx-diagnostic-merge.json",
+    "delegationV2Preparation": "benchmarks/external-oss-v8/control/loop/reconciliation/pr-96-delegation-v2-preparation.json"
   },
   "pendingReviewBinding": {
-    "status": "REPAIR_COMMITTED_CI_PASSED_EXTERNAL_BINDING_PUBLISHED",
-    "pullRequest": 89,
-    "issue": 88,
-    "baseMainSha": "220c2d8d816194eb77da94e182258a0875202f3b",
-    "priorIndependentReview": {
-      "status": "ACCEPT",
-      "reviewId": "GS-EFFECT-R2-INDEPENDENT-CHECKER-REPAIR-2",
-      "reviewedHeadSha": "d5b1c32138496a91931b20f065c39f4404505d01",
-      "reviewedTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
-      "receiptPath": "benchmarks/external-oss-v8/control/loop/reconciliation/pr-87-task-identity-merge.json"
-    },
-    "currentIndependentReview": "NOT_RUN_ON_REPAIRED_CANDIDATE_REQUIRES_NEW_AUTHORIZATION",
-    "repairBinding": {
-      "implementationHeadSha": "169e7ac947603e4b124fd113b89ca65f1feaea79",
-      "implementationTreeSha": "d1bd717e970dab3c7c11e433d0cd19248ee49b64",
-      "pullRequestBodySha256": "8eafee72c3060864e149c25a1ae8e5bf38dd8a39b41cc6976b1d4211a5960a8e",
-      "validationRun": "30996735553",
-      "technicalComment": "https://github.com/Eskasia/governseed/pull/89#issuecomment-5190529563",
-      "technicalCommentBodySha256": "a940f59bb3133547eae5776ded83ae0434e19343c234797b6d99391da2d1f942",
-      "controlComment": "https://github.com/Eskasia/governseed/issues/88#issuecomment-5190531656",
-      "controlCommentBodySha256": "75fe110d37db811cb3466c33bf63011480ae10b9be085975a32e8834e8852736"
-    },
-    "rejectedReviewBinding": {
-      "status": "REJECT",
-      "reviewId": "GS-EFFECT-R2-P1.4-INDEPENDENT-CHECKER",
-      "agentId": "019fd160-2b6e-79c2-9657-cc98d1c068ea",
-      "reviewedHeadSha": "19a4405abdeb25c20a919897ec092e85dfcbf78f",
-      "reviewedTreeSha": "0ce658e5bb35c84db4b7573d7193fe88366a67da",
-      "receiptPath": "benchmarks/external-oss-v8/control/loop/reconciliation/pr-89-independent-review-rejection.json"
-    },
-    "requiredEvidence": ["exact final P1.4 head", "exact final P1.4 tree", "green three-platform CI", "fresh independent read-only review", "owner approval predating merge"],
-    "authorizedActions": ["offline deterministic evidence implementation", "commit", "push", "draft PR"],
-    "unauthorizedActions": ["PR readiness", "merge", "provider request", "workflow dispatch", "G2", "G3", "formal lock", "Pilot", "confirmatory execution", "scoring", "benchmark acceptance"]
+    "status": "V2_PREPARED_NOT_ACTIVE",
+    "pullRequest": 96,
+    "issue": 92,
+    "baseMainSha": "9c83280cec2d9f8fedd15455cfa261680452969f",
+    "headSha": "9bd3371147726b5274ea6ad528f0ca4a35b017ec",
+    "treeSha": "6b8e8252e012ac10857188f13be76de6cf3e0079",
+    "manifestSha256": "1dfc6a73651030fd75658e61df3e022c8354976e36803a03f8165c2af287c29f",
+    "validationRun": "31025680909",
+    "dispatchAuthorityActive": false,
+    "requiredActions": ["publish exact OWNER V2 approval binding and resolve the stale top-level G2 record as historical without claiming G2 success", "dispatch the single exact-target G2 canary while main remains 9c83280cec2d9f8fedd15455cfa261680452969f", "after the G2 result, independently review and merge exact PR 96 plus the policy and checkpoint candidates under V2 authority"],
+    "unauthorizedActions": ["provider request", "workflow dispatch or rerun", "Environment approval", "formal lock", "Pilot", "confirmatory execution", "scoring", "benchmark acceptance", "final acceptance"]
   },
-  "thisCycleProviderRequests": 1,
-  "providerRequests": "INDETERMINATE_FOR_RUN_30850478318",
-  "workflowDispatch": "NOT_RUN_IN_THIS_CYCLE",
-  "claimBoundary": "P1.2 remains canonical on main. One authorized read-only checker rejected PR 89 head 19a4405 for one bounded hash-only metadata mismatch; the local P1.4 repair removes hidden parent/fix result objects while preserving task, seed, oracle, scorer, runtime, and workflow identities. No second provider request, provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, effectiveness, PR readiness, merge, or benchmark acceptance is claimed."
+  "thisCycleProviderRequests": 0,
+  "providerRequests": "INDETERMINATE_FOR_RUN_31014045209",
+  "workflowDispatch": "NOT_RUN_IN_CYCLE_C021",
+  "claimBoundary": "Control-only reconciliation through PR 95 merge and immutable PR 96 preparation. Run 31014045209 remains a failed, non-rerunnable attempt with provider request consumption indeterminate. V2 is not active; no new provider request, workflow dispatch, Environment approval, formal lock, Pilot, confirmatory execution, scoring, benchmark acceptance, or final acceptance is claimed."
 }

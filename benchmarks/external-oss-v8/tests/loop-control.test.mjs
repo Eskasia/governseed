@@ -28,6 +28,11 @@ const taskIdentityMerge = JSON.parse(
 const publicHiddenReview = JSON.parse(
   readFileSync(`${CONTROL_ROOT}/reconciliation/pr-89-independent-review-rejection.json`, 'utf8'),
 );
+const publicHiddenMerge = JSON.parse(readFileSync(`${CONTROL_ROOT}/reconciliation/pr-89-public-hidden-merge.json`, 'utf8'));
+const repair6Merge = JSON.parse(readFileSync(`${CONTROL_ROOT}/reconciliation/pr-81-g2-repair6-merge.json`, 'utf8'));
+const failedG2 = JSON.parse(readFileSync(`${CONTROL_ROOT}/reconciliation/run-31014045209-g2-failure.json`, 'utf8'));
+const diagnosticMerge = JSON.parse(readFileSync(`${CONTROL_ROOT}/reconciliation/pr-95-non-2xx-diagnostic-merge.json`, 'utf8'));
+const delegationV2 = JSON.parse(readFileSync(`${CONTROL_ROOT}/reconciliation/pr-96-delegation-v2-preparation.json`, 'utf8'));
 const requiredNodeFields = [
   'nodeId',
   'phase',
@@ -70,7 +75,7 @@ const requiredCanonicalNodes = {
   P7: ['P7.1', 'P7.2', 'P7.3', 'P7.4', 'P7.5', 'P7.6'],
   P8: ['P8.1', 'P8.2', 'P8.3', 'P8.4', 'P8.5'],
 };
-const forbiddenRerunIds = ['30814159615', '30824406710', '30850478318'];
+const forbiddenRerunIds = ['30814159615', '30824406710', '30850478318', '31014045209'];
 
 function validateControl(graph, state) {
   const errors = [];
@@ -144,8 +149,8 @@ test('weighted completion equals only canonical PASS node weights', () => {
   const calculated = taskGraph.nodes
     .filter((node) => canonicalIds.has(node.nodeId) && node.status === 'PASS')
     .reduce((sum, node) => sum + node.weightPercent, 0);
-  assert.equal(Number(calculated.toFixed(10)), 31);
-  assert.equal(loopState.completionPercentage, 31);
+  assert.equal(Number(calculated.toFixed(10)), 33);
+  assert.equal(loopState.completionPercentage, 33);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.1').status, 'PASS');
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.2').status, 'PASS');
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').status, 'PASS');
@@ -155,72 +160,32 @@ test('G2 conflict remains fail-closed and forbidden runs cannot become active', 
   const conflict = loopState.evidenceConflicts.find((item) => item.conflictId === 'G2-TOP-LEVEL-GATE-STALE-001');
   assert.equal(conflict?.status, 'EVIDENCE_CONFLICT');
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P3.7').status, 'BLOCKED');
-  assert.equal(loopState.providerRequests, 'INDETERMINATE_FOR_RUN_30850478318');
+  assert.equal(loopState.providerRequests, 'INDETERMINATE_FOR_RUN_31014045209');
   assert.deepEqual(loopState.latestRunIds.forbiddenG2Reruns, forbiddenRerunIds);
-  assert.equal(loopState.workflowDispatch, 'NOT_RUN_IN_THIS_CYCLE');
+  assert.equal(loopState.workflowDispatch, 'NOT_RUN_IN_CYCLE_C021');
   assert.deepEqual(loopState.activeRunIds, []);
-  assert.equal(loopState.evidenceConflicts.some((item) => item.conflictId === 'G2-REPAIR6-APPROVAL-LOCATION-001'), true);
+  assert.equal(loopState.evidenceConflicts.find((item) => item.conflictId === 'G2-REPAIR6-APPROVAL-LOCATION-001')?.status, 'RESOLVED_BY_PR81_FORMAL_RECORDS');
 });
 
-test('recorded GitHub state closes P1.2 and gates P1.4 on fresh independent review', () => {
-  assert.equal(loopState.activeNode, 'P1.4');
-  assert.equal(loopState.activeIssue, 88);
-  assert.equal(loopState.activePR, 89);
-  assert.equal(loopState.currentHumanGate, 'PUBLIC_HIDDEN_SEPARATION_INDEPENDENT_REVIEW_AUTHORIZATION');
-  assert.deepEqual(loopState.openPullRequests.active, [81, 89]);
-  assert.equal(loopState.latestRunIds.priorLoopControlTechnicalValidation, '30913519842');
-  assert.equal(loopState.latestRunIds.loopControlMergeValidation, '30916308174');
-  assert.equal(loopState.latestRunIds.priorExperimentContractEvidenceValidation, '30961663119');
-  assert.equal(loopState.latestRunIds.experimentContractPullRequestValidation, '30966317154');
-  assert.equal(loopState.latestRunIds.experimentContractMergeValidation, '30971703749');
-  assert.equal(loopState.latestRunIds.taskIdentityPullRequestValidation, '30976115630');
-  assert.equal(loopState.latestRunIds.taskIdentityMergeValidation, '30988393468');
-  assert.equal(loopState.latestRunIds.publicHiddenSeparationRejectedHeadValidation, '30989625066');
-  assert.equal(loopState.latestRunIds.publicHiddenSeparationRepairValidation, '30996735553');
-  assert.equal('experimentContractEvidenceValidation' in loopState.latestRunIds, false);
-  assert.equal('latestValidation' in loopState.latestRunIds, false);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').activePR, 83);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').status, 'PASS');
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.D1').status, 'PASS');
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.D1').blockerCode, null);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.D1').activePR, 85);
-  assert.match(humanGates, /issues\/84/);
-  assert.match(humanGates, /pull\/85/);
-  assert.match(humanGates, /EXPERIMENT_CONTRACT_TASK_IDENTITY_RESOLUTION/);
-  assert.equal(loopState.finalHeadBinding.status, 'VERIFIED_MERGED');
-  assert.equal(loopState.finalHeadBinding.pullRequest, 87);
-  assert.equal(loopState.finalHeadBinding.reviewedHeadSha, 'd5b1c32138496a91931b20f065c39f4404505d01');
-  assert.equal(loopState.finalHeadBinding.reviewedTreeSha, '31dc203b0bb1af2d1546a9f9df676fa945dde792');
-  assert.equal(loopState.finalHeadBinding.approvalCommentBodySha256, '2f08758e31ebb706375cd046097270ce86c9cc4203e3ba0c684467e1b71f6a93');
-  assert.equal(loopState.finalHeadBinding.mergeCommitSha, loopState.currentMainSha);
-  assert.equal(loopState.finalHeadBinding.mergeValidationRun, loopState.latestRunIds.taskIdentityMergeValidation);
-  assert.equal(Date.parse(loopState.finalHeadBinding.approvalCreatedAt) < Date.parse(loopState.finalHeadBinding.mergedAt), true);
-  assert.deepEqual(loopState.readySetAtSelection, ['P1.4', 'P3.R6']);
-  assert.equal(loopState.selectedGatePreparationNode, 'P1.4');
-  assert.deepEqual(loopState.nextReadyNodes, ['P3.R6']);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').status, 'PASS');
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').activeIssue, 86);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').activePR, 87);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').attempts, 6);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').blockerCode, null);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').status, 'HUMAN_GATE');
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').attempts, 3);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').activeIssue, 88);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').activePR, 89);
-  assert.equal(loopState.pendingReviewBinding.status, 'REPAIR_COMMITTED_CI_PASSED_EXTERNAL_BINDING_PUBLISHED');
-  assert.equal(loopState.pendingReviewBinding.pullRequest, 89);
-  assert.equal(loopState.pendingReviewBinding.priorIndependentReview.status, 'ACCEPT');
-  assert.equal(loopState.pendingReviewBinding.currentIndependentReview, 'NOT_RUN_ON_REPAIRED_CANDIDATE_REQUIRES_NEW_AUTHORIZATION');
-  assert.equal(loopState.pendingReviewBinding.repairBinding.implementationHeadSha, '169e7ac947603e4b124fd113b89ca65f1feaea79');
-  assert.equal(loopState.pendingReviewBinding.repairBinding.implementationTreeSha, 'd1bd717e970dab3c7c11e433d0cd19248ee49b64');
-  assert.equal(loopState.pendingReviewBinding.repairBinding.validationRun, '30996735553');
-  assert.equal(loopState.pendingReviewBinding.repairBinding.technicalCommentBodySha256, 'a940f59bb3133547eae5776ded83ae0434e19343c234797b6d99391da2d1f942');
-  assert.equal(loopState.pendingReviewBinding.repairBinding.controlCommentBodySha256, '75fe110d37db811cb3466c33bf63011480ae10b9be085975a32e8834e8852736');
-  assert.equal(loopState.pendingReviewBinding.rejectedReviewBinding.status, 'REJECT');
-  assert.equal(loopState.pendingReviewBinding.rejectedReviewBinding.reviewedHeadSha, '19a4405abdeb25c20a919897ec092e85dfcbf78f');
-  assert.equal(loopState.pendingReviewBinding.rejectedReviewBinding.reviewedTreeSha, '0ce658e5bb35c84db4b7573d7193fe88366a67da');
-  assert.equal(loopState.thisCycleProviderRequests, 1);
-  assert.ok(loopState.pendingReviewBinding.unauthorizedActions.includes('merge'));
+test('recorded GitHub state selects P3.1 and keeps delegation V2 inactive', () => {
+  assert.equal(loopState.activeNode, 'P3.1');
+  assert.equal(loopState.activeIssue, 92);
+  assert.equal(loopState.activePR, 96);
+  assert.equal(loopState.currentHumanGate, 'AUTONOMOUS_COMPLETION_DELEGATION_MANIFEST_V2_ACTIVATION');
+  assert.deepEqual(loopState.openPullRequests.active, [91, 96]);
+  assert.deepEqual(loopState.readySetAtSelection, ['P3.1']);
+  assert.equal(loopState.selectedGatePreparationNode, 'P3.1');
+  assert.deepEqual(loopState.nextReadyNodes, []);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').status, 'PASS');
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P3.R6').status, 'PASS');
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P3.R7').status, 'PASS');
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P3.1').status, 'HUMAN_GATE');
+  assert.equal(loopState.pendingReviewBinding.status, 'V2_PREPARED_NOT_ACTIVE');
+  assert.equal(loopState.pendingReviewBinding.dispatchAuthorityActive, false);
+  assert.equal(loopState.pendingReviewBinding.manifestSha256, '1dfc6a73651030fd75658e61df3e022c8354976e36803a03f8165c2af287c29f');
+  assert.equal(loopState.thisCycleProviderRequests, 0);
+  assert.match(loopState.pendingReviewBinding.requiredActions[1], /while main remains 9c83280/);
+  assert.ok(loopState.pendingReviewBinding.unauthorizedActions.includes('workflow dispatch or rerun'));
 });
 
 test('P1.4 independent-review rejection binds one authorized checker and one bounded repair', () => {
@@ -261,7 +226,7 @@ test('PR 87 merge reconciliation binds accepted review, owner approval, exact tr
   assert.equal(taskIdentityMerge.pullRequest.number, 87);
   assert.equal(taskIdentityMerge.pullRequest.reviewedHeadSha, 'd5b1c32138496a91931b20f065c39f4404505d01');
   assert.equal(taskIdentityMerge.pullRequest.reviewedTreeSha, taskIdentityMerge.pullRequest.mergeCommitTreeSha);
-  assert.equal(taskIdentityMerge.pullRequest.mergeCommitSha, loopState.currentMainSha);
+  assert.equal(taskIdentityMerge.pullRequest.mergeCommitSha, '220c2d8d816194eb77da94e182258a0875202f3b');
   assert.equal(taskIdentityMerge.independentReview.verdict, 'ACCEPT');
   assert.equal(taskIdentityMerge.independentReview.providerRequestCount, 1);
   assert.deepEqual(taskIdentityMerge.independentReview.blockingFindings, []);
@@ -270,10 +235,26 @@ test('PR 87 merge reconciliation binds accepted review, owner approval, exact tr
   assert.equal(taskIdentityMerge.approval.approvalPredatesMerge, true);
   assert.equal(taskIdentityMerge.approval.secondsBeforeMerge, 32);
   assert.deepEqual(taskIdentityMerge.validation.mainPlatforms, {ubuntu: 'SUCCESS', macos: 'SUCCESS', windows: 'SUCCESS'});
-  assert.equal(taskIdentityMerge.validation.mainRunId, Number(loopState.latestRunIds.taskIdentityMergeValidation));
+  assert.equal(taskIdentityMerge.validation.mainRunId, 30988393468);
   assert.equal(taskIdentityMerge.gateDecision.P1_2, 'PASS');
   assert.equal(taskIdentityMerge.gateDecision.weightedCompletionPercent, 31);
   assert.equal(taskIdentityMerge.gateDecision.nextReadyNode, 'P1.4');
+});
+
+test('C018-C021 reconciliations bind merges, failed canary, and inactive V2', () => {
+  assert.equal(publicHiddenMerge.pullRequest.reviewedHeadSha, 'e162c71f47c11bb9eb745f6eb463cd9652e2c615');
+  assert.equal(publicHiddenMerge.independentReview.verdict, 'ACCEPT');
+  assert.equal(publicHiddenMerge.gateDecision.weightedCompletionPercent, 33);
+  assert.equal(repair6Merge.pullRequest.mergeCommitSha, '4e1347e510a0068efbdff6942748671490c798ea');
+  assert.equal(repair6Merge.independentReview.verdict, 'ACCEPT');
+  assert.equal(failedG2.run.runId, 31014045209);
+  assert.equal(failedG2.run.conclusion, 'failure');
+  assert.equal(failedG2.accounting.providerRequestAttempt, 'INDETERMINATE');
+  assert.equal(failedG2.accounting.rerunForbidden, true);
+  assert.equal(diagnosticMerge.pullRequest.mergeCommitSha, loopState.currentMainSha);
+  assert.equal(diagnosticMerge.workflowSha256, '8c95e3251ca8473f2401ac115f6da0cf88cc1207099ef834446c262ff710a2af');
+  assert.equal(delegationV2.pullRequest.isDraft, true);
+  assert.equal(delegationV2.manifest.dispatchAuthorityActive, false);
 });
 
 test('decision and human-gate records preserve required fail-closed markers', () => {
@@ -412,10 +393,10 @@ test('ledger accepts appended immutable records and reconciles attempts per sele
   assert.equal(new Set(ledgerEntries.map((entry) => entry.cycleId)).size, ledgerEntries.length);
   assert.deepEqual([...ledgerEntries].map((entry) => entry.timestamp).sort(), ledgerEntries.map((entry) => entry.timestamp));
   assert.equal(ledgerEntries.at(-1).cycleId, loopState.lastCycleId);
-  assert.equal(ledgerEntries.at(-1).startingSha, loopState.currentMainSha);
+  assert.equal(ledgerEntries.at(-1).startingSha, '3e0cca4fd86ba0aad735249dcefa6df15514b40d');
   assert.equal(ledgerEntries[1].reconcilesCycleId, ledgerEntries[0].cycleId);
   assert.equal(ledgerEntries.at(-1).reconcilesCycleId, ledgerEntries.at(-2).cycleId);
-  assert.equal(ledgerEntries.at(-1).resultingSha, 'EXTERNAL_GITHUB_REPAIRED_HEAD_BINDING_REQUIRED');
+  assert.equal(ledgerEntries.at(-1).resultingSha, 'EXTERNAL_CONTROL_CHECKPOINT_HEAD_BINDING_REQUIRED');
   const ledgerByNode = new Map();
   for (const entry of ledgerEntries) {
     const entries = ledgerByNode.get(entry.selectedNode) ?? [];
@@ -425,23 +406,27 @@ test('ledger accepts appended immutable records and reconciles attempts per sele
   for (const [nodeId, entries] of ledgerByNode) {
     const node = taskGraph.nodes.find((candidate) => candidate.nodeId === nodeId);
     assert.ok(node, `ledger references unknown node ${nodeId}`);
-    const attemptsBeforeLedger = {'P0.1': 1, 'P1.2': 1, 'P1.4': 1}[nodeId] ?? 0;
+    const attemptsBeforeLedger = {'P0.1': 1, 'P1.2': 1, 'P1.4': 1, 'P3.1': 3}[nodeId] ?? 0;
     assert.equal(node.attempts, entries.length + attemptsBeforeLedger, `${nodeId} attempts do not match ledger`);
     assert.equal(node.attempts <= 6, true, `${nodeId} exceeds six-cycle ceiling`);
   }
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.1').attempts, 2);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').attempts, 6);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').attempts, 3);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').attempts, 4);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P3.1').attempts, 4);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P3.R6').attempts, 1);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P3.R7').attempts, 1);
   const providerEntries = ledgerEntries.filter((entry) => entry.providerRequests !== 'NOT_RUN');
   assert.deepEqual(providerEntries.map((entry) => [entry.cycleId, entry.providerRequests]), [
     ['GS-LOOP-2026-08-05-C013', 'ONE_AUTHORIZED_READ_ONLY_CODEX_CHECKER_TASK'],
     ['GS-LOOP-2026-08-05-C014', 'TWO_SEPARATELY_AUTHORIZED_READ_ONLY_CODEX_CHECKER_TASKS'],
     ['GS-LOOP-2026-08-05-C017', 'ONE_AUTHORIZED_READ_ONLY_CODEX_CHECKER_TASK'],
+    ['GS-LOOP-2026-08-05-C018', 'ACCOUNTED_EXTERNALLY'],
+    ['GS-LOOP-2026-08-05-C019', 'ACCOUNTED_EXTERNALLY'],
+    ['GS-LOOP-2026-08-05-C020', 'INDETERMINATE_POSSIBLY_ONE_CONSUMED'],
   ]);
-  for (const entry of ledgerEntries) {
-    assert.equal(entry.workflowDispatch, 'NOT_RUN');
-    assert.match(entry.claimBoundary, /No provider|no provider|One authorized read-only checker|Two separately authorized read-only checker/i);
-  }
+  assert.equal(ledgerEntries.find((entry) => entry.cycleId.endsWith('C020')).workflowDispatch, 'ONE_AUTHORIZED_DISPATCH_RUN_31014045209');
+  assert.equal(ledgerEntries.at(-1).workflowDispatch, 'NOT_RUN');
 });
 
 test('committed control files contain no local user path', () => {

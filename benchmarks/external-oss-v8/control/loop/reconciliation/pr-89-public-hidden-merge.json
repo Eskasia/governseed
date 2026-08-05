@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "cycleId": "GS-LOOP-2026-08-05-C018",
+  "observedAt": "2026-08-05T11:25:20Z",
+  "pullRequest": {"number": 89, "state": "MERGED", "baseSha": "220c2d8d816194eb77da94e182258a0875202f3b", "reviewedHeadSha": "e162c71f47c11bb9eb745f6eb463cd9652e2c615", "reviewedTreeSha": "1d6c723f22bcf92d37e16fdb23277d86ef35a762", "mergeCommitSha": "8f7edae19bb2c29ae2deacef07ae2734d1d61b3f", "mergedAt": "2026-08-05T11:24:38Z"},
+  "independentReview": {"verdict": "ACCEPT", "commentId": 5190958937, "url": "https://github.com/Eskasia/governseed/pull/89#issuecomment-5190958937", "author": "Eskasia", "authorAssociation": "OWNER", "createdAt": "2026-08-05T11:07:08Z", "updatedAt": "2026-08-05T11:07:08Z", "bodySha256": "5d018a385a372120e43d622b2d70d64bf925007ef14099762319b79dfc84e570"},
+  "approval": {"commentId": 5191111222, "url": "https://github.com/Eskasia/governseed/pull/89#issuecomment-5191111222", "author": "Eskasia", "authorAssociation": "OWNER", "createdAt": "2026-08-05T11:24:05Z", "updatedAt": "2026-08-05T11:24:05Z", "bodySha256": "755f54bd252d2a2b19425bd84567cf71c8f20b8b5290e147368310048d9d905f", "approvalPredatesMerge": true, "secondsBeforeMerge": 33},
+  "validation": {"pullRequestRunId": 30997044086, "mainRunId": 31001341813, "mainPlatforms": {"ubuntu": "SUCCESS", "macos": "SUCCESS", "windows": "SUCCESS"}},
+  "gateDecision": {"P1_4": "PASS", "weightedCompletionPercent": 33, "nextReadyNode": "P3.R6"},
+  "claimBoundary": "Canonical public-hidden Git-surface separation only; no runtime enforcement, provider workflow, formal lock, execution, scoring, or acceptance claim."
+}
