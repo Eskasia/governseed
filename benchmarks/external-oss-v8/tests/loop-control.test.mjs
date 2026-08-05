@@ -184,6 +184,7 @@ test('recorded GitHub state selects P3.1 and keeps delegation V2 inactive', () =
   assert.equal(loopState.pendingReviewBinding.dispatchAuthorityActive, false);
   assert.equal(loopState.pendingReviewBinding.manifestSha256, '1dfc6a73651030fd75658e61df3e022c8354976e36803a03f8165c2af287c29f');
   assert.equal(loopState.thisCycleProviderRequests, 0);
+  assert.match(loopState.pendingReviewBinding.requiredActions[1], /while main remains 9c83280/);
   assert.ok(loopState.pendingReviewBinding.unauthorizedActions.includes('workflow dispatch or rerun'));
 });
 

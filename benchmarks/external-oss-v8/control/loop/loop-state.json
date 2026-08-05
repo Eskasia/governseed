@@ -87,7 +87,7 @@
     "manifestSha256": "1dfc6a73651030fd75658e61df3e022c8354976e36803a03f8165c2af287c29f",
     "validationRun": "31025680909",
     "dispatchAuthorityActive": false,
-    "requiredActions": ["merge durable control-plane policy and this checkpoint", "publish exact OWNER V2 approval binding", "independently review and merge exact PR 96 target"],
+    "requiredActions": ["publish exact OWNER V2 approval binding and resolve the stale top-level G2 record as historical without claiming G2 success", "dispatch the single exact-target G2 canary while main remains 9c83280cec2d9f8fedd15455cfa261680452969f", "after the G2 result, independently review and merge exact PR 96 plus the policy and checkpoint candidates under V2 authority"],
     "unauthorizedActions": ["provider request", "workflow dispatch or rerun", "Environment approval", "formal lock", "Pilot", "confirmatory execution", "scoring", "benchmark acceptance", "final acceptance"]
   },
   "thisCycleProviderRequests": 0,
