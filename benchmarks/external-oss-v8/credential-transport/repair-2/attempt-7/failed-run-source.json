@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "repository": "Eskasia/governseed",
+  "workflowId": 325585082,
+  "runId": 31014045209,
+  "runAttempt": 1,
+  "headSha": "4e1347e510a0068efbdff6942748671490c798ea",
+  "conclusion": "failure",
+  "failureCode": "CANARY_UPSTREAM_NON_2XX",
+  "failureReceiptCommentId": 5193562726,
+  "failureReceiptCommentUrl": "https://github.com/Eskasia/governseed/issues/92#issuecomment-5193562726",
+  "failureReceiptBodySha256": "4a1d95b883a90bc98faadae41c4cf4bea656d5e3cf390fb3cc5625485f08e361",
+  "artifactId": 8935651599,
+  "artifactDigest": "sha256:567ca3d9e79d72da8c69508b686f85ea0baabdf61d860495001478f5f12777be",
+  "failureArtifactSha256": "1cc4353eef786e8541d55a8d2b9a39770518037b132a60e68c0aaa50141c99fd",
+  "providerRequestAttempt": "INDETERMINATE",
+  "possiblyConsumedRequestCount": 1,
+  "rerunPermitted": false,
+  "rawProviderResponsePersisted": false,
+  "providerErrorTextPersisted": false,
+  "credentialValuesPersisted": false
+}

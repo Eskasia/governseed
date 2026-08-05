@@ -1,5 +1,6 @@
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
+import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import test from 'node:test';
@@ -84,14 +85,19 @@ test('workflow failure evidence uses separated counters and fixed taxonomy', () 
   assert.doesNotMatch(workflow, /providerRequestCount/u);
 });
 
-test('attempt-6 packet and manifest hashes bind actual current bytes', () => {
+test('attempt-6 packet and manifest remain a bound historical snapshot', () => {
   const packet = readJson(PACKET);
   const manifest = readJson(MANIFEST);
-  for (const entry of manifest.entries) assert.equal(sha256(entry.path), entry.sha256, entry.path);
+  for (const entry of manifest.entries) {
+    const historical = createHash('sha256')
+      .update(execFileSync('git', ['show', `origin/main:${entry.path}`], { cwd: ROOT }))
+      .digest('hex');
+    assert.equal(historical, entry.sha256, entry.path);
+  }
   assert.equal(packet.modelBinding.provider, 'OpenAI');
   assert.equal(packet.modelBinding.modelId, MODEL);
   assert.equal(packet.modelBinding.aliasAllowed, false);
   assert.equal(packet.modelBinding.fallbackAllowed, false);
-  assert.equal(packet.hashes.workflowSha256, sha256(WORKFLOW));
+  assert.equal(packet.hashes.workflowSha256, manifest.entries.find((entry) => entry.path === WORKFLOW).sha256);
   assert.equal(packet.hashes.technicalManifestSha256, sha256(MANIFEST));
 });

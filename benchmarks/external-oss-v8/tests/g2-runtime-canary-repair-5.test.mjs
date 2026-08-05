@@ -169,7 +169,7 @@ test('upstream transport failure records attempt counters separately from receip
 
   assert.equal(upstreamCalls, 1);
   assert.deepEqual(proxy.getSummary(), {
-    schemaVersion: 2,
+    schemaVersion: 3,
     clientRequestObservedCount: 1,
     upstreamAttemptCount: 1,
     upstreamResponseCount: 0,
@@ -178,6 +178,11 @@ test('upstream transport failure records attempt counters separately from receip
     lastSafeErrorCode: 'PROXY_UPSTREAM_FAILED',
     socketAcceptedConnection: true,
     proxyCleanupObserved: true,
+    providerHttpStatus: null,
+    providerErrorType: null,
+    providerErrorCode: null,
+    requestObservationState: 'UPSTREAM_ATTEMPTED',
+    failureClassification: null,
   });
 });
 
@@ -287,7 +292,7 @@ test('upstream status matrix records one attempt, one response, and no receipt',
       assert.equal(result.canaryAccepted, false);
       assert.equal(result.udsConnection, 'PASS');
       assert.deepEqual(proxy.getSummary(), {
-        schemaVersion: 2,
+        schemaVersion: 3,
         clientRequestObservedCount: 1,
         upstreamAttemptCount: 1,
         upstreamResponseCount: 1,
@@ -296,6 +301,17 @@ test('upstream status matrix records one attempt, one response, and no receipt',
         lastSafeErrorCode: 'PROXY_UPSTREAM_FAILED',
         socketAcceptedConnection: true,
         proxyCleanupObserved: true,
+        providerHttpStatus: statusCode,
+        providerErrorType: null,
+        providerErrorCode: null,
+        requestObservationState: 'UPSTREAM_RESPONSE_OBSERVED',
+        failureClassification: statusCode === 400
+          ? 'INVALID_REQUEST'
+          : statusCode === 401
+            ? 'AUTHENTICATION'
+            : statusCode === 429
+              ? 'RATE_LIMIT_OR_QUOTA'
+              : 'UPSTREAM_SERVER',
       });
     });
   }

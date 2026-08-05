@@ -42,7 +42,7 @@ test('prior human approvals and sanitized source records remain immutable', () =
   ]) assert.deepEqual(readFileSync(path.join(ROOT, relativePath)), originBytes(relativePath), relativePath);
 });
 
-test('repair-6 preparation keeps attempt-5 approval immutable and binds current hashes', () => {
+test('repair-6 preparation remains immutable while attempt-7 owns current hashes', () => {
   const packet = readJson(PACKET);
   const addendum = readJson(ADDENDUM);
   const pending = readJson(TEMPLATE);
@@ -55,9 +55,11 @@ test('repair-6 preparation keeps attempt-5 approval immutable and binds current 
     fallbackAllowed: false,
   });
   assert.equal(packet.status, 'PENDING_HUMAN_REPAIR_6_REVIEW');
-  assert.equal(packet.hashes.workflowSha256, sha256(WORKFLOW));
+  const historicalWorkflowSha256 = readJson(MANIFEST).entries
+    .find((entry) => entry.path === WORKFLOW).sha256;
+  assert.equal(packet.hashes.workflowSha256, historicalWorkflowSha256);
   assert.equal(packet.hashes.technicalManifestSha256, sha256(MANIFEST));
-  assert.equal(addendum.workflowSha256, sha256(WORKFLOW));
+  assert.equal(addendum.workflowSha256, historicalWorkflowSha256);
   assert.equal(addendum.reviewPacketSha256, sha256(PACKET));
   assert.equal(addendum.technicalManifestSha256, sha256(MANIFEST));
   assert.equal(pending.approvalStatus, 'PENDING_HUMAN_REVIEW');

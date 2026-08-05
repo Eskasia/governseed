@@ -1,0 +1,68 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "non-2xx-diagnostic-repair",
+  "attempt": 7,
+  "status": "PENDING_OWNER_REVIEW",
+  "authorizedBase": {
+    "commit": "3e0cca4fd86ba0aad735249dcefa6df15514b40d",
+    "tree": "bc118138747195712585adcefe9d92e0550f123b"
+  },
+  "modelBinding": {
+    "provider": "OpenAI",
+    "modelId": "gpt-5.6-luna",
+    "aliasAllowed": false,
+    "fallbackAllowed": false
+  },
+  "transport": {
+    "endpoint": "https://api.openai.com/v1/responses",
+    "requestLimit": 1,
+    "timeoutMs": 30000,
+    "retryAllowed": false,
+    "tokenCeiling": 8192,
+    "fixedInput": "Return exactly the JSON object {\"runtime_canary\":\"PASS\"}."
+  },
+  "runtime": {
+    "image": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+    "workflowId": 325585082,
+    "environment": "governseed-v8-runtime",
+    "runAttemptMustEqual": 1
+  },
+  "failedRun": {
+    "runId": 31014045209,
+    "attempt": 1,
+    "providerRequestAttempt": "INDETERMINATE",
+    "possiblyConsumedRequestCount": 1,
+    "rerunPermitted": false
+  },
+  "diagnosticContract": {
+    "allowedFields": [
+      "providerHttpStatus",
+      "providerErrorType",
+      "providerErrorCode",
+      "requestObservationState",
+      "failureClassification"
+    ],
+    "unknownProviderValue": "UNRECOGNIZED",
+    "rawProviderBodyPersisted": false,
+    "providerErrorMessagePersisted": false,
+    "promptPersisted": false,
+    "responsePersisted": false,
+    "providerHeadersPersisted": false,
+    "authorizationDataPersisted": false,
+    "credentialValuesPersisted": false,
+    "environmentDumpPersisted": false
+  },
+  "protocolChange": false,
+  "providerRequestAuthorized": false,
+  "workflowDispatchAuthorized": false,
+  "environmentApprovalAuthorized": false,
+  "mergeAuthorized": false,
+  "hashes": {
+    "workflowSha256": "8c95e3251ca8473f2401ac115f6da0cf88cc1207099ef834446c262ff710a2af",
+    "technicalManifestSha256": "439a61d7338e6d7569ef214eb9baece68a7dfc2642b21d7f39e0df5f14b926f7",
+    "authorizationSourceSha256": "0051a94c40a75cf948c754258edef15bb10ee5874106cab6bc92b5ba66782c39",
+    "failedRunSourceSha256": "eb11b966a563d7cd51f824fbbf8f5e05a94a3075c3eadd325ff360df6a0b98f3"
+  }
+}

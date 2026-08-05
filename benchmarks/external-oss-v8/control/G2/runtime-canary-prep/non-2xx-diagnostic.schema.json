@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://governseed.example/schemas/external-oss-v8-non-2xx-diagnostic.schema.json",
+  "title": "External OSS V8 privacy-safe NON_2XX diagnostic",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "providerHttpStatus",
+    "providerErrorType",
+    "providerErrorCode",
+    "requestObservationState",
+    "failureClassification"
+  ],
+  "properties": {
+    "providerHttpStatus": {
+      "type": ["integer", "null"],
+      "minimum": 100,
+      "maximum": 599
+    },
+    "providerErrorType": {
+      "type": ["string", "null"],
+      "enum": [
+        "authentication_error",
+        "invalid_request_error",
+        "permission_error",
+        "rate_limit_error",
+        "server_error",
+        "UNRECOGNIZED",
+        null
+      ]
+    },
+    "providerErrorCode": {
+      "type": ["string", "null"],
+      "enum": [
+        "insufficient_quota",
+        "invalid_api_key",
+        "model_not_found",
+        "rate_limit_exceeded",
+        "unsupported_value",
+        "UNRECOGNIZED",
+        null
+      ]
+    },
+    "requestObservationState": {
+      "type": "string",
+      "enum": [
+        "NOT_OBSERVED",
+        "CLIENT_REQUEST_OBSERVED",
+        "UPSTREAM_ATTEMPTED",
+        "UPSTREAM_RESPONSE_OBSERVED",
+        "SUCCESS_RECEIPT_RECORDED"
+      ]
+    },
+    "failureClassification": {
+      "type": ["string", "null"],
+      "enum": [
+        "AUTHENTICATION",
+        "AUTHORIZATION",
+        "MODEL_OR_ENDPOINT",
+        "RATE_LIMIT_OR_QUOTA",
+        "INVALID_REQUEST",
+        "UPSTREAM_SERVER",
+        "OTHER_NON_2XX",
+        null
+      ]
+    }
+  }
+}
