@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Eskasia/governseed/blob/main/benchmarks/external-oss-v8/control/policy/candidate-control-plane-policy.schema.json",
+  "title": "GovernSeed candidate and live control-plane separation policy",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "policyId", "status", "scope", "candidateFreeze", "bodyHash", "liveControlPlane", "candidateBranch", "checkpoint", "separateHumanGates"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "policyId": { "const": "GS-CANDIDATE-CONTROL-PLANE-SEPARATION-V1" },
+    "status": { "enum": ["active", "suspended"] },
+    "scope": { "$ref": "#/$defs/scope" },
+    "candidateFreeze": { "$ref": "#/$defs/candidateFreeze" },
+    "bodyHash": { "$ref": "#/$defs/bodyHash" },
+    "liveControlPlane": { "$ref": "#/$defs/liveControlPlane" },
+    "candidateBranch": { "$ref": "#/$defs/candidateBranch" },
+    "checkpoint": { "$ref": "#/$defs/checkpoint" },
+    "separateHumanGates": {
+      "type": "array",
+      "minItems": 9,
+      "maxItems": 9,
+      "uniqueItems": true,
+      "items": { "enum": ["provider_request", "pr_readiness", "merge", "workflow_dispatch", "formal_lock", "pilot", "confirmatory_execution", "scoring", "benchmark_acceptance"] }
+    }
+  },
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "pathList": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "minLength": 1 } },
+    "scope": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "issue", "pullRequest"],
+      "properties": {
+        "repository": { "const": "Eskasia/governseed" },
+        "issue": { "type": "integer", "minimum": 1 },
+        "pullRequest": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "candidateFreeze": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseSha", "headSha", "treeSha", "validationRun"],
+      "properties": {
+        "baseSha": { "$ref": "#/$defs/sha" },
+        "headSha": { "$ref": "#/$defs/sha" },
+        "treeSha": { "$ref": "#/$defs/sha" },
+        "validationRun": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "bodyHash": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "canonicalization", "source"],
+      "properties": {
+        "algorithm": { "const": "sha256" },
+        "canonicalization": { "const": "SHA-256 over the exact UTF-8 GitHub API .body string with no added delimiter" },
+        "source": { "const": "raw GitHub API comment JSON parsed in-process" }
+      }
+    },
+    "location": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["kind", "number"],
+      "properties": {
+        "kind": { "enum": ["issue", "pull_request"] },
+        "number": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "chain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["previousEventBindingRequired", "tailMayRemainUnboundUntilNextEvent"],
+      "properties": {
+        "previousEventBindingRequired": { "const": true },
+        "tailMayRemainUnboundUntilNextEvent": { "const": true }
+      }
+    },
+    "liveControlPlane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["locations", "appendOnly", "editsAllowed", "requiredCommentFields", "chain"],
+      "properties": {
+        "locations": { "type": "array", "minItems": 2, "maxItems": 2, "items": { "$ref": "#/$defs/location" } },
+        "appendOnly": { "const": true },
+        "editsAllowed": { "const": false },
+        "requiredCommentFields": { "type": "array", "minItems": 7, "maxItems": 7, "uniqueItems": true, "items": { "enum": ["id", "html_url", "user.login", "author_association", "created_at", "updated_at", "body"] } },
+        "chain": { "$ref": "#/$defs/chain" }
+      }
+    },
+    "candidateBranch": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["forbiddenExactPaths", "forbiddenPathPrefixes"],
+      "properties": {
+        "forbiddenExactPaths": { "$ref": "#/$defs/pathList" },
+        "forbiddenPathPrefixes": { "$ref": "#/$defs/pathList" }
+      }
+    },
+    "checkpoint": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["branchRole", "batchOnly", "candidateHeadMustRemainUnchanged", "allowedPathPrefixes"],
+      "properties": {
+        "branchRole": { "const": "control-checkpoint" },
+        "batchOnly": { "const": true },
+        "candidateHeadMustRemainUnchanged": { "const": true },
+        "allowedPathPrefixes": { "$ref": "#/$defs/pathList" }
+      }
+    }
+  }
+}
