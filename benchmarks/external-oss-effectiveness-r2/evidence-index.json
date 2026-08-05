@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
-  "status": "CONTRACT_AND_TASK_IDENTITY_IMPLEMENTATION_EVIDENCE_ONLY",
+  "status": "CONTRACT_TASK_IDENTITY_AND_SURFACE_IMPLEMENTATION_EVIDENCE_ONLY",
   "artifacts": [
     {
       "path": "benchmarks/external-oss-effectiveness-r2/experiment-contract.schema.json",
@@ -10,6 +10,14 @@
     {
       "path": "benchmarks/external-oss-effectiveness-r2/task-package.schema.json",
       "sha256": "73e6875481bf1defffe53d25fd8bfa3a07b35a8cea0290940ac84c064e742150"
+    },
+    {
+      "path": "benchmarks/external-oss-effectiveness-r2/execution-agent-surface.schema.json",
+      "sha256": "e5092a4ff424d192b38f0e1c6145432f6aea4bb1e5940ff625d8bcd254b7fbf6"
+    },
+    {
+      "path": "benchmarks/external-oss-effectiveness-r2/execution-agent-surface.json",
+      "sha256": "eb42e1b443f68a62b2a9cb72976e5e9fcbb3fb35c3532ad78cf0e5b90511ed47"
     },
     {
       "path": "benchmarks/external-oss-effectiveness-r2/experiment-contract.json",

@@ -152,4 +152,29 @@
 - The rejected verdict cannot approve the repair head. A fresh independent review is `NOT_RUN` and requires a new exact one-request authorization after final head/tree and CI are externally bound.
 - Decision: retain P1.2 as `HUMAN_GATE` at `29.0%`; do not mark ready, merge, dispatch a workflow, formal-lock, execute either arm, score, or accept the benchmark.
 
+## 2026-08-05 — P1.2 repair reviews reconciled and accepted
+
+- Status: `INDEPENDENT_ACCEPT`; P1.2 remained non-PASS pending exact-head merge.
+- Fresh checker `GS-EFFECT-R2-INDEPENDENT-CHECKER-REPAIR-1` independently verified the code repair and returned a bounded `REJECT` only because the external runtime-history wording could be misread as denying historical run `30850478318` or all upstream attempts.
+- The PR body and technical binding were corrected to say only that no new GitHub workflow was dispatched during C013, repair preparation, either checker, or the wording repair. Historical run `30850478318` remains `workflowDispatch=RUN`, `providerRequestAttempt=INDETERMINATE`, and `approvedSingleRequestPossiblyConsumed=true`.
+- A separately authorized checker `GS-EFFECT-R2-INDEPENDENT-CHECKER-REPAIR-2` returned `ACCEPT` for exact base/head/tree `b812fe7e9096beee4ae8310482055648ad022d4a` / `d5b1c32138496a91931b20f065c39f4404505d01` / `31dc203b0bb1af2d1546a9f9df676fa945dde792`; sanitized comment `5188871233` has exact API-body SHA-256 `d0e09d1f788d4cb8e35e520bd18c1caccd3108429e1f01a54581ad04ddfe9648`.
+- Two separately authorized read-only checker provider requests were consumed after C013; neither checker edited the repository or dispatched a GitHub workflow.
+- Decision: satisfy `TASK_IDENTITY_INDEPENDENT_REVIEW_AUTHORIZATION` and advance only to exact-head owner merge approval. Do not infer merge, formal lock, execution, scoring, or acceptance authorization.
+
+## 2026-08-05 — P1.2 task identities merged and canonical
+
+- Status: `P1.2 PASS`.
+- OWNER approval <https://github.com/Eskasia/governseed/pull/87#issuecomment-5189326581> is comment `5189326581`, created at `2026-08-05T08:16:34Z`, with exact API-body SHA-256 `2f08758e31ebb706375cd046097270ce86c9cc4203e3ba0c684467e1b71f6a93`.
+- PR `#87` merged exact reviewed head `d5b1c32138496a91931b20f065c39f4404505d01` at `2026-08-05T08:17:06Z`, thirty-two seconds after approval. Merge commit `220c2d8d816194eb77da94e182258a0875202f3b` preserves reviewed tree `31dc203b0bb1af2d1546a9f9df676fa945dde792` exactly.
+- Main validation run `30988393468` passed on Ubuntu, macOS, and Windows; Issue `#86` is closed. Runtime Identity history remains exactly the three historical manual runs and no new provider-consuming workflow was dispatched.
+- Decision: close P1.2 and raise evidence-weighted completion from `29.0%` to `31.0%`. Select P1.4 as the next strict READY critical-path node.
+
+## 2026-08-05 — P1.4 public-hidden criterion separation prepared
+
+- Status: `HUMAN_GATE`; weighted completion remains `31.0%` until the P1.4 candidate is independently accepted and merged.
+- Issue `#88` defines the static Git-surface acceptance boundary. The closed execution-agent-surface manifest exposes all eight public task and public test artifacts with canonical hashes while allowing only sanitized hidden-oracle hash metadata.
+- Deterministic tests use `git ls-files` to require exactly three tracked files per task, reject missing or drifted public artifacts, cross-task rebinding, hidden source/path/content injection, exposure flags, and any extra tracked task-surface file.
+- The claim is limited to committed execution-agent surface separation. It does not claim runtime mount enforcement, formal lock, provider execution, Pilot, confirmatory execution, scoring, effectiveness, or acceptance.
+- Decision: stop at `PUBLIC_HIDDEN_SEPARATION_INDEPENDENT_REVIEW_AUTHORIZATION` after final head/tree and three-platform CI are externally bound. Queue P3.R6 separately; do not dispatch or merge it under this gate.
+
 This log records gaps and decisions only. It does not authorize provider use, workflow dispatch, PR merge, G3, Pilot, confirmatory execution, scoring, or benchmark acceptance.

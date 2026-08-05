@@ -1,0 +1,66 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
+  "revision": 2,
+  "surfaceId": "GS-EFFECT-R2-P1.4-EXECUTION-AGENT-SURFACE-1",
+  "evidenceClass": "external-observational",
+  "sourceMainSha": "220c2d8d816194eb77da94e182258a0875202f3b",
+  "sourceMainTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
+  "taskPackageSchemaSha256": "73e6875481bf1defffe53d25fd8bfa3a07b35a8cea0290940ac84c064e742150",
+  "experimentContractSha256": "8b127152205b0d958ceae9a79ac061ce99ef5d7e8b3543032d75b030c6b8f052",
+  "reviewBinding": {
+    "pullRequest": 87,
+    "reviewedHeadSha": "d5b1c32138496a91931b20f065c39f4404505d01",
+    "reviewedTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
+    "acceptCommentUrl": "https://github.com/Eskasia/governseed/pull/87#issuecomment-5188871233",
+    "acceptCommentBodySha256": "d0e09d1f788d4cb8e35e520bd18c1caccd3108429e1f01a54581ad04ddfe9648",
+    "mergeCommitSha": "220c2d8d816194eb77da94e182258a0875202f3b",
+    "mergeTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
+    "mainValidationRun": 30988393468
+  },
+  "taskIds": [
+    "TASK-OSS-11", "TASK-OSS-12", "TASK-OSS-13", "TASK-OSS-14",
+    "TASK-OSS-15", "TASK-OSS-16", "TASK-OSS-17", "TASK-OSS-18"
+  ],
+  "taskDirectoryContract": {
+    "root": "benchmarks/external-oss-effectiveness-r2/tasks",
+    "trackedFilesPerTask": 3,
+    "publicTaskFile": "public-task.md",
+    "publicTestPattern": "^public-test\\.(py|cjs|ts)$",
+    "sanitizedPackageFile": "task-package.json"
+  },
+  "visibility": {
+    "executionAgentVisible": [
+      "public task bytes and SHA-256",
+      "public test bytes, command identity, and SHA-256",
+      "sanitized task-package metadata including hidden-oracle hashes"
+    ],
+    "runnerPrivate": [
+      "raw hidden-oracle source",
+      "hidden expected results",
+      "raw hidden-oracle command or arguments"
+    ],
+    "hiddenOracleMetadata": {
+      "hashOnly": true,
+      "runnerOwned": true,
+      "sourceCommitted": false,
+      "exposedToExecutionAgent": false,
+      "identitySeparatedFromPublicTest": true
+    }
+  },
+  "forbiddenTrackedPathPatterns": [
+    "^benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-1[1-8]/hidden-oracle(?:\\.|/)",
+    "^benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-1[1-8]/runner-private(?:\\.|/)",
+    "^benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-1[1-8]/oracle-source(?:\\.|/)"
+  ],
+  "negativeRequirements": [
+    "reject a missing or untracked public task or test",
+    "reject public artifact hash drift",
+    "reject cross-task public artifact rebinding",
+    "reject hidden source, path, content, or expected-result injection",
+    "reject hidden-oracle exposure flags",
+    "reject any extra tracked task-surface file"
+  ],
+  "status": "PREPARED_PENDING_REVIEW_AND_MERGE",
+  "claimBoundary": "Deterministic Git-tracked execution-agent surface separation only. This manifest does not prove runtime mount enforcement, provider execution, formal lock, Pilot, confirmatory execution, scoring, effectiveness, or benchmark acceptance."
+}

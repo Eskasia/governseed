@@ -1,23 +1,33 @@
 # Current human gates
 
+## PUBLIC_HIDDEN_SEPARATION_INDEPENDENT_REVIEW_AUTHORIZATION
+
+- Status: `PENDING_FINAL_HEAD_AND_CI_BINDING`; Issue <https://github.com/Eskasia/governseed/issues/88> tracks P1.4.
+- Review scope: P1.2 merge reconciliation, closed execution-agent-surface manifest/schema, Git-tracked public task/test accessibility, hidden-oracle hash-only metadata, negative mutations, evidence-index bindings, and C014-C016 loop controls.
+- Required evidence before authorization: exact final draft-PR head/tree, successful Ubuntu/macOS/Windows validation, unchanged task/seed/oracle/scorer/runtime/workflow identities, and unchanged Runtime Identity workflow history.
+- Authorized human action after external binding: authorize exactly one fresh read-only checker for the exact final head/tree.
+- Explicitly unauthorized: editing, push, PR readiness, merge, another agent/provider request, workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, or benchmark acceptance.
+- Completion boundary: P1.4 remains non-PASS and weighted completion remains `31.0%` until a fresh checker accepts the exact final candidate and that exact head is separately owner-approved and merged.
+
+## PUBLIC_HIDDEN_SEPARATION_PR_REVIEW_AND_MERGE
+
+- Status: `BLOCKED_PENDING_ACCEPTED_INDEPENDENT_REVIEW`.
+- Review scope: exact P1.4 draft-PR head/tree and the evidence listed above.
+- Authorized human action only after an accepted checker verdict: approve PR readiness and merge for the exact reviewed head/tree.
+- Explicitly unauthorized: provider request, provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, benchmark acceptance, or approval of any later pushed head.
+- Completion boundary: P1.4 remains non-PASS until the exact reviewed evidence is canonical on main.
+
 ## TASK_IDENTITY_INDEPENDENT_REVIEW_AUTHORIZATION
 
-- Status: `HUMAN_GATE`; the authorized checker returned `REJECT` for PR `#87` head `86cdae157e8eec3656569790aca62c5cc61aa81a` and tree `2f80b3d0f1106341e0002b33c19147518d206943`.
-- Sanitized verdict receipt: `benchmarks/external-oss-v8/control/loop/reconciliation/pr-87-independent-review-rejection.json`.
-- Bounded repairs: bind each public artifact path to its `taskId`, reject duplicate and cross-class artifact identities, add negative mutations, and remove all fourteen EOF blank-line violations.
-- Required evidence before another review: exact repaired PR head/tree, successful Ubuntu/macOS/Windows validation, unchanged Runtime Identity workflow history, and a new one-request authorization for a fresh read-only checker.
-- Authorized human action: authorize exactly one fresh read-only checker for the exact repaired head/tree after the external binding is posted.
-- Explicitly unauthorized: PR readiness, merge, workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, benchmark acceptance, or approval of a later pushed head.
-- Completion boundary: P1.2 remains non-PASS and weighted completion remains `29.0%` until a fresh checker accepts the repaired exact head and that exact head is owner-approved and merged.
+- Status: `SATISFIED` by accepted checker `GS-EFFECT-R2-INDEPENDENT-CHECKER-REPAIR-2` and sanitized comment <https://github.com/Eskasia/governseed/pull/87#issuecomment-5188871233>.
+- Exact reviewed head/tree: `d5b1c32138496a91931b20f065c39f4404505d01` / `31dc203b0bb1af2d1546a9f9df676fa945dde792`.
+- Claim boundary: independent review of P1.2 only; no authorization carries forward to P1.4 or any runtime/formal-lock/execution gate.
 
 ## TASK_IDENTITY_PR_REVIEW_AND_MERGE
 
-- Status: `BLOCKED_BY_REJECTED_INDEPENDENT_REVIEW`; draft PR <https://github.com/Eskasia/governseed/pull/87> implements Issue <https://github.com/Eskasia/governseed/issues/86>.
-- Review scope: TASK-OSS-11 through TASK-OSS-18 package schema, public task/test identities, exact upstream parent/fix and seed-tree bindings, allow-only path policies, runner-owned hidden-oracle hashes, parent-red/fix-green receipts, R2 contract/evidence-index updates, and C012 control records.
-- Required evidence before approval: exact final PR head and tree, successful Ubuntu/macOS/Windows validation, independent read-only review of the final diff and hashes, and unchanged Runtime Identity workflow history.
-- Authorized human action: approve PR readiness and merge for that exact final head/tree only.
-- Explicitly unauthorized: provider request, provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, benchmark acceptance, or approval of any later pushed head.
-- Completion boundary: P1.2 remains non-PASS and weighted completion remains `29.0%` until the exact reviewed evidence is canonical on main.
+- Status: `SATISFIED` by OWNER comment <https://github.com/Eskasia/governseed/pull/87#issuecomment-5189326581>; PR `#87` merged as `220c2d8d816194eb77da94e182258a0875202f3b` with exact reviewed tree `31dc203b0bb1af2d1546a9f9df676fa945dde792`.
+- Main validation: run `30988393468`; Ubuntu/macOS/Windows `SUCCESS`.
+- Claim boundary: canonical P1.2 task/oracle identity evidence only; no provider workflow, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, or benchmark acceptance authorization.
 
 ## CONTRACT_PR_REVIEW_AND_MERGE
 

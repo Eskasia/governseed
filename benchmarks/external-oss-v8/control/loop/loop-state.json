@@ -1,14 +1,14 @@
 {
   "schemaVersion": 1,
   "benchmarkId": "GS-OSS-2026-08-02-V8",
-  "currentMainSha": "b812fe7e9096beee4ae8310482055648ad022d4a",
-  "currentMainTreeSha": "e2c4dcafdcd8f5f5e2962031979039ce70432615",
-  "observedAt": "2026-08-05T04:43:09Z",
+  "currentMainSha": "220c2d8d816194eb77da94e182258a0875202f3b",
+  "currentMainTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
+  "observedAt": "2026-08-05T08:25:35Z",
   "activePhase": "P1",
-  "activeNode": "P1.2",
-  "activeBranch": "benchmark/p0-p0.1-contract-merge-reconciliation",
-  "activePR": 87,
-  "activeIssue": 86,
+  "activeNode": "P1.4",
+  "activeBranch": "benchmark/p1.4-public-hidden-separation",
+  "activePR": null,
+  "activeIssue": 88,
   "latestRunIds": {
     "acceptedG1": "30739570734",
     "forbiddenG2Reruns": ["30814159615", "30824406710", "30850478318"],
@@ -17,15 +17,17 @@
     "loopControlMergeValidation": "30916308174",
     "priorExperimentContractEvidenceValidation": "30961663119",
     "experimentContractPullRequestValidation": "30966317154",
-    "experimentContractMergeValidation": "30971703749"
+    "experimentContractMergeValidation": "30971703749",
+    "taskIdentityPullRequestValidation": "30976115630",
+    "taskIdentityMergeValidation": "30988393468"
   },
   "activeRunIds": [],
-  "currentHumanGate": "TASK_IDENTITY_INDEPENDENT_REVIEW_AUTHORIZATION",
-  "completionPercentage": 29,
+  "currentHumanGate": "PUBLIC_HIDDEN_SEPARATION_INDEPENDENT_REVIEW_AUTHORIZATION",
+  "completionPercentage": 31,
   "completionBasis": "Only PASS nodes count. Canonical phase weights are absent, so the requested fallback weights are divided equally across canonical subnodes; repair nodes have zero weight.",
-  "lastCycleId": "GS-LOOP-2026-08-05-C013",
-  "readySetAtSelection": ["P1.2", "P3.R6"],
-  "selectedGatePreparationNode": "P1.2",
+  "lastCycleId": "GS-LOOP-2026-08-05-C016",
+  "readySetAtSelection": ["P1.4", "P3.R6"],
+  "selectedGatePreparationNode": "P1.4",
   "nextReadyNodes": ["P3.R6"],
   "evidenceConflicts": [
     {
@@ -70,40 +72,40 @@
     }
   ],
   "openPullRequests": {
-    "active": [81, 87],
+    "active": [81],
     "staleOrSupersededCandidates": [54, 55, 60, 62, 65, 66]
   },
   "finalHeadBinding": {
     "status": "VERIFIED_MERGED",
-    "pullRequest": 85,
-    "reviewedHeadSha": "bc0faecf12360b510ca3c4cfb6770f8fcdaffbaa",
-    "reviewedTreeSha": "e2c4dcafdcd8f5f5e2962031979039ce70432615",
-    "approvalComment": "https://github.com/Eskasia/governseed/pull/85#issuecomment-5187112324",
-    "approvalCommentBodySha256": "7d06ff69617a039ac95a6113a23f440f18de4f3716016eb0eace45e9abe593f5",
-    "approvalCreatedAt": "2026-08-05T03:14:32Z",
-    "mergedAt": "2026-08-05T03:14:53Z",
-    "mergeCommitSha": "b812fe7e9096beee4ae8310482055648ad022d4a",
-    "mergeValidationRun": "30971703749"
+    "pullRequest": 87,
+    "reviewedHeadSha": "d5b1c32138496a91931b20f065c39f4404505d01",
+    "reviewedTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
+    "approvalComment": "https://github.com/Eskasia/governseed/pull/87#issuecomment-5189326581",
+    "approvalCommentBodySha256": "2f08758e31ebb706375cd046097270ce86c9cc4203e3ba0c684467e1b71f6a93",
+    "approvalCreatedAt": "2026-08-05T08:16:34Z",
+    "mergedAt": "2026-08-05T08:17:06Z",
+    "mergeCommitSha": "220c2d8d816194eb77da94e182258a0875202f3b",
+    "mergeValidationRun": "30988393468"
   },
   "pendingReviewBinding": {
     "status": "EXTERNAL_GITHUB_HEAD_BINDING_REQUIRED",
-    "pullRequest": 87,
-    "issue": 86,
-    "baseMainSha": "b812fe7e9096beee4ae8310482055648ad022d4a",
+    "pullRequest": null,
+    "issue": 88,
+    "baseMainSha": "220c2d8d816194eb77da94e182258a0875202f3b",
     "priorIndependentReview": {
-      "status": "REJECT",
-      "reviewId": "GS-EFFECT-R2-INDEPENDENT-CHECKER-2026-08-05-01",
-      "reviewedHeadSha": "86cdae157e8eec3656569790aca62c5cc61aa81a",
-      "reviewedTreeSha": "2f80b3d0f1106341e0002b33c19147518d206943",
-      "receiptPath": "benchmarks/external-oss-v8/control/loop/reconciliation/pr-87-independent-review-rejection.json"
+      "status": "ACCEPT",
+      "reviewId": "GS-EFFECT-R2-INDEPENDENT-CHECKER-REPAIR-2",
+      "reviewedHeadSha": "d5b1c32138496a91931b20f065c39f4404505d01",
+      "reviewedTreeSha": "31dc203b0bb1af2d1546a9f9df676fa945dde792",
+      "receiptPath": "benchmarks/external-oss-v8/control/loop/reconciliation/pr-87-task-identity-merge.json"
     },
-    "currentIndependentReview": "NOT_RUN_ON_REPAIR_HEAD_REQUIRES_NEW_AUTHORIZATION",
-    "requiredEvidence": ["exact repaired final head", "exact repaired final tree", "green three-platform CI", "fresh independent read-only review", "owner approval predating merge"],
-    "authorizedActions": ["bounded remediation"],
+    "currentIndependentReview": "NOT_RUN_ON_P1_4_CANDIDATE_REQUIRES_NEW_AUTHORIZATION",
+    "requiredEvidence": ["exact final P1.4 head", "exact final P1.4 tree", "green three-platform CI", "fresh independent read-only review", "owner approval predating merge"],
+    "authorizedActions": ["offline deterministic evidence implementation", "commit", "push", "draft PR"],
     "unauthorizedActions": ["PR readiness", "merge", "provider request", "workflow dispatch", "G2", "G3", "formal lock", "Pilot", "confirmatory execution", "scoring", "benchmark acceptance"]
   },
-  "thisCycleProviderRequests": 1,
+  "thisCycleProviderRequests": 0,
   "providerRequests": "INDETERMINATE_FOR_RUN_30850478318",
   "workflowDispatch": "NOT_RUN_IN_THIS_CYCLE",
-  "claimBoundary": "One authorized read-only checker request returned REJECT for the prior PR 87 head. Both bounded findings are repaired locally, but the repair head is not independently reviewed or approved. No provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory arm execution, scoring, effectiveness, PR readiness, merge, or benchmark acceptance is claimed."
+  "claimBoundary": "P1.2 is canonical on main after exact-head independent ACCEPT, OWNER approval, merge, and three-platform main CI. P1.4 contains deterministic Git-surface separation evidence pending fresh independent review and merge. No provider request in C016, provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, effectiveness, or benchmark acceptance is claimed."
 }
