@@ -153,12 +153,12 @@ test('G2 conflict remains fail-closed and forbidden runs cannot become active', 
   assert.equal(loopState.evidenceConflicts.some((item) => item.conflictId === 'G2-REPAIR6-APPROVAL-LOCATION-001'), true);
 });
 
-test('recorded GitHub state closes the R2 contract merge and selects P1.2', () => {
+test('recorded GitHub state closes the R2 contract merge and gates P1.2 on PR 87', () => {
   assert.equal(loopState.activeNode, 'P1.2');
   assert.equal(loopState.activeIssue, 86);
-  assert.equal(loopState.activePR, null);
-  assert.equal(loopState.currentHumanGate, null);
-  assert.deepEqual(loopState.openPullRequests.active, [81]);
+  assert.equal(loopState.activePR, 87);
+  assert.equal(loopState.currentHumanGate, 'TASK_IDENTITY_PR_REVIEW_AND_MERGE');
+  assert.deepEqual(loopState.openPullRequests.active, [81, 87]);
   assert.equal(loopState.latestRunIds.priorLoopControlTechnicalValidation, '30913519842');
   assert.equal(loopState.latestRunIds.loopControlMergeValidation, '30916308174');
   assert.equal(loopState.latestRunIds.priorExperimentContractEvidenceValidation, '30961663119');
@@ -185,8 +185,12 @@ test('recorded GitHub state closes the R2 contract merge and selects P1.2', () =
   assert.deepEqual(loopState.readySetAtSelection, ['P1.2', 'P3.R6']);
   assert.equal(loopState.selectedGatePreparationNode, 'P1.2');
   assert.deepEqual(loopState.nextReadyNodes, ['P3.R6']);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').status, 'IN_PROGRESS');
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').status, 'HUMAN_GATE');
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').activeIssue, 86);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').activePR, 87);
+  assert.equal(loopState.pendingReviewBinding.status, 'EXTERNAL_GITHUB_HEAD_BINDING_REQUIRED');
+  assert.equal(loopState.pendingReviewBinding.pullRequest, 87);
+  assert.ok(loopState.pendingReviewBinding.unauthorizedActions.includes('merge'));
 });
 
 test('decision and human-gate records preserve required fail-closed markers', () => {
@@ -288,6 +292,7 @@ test('owner R2 resolution closes the identity conflict without authorizing execu
   const conflict = loopState.evidenceConflicts.find((item) => item.conflictId === 'EFFECT-R1-TASK-OSS-01-SEED-IDENTITY-001');
   assert.equal(conflict.status, 'RESOLVED_BY_OWNER_R2');
   assert.match(humanGates, /CONTRACT_PR_REVIEW_AND_MERGE/);
+  assert.match(humanGates, /TASK_IDENTITY_PR_REVIEW_AND_MERGE/);
 });
 
 test('validator rejects corrupted control records', async (t) => {
@@ -342,7 +347,7 @@ test('ledger accepts appended immutable records and reconciles attempts per sele
     assert.equal(node.attempts <= 6, true, `${nodeId} exceeds six-cycle ceiling`);
   }
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.1').attempts, 2);
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').attempts, 2);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').attempts, 3);
   for (const entry of ledgerEntries) {
     assert.equal(entry.providerRequests, 'NOT_RUN');
     assert.equal(entry.workflowDispatch, 'NOT_RUN');

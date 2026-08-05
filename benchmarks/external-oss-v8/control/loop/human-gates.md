@@ -1,5 +1,14 @@
 # Current human gates
 
+## TASK_IDENTITY_PR_REVIEW_AND_MERGE
+
+- Status: `HUMAN_GATE`; draft PR <https://github.com/Eskasia/governseed/pull/87> implements Issue <https://github.com/Eskasia/governseed/issues/86>.
+- Review scope: TASK-OSS-11 through TASK-OSS-18 package schema, public task/test identities, exact upstream parent/fix and seed-tree bindings, allow-only path policies, runner-owned hidden-oracle hashes, parent-red/fix-green receipts, R2 contract/evidence-index updates, and C012 control records.
+- Required evidence before approval: exact final PR head and tree, successful Ubuntu/macOS/Windows validation, independent read-only review of the final diff and hashes, and unchanged Runtime Identity workflow history.
+- Authorized human action: approve PR readiness and merge for that exact final head/tree only.
+- Explicitly unauthorized: provider request, provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory execution, scoring, benchmark acceptance, or approval of any later pushed head.
+- Completion boundary: P1.2 remains non-PASS and weighted completion remains `29.0%` until the exact reviewed evidence is canonical on main.
+
 ## CONTRACT_PR_REVIEW_AND_MERGE
 
 - Status: `SATISFIED` by owner comment `5187112324`; PR `#85` merged as `b812fe7e9096beee4ae8310482055648ad022d4a` with exact reviewed tree `e2c4dcafdcd8f5f5e2962031979039ce70432615`.
@@ -10,7 +19,7 @@
 - Remaining fail-closed inputs: eight confirmatory task identities/oracles, runtime/formal-lock bindings, immutable overlay hashes, and price snapshot are not supplied by this gate.
 - Claim boundary: contract implementation evidence only; no runtime, effectiveness, scoring, or acceptance claim.
 
-There is no current P1.2 human gate. Issue `#86` authorizes offline/public-repository task and hidden-oracle preparation only. The next separate READY human gate remains `G2_REPAIR6_TECHNICAL_REVIEW_AND_MERGE` for PR `#81`; it is not authorized by the PR `#85` approval.
+Issue `#86` authorizes offline/public-repository task and hidden-oracle preparation only. PR `#87` is now the current P1.2 review gate. The separate READY `G2_REPAIR6_TECHNICAL_REVIEW_AND_MERGE` gate for PR `#81` remains queued and is not authorized by the PR `#85` approval.
 
 The prior `EXPERIMENT_CONTRACT_TASK_IDENTITY_RESOLUTION` gate was satisfied by owner comment `5186392861`; the historical conflict and resolution remain preserved below.
 

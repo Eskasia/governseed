@@ -134,4 +134,13 @@
 - Issue `#86` defines exact acceptance criteria for TASK-OSS-11 through TASK-OSS-18: public provenance, parent/fix identities, sealed seed, public task/test, path policy, runner-owned hidden oracle, parent-red/fix-green evidence, and fail-closed hash validation.
 - Decision: prepare and review candidate task/oracle identities offline. Do not perform formal lock, provider requests, workflow dispatch, Pilot, confirmatory arm execution, scoring, or benchmark acceptance.
 
+## 2026-08-05 — P1.2 confirmatory task/oracle identities prepared
+
+- Status: `HUMAN_GATE`; weighted completion remains `29.0%` until the evidence is reviewed and merged to main.
+- TASK-OSS-11 through TASK-OSS-18 bind eight distinct public repositories, exact parent/fix commits, exact seed Git trees, tracked-tree SHA-256 values, public task/test hashes, allow-only path-policy hashes, and runner-owned hidden-oracle hashes.
+- Each public test and each identity-separated hidden oracle was executed against its exact upstream pair: all eight parents failed and all eight fixes passed. Fresh second clones reproduced every parent commit, Git tree, and tracked-tree SHA-256.
+- The recursively closed package schema and negative tests reject missing, duplicate, mismatched, exposed, cross-revision, and drifted identities. Raw hidden-oracle source is absent from the committed execution-agent surface.
+- Draft PR <https://github.com/Eskasia/governseed/pull/87> carries the implementation. Runtime Identity workflow history remains exactly the three historical forbidden runs; no provider-consuming workflow was dispatched.
+- Decision: stop at `TASK_IDENTITY_PR_REVIEW_AND_MERGE`. Do not count P1.2 as PASS, select P1.4, mark PR ready, merge, formal-lock, or execute any arm until an owner approves the exact final PR head/tree after green CI and independent review.
+
 This log records gaps and decisions only. It does not authorize provider use, workflow dispatch, PR merge, G3, Pilot, confirmatory execution, scoring, or benchmark acceptance.

@@ -3,11 +3,11 @@
   "benchmarkId": "GS-OSS-2026-08-02-V8",
   "currentMainSha": "b812fe7e9096beee4ae8310482055648ad022d4a",
   "currentMainTreeSha": "e2c4dcafdcd8f5f5e2962031979039ce70432615",
-  "observedAt": "2026-08-05T03:19:22Z",
+  "observedAt": "2026-08-05T03:51:31Z",
   "activePhase": "P1",
   "activeNode": "P1.2",
   "activeBranch": "benchmark/p0-p0.1-contract-merge-reconciliation",
-  "activePR": null,
+  "activePR": 87,
   "activeIssue": 86,
   "latestRunIds": {
     "acceptedG1": "30739570734",
@@ -20,10 +20,10 @@
     "experimentContractMergeValidation": "30971703749"
   },
   "activeRunIds": [],
-  "currentHumanGate": null,
+  "currentHumanGate": "TASK_IDENTITY_PR_REVIEW_AND_MERGE",
   "completionPercentage": 29,
   "completionBasis": "Only PASS nodes count. Canonical phase weights are absent, so the requested fallback weights are divided equally across canonical subnodes; repair nodes have zero weight.",
-  "lastCycleId": "GS-LOOP-2026-08-05-C011",
+  "lastCycleId": "GS-LOOP-2026-08-05-C012",
   "readySetAtSelection": ["P1.2", "P3.R6"],
   "selectedGatePreparationNode": "P1.2",
   "nextReadyNodes": ["P3.R6"],
@@ -70,7 +70,7 @@
     }
   ],
   "openPullRequests": {
-    "active": [81],
+    "active": [81, 87],
     "staleOrSupersededCandidates": [54, 55, 60, 62, 65, 66]
   },
   "finalHeadBinding": {
@@ -85,7 +85,16 @@
     "mergeCommitSha": "b812fe7e9096beee4ae8310482055648ad022d4a",
     "mergeValidationRun": "30971703749"
   },
+  "pendingReviewBinding": {
+    "status": "EXTERNAL_GITHUB_HEAD_BINDING_REQUIRED",
+    "pullRequest": 87,
+    "issue": 86,
+    "baseMainSha": "b812fe7e9096beee4ae8310482055648ad022d4a",
+    "requiredEvidence": ["exact final head", "exact final tree", "green three-platform CI", "independent read-only review", "owner approval predating merge"],
+    "authorizedActions": ["implementation", "review"],
+    "unauthorizedActions": ["PR readiness", "merge", "provider request", "workflow dispatch", "G2", "G3", "formal lock", "Pilot", "confirmatory execution", "scoring", "benchmark acceptance"]
+  },
   "providerRequests": "INDETERMINATE_FOR_RUN_30850478318",
   "workflowDispatch": "NOT_RUN_IN_THIS_CYCLE",
-  "claimBoundary": "R2 contract is canonical on main and P1.2 offline confirmatory task/oracle preparation is active. No provider request, provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory arm execution, scoring, effectiveness, or benchmark acceptance is claimed."
+  "claimBoundary": "R2 confirmatory task/oracle identities are implemented on draft PR 87 and await exact-head human review and merge. No provider request, provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory arm execution, scoring, effectiveness, or benchmark acceptance is claimed."
 }
