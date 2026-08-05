@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "diagnostic-receipt-persistence-repair",
+  "attempt": 8,
+  "entries": [
+    {
+      "path": "experimental/governance-impact/lib/credential-proxy.mjs",
+      "sha256": "9024f101ba789fbe1613177e83a7ced08662f0b610e02a7fa9b7763b9d205eae"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/control/G2/runtime-canary-prep/host-proxy.mjs",
+      "sha256": "e43a2d764d7286857a4fdad39dce4cccd17e37262ee5c9d2ea80c26c1ee8884c"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/control/G2/runtime-canary-prep/canary-client.mjs",
+      "sha256": "75c2f79c90e3f9897686e73f4a1cdadfcf297b9f2c1071ca909e0aee8a8454d9"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/control/G2/runtime-canary-prep/non-2xx-diagnostic.schema.json",
+      "sha256": "48ad93e50d9dc4c1b8ebd9c13e88a0fdff0dc427db32ca13dbf6cc18452db324"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/tests/g2-non-2xx-diagnostics.test.mjs",
+      "sha256": "1ce6ebf9625549f2abb9a611c99bc044b7d34ab5bcf5a93c144a0e9b1923c7f8"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/tests/g2-credential-transport.test.mjs",
+      "sha256": "587d10a40eeffd2d1f1fa01d8f0c23fa58aad6823f8daafa39332c543289c93f"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/tests/g2-runtime-canary-repair-5.test.mjs",
+      "sha256": "b7c569370c241740adebb94e352d2364f6d683f5264e7b4f8bf3140b2f3b1dbc"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/tests/g2-runtime-canary-repair-6.test.mjs",
+      "sha256": "1bfaf5250db25cee0553b4f21d1d39af6571cc17167c3f6c0fbff98b0ba73cb1"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/tests/g2-runtime-canary-reapproval.test.mjs",
+      "sha256": "51a8b675da9f650831f8531fb12f37e3424e124912448bd100a94cc596dc5aae"
+    },
+    {
+      "path": "benchmarks/external-oss-v8/tests/g2-runtime-canary-repair.test.mjs",
+      "sha256": "f6656832c800a25ece75096c7c13d883a145027a64e15ebc20f8bf398a6b532c"
+    }
+  ]
+}

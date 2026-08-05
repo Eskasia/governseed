@@ -60,6 +60,74 @@ function outputRecord(outputPath, record) {
   writeFileSync(outputPath, `${JSON.stringify(record, null, 2)}\n`, { mode: 0o600 });
 }
 
+export function createProxyRecordPersistence({
+  proxy,
+  receipts,
+  outputPath,
+  pollIntervalMs = 25,
+  onComplete = () => {},
+}) {
+  let finalization = null;
+  let watcher = null;
+
+  const finalize = (requestedExitCode, closeProxy) => {
+    if (finalization) return finalization;
+    finalization = (async () => {
+      if (watcher !== null) clearInterval(watcher);
+      let exitCode = requestedExitCode;
+      if (closeProxy) {
+        try {
+          await proxy.close();
+        } catch {
+          exitCode = 1;
+        }
+      }
+      let summary;
+      try {
+        summary = proxy.getSummary();
+      } catch {
+        summary = {};
+        exitCode = 1;
+      }
+      const providerRequestAttempt = summary.upstreamAttemptCount === 0
+        ? 'NO'
+        : summary.upstreamAttemptCount === 1
+          ? 'YES'
+          : 'INDETERMINATE';
+      const record = {
+        ...summary,
+        providerRequestAttempt,
+        receipt: receipts.length === 1 ? receipts[0] : null,
+      };
+      if (record.proxyCleanupObserved !== true) exitCode = 1;
+      try {
+        outputRecord(outputPath, record);
+      } catch {
+        exitCode = 1;
+      }
+      onComplete(exitCode);
+      return exitCode;
+    })();
+    return finalization;
+  };
+
+  watcher = setInterval(() => {
+    try {
+      if (proxy.getSummary().proxyCleanupObserved === true) {
+        void finalize(1, false);
+      }
+    } catch {
+      // The explicit shutdown path remains responsible for fail-closed persistence.
+    }
+  }, pollIntervalMs);
+
+  return Object.freeze({
+    shutdown(exitCode) {
+      return finalize(exitCode, true);
+    },
+  });
+}
+
 async function main() {
   const secret = requiredEnv('OPENAI_API_KEY');
   const socketPath = requiredEnv('PROXY_SOCKET');
@@ -98,39 +166,17 @@ async function main() {
   });
   await proxy.start();
 
-  let shuttingDown = false;
-  const shutdown = async (exitCode) => {
-    if (shuttingDown) return;
-    shuttingDown = true;
-    let summary;
-    try {
-      await proxy.close();
-      summary = proxy.getSummary();
-    } catch {
-      summary = proxy.getSummary();
-    }
-    const providerRequestAttempt = summary.upstreamAttemptCount === 0
-      ? 'NO'
-      : summary.upstreamAttemptCount === 1
-        ? 'YES'
-        : 'INDETERMINATE';
-    const record = {
-      ...summary,
-      providerRequestAttempt,
-      receipt: receipts.length === 1 ? receipts[0] : null,
-    };
-    if (record.proxyCleanupObserved !== true) exitCode = 1;
-    try {
-      outputRecord(outputPath, record);
-    } catch {
-      exitCode = 1;
-    }
-    process.exitCode = exitCode;
-  };
+  const persistence = createProxyRecordPersistence({
+    proxy,
+    receipts,
+    outputPath,
+    onComplete(exitCode) {
+      process.exitCode = exitCode;
+    },
+  });
 
-  process.once('SIGTERM', () => { void shutdown(0); });
-  process.once('SIGINT', () => { void shutdown(0); });
-  setInterval(() => {}, 60_000).unref?.();
+  process.once('SIGTERM', () => { void persistence.shutdown(0); });
+  process.once('SIGINT', () => { void persistence.shutdown(0); });
 }
 
 const invokedPath = process.argv[1] ? path.resolve(process.argv[1]) : '';
