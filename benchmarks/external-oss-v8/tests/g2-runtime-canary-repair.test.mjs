@@ -13,6 +13,7 @@ const MANIFEST = 'benchmarks/external-oss-v8/credential-transport/repair-2/attem
 const IMAGE = 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5';
 const MODEL = 'gpt-5.6-luna';
 const FIXED_INPUT = 'Return exactly the JSON object {"runtime_canary":"PASS"}.';
+const REPAIR_6_TECHNICAL_HEAD = 'db85da98b2337aafd488ed64421b01e3a21422c6';
 
 function readJson(relativePath) {
   return JSON.parse(readFileSync(path.join(ROOT, relativePath), 'utf8'));
@@ -90,7 +91,7 @@ test('attempt-6 packet and manifest remain a bound historical snapshot', () => {
   const manifest = readJson(MANIFEST);
   for (const entry of manifest.entries) {
     const historical = createHash('sha256')
-      .update(execFileSync('git', ['show', `origin/main:${entry.path}`], { cwd: ROOT }))
+      .update(execFileSync('git', ['show', `${REPAIR_6_TECHNICAL_HEAD}:${entry.path}`], { cwd: ROOT }))
       .digest('hex');
     assert.equal(historical, entry.sha256, entry.path);
   }

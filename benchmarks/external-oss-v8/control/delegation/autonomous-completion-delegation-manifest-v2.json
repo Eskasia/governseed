@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "manifestId": "GS-EFFECT-R2-AUTONOMOUS-COMPLETION-DELEGATION-V2",
-  "status": "PENDING_EXACT_REPAIR_MERGE_TARGET",
+  "status": "PENDING_EXACT_OWNER_APPROVAL_BINDING",
   "repository": "Eskasia/governseed",
   "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
   "experimentRevision": 2,
@@ -63,9 +63,28 @@
       "controlCommentId": 5193774911,
       "controlCommentBodySha256": "3c6008c6b20d9e45f19e9d9c7538d4cba4c2283061df54507eb3c26bb2be7065"
     },
-    "mergeStatus": "NOT_AUTHORIZED",
-    "mergeCommit": null,
-    "mergedMainTree": null
+    "mergeStatus": "MERGED",
+    "mergeCommit": "9c83280cec2d9f8fedd15455cfa261680452969f",
+    "mergedMainTree": "f1f89f4dcb1d06cfd4e9af76df8fbaf7722cd64b",
+    "mergedAt": "2026-08-05T16:23:32Z",
+    "mergedBy": "Eskasia",
+    "mergeReceipt": {
+      "id": 5194456585,
+      "url": "https://github.com/Eskasia/governseed/issues/92#issuecomment-5194456585",
+      "author": "Eskasia",
+      "authorAssociation": "OWNER",
+      "createdAt": "2026-08-05T16:27:33Z",
+      "updatedAt": "2026-08-05T16:27:33Z",
+      "bodySha256": "084af4bbfa7e6495498984f01c1c27e921e16123e8bfbff7562a3e35fb66478f"
+    },
+    "postMergeCi": {
+      "runId": 31025047970,
+      "headSha": "9c83280cec2d9f8fedd15455cfa261680452969f",
+      "conclusion": "success",
+      "ubuntuConclusion": "success",
+      "macosConclusion": "success",
+      "windowsConclusion": "success"
+    }
   },
   "immutableFailedRunAccounting": {
     "workflowId": 325585082,
@@ -88,8 +107,8 @@
     "workflowId": 325585082,
     "workflowSha256": "8c95e3251ca8473f2401ac115f6da0cf88cc1207099ef834446c262ff710a2af",
     "ref": "main",
-    "authorizedMainCommit": null,
-    "authorizedMainTree": null,
+    "authorizedMainCommit": "9c83280cec2d9f8fedd15455cfa261680452969f",
+    "authorizedMainTree": "f1f89f4dcb1d06cfd4e9af76df8fbaf7722cd64b",
     "runtimeImage": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
     "inputName": "authorized_main_commit",
     "runAttemptMustEqual": 1,
@@ -99,7 +118,7 @@
     "automaticRetryAllowed": false,
     "fallbackAllowed": false,
     "dispatchAuthorityActive": false,
-    "blockedReason": "The exact merge commit on main does not exist because PR #95 merge is not authorized. PR head bd1722922efb7c825ef4d621ab0e8a1f7595cb61 cannot be substituted for an exact main target."
+    "blockedReason": "The exact merged main target is bound, but this V2 manifest has not received an exact SHA-256 OWNER approval binding. Dispatch authority remains inactive."
   },
   "ceilingRevision": {
     "absoluteCostUsd": 350,
@@ -110,19 +129,19 @@
     "mergeCommitsMaximum": 8,
     "consumedOrReservedAtPreparation": {
       "directProviderRequests": 1,
-      "checkerTasks": 1,
-      "providerAuthorizationUnits": 2,
+      "checkerTasks": 2,
+      "providerAuthorizationUnits": 3,
       "workflowDispatches": 1,
-      "mergeCommits": 1,
-      "costUsd": 3
+      "mergeCommits": 2,
+      "costUsd": 5
     },
     "remainingAfterPreparation": {
       "directProviderRequests": 2113,
-      "checkerTasks": 6,
-      "providerAuthorizationUnits": 2119,
+      "checkerTasks": 5,
+      "providerAuthorizationUnits": 2118,
       "workflowDispatches": 35,
-      "mergeCommits": 7,
-      "costUsd": 347
+      "mergeCommits": 6,
+      "costUsd": 345
     }
   },
   "unchangedContractSections": [
@@ -179,8 +198,8 @@
     },
     "checkerTasks": {
       "maximum": 7,
-      "consumed": 1,
-      "remaining": 6,
+      "consumed": 2,
+      "remaining": 5,
       "retryOrReplacementAllowed": false,
       "namesInheritedExactlyFromV1": true
     },
@@ -197,8 +216,8 @@
     }
   },
   "mandatoryStops": [
-    "This preparation is not activatable while authorizedMainCommit or authorizedMainTree is null.",
-    "PR #95 head or tree drift, non-success required CI, unresolved review, or merge conflict.",
+    "This preparation is not activatable until its exact UTF-8 SHA-256, frozen commit, and tree receive an immutable OWNER GitHub approval binding.",
+    "Any conflict in PR #95 merge provenance, merge receipt 5194456585, post-merge CI run 31025047970, or exact main target 9c83280cec2d9f8fedd15455cfa261680452969f.",
     "Any attempted reuse or rerun of failed run 31014045209.",
     "Any request for more than one additional G2 diagnostic canary dispatch or more than one additional G2 provider request.",
     "Any retry, rerun, replacement attempt, fallback, or replacement checker.",
@@ -225,7 +244,7 @@
       "benchmark acceptance",
       "final acceptance"
     ],
-    "futureV2ActivationRequirement": "After PR #95 is separately authorized and merged without drift, replace only the null exact-target fields and merge-status evidence, freeze a new V2 SHA-256/commit/tree, publish its exact OWNER approval binding, and revalidate every inherited and revised ceiling before any additional G2 dispatch."
+    "futureV2ActivationRequirement": "Freeze this completed V2 preparation to an exact SHA-256/commit/tree, publish its exact OWNER GitHub approval binding, and revalidate every inherited and revised ceiling before any additional G2 dispatch. PR #96 activation or merge remains a separate unauthorized action until that binding exists."
   },
   "selfBinding": "This preparation does not self-hash and grants no standing authority. Its immutable identity is the SHA-256 of these exact UTF-8 bytes, externally bound to a frozen Git commit and tree."
 }

@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "https://governseed.example/schemas/autonomous-completion-delegation-manifest-v2.schema.json",
-  "title": "GovernSeed autonomous completion delegation V2 preparation",
+  "title": "GovernSeed autonomous completion delegation V2 exact-target preparation",
   "type": "object",
   "additionalProperties": false,
   "required": [
@@ -27,7 +27,7 @@
   "properties": {
     "schemaVersion": { "const": 2 },
     "manifestId": { "const": "GS-EFFECT-R2-AUTONOMOUS-COMPLETION-DELEGATION-V2" },
-    "status": { "const": "PENDING_EXACT_REPAIR_MERGE_TARGET" },
+    "status": { "const": "PENDING_EXACT_OWNER_APPROVAL_BINDING" },
     "repository": { "const": "Eskasia/governseed" },
     "experimentId": { "const": "GS-OSS-2026-08-05-EFFECT-R2" },
     "experimentRevision": { "const": 2 },

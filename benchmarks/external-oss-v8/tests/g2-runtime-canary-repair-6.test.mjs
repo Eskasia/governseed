@@ -237,7 +237,7 @@ test('repair-6 manifest remains an exact immutable historical snapshot', () => {
   assert.deepEqual(manifest.entries.map((entry) => entry.path), TECHNICAL_PATHS);
   assert.equal(manifest.entries.length, 13);
   for (const entry of manifest.entries) {
-    const historical = createHash('sha256').update(gitBytes('origin/main', entry.path)).digest('hex');
+    const historical = createHash('sha256').update(gitBytes(REPAIR_6_TECHNICAL_HEAD, entry.path)).digest('hex');
     assert.equal(historical, entry.sha256, entry.path);
   }
   for (const excluded of [ATTEMPT_6_PACKET, ATTEMPT_6_MANIFEST, ATTEMPT_6_TEMPLATE, ATTEMPT_6_ADDENDUM, ATTEMPT_5_APPROVAL, ATTEMPT_5_SOURCE]) {

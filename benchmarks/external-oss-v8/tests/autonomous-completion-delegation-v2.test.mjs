@@ -15,12 +15,15 @@ function sha256(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
 }
 
-test('V2 preparation inherits the approved R2 contract and is non-activatable before merge', () => {
+test('V2 preparation binds the merged repair target but remains non-activatable before OWNER binding', () => {
   const result = verifyAutonomousCompletionDelegationV2(ROOT);
   assert.equal(result.ok, true, result.errors.join('\n'));
-  assert.equal(result.manifest.activationTarget.authorizedMainCommit, null);
+  assert.equal(result.manifest.activationTarget.authorizedMainCommit, '9c83280cec2d9f8fedd15455cfa261680452969f');
+  assert.equal(result.manifest.activationTarget.authorizedMainTree, 'f1f89f4dcb1d06cfd4e9af76df8fbaf7722cd64b');
   assert.equal(result.manifest.activationTarget.dispatchAuthorityActive, false);
-  assert.equal(result.manifest.diagnosticRepairCandidate.mergeStatus, 'NOT_AUTHORIZED');
+  assert.equal(result.manifest.diagnosticRepairCandidate.mergeStatus, 'MERGED');
+  assert.equal(result.manifest.diagnosticRepairCandidate.mergeReceipt.id, 5194456585);
+  assert.equal(result.manifest.diagnosticRepairCandidate.postMergeCi.runId, 31025047970);
 });
 
 test('V2 accounts conservatively for the failed request and changes only bounded ceilings', () => {
@@ -33,7 +36,7 @@ test('V2 accounts conservatively for the failed request and changes only bounded
   assert.equal(manifest.providerAndCostRevision.costUsd.unallocatedOverheadContingency, 4);
 });
 
-test('V2 candidate hashes resolve to exact PR #95 Git objects without using them as main target', () => {
+test('V2 candidate hashes resolve to PR #95 and its exact merge target on main', () => {
   const manifest = JSON.parse(readFileSync(path.join(ROOT, MANIFEST), 'utf8'));
   const candidate = manifest.diagnosticRepairCandidate;
   const head = execFileSync('git', ['rev-parse', 'origin/repair/g2-non-2xx-diagnostics'], { cwd: ROOT, encoding: 'utf8' }).trim();
@@ -43,6 +46,8 @@ test('V2 candidate hashes resolve to exact PR #95 Git objects without using them
   assert.equal(tree, candidate.treeSha);
   assert.equal(sha256(workflow), candidate.workflowSha256);
   assert.notEqual(candidate.headSha, manifest.activationTarget.authorizedMainCommit);
+  assert.equal(execFileSync('git', ['rev-parse', 'origin/main'], { cwd: ROOT, encoding: 'utf8' }).trim(), manifest.activationTarget.authorizedMainCommit);
+  assert.equal(execFileSync('git', ['rev-parse', 'origin/main^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim(), manifest.activationTarget.authorizedMainTree);
 });
 
 test('known evaluator timeout conflict remains an explicit non-dispatchable stop', () => {

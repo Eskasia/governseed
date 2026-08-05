@@ -32,7 +32,7 @@ export function verifyAutonomousCompletionDelegationV2(root) {
     errors,
   );
   requireValue(manifest.schemaVersion === 2, 'schemaVersion must equal 2', errors);
-  requireValue(manifest.status === 'PENDING_EXACT_REPAIR_MERGE_TARGET', 'preparation status is not fail-closed', errors);
+  requireValue(manifest.status === 'PENDING_EXACT_OWNER_APPROVAL_BINDING', 'preparation status is not fail-closed', errors);
   requireValue(sha256(baseBytes) === manifest.baseManifest.sha256, 'base manifest hash mismatch', errors);
   requireValue(sha256(contractBytes) === manifest.canonicalContract.sha256, 'canonical contract hash mismatch', errors);
   requireValue(base.experimentId === manifest.experimentId, 'experiment ID drift', errors);
@@ -47,8 +47,29 @@ export function verifyAutonomousCompletionDelegationV2(root) {
     'an experiment-contract field is marked changed',
     errors,
   );
-  requireValue(manifest.activationTarget.authorizedMainCommit === null, 'pre-merge main commit must be null', errors);
-  requireValue(manifest.activationTarget.authorizedMainTree === null, 'pre-merge main tree must be null', errors);
+  requireValue(
+    manifest.activationTarget.authorizedMainCommit === manifest.diagnosticRepairCandidate.mergeCommit,
+    'activation commit does not match the merged repair commit',
+    errors,
+  );
+  requireValue(
+    manifest.activationTarget.authorizedMainTree === manifest.diagnosticRepairCandidate.mergedMainTree,
+    'activation tree does not match the merged repair tree',
+    errors,
+  );
+  requireValue(manifest.diagnosticRepairCandidate.mergeStatus === 'MERGED', 'repair merge is not recorded', errors);
+  requireValue(
+    manifest.diagnosticRepairCandidate.mergeReceipt.bodySha256
+      === '084af4bbfa7e6495498984f01c1c27e921e16123e8bfbff7562a3e35fb66478f',
+    'merge receipt binding mismatch',
+    errors,
+  );
+  requireValue(
+    manifest.diagnosticRepairCandidate.postMergeCi.runId === 31025047970
+      && manifest.diagnosticRepairCandidate.postMergeCi.conclusion === 'success',
+    'post-merge CI evidence mismatch',
+    errors,
+  );
   requireValue(manifest.activationTarget.dispatchAuthorityActive === false, 'dispatch authority activated early', errors);
   requireValue(manifest.activationTarget.providerRequestMaximum === 1, 'additional G2 request ceiling is not one', errors);
   requireValue(manifest.activationTarget.automaticRetryAllowed === false, 'automatic retry enabled', errors);
@@ -77,6 +98,16 @@ export function verifyAutonomousCompletionDelegationV2(root) {
       && manifest.ceilingRevision.mergeCommitsMaximum === 8
       && manifest.ceilingRevision.absoluteCostUsd === 350,
     'V2 ceiling mismatch',
+    errors,
+  );
+  requireValue(
+    manifest.ceilingRevision.consumedOrReservedAtPreparation.directProviderRequests === 1
+      && manifest.ceilingRevision.consumedOrReservedAtPreparation.checkerTasks === 2
+      && manifest.ceilingRevision.consumedOrReservedAtPreparation.providerAuthorizationUnits === 3
+      && manifest.ceilingRevision.consumedOrReservedAtPreparation.workflowDispatches === 1
+      && manifest.ceilingRevision.consumedOrReservedAtPreparation.mergeCommits === 2
+      && manifest.ceilingRevision.consumedOrReservedAtPreparation.costUsd === 5,
+    'consumed or reserved accounting mismatch',
     errors,
   );
   requireValue(

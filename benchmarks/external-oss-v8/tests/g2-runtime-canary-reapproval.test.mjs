@@ -17,6 +17,7 @@ const PACKET = `${CREDENTIAL_ROOT}/repair-2/attempt-5/review-packet.json`;
 const MANIFEST = `${CREDENTIAL_ROOT}/repair-2/attempt-5/technical-manifest.json`;
 const CURRENT_MANIFEST = `${CREDENTIAL_ROOT}/repair-2/attempt-6/technical-manifest.json`;
 const TECHNICAL_HEAD = 'b7e7d34e68031671dee41fe7fe13800accae3e51';
+const REPAIR_6_TECHNICAL_HEAD = 'db85da98b2337aafd488ed64421b01e3a21422c6';
 const PRE_APPROVAL_HEAD = '1a37ec4b92b8eafbae04e347ccad0788a2e99dca';
 const COMMENT_BODY_SHA256 = '41a47521099af120135d4ddb65aa10cf6f4180b3271ed904cf95d277ecc58840';
 
@@ -136,7 +137,7 @@ test('technical manifest and all 13 historical entries remain unchanged after ap
   const currentManifest = readJson(CURRENT_MANIFEST);
   assert.equal(currentManifest.entries.length, 13);
   for (const entry of currentManifest.entries) {
-    const historical = createHash('sha256').update(gitBytes('origin/main', entry.path)).digest('hex');
+    const historical = createHash('sha256').update(gitBytes(REPAIR_6_TECHNICAL_HEAD, entry.path)).digest('hex');
     assert.equal(historical, entry.sha256, entry.path);
   }
 });
