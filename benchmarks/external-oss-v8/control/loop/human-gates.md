@@ -2,7 +2,7 @@
 
 ## PUBLIC_HIDDEN_SEPARATION_INDEPENDENT_REVIEW_AUTHORIZATION
 
-- Status: `PENDING_FINAL_HEAD_AND_CI_BINDING`; Issue <https://github.com/Eskasia/governseed/issues/88> tracks P1.4.
+- Status: `PENDING_FINAL_HEAD_AND_CI_BINDING`; Issue <https://github.com/Eskasia/governseed/issues/88> and draft PR <https://github.com/Eskasia/governseed/pull/89> track P1.4.
 - Review scope: P1.2 merge reconciliation, closed execution-agent-surface manifest/schema, Git-tracked public task/test accessibility, hidden-oracle hash-only metadata, negative mutations, evidence-index bindings, and C014-C016 loop controls.
 - Required evidence before authorization: exact final draft-PR head/tree, successful Ubuntu/macOS/Windows validation, unchanged task/seed/oracle/scorer/runtime/workflow identities, and unchanged Runtime Identity workflow history.
 - Authorized human action after external binding: authorize exactly one fresh read-only checker for the exact final head/tree.

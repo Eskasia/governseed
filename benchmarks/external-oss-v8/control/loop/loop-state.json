@@ -7,7 +7,7 @@
   "activePhase": "P1",
   "activeNode": "P1.4",
   "activeBranch": "benchmark/p1.4-public-hidden-separation",
-  "activePR": null,
+  "activePR": 89,
   "activeIssue": 88,
   "latestRunIds": {
     "acceptedG1": "30739570734",
@@ -72,7 +72,7 @@
     }
   ],
   "openPullRequests": {
-    "active": [81],
+    "active": [81, 89],
     "staleOrSupersededCandidates": [54, 55, 60, 62, 65, 66]
   },
   "finalHeadBinding": {
@@ -88,8 +88,8 @@
     "mergeValidationRun": "30988393468"
   },
   "pendingReviewBinding": {
-    "status": "EXTERNAL_GITHUB_HEAD_BINDING_REQUIRED",
-    "pullRequest": null,
+    "status": "EXTERNAL_CI_BINDING_REQUIRED",
+    "pullRequest": 89,
     "issue": 88,
     "baseMainSha": "220c2d8d816194eb77da94e182258a0875202f3b",
     "priorIndependentReview": {

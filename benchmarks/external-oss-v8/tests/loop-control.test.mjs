@@ -162,9 +162,9 @@ test('G2 conflict remains fail-closed and forbidden runs cannot become active', 
 test('recorded GitHub state closes P1.2 and gates P1.4 on fresh independent review', () => {
   assert.equal(loopState.activeNode, 'P1.4');
   assert.equal(loopState.activeIssue, 88);
-  assert.equal(loopState.activePR, null);
+  assert.equal(loopState.activePR, 89);
   assert.equal(loopState.currentHumanGate, 'PUBLIC_HIDDEN_SEPARATION_INDEPENDENT_REVIEW_AUTHORIZATION');
-  assert.deepEqual(loopState.openPullRequests.active, [81]);
+  assert.deepEqual(loopState.openPullRequests.active, [81, 89]);
   assert.equal(loopState.latestRunIds.priorLoopControlTechnicalValidation, '30913519842');
   assert.equal(loopState.latestRunIds.loopControlMergeValidation, '30916308174');
   assert.equal(loopState.latestRunIds.priorExperimentContractEvidenceValidation, '30961663119');
@@ -201,8 +201,9 @@ test('recorded GitHub state closes P1.2 and gates P1.4 on fresh independent revi
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').status, 'HUMAN_GATE');
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').attempts, 2);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').activeIssue, 88);
-  assert.equal(loopState.pendingReviewBinding.status, 'EXTERNAL_GITHUB_HEAD_BINDING_REQUIRED');
-  assert.equal(loopState.pendingReviewBinding.pullRequest, null);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.4').activePR, 89);
+  assert.equal(loopState.pendingReviewBinding.status, 'EXTERNAL_CI_BINDING_REQUIRED');
+  assert.equal(loopState.pendingReviewBinding.pullRequest, 89);
   assert.equal(loopState.pendingReviewBinding.priorIndependentReview.status, 'ACCEPT');
   assert.equal(loopState.pendingReviewBinding.currentIndependentReview, 'NOT_RUN_ON_P1_4_CANDIDATE_REQUIRES_NEW_AUTHORIZATION');
   assert.equal(loopState.thisCycleProviderRequests, 0);
