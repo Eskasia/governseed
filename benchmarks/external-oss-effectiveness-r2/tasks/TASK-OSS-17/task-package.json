@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
+  "revision": 2,
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-17",
+  "repository": "encode/httpx",
+  "upstream": {
+    "repositoryUrl": "https://github.com/encode/httpx.git",
+    "pullRequestUrl": "https://github.com/encode/httpx/pull/2998",
+    "baseCommit": "90538a3b4610ba49ce16c997bcfdb9101f9503be",
+    "fixCommit": "1e110964736a95d822144390b99d7ecf17fca527",
+    "baseReachable": true,
+    "fixReachable": true,
+    "fixGitTree": "a19489051942c0da02335ea44dada9227233554c"
+  },
+  "seed": {
+    "sealedSeedCommit": "90538a3b4610ba49ce16c997bcfdb9101f9503be",
+    "sealedSeedGitTree": "ad8e8f071d5522b24c5926bfd4c637fb78b0d28d",
+    "sealedSeedTreeSha256": "bfc514fd363319e1442425f3eb35307fff0331dab4ced5645e2866d12117ba75",
+    "overlayApplied": false
+  },
+  "publicTask": {
+    "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-17/public-task.md",
+    "sha256": "2650237523dbc2189dccf891eb92787216edad6f93b6452def6e9eda30dda62c"
+  },
+  "publicTest": {
+    "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-17/public-test.py",
+    "sha256": "80e67276da5e3933598e1b85c7f9e47c43966369a5cb13031ddf2cf16d63e6e8",
+    "command": [
+      ".venv/bin/python",
+      "/public-test/public-test.py"
+    ],
+    "commandIdentitySha256": "93f541f3bcee9ec978ea46965e925cdf69d701cb0332d291557a4988954aaf40",
+    "parent": {
+      "commit": "90538a3b4610ba49ce16c997bcfdb9101f9503be",
+      "exitCode": 1,
+      "status": "FAIL_EXPECTED"
+    },
+    "fix": {
+      "commit": "1e110964736a95d822144390b99d7ecf17fca527",
+      "exitCode": 0,
+      "status": "PASS"
+    }
+  },
+  "pathPolicy": {
+    "allowOnly": true,
+    "allowedPaths": [
+      "httpx/_decoders.py",
+      "httpx/_models.py"
+    ],
+    "forbiddenPaths": [
+      ".github/**",
+      "tests/**",
+      "testing/**",
+      "**/tests/**",
+      "**/node_modules/**",
+      "**/.venv/**",
+      "credentials/**",
+      "/public-test/**",
+      "/runner-private/**"
+    ],
+    "sha256": "d0e51b40b290de97965dbe3b5338d603000f8432867fef603557b97080d8c988"
+  },
+  "hiddenOracle": {
+    "sha256": "0288919cd6481ca4fe835a31018dad34ccb9b9cebc1c7d1651f45fcfdbbbec01",
+    "commandIdentitySha256": "06c7cefb3ba60de9cc1fb875910cb2550dc5d4d4a8236217f57f54d359bfa854",
+    "runnerOwned": true,
+    "sourceCommitted": false,
+    "exposedToExecutionAgent": false,
+    "identitySeparatedFromPublicTest": true,
+    "parent": {
+      "commit": "90538a3b4610ba49ce16c997bcfdb9101f9503be",
+      "exitCode": 1,
+      "status": "FAIL_EXPECTED"
+    },
+    "fix": {
+      "commit": "1e110964736a95d822144390b99d7ecf17fca527",
+      "exitCode": 0,
+      "status": "PASS"
+    }
+  },
+  "reconstruction": {
+    "mode": "exact-upstream-parent",
+    "exactShaFetchVerified": true,
+    "runs": [
+      {
+        "ordinal": 1,
+        "sealedSeedCommit": "90538a3b4610ba49ce16c997bcfdb9101f9503be",
+        "sealedSeedGitTree": "ad8e8f071d5522b24c5926bfd4c637fb78b0d28d",
+        "sealedSeedTreeSha256": "bfc514fd363319e1442425f3eb35307fff0331dab4ced5645e2866d12117ba75"
+      },
+      {
+        "ordinal": 2,
+        "sealedSeedCommit": "90538a3b4610ba49ce16c997bcfdb9101f9503be",
+        "sealedSeedGitTree": "ad8e8f071d5522b24c5926bfd4c637fb78b0d28d",
+        "sealedSeedTreeSha256": "bfc514fd363319e1442425f3eb35307fff0331dab4ced5645e2866d12117ba75"
+      }
+    ],
+    "stable": true,
+    "status": "PASS"
+  },
+  "runtime": {
+    "language": "Python",
+    "runtimeVersion": "Python 3.14.6",
+    "dependencyInstallCommand": [
+      "uv",
+      "pip",
+      "install",
+      "--python",
+      ".venv/bin/python",
+      "-e",
+      "."
+    ],
+    "preTestCommand": null,
+    "environment": {
+      "PYTHONPATH": "."
+    },
+    "publicTestWorkingDirectory": "."
+  },
+  "status": "PASS",
+  "claimBoundary": "Offline public-repository task preparation only. This receipt is not formal lock, provider execution, Pilot, confirmatory, scoring, effectiveness, or acceptance evidence."
+}

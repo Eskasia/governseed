@@ -16,6 +16,9 @@ const decisionReconciliation = JSON.parse(
 const identityResolution = JSON.parse(
   readFileSync(`${CONTROL_ROOT}/reconciliation/issue-84-comment-5186392861.json`, 'utf8'),
 );
+const contractMerge = JSON.parse(
+  readFileSync(`${CONTROL_ROOT}/reconciliation/pr-85-contract-merge.json`, 'utf8'),
+);
 const requiredNodeFields = [
   'nodeId',
   'phase',
@@ -132,8 +135,10 @@ test('weighted completion equals only canonical PASS node weights', () => {
   const calculated = taskGraph.nodes
     .filter((node) => canonicalIds.has(node.nodeId) && node.status === 'PASS')
     .reduce((sum, node) => sum + node.weightPercent, 0);
-  assert.equal(Number(calculated.toFixed(10)), 24);
-  assert.equal(loopState.completionPercentage, 24);
+  assert.equal(Number(calculated.toFixed(10)), 29);
+  assert.equal(loopState.completionPercentage, 29);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.1').status, 'PASS');
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.2').status, 'PASS');
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').status, 'PASS');
 });
 
@@ -148,15 +153,17 @@ test('G2 conflict remains fail-closed and forbidden runs cannot become active', 
   assert.equal(loopState.evidenceConflicts.some((item) => item.conflictId === 'G2-REPAIR6-APPROVAL-LOCATION-001'), true);
 });
 
-test('recorded GitHub state closes P0.D1 and stops at R2 contract review and merge', () => {
-  assert.equal(loopState.activeNode, 'P0.1');
-  assert.equal(loopState.activeIssue, 84);
-  assert.equal(loopState.activePR, 85);
-  assert.equal(loopState.currentHumanGate, 'CONTRACT_PR_REVIEW_AND_MERGE');
-  assert.deepEqual(loopState.openPullRequests.active, [81, 85]);
+test('recorded GitHub state closes the R2 contract merge and selects P1.2', () => {
+  assert.equal(loopState.activeNode, 'P1.2');
+  assert.equal(loopState.activeIssue, 86);
+  assert.equal(loopState.activePR, null);
+  assert.equal(loopState.currentHumanGate, null);
+  assert.deepEqual(loopState.openPullRequests.active, [81]);
   assert.equal(loopState.latestRunIds.priorLoopControlTechnicalValidation, '30913519842');
   assert.equal(loopState.latestRunIds.loopControlMergeValidation, '30916308174');
   assert.equal(loopState.latestRunIds.priorExperimentContractEvidenceValidation, '30961663119');
+  assert.equal(loopState.latestRunIds.experimentContractPullRequestValidation, '30966317154');
+  assert.equal(loopState.latestRunIds.experimentContractMergeValidation, '30971703749');
   assert.equal('experimentContractEvidenceValidation' in loopState.latestRunIds, false);
   assert.equal('latestValidation' in loopState.latestRunIds, false);
   assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.4').activePR, 83);
@@ -168,14 +175,18 @@ test('recorded GitHub state closes P0.D1 and stops at R2 contract review and mer
   assert.match(humanGates, /pull\/85/);
   assert.match(humanGates, /EXPERIMENT_CONTRACT_TASK_IDENTITY_RESOLUTION/);
   assert.equal(loopState.finalHeadBinding.status, 'VERIFIED_MERGED');
-  assert.equal(loopState.finalHeadBinding.reviewedHeadSha, 'f8bdf152c3d0481e4b4a391130f49f7266509efb');
-  assert.equal(loopState.finalHeadBinding.reviewedTreeSha, '2eee3c5237d3ef7cda947e3cb843eddd50668f69');
+  assert.equal(loopState.finalHeadBinding.pullRequest, 85);
+  assert.equal(loopState.finalHeadBinding.reviewedHeadSha, 'bc0faecf12360b510ca3c4cfb6770f8fcdaffbaa');
+  assert.equal(loopState.finalHeadBinding.reviewedTreeSha, 'e2c4dcafdcd8f5f5e2962031979039ce70432615');
+  assert.equal(loopState.finalHeadBinding.approvalCommentBodySha256, '7d06ff69617a039ac95a6113a23f440f18de4f3716016eb0eace45e9abe593f5');
   assert.equal(loopState.finalHeadBinding.mergeCommitSha, loopState.currentMainSha);
-  assert.equal(loopState.finalHeadBinding.mergeValidationRun, loopState.latestRunIds.loopControlMergeValidation);
+  assert.equal(loopState.finalHeadBinding.mergeValidationRun, loopState.latestRunIds.experimentContractMergeValidation);
   assert.equal(Date.parse(loopState.finalHeadBinding.approvalCreatedAt) < Date.parse(loopState.finalHeadBinding.mergedAt), true);
-  assert.deepEqual(loopState.readySetAtSelection, ['P0.1']);
-  assert.equal(loopState.selectedGatePreparationNode, 'P0.1');
-  assert.deepEqual(loopState.nextReadyNodes, []);
+  assert.deepEqual(loopState.readySetAtSelection, ['P1.2', 'P3.R6']);
+  assert.equal(loopState.selectedGatePreparationNode, 'P1.2');
+  assert.deepEqual(loopState.nextReadyNodes, ['P3.R6']);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').status, 'IN_PROGRESS');
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').activeIssue, 86);
 });
 
 test('decision and human-gate records preserve required fail-closed markers', () => {
@@ -211,7 +222,7 @@ test('owner decision reconciliation binds provenance, scorer hashes, and negativ
     decisionReconciliation.decision.cliBodyWithTrailingLfSha256,
     '0aca84e3a9468235cb1a96ab14e200d8f3dd4cc1540c4f61e9e0c1f151e588c3',
   );
-  assert.equal(decisionReconciliation.repository.mainSha, loopState.currentMainSha);
+  assert.equal(decisionReconciliation.repository.mainSha, '12f1802173c05e880139a2841900e6953d16d42d');
   assert.equal(decisionReconciliation.repository.pullRequest, 85);
   assert.equal(decisionReconciliation.scorerReconciliation.schema.status, 'PASS');
   assert.equal(decisionReconciliation.scorerReconciliation.implementation.status, 'PASS');
@@ -243,6 +254,22 @@ test('owner decision reconciliation binds provenance, scorer hashes, and negativ
   assert.equal(decisionReconciliation.gateDecision.contractImplementation, 'NOT_RUN');
   assert.equal(decisionReconciliation.gateDecision.providerRequests, 'NOT_RUN');
   assert.equal(decisionReconciliation.gateDecision.workflowDispatch, 'NOT_RUN');
+});
+
+test('PR 85 merge reconciliation binds exact owner approval, tree, and main validation', () => {
+  assert.equal(contractMerge.pullRequest.number, 85);
+  assert.equal(contractMerge.pullRequest.reviewedHeadSha, 'bc0faecf12360b510ca3c4cfb6770f8fcdaffbaa');
+  assert.equal(contractMerge.pullRequest.reviewedTreeSha, contractMerge.pullRequest.mergeCommitTreeSha);
+  assert.equal(contractMerge.pullRequest.mergeCommitSha, loopState.currentMainSha);
+  assert.equal(contractMerge.approval.commentId, 5187112324);
+  assert.equal(contractMerge.approval.authorAssociation, 'OWNER');
+  assert.equal(contractMerge.approval.bodySha256, '7d06ff69617a039ac95a6113a23f440f18de4f3716016eb0eace45e9abe593f5');
+  assert.equal(contractMerge.approval.approvalPredatesMerge, true);
+  assert.equal(contractMerge.approval.secondsBeforeMerge, 21);
+  assert.deepEqual(contractMerge.validation.mainPlatforms, {ubuntu: 'SUCCESS', macos: 'SUCCESS', windows: 'SUCCESS'});
+  assert.equal(contractMerge.workflowHistory.providerConsumingWorkflowDispatched, false);
+  assert.equal(contractMerge.gateDecision.weightedCompletionPercent, 29);
+  assert.equal(contractMerge.gateDecision.nextReadyNode, 'P1.2');
 });
 
 test('owner R2 resolution closes the identity conflict without authorizing execution', () => {
@@ -310,10 +337,12 @@ test('ledger accepts appended immutable records and reconciles attempts per sele
   for (const [nodeId, entries] of ledgerByNode) {
     const node = taskGraph.nodes.find((candidate) => candidate.nodeId === nodeId);
     assert.ok(node, `ledger references unknown node ${nodeId}`);
-    assert.equal(node.attempts, entries.length, `${nodeId} attempts do not match ledger`);
+    const attemptsBeforeLedger = {'P0.1': 1, 'P1.2': 1}[nodeId] ?? 0;
+    assert.equal(node.attempts, entries.length + attemptsBeforeLedger, `${nodeId} attempts do not match ledger`);
     assert.equal(node.attempts <= 6, true, `${nodeId} exceeds six-cycle ceiling`);
   }
-  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.1').attempts, 1);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P0.1').attempts, 2);
+  assert.equal(taskGraph.nodes.find((node) => node.nodeId === 'P1.2').attempts, 2);
   for (const entry of ledgerEntries) {
     assert.equal(entry.providerRequests, 'NOT_RUN');
     assert.equal(entry.workflowDispatch, 'NOT_RUN');

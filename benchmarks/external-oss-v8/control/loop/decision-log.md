@@ -118,4 +118,20 @@
 - Runtime Identity workflow history remains exactly runs `30814159615`, `30824406710`, and `30850478318`; no provider-consuming workflow was dispatched.
 - Decision: close zero-weight repair node P0.D1, retain weighted completion at `24.0%`, and select P0.1 as the next READY critical-path node. Stop at `CONTRACT_PR_REVIEW_AND_MERGE` because the R2 plan is not canonical on main.
 
+## 2026-08-05 — R2 contract merged and canonical
+
+- Status: `P0.1 PASS`; `P0.2 PASS`.
+- Owner approval <https://github.com/Eskasia/governseed/pull/85#issuecomment-5187112324> is comment `5187112324`, author association `OWNER`, created at `2026-08-05T03:14:32Z`, with exact UTF-8 API-body SHA-256 `7d06ff69617a039ac95a6113a23f440f18de4f3716016eb0eace45e9abe593f5`.
+- PR `#85` merged exact reviewed head `bc0faecf12360b510ca3c4cfb6770f8fcdaffbaa` at `2026-08-05T03:14:53Z`, twenty-one seconds after approval.
+- Merge commit `b812fe7e9096beee4ae8310482055648ad022d4a` and reviewed head share exact tree `e2c4dcafdcd8f5f5e2962031979039ce70432615`; main validation run `30971703749` passed on Ubuntu, macOS, and Windows.
+- Issue `#84` was closed after merge provenance was posted. Runtime Identity still has no run after `30850478318`; no provider-consuming workflow was dispatched.
+- Decision: the R2 contract and complete preregistration fields are canonical on main. Close P0.1 and P0.2, raising weighted completion from `24.0%` to `29.0%`.
+
+## 2026-08-05 — P1.2 confirmatory task/oracle preparation intake
+
+- Status: `IN_PROGRESS`.
+- Strict READY contains P1.2 and human-gated repair node P3.R6. P1.2 is selected first because it is the lower-phase non-provider critical-path node.
+- Issue `#86` defines exact acceptance criteria for TASK-OSS-11 through TASK-OSS-18: public provenance, parent/fix identities, sealed seed, public task/test, path policy, runner-owned hidden oracle, parent-red/fix-green evidence, and fail-closed hash validation.
+- Decision: prepare and review candidate task/oracle identities offline. Do not perform formal lock, provider requests, workflow dispatch, Pilot, confirmatory arm execution, scoring, or benchmark acceptance.
+
 This log records gaps and decisions only. It does not authorize provider use, workflow dispatch, PR merge, G3, Pilot, confirmatory execution, scoring, or benchmark acceptance.

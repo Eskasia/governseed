@@ -1,0 +1,122 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
+  "revision": 2,
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-16",
+  "repository": "pytest-dev/pytest",
+  "upstream": {
+    "repositoryUrl": "https://github.com/pytest-dev/pytest.git",
+    "pullRequestUrl": "https://github.com/pytest-dev/pytest/pull/14754",
+    "baseCommit": "1d5c40392ea42db38582b096f639eb762a5527c8",
+    "fixCommit": "224e9ef86758841a716c43a2bc711e1f56934528",
+    "baseReachable": true,
+    "fixReachable": true,
+    "fixGitTree": "fa151a148a18457359d2a81b08d76153bc4c7810"
+  },
+  "seed": {
+    "sealedSeedCommit": "1d5c40392ea42db38582b096f639eb762a5527c8",
+    "sealedSeedGitTree": "ceac32e713e52dd91f3133009aea77dbc667a00a",
+    "sealedSeedTreeSha256": "d664359f97c3fb5d1511711150d7f7dd4884f18e62ba5ab1230fa6da22708081",
+    "overlayApplied": false
+  },
+  "publicTask": {
+    "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-16/public-task.md",
+    "sha256": "5b73a7d9b81a5aa4508dd5c8a6a3703d5007883cb514aaf364e42229a821c15e"
+  },
+  "publicTest": {
+    "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-16/public-test.py",
+    "sha256": "cf6a7b1f755bf7ef49182955e86e632b093a648cedba040a46e7d724ad145b04",
+    "command": [
+      ".venv/bin/python",
+      "/public-test/public-test.py"
+    ],
+    "commandIdentitySha256": "93f541f3bcee9ec978ea46965e925cdf69d701cb0332d291557a4988954aaf40",
+    "parent": {
+      "commit": "1d5c40392ea42db38582b096f639eb762a5527c8",
+      "exitCode": 1,
+      "status": "FAIL_EXPECTED"
+    },
+    "fix": {
+      "commit": "224e9ef86758841a716c43a2bc711e1f56934528",
+      "exitCode": 0,
+      "status": "PASS"
+    }
+  },
+  "pathPolicy": {
+    "allowOnly": true,
+    "allowedPaths": [
+      "src/_pytest/approx.py"
+    ],
+    "forbiddenPaths": [
+      ".github/**",
+      "tests/**",
+      "testing/**",
+      "**/tests/**",
+      "**/node_modules/**",
+      "**/.venv/**",
+      "credentials/**",
+      "/public-test/**",
+      "/runner-private/**"
+    ],
+    "sha256": "b76cb10b2454b56a9ed560fdd56fb85c3f173ef207ccb98772777d76fbe6895d"
+  },
+  "hiddenOracle": {
+    "sha256": "5e65e417bfb190cf1eeb66b41a6a921cc5ef2e897585a83c3434c3af744c4e1f",
+    "commandIdentitySha256": "6b56d96a78899ea78744ae12f1e5c55046e63d68cf2a494c69d49ad2a440833c",
+    "runnerOwned": true,
+    "sourceCommitted": false,
+    "exposedToExecutionAgent": false,
+    "identitySeparatedFromPublicTest": true,
+    "parent": {
+      "commit": "1d5c40392ea42db38582b096f639eb762a5527c8",
+      "exitCode": 1,
+      "status": "FAIL_EXPECTED"
+    },
+    "fix": {
+      "commit": "224e9ef86758841a716c43a2bc711e1f56934528",
+      "exitCode": 0,
+      "status": "PASS"
+    }
+  },
+  "reconstruction": {
+    "mode": "exact-upstream-parent",
+    "exactShaFetchVerified": true,
+    "runs": [
+      {
+        "ordinal": 1,
+        "sealedSeedCommit": "1d5c40392ea42db38582b096f639eb762a5527c8",
+        "sealedSeedGitTree": "ceac32e713e52dd91f3133009aea77dbc667a00a",
+        "sealedSeedTreeSha256": "d664359f97c3fb5d1511711150d7f7dd4884f18e62ba5ab1230fa6da22708081"
+      },
+      {
+        "ordinal": 2,
+        "sealedSeedCommit": "1d5c40392ea42db38582b096f639eb762a5527c8",
+        "sealedSeedGitTree": "ceac32e713e52dd91f3133009aea77dbc667a00a",
+        "sealedSeedTreeSha256": "d664359f97c3fb5d1511711150d7f7dd4884f18e62ba5ab1230fa6da22708081"
+      }
+    ],
+    "stable": true,
+    "status": "PASS"
+  },
+  "runtime": {
+    "language": "Python",
+    "runtimeVersion": "Python 3.14.6",
+    "dependencyInstallCommand": [
+      "uv",
+      "pip",
+      "install",
+      "--python",
+      ".venv/bin/python",
+      "-e",
+      "."
+    ],
+    "preTestCommand": null,
+    "environment": {
+      "PYTHONPATH": "."
+    },
+    "publicTestWorkingDirectory": "."
+  },
+  "status": "PASS",
+  "claimBoundary": "Offline public-repository task preparation only. This receipt is not formal lock, provider execution, Pilot, confirmatory, scoring, effectiveness, or acceptance evidence."
+}

@@ -1,0 +1,125 @@
+{
+  "schemaVersion": 1,
+  "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
+  "revision": 2,
+  "evidenceClass": "external-observational",
+  "taskId": "TASK-OSS-15",
+  "repository": "pydantic/pydantic",
+  "upstream": {
+    "repositoryUrl": "https://github.com/pydantic/pydantic.git",
+    "pullRequestUrl": "https://github.com/pydantic/pydantic/pull/13537",
+    "baseCommit": "a54529f06204ecb8f940d2506ff66dd1521917c8",
+    "fixCommit": "35b8d94c1435a3e78fc919cfdb439a1ef85a8d6f",
+    "baseReachable": true,
+    "fixReachable": true,
+    "fixGitTree": "2c26937e56da13d061274ccf7b969fbc880cf585"
+  },
+  "seed": {
+    "sealedSeedCommit": "a54529f06204ecb8f940d2506ff66dd1521917c8",
+    "sealedSeedGitTree": "81d28be88d901230b941af26ff2cc3ab9351caae",
+    "sealedSeedTreeSha256": "9139439119f95eab3c96dfdedab19018d343e44d86f3ddba7f2c6903007c37d2",
+    "overlayApplied": false
+  },
+  "publicTask": {
+    "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-15/public-task.md",
+    "sha256": "d428cf7f0ff89fcdbacf8817bcb1e1d920fcb0509e175c70242243eee535be01"
+  },
+  "publicTest": {
+    "path": "benchmarks/external-oss-effectiveness-r2/tasks/TASK-OSS-15/public-test.py",
+    "sha256": "f2b167115ee867b55d3df5fc18f67e4cc4fc123df86426b9a876ca90adfc21eb",
+    "command": [
+      ".venv/bin/python",
+      "/public-test/public-test.py"
+    ],
+    "commandIdentitySha256": "93f541f3bcee9ec978ea46965e925cdf69d701cb0332d291557a4988954aaf40",
+    "parent": {
+      "commit": "a54529f06204ecb8f940d2506ff66dd1521917c8",
+      "exitCode": 1,
+      "status": "FAIL_EXPECTED"
+    },
+    "fix": {
+      "commit": "35b8d94c1435a3e78fc919cfdb439a1ef85a8d6f",
+      "exitCode": 0,
+      "status": "PASS"
+    }
+  },
+  "pathPolicy": {
+    "allowOnly": true,
+    "allowedPaths": [
+      "pydantic/types.py"
+    ],
+    "forbiddenPaths": [
+      ".github/**",
+      "tests/**",
+      "testing/**",
+      "**/tests/**",
+      "**/node_modules/**",
+      "**/.venv/**",
+      "credentials/**",
+      "/public-test/**",
+      "/runner-private/**"
+    ],
+    "sha256": "d2b4bc6894c5789e868d3481176f5e145e1adda39bce875ac14fa736fe4a8da1"
+  },
+  "hiddenOracle": {
+    "sha256": "6f777a0985ba6c003fa53b2882924cc5b7d7783f352e907ee90ce3b6361ba7f3",
+    "commandIdentitySha256": "995a9f9d7bd46bfa353156369a115dd6694d37931ca21aee84ba4f3688b1c0cd",
+    "runnerOwned": true,
+    "sourceCommitted": false,
+    "exposedToExecutionAgent": false,
+    "identitySeparatedFromPublicTest": true,
+    "parent": {
+      "commit": "a54529f06204ecb8f940d2506ff66dd1521917c8",
+      "exitCode": 1,
+      "status": "FAIL_EXPECTED"
+    },
+    "fix": {
+      "commit": "35b8d94c1435a3e78fc919cfdb439a1ef85a8d6f",
+      "exitCode": 0,
+      "status": "PASS"
+    }
+  },
+  "reconstruction": {
+    "mode": "exact-upstream-parent",
+    "exactShaFetchVerified": true,
+    "runs": [
+      {
+        "ordinal": 1,
+        "sealedSeedCommit": "a54529f06204ecb8f940d2506ff66dd1521917c8",
+        "sealedSeedGitTree": "81d28be88d901230b941af26ff2cc3ab9351caae",
+        "sealedSeedTreeSha256": "9139439119f95eab3c96dfdedab19018d343e44d86f3ddba7f2c6903007c37d2"
+      },
+      {
+        "ordinal": 2,
+        "sealedSeedCommit": "a54529f06204ecb8f940d2506ff66dd1521917c8",
+        "sealedSeedGitTree": "81d28be88d901230b941af26ff2cc3ab9351caae",
+        "sealedSeedTreeSha256": "9139439119f95eab3c96dfdedab19018d343e44d86f3ddba7f2c6903007c37d2"
+      }
+    ],
+    "stable": true,
+    "status": "PASS"
+  },
+  "runtime": {
+    "language": "Python",
+    "runtimeVersion": "Python 3.14.6",
+    "dependencyInstallCommand": [
+      "uv",
+      "pip",
+      "install",
+      "--python",
+      ".venv/bin/python",
+      "pydantic-core==2.47.0",
+      "annotated-types",
+      "typing-inspection",
+      "typing-extensions",
+      "pytest"
+    ],
+    "preTestCommand": null,
+    "environment": {
+      "PYTHONPATH": "."
+    },
+    "publicTestWorkingDirectory": "."
+  },
+  "status": "PASS",
+  "claimBoundary": "Offline public-repository task preparation only. This receipt is not formal lock, provider execution, Pilot, confirmatory, scoring, effectiveness, or acceptance evidence."
+}

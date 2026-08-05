@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "cycleId": "GS-LOOP-2026-08-05-C010",
+  "observedAt": "2026-08-05T03:19:22Z",
+  "pullRequest": {
+    "number": 85,
+    "url": "https://github.com/Eskasia/governseed/pull/85",
+    "reviewedHeadSha": "bc0faecf12360b510ca3c4cfb6770f8fcdaffbaa",
+    "reviewedTreeSha": "e2c4dcafdcd8f5f5e2962031979039ce70432615",
+    "baseShaBeforeMerge": "12f1802173c05e880139a2841900e6953d16d42d",
+    "state": "MERGED",
+    "mergedAt": "2026-08-05T03:14:53Z",
+    "mergedBy": "Eskasia",
+    "mergeCommitSha": "b812fe7e9096beee4ae8310482055648ad022d4a",
+    "mergeCommitTreeSha": "e2c4dcafdcd8f5f5e2962031979039ce70432615",
+    "exactTreePreserved": true
+  },
+  "approval": {
+    "commentId": 5187112324,
+    "url": "https://github.com/Eskasia/governseed/pull/85#issuecomment-5187112324",
+    "author": "Eskasia",
+    "authorAssociation": "OWNER",
+    "createdAt": "2026-08-05T03:14:32Z",
+    "updatedAt": "2026-08-05T03:14:32Z",
+    "bodySha256": "7d06ff69617a039ac95a6113a23f440f18de4f3716016eb0eace45e9abe593f5",
+    "bodyHashCanonicalization": "SHA-256 over the exact UTF-8 GitHub API .body string with no added delimiter",
+    "approvalPredatesMerge": true,
+    "secondsBeforeMerge": 21,
+    "scope": "PR_85_READINESS_AND_MERGE_ONLY"
+  },
+  "validation": {
+    "pullRequestRunId": 30966317154,
+    "pullRequestPlatforms": {"ubuntu": "SUCCESS", "macos": "SUCCESS", "windows": "SUCCESS"},
+    "mainRunId": 30971703749,
+    "mainPlatforms": {"ubuntu": "SUCCESS", "macos": "SUCCESS", "windows": "SUCCESS"},
+    "canonicalContractPath": "benchmarks/external-oss-effectiveness-r2/experiment-contract.json",
+    "canonicalContractSha256": "485d7d314e0500765da7c8303c963165bf2e02c9885d4f5321ae70e8f35aae76"
+  },
+  "issue": {
+    "number": 84,
+    "state": "CLOSED",
+    "closeoutComment": "https://github.com/Eskasia/governseed/issues/84#issuecomment-5187138150"
+  },
+  "workflowHistory": {
+    "runtimeIdentityRuns": [30814159615, 30824406710, 30850478318],
+    "latestRuntimeIdentityRun": 30850478318,
+    "providerConsumingWorkflowDispatched": false
+  },
+  "gateDecision": {
+    "P0_1": "PASS",
+    "P0_2": "PASS",
+    "weightedCompletionPercent": 29,
+    "nextReadyNode": "P1.2",
+    "nextIssue": 86
+  },
+  "claimBoundary": "Canonical R2 contract merge and control-plane reconciliation only. No provider request, provider-consuming workflow dispatch, G2/G3 execution, formal lock, Pilot, confirmatory arm execution, scoring, effectiveness, or benchmark acceptance claim."
+}
