@@ -1,26 +1,29 @@
 {
   "schemaVersion": 1,
   "benchmarkId": "GS-OSS-2026-08-02-V8",
-  "currentMainSha": "502c92e76e111a4cffbfaf4c3e4bde7f9bf8ce08",
-  "currentMainTreeSha": "244d6dae9cbcf3ad8941fc526aeb8d3e61914773",
-  "observedAt": "2026-08-04T12:51:18Z",
+  "currentMainSha": "12f1802173c05e880139a2841900e6953d16d42d",
+  "currentMainTreeSha": "2eee3c5237d3ef7cda947e3cb843eddd50668f69",
+  "observedAt": "2026-08-05T01:18:57Z",
   "activePhase": "P0",
-  "activeNode": "P0.4",
-  "activeBranch": "benchmark/p0-p0.4-loop-control",
-  "activePR": 83,
-  "activeIssue": 82,
+  "activeNode": "P0.1",
+  "activeBranch": "benchmark/p0-p0.d1-experiment-contract-decision",
+  "activePR": 85,
+  "activeIssue": 84,
   "latestRunIds": {
     "acceptedG1": "30739570734",
     "forbiddenG2Reruns": ["30814159615", "30824406710", "30850478318"],
     "g2Repair6Validation": "30899414374",
-    "priorLoopControlTechnicalValidation": "30913519842"
+    "priorLoopControlTechnicalValidation": "30913519842",
+    "loopControlMergeValidation": "30916308174",
+    "priorExperimentContractEvidenceValidation": "30961663119"
   },
   "activeRunIds": [],
-  "currentHumanGate": "CONTROL_PR_REVIEW_AND_MERGE",
-  "completionPercentage": 21.5,
+  "currentHumanGate": "CONTRACT_PR_REVIEW_AND_MERGE",
+  "completionPercentage": 24,
   "completionBasis": "Only PASS nodes count. Canonical phase weights are absent, so the requested fallback weights are divided equally across canonical subnodes; repair nodes have zero weight.",
-  "lastCycleId": "GS-LOOP-2026-08-04-C005",
-  "readySetAtSelection": ["P0.4"],
+  "lastCycleId": "GS-LOOP-2026-08-05-C009",
+  "readySetAtSelection": ["P0.1"],
+  "selectedGatePreparationNode": "P0.1",
   "nextReadyNodes": [],
   "evidenceConflicts": [
     {
@@ -46,17 +49,40 @@
         "benchmarks/external-oss-v8/credential-transport/repair-2/attempt-6/review-packet.json"
       ],
       "resolution": "The human comment binds PR 81 head/tree but is attached to PR 80. PR 81 remains BLOCKED until formal sanitized approval/source evidence is committed and independently verified."
+    },
+    {
+      "conflictId": "EFFECT-R1-TASK-OSS-01-SEED-IDENTITY-001",
+      "status": "RESOLVED_BY_OWNER_R2",
+      "fields": ["v4SeedCommit", "v4SeedTreeSha256", "legacySeedTreeHashReproduced", "r1Revision"],
+      "sources": [
+        "https://github.com/Eskasia/governseed/issues/84#issuecomment-5185865928",
+        "benchmarks/external-oss-v4/dependency-cache/task-identities.json",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-01/task-seed-identity.json",
+        "benchmarks/external-oss-v5/tasks/TASK-OSS-01/reconstruction-evidence.json",
+        "benchmarks/external-oss-v8/control/loop/reconciliation/issue-84-comment-5185865928.json",
+        "https://github.com/Eskasia/governseed/issues/84#issuecomment-5186392861",
+        "benchmarks/external-oss-v8/control/loop/reconciliation/issue-84-comment-5186392861.json",
+        "benchmarks/external-oss-effectiveness-r2/experiment-contract.json"
+      ],
+      "resolution": "Owner comment 5186392861 supersedes R1 before execution and creates R2 bound to the V5 reconstructed TASK-OSS-01 seed. R1 and R2 evidence cannot be pooled."
     }
   ],
   "openPullRequests": {
-    "active": [81, 83],
+    "active": [81, 85],
     "staleOrSupersededCandidates": [54, 55, 60, 62, 65, 66]
   },
   "finalHeadBinding": {
-    "status": "EXTERNAL_GITHUB_EVIDENCE_REQUIRED",
-    "reason": "A Git commit cannot contain its own commit SHA. The exact final PR head, tree, CI run, and independent verdicts must be bound in a GitHub PR comment and the HUMAN_GATE_PACKET before merge."
+    "status": "VERIFIED_MERGED",
+    "pullRequest": 83,
+    "reviewedHeadSha": "f8bdf152c3d0481e4b4a391130f49f7266509efb",
+    "reviewedTreeSha": "2eee3c5237d3ef7cda947e3cb843eddd50668f69",
+    "approvalComment": "https://github.com/Eskasia/governseed/pull/83#issuecomment-5180050104",
+    "approvalCreatedAt": "2026-08-04T13:55:12Z",
+    "mergedAt": "2026-08-04T13:56:04Z",
+    "mergeCommitSha": "12f1802173c05e880139a2841900e6953d16d42d",
+    "mergeValidationRun": "30916308174"
   },
   "providerRequests": "INDETERMINATE_FOR_RUN_30850478318",
   "workflowDispatch": "NOT_RUN_IN_THIS_CYCLE",
-  "claimBoundary": "Control-plane reconciliation only. No provider call, workflow dispatch, G2/G3, Pilot, confirmatory, scoring, or effectiveness result is claimed."
+  "claimBoundary": "P0.D1 pre-implementation reconciliation only. The owner comment and scorer hashes were verified, but TASK-OSS-01 fails the required V4 seed-hash revalidation condition. No R1 contract implementation, provider call, workflow dispatch, G2/G3, Pilot, confirmatory, scoring, or effectiveness result is claimed."
 }
