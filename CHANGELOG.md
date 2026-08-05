@@ -1,5 +1,24 @@
 # GovernSeed Changelog
 
+## 2026-08-05 — Frozen Candidates Use An External Append-Only Control Plane
+
+- Effectiveness-test candidate commits no longer churn merely to record a
+  checker, approval, human-gate, or merge event. The active policy freezes one
+  exact base/head/tree/CI tuple and routes live events to append-only GitHub
+  Issue and PR comments until a separate batched control-only checkpoint.
+- Comment identity is SHA-256 over the exact UTF-8 GitHub API `.body` string.
+  The verifier parses raw API JSON in-process, so a shell command cannot
+  silently add a record-separator newline to the digest.
+- Closed policy and event schemas bind comment ID, URL, author, association,
+  timestamps, body hash, candidate identity, prior-event chain, and explicit
+  action boundaries. Edited comments, candidate drift, non-monotonic events,
+  forbidden candidate control writes, and out-of-scope checkpoint files fail
+  closed.
+- `tests/governance/candidate-control-plane-separation.test.mjs` registers the
+  rule in `npm run ci`. The policy is control-plane integrity tooling only; it
+  does not authorize provider requests, workflow dispatch, PR readiness,
+  merge, formal lock, Pilot, confirmatory execution, scoring, or acceptance.
+
 ## 2026-08-01 — The Shipped Templates Are English
 
 - The README, AGENTS.md, and docs were English, but 13 of the 20 templates an

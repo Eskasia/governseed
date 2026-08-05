@@ -1,0 +1,73 @@
+{
+  "schemaVersion": 1,
+  "policyId": "GS-CANDIDATE-CONTROL-PLANE-SEPARATION-V1",
+  "status": "active",
+  "scope": {
+    "repository": "Eskasia/governseed",
+    "issue": 88,
+    "pullRequest": 89
+  },
+  "candidateFreeze": {
+    "baseSha": "220c2d8d816194eb77da94e182258a0875202f3b",
+    "headSha": "e162c71f47c11bb9eb745f6eb463cd9652e2c615",
+    "treeSha": "1d6c723f22bcf92d37e16fdb23277d86ef35a762",
+    "validationRun": 30997044086
+  },
+  "bodyHash": {
+    "algorithm": "sha256",
+    "canonicalization": "SHA-256 over the exact UTF-8 GitHub API .body string with no added delimiter",
+    "source": "raw GitHub API comment JSON parsed in-process"
+  },
+  "liveControlPlane": {
+    "locations": [
+      { "kind": "issue", "number": 88 },
+      { "kind": "pull_request", "number": 89 }
+    ],
+    "appendOnly": true,
+    "editsAllowed": false,
+    "requiredCommentFields": [
+      "id",
+      "html_url",
+      "user.login",
+      "author_association",
+      "created_at",
+      "updated_at",
+      "body"
+    ],
+    "chain": {
+      "previousEventBindingRequired": true,
+      "tailMayRemainUnboundUntilNextEvent": true
+    }
+  },
+  "candidateBranch": {
+    "forbiddenExactPaths": [
+      "benchmarks/external-oss-v8/control/loop/task-graph.json",
+      "benchmarks/external-oss-v8/control/loop/loop-state.json",
+      "benchmarks/external-oss-v8/control/loop/run-ledger.jsonl",
+      "benchmarks/external-oss-v8/control/loop/decision-log.md",
+      "benchmarks/external-oss-v8/control/loop/human-gates.md"
+    ],
+    "forbiddenPathPrefixes": [
+      "benchmarks/external-oss-v8/control/loop/reconciliation/"
+    ]
+  },
+  "checkpoint": {
+    "branchRole": "control-checkpoint",
+    "batchOnly": true,
+    "candidateHeadMustRemainUnchanged": true,
+    "allowedPathPrefixes": [
+      "benchmarks/external-oss-v8/control/loop/"
+    ]
+  },
+  "separateHumanGates": [
+    "provider_request",
+    "pr_readiness",
+    "merge",
+    "workflow_dispatch",
+    "formal_lock",
+    "pilot",
+    "confirmatory_execution",
+    "scoring",
+    "benchmark_acceptance"
+  ]
+}

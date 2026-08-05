@@ -1,0 +1,81 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/Eskasia/governseed/blob/main/benchmarks/external-oss-v8/control/policy/external-comment-event.schema.json",
+  "title": "GovernSeed append-only external comment event binding",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "policyId", "sequence", "eventType", "candidate", "comment", "previousEvent", "actionBoundary"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "policyId": { "const": "GS-CANDIDATE-CONTROL-PLANE-SEPARATION-V1" },
+    "sequence": { "type": "integer", "minimum": 1 },
+    "eventType": { "enum": ["OWNER_DECISION", "CHECKER_VERDICT", "OWNER_APPROVAL", "PR_READY", "MERGE", "WORKFLOW_DISPATCH", "FORMAL_LOCK", "PILOT", "CONFIRMATORY_EXECUTION", "SCORING", "BENCHMARK_ACCEPTANCE", "CONTROL_BINDING"] },
+    "candidate": { "$ref": "#/$defs/candidate" },
+    "comment": { "$ref": "#/$defs/comment" },
+    "previousEvent": {
+      "anyOf": [
+        { "type": "null" },
+        { "$ref": "#/$defs/previousEvent" }
+      ]
+    },
+    "actionBoundary": { "$ref": "#/$defs/actionBoundary" }
+  },
+  "$defs": {
+    "sha": { "type": "string", "pattern": "^[0-9a-f]{40}$" },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "timestamp": { "type": "string", "format": "date-time" },
+    "candidate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["repository", "pullRequest", "baseSha", "headSha", "treeSha", "validationRun"],
+      "properties": {
+        "repository": { "const": "Eskasia/governseed" },
+        "pullRequest": { "type": "integer", "minimum": 1 },
+        "baseSha": { "$ref": "#/$defs/sha" },
+        "headSha": { "$ref": "#/$defs/sha" },
+        "treeSha": { "$ref": "#/$defs/sha" },
+        "validationRun": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "comment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "url", "author", "authorAssociation", "createdAt", "updatedAt", "bodySha256"],
+      "properties": {
+        "id": { "type": "integer", "minimum": 1 },
+        "url": { "type": "string", "pattern": "^https://github\\.com/Eskasia/governseed/(issues|pull)/[0-9]+#issuecomment-[0-9]+$" },
+        "author": { "type": "string", "minLength": 1 },
+        "authorAssociation": { "type": "string", "minLength": 1 },
+        "createdAt": { "$ref": "#/$defs/timestamp" },
+        "updatedAt": { "$ref": "#/$defs/timestamp" },
+        "bodySha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "previousEvent": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["sequence", "commentId", "bodySha256"],
+      "properties": {
+        "sequence": { "type": "integer", "minimum": 1 },
+        "commentId": { "type": "integer", "minimum": 1 },
+        "bodySha256": { "$ref": "#/$defs/sha256" }
+      }
+    },
+    "actionBoundary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["providerRequest", "workflowDispatch", "prReadiness", "merge", "formalLock", "pilot", "confirmatoryExecution", "scoring", "benchmarkAcceptance"],
+      "properties": {
+        "providerRequest": { "enum": ["NOT_RUN", "ONE_AUTHORIZED_READ_ONLY_CHECKER"] },
+        "workflowDispatch": { "enum": ["NOT_RUN", "AUTHORIZED_AND_RUN"] },
+        "prReadiness": { "enum": ["NOT_RUN", "AUTHORIZED_AND_RUN"] },
+        "merge": { "enum": ["NOT_RUN", "AUTHORIZED_AND_RUN"] },
+        "formalLock": { "enum": ["NOT_RUN", "AUTHORIZED_AND_RUN"] },
+        "pilot": { "enum": ["NOT_RUN", "AUTHORIZED_AND_RUN"] },
+        "confirmatoryExecution": { "enum": ["NOT_RUN", "AUTHORIZED_AND_RUN"] },
+        "scoring": { "enum": ["NOT_RUN", "AUTHORIZED_AND_RUN"] },
+        "benchmarkAcceptance": { "enum": ["NOT_RUN", "AUTHORIZED_AND_RUN"] }
+      }
+    }
+  }
+}
