@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V7",
+  "evidenceClass": "external-observational",
+  "runId": "30732978684",
+  "headSha": "0d9faea60b8c2034a2e10621155f4dd3a6a91b2d",
+  "workflow": "External OSS V7 dependency cache",
+  "result": "failure",
+  "failureClass": "harness-defect",
+  "repairCycle": 3,
+  "jobs": {
+    "seedIdentity": {
+      "TASK-OSS-01": { "jobId": "91456456395", "conclusion": "success" },
+      "TASK-OSS-03": { "jobId": "91456456388", "conclusion": "success" },
+      "TASK-OSS-09": { "jobId": "91456456396", "conclusion": "success" }
+    },
+    "runtimeImage": {
+      "TASK-OSS-01": { "jobId": "91456484330", "conclusion": "success" },
+      "TASK-OSS-03": { "jobId": "91456484321", "conclusion": "success" },
+      "TASK-OSS-09": { "jobId": "91456484326", "conclusion": "success" }
+    },
+    "cachePreparation": {
+      "TASK-OSS-01": { "jobId": "91456601210", "conclusion": "success" },
+      "TASK-OSS-03": { "jobId": "91456601202", "conclusion": "success" },
+      "TASK-OSS-09": { "jobId": "91456601213", "conclusion": "success" }
+    },
+    "offlineVerification": {
+      "TASK-OSS-01": { "jobId": "91456806557", "conclusion": "failure" },
+      "TASK-OSS-03": { "jobId": "91456806554", "conclusion": "success" },
+      "TASK-OSS-09": { "jobId": "91456806556", "conclusion": "success" }
+    },
+    "aggregate": { "jobId": "91456943473", "conclusion": "failure", "reason": "Immich did not produce a READY receipt" }
+  },
+  "firstFailedStep": "Run permission diagnostics, offline containment, positive smoke, and negative smoke",
+  "firstObservedFailureStage": "positive-smoke",
+  "firstObservedFailureCode": "OFFLINE_SMOKE_FAILED",
+  "firstFailingOperation": "TASK-OSS-01 public smoke executable launch",
+  "observedError": "/harness/offline-smoke.sh: line 34: ./node_modules/.bin/vitest: Permission denied",
+  "structuredOutput": "OFFLINE_SMOKE_FAILED:immich-public-test",
+  "observations": [
+    "All seed identity, digest-locked runtime image, and cache preparation jobs passed for all three tasks.",
+    "Uptime Kuma produced a READY receipt with public smoke PASS and negative DEPENDENCY_CACHE_INCOMPLETE exit 42.",
+    "Paperless-ngx produced a READY receipt with public smoke PASS, negative DEPENDENCY_CACHE_INCOMPLETE exit 42, and all libmagic checks PASS.",
+    "Immich reached the public test launch after the copy-based workspace materialization; the failure is now directly observed as an executable permission defect in the disposable workspace copy.",
+    "No Immich READY receipt or negative test result was produced."
+  ],
+  "artifacts": {
+    "runUrl": "https://github.com/Eskasia/governseed/actions/runs/30732978684",
+    "failedJobUrl": "https://github.com/Eskasia/governseed/actions/runs/30732978684/job/91456806557",
+    "aggregateJobUrl": "https://github.com/Eskasia/governseed/actions/runs/30732978684/job/91456943473",
+    "immichReceiptArtifactId": "8828624024",
+    "downloadedFiles": {
+      "immich/diagnostics.json": "ee0a0ec965f17ed6c6a065fda24f76a66e63c8cf2054d3baf5728745acfe6177",
+      "immich/positive-container-id": "8db1704c0b4951424ffa0b190450ad0954063185e52a4e59359a367bb58b61a5",
+      "immich/positive-output": "cb76ff54ca51efff030e13c0915b8e5f691ea9f3fe681fe0abaf8883bdf71576",
+      "uptime/cache-receipt.json": "df63d43881d0a92706cbf8400b14f757e61c0cf15a1419ab336c1204a5fb65e7",
+      "paperless/cache-receipt.json": "a5affc0ddd5b920984f8603ffc0d7287358bdc2f1c9771ba082a4f11d8f03711"
+    }
+  },
+  "claimBoundary": "Immutable failure record only; no 3/3 offline smoke, dependency-cache G1 acceptance, Pilot, scoring, credential, Codex, provider, or task-result claim."
+}
