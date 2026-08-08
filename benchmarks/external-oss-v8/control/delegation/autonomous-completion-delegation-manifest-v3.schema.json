@@ -29,7 +29,7 @@
   "properties": {
     "schemaVersion": { "const": 3 },
     "manifestId": { "const": "GS-EFFECT-R2-AUTONOMOUS-COMPLETION-DELEGATION-V3" },
-    "status": { "const": "BLOCKED_CHECKER_IDENTITY_AND_MERGE_TARGET_DECISION_REQUIRED" },
+    "status": { "const": "PENDING_EXACT_OWNER_APPROVAL_BINDING" },
     "repository": { "const": "Eskasia/governseed" },
     "experimentId": { "const": "GS-OSS-2026-08-05-EFFECT-R2" },
     "experimentRevision": { "const": 2 },

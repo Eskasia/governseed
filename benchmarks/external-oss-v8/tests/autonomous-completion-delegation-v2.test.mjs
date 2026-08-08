@@ -46,8 +46,15 @@ test('V2 candidate hashes resolve to PR #95 and its exact merge target on main',
   assert.equal(tree, candidate.treeSha);
   assert.equal(sha256(workflow), candidate.workflowSha256);
   assert.notEqual(candidate.headSha, manifest.activationTarget.authorizedMainCommit);
-  assert.equal(execFileSync('git', ['rev-parse', 'origin/main'], { cwd: ROOT, encoding: 'utf8' }).trim(), manifest.activationTarget.authorizedMainCommit);
-  assert.equal(execFileSync('git', ['rev-parse', 'origin/main^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim(), manifest.activationTarget.authorizedMainTree);
+  assert.equal(
+    execFileSync('git', ['rev-parse', `${manifest.activationTarget.authorizedMainCommit}^{tree}`], { cwd: ROOT, encoding: 'utf8' }).trim(),
+    manifest.activationTarget.authorizedMainTree,
+  );
+  assert.doesNotThrow(() => execFileSync(
+    'git',
+    ['merge-base', '--is-ancestor', manifest.activationTarget.authorizedMainCommit, 'origin/main'],
+    { cwd: ROOT },
+  ));
 });
 
 test('known evaluator timeout conflict remains an explicit non-dispatchable stop', () => {

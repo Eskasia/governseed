@@ -1,7 +1,7 @@
 {
   "schemaVersion": 3,
   "manifestId": "GS-EFFECT-R2-AUTONOMOUS-COMPLETION-DELEGATION-V3",
-  "status": "BLOCKED_CHECKER_IDENTITY_AND_MERGE_TARGET_DECISION_REQUIRED",
+  "status": "PENDING_EXACT_OWNER_APPROVAL_BINDING",
   "repository": "Eskasia/governseed",
   "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
   "experimentRevision": 2,
@@ -47,12 +47,22 @@
     "workflowDispatchAuthorized": false,
     "environmentApprovalAuthorized": false,
     "checkerReplacementAuthorized": false,
-    "mergeAuthorized": false
+    "mergeAuthorized": false,
+    "optionAOwnerDecision": {
+      "id": 5225354025,
+      "url": "https://github.com/Eskasia/governseed/issues/92#issuecomment-5225354025",
+      "author": "Eskasia",
+      "authorAssociation": "OWNER",
+      "createdAt": "2026-08-08T08:37:07Z",
+      "updatedAt": "2026-08-08T08:37:07Z",
+      "bodySha256": "4c667b067f2ddc2e21648a408a3760218326de92061c513f9a13d24fa97118bc",
+      "selectedOption": "ADDITIONAL_UNIQUE_NO_RETRY_CHECKER"
+    }
   },
   "receiptPersistenceRepairCandidate": {
     "pullRequest": 98,
     "url": "https://github.com/Eskasia/governseed/pull/98",
-    "state": "OPEN_DRAFT",
+    "state": "MERGED",
     "baseSha": "9c83280cec2d9f8fedd15455cfa261680452969f",
     "headSha": "32d8478a8cfcb5d524e3da823630c523f35e613e",
     "treeSha": "eaf23456d3d16fc50276844db22dfff3f17d6ebf",
@@ -106,7 +116,30 @@
       "environment dumps",
       "secrets"
     ],
-    "mergeStatus": "NOT_AUTHORIZED"
+    "mergeStatus": "MERGED",
+    "mergeCommit": "4c8442b2b9e9af29fb7755dd6470c92442cbec24",
+    "mergedMainTree": "eaf23456d3d16fc50276844db22dfff3f17d6ebf",
+    "mergedAt": "2026-08-08T08:44:13Z",
+    "mergedBy": "Eskasia",
+    "mergeReceipt": {
+      "id": 5225376792,
+      "url": "https://github.com/Eskasia/governseed/issues/92#issuecomment-5225376792",
+      "author": "Eskasia",
+      "authorAssociation": "OWNER",
+      "createdAt": "2026-08-08T08:44:37Z",
+      "updatedAt": "2026-08-08T08:44:37Z",
+      "bodySha256": "8e0dc1527bb30c4b85b4c54d8b43bfc292bbf616bf9fc2cbfa56e79e05ce309b"
+    },
+    "postMergeCi": {
+      "runId": 31249042879,
+      "headSha": "4c8442b2b9e9af29fb7755dd6470c92442cbec24",
+      "conclusion": "success",
+      "ubuntuConclusion": "success",
+      "macosConclusion": "success",
+      "windowsConclusion": "success",
+      "receiptCommentId": 5225385802,
+      "receiptBodySha256": "3cc0571349a603a98baf0629057b59fa286a6dbf6cf4e6bf30304ccaf50c8723"
+    }
   },
   "immutableFailedRunAccounting": {
     "runs": [
@@ -153,6 +186,7 @@
   },
   "checkerAndMergeConflict": {
     "inheritedCheckerTaskMaximum": 7,
+    "approvedCheckerTaskMaximum": 8,
     "inheritedCheckerNamesAreClosed": true,
     "requiredCheckerNameForG2Evidence": "GS-AUTONOMOUS-G2-EVIDENCE-CHECKER",
     "requiredCheckerAlreadyConsumed": true,
@@ -172,19 +206,29 @@
     "checkerRetryAllowed": false,
     "checkerReplacementAllowed": false,
     "substitutionWithAnotherStageCheckerAllowed": false,
-    "mergePreconditionsSatisfied": false,
-    "decisionRequired": [
-      "Explicitly authorize one additional uniquely named no-retry receipt-persistence checker and its revised checker/provider-unit ceiling.",
-      "Or explicitly approve a one-PR human-review waiver of the inherited fresh named checker merge precondition."
-    ],
-    "preparationSelectsNeitherDecision": true
+    "selectedDecision": "ADDITIONAL_UNIQUE_NO_RETRY_CHECKER",
+    "additionalChecker": {
+      "name": "GS-AUTONOMOUS-G2-RECEIPT-PERSISTENCE-CHECKER",
+      "authorizationCommentId": 5225354025,
+      "authorizationBodySha256": "4c667b067f2ddc2e21648a408a3760218326de92061c513f9a13d24fa97118bc",
+      "verdict": "ACCEPT",
+      "receiptCommentId": 5225371193,
+      "receiptUrl": "https://github.com/Eskasia/governseed/pull/98#issuecomment-5225371193",
+      "receiptBodySha256": "ba3e9967090233f2438b5514b21c080025c85536325636dea0e53b8614f4a1c4",
+      "controlCommentId": 5225372078,
+      "controlBodySha256": "cf18ddf8ded753be6fde53601163ecb1320b9f064bd0909e44319a556451251f",
+      "retryOrReplacementAllowed": false
+    },
+    "mergePreconditionsSatisfied": true,
+    "decisionRequired": [],
+    "preparationSelectsNeitherDecision": false
   },
   "activationProposal": {
     "workflowId": 325585082,
     "candidateWorkflowSha256": "8af7fd123fd1e9357f39d9142775f5d766b155f0e19e3e88a4335937b2a36453",
     "ref": "main",
-    "authorizedMainCommit": null,
-    "authorizedMainTree": null,
+    "authorizedMainCommit": "4c8442b2b9e9af29fb7755dd6470c92442cbec24",
+    "authorizedMainTree": "eaf23456d3d16fc50276844db22dfff3f17d6ebf",
     "runtimeImage": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
     "inputName": "authorized_main_commit",
     "runAttemptMustEqual": 1,
@@ -197,43 +241,40 @@
     "environmentApprovalIncludedInPreparation": false,
     "dispatchAuthorityActive": false,
     "blockedReasons": [
-      "PR #98 is unmerged and merge is not authorized.",
-      "The inherited exact-head merge checker identity is exhausted and replacement is not authorized.",
-      "No exact post-merge main commit and tree exist for an immutable dispatch binding.",
-      "This V3 preparation has no exact OWNER activation binding."
+      "This activation-capable V3 has not received an exact SHA-256, commit, and tree OWNER approval binding."
     ]
   },
   "ceilingProposal": {
-    "withoutCheckerPolicyDecision": {
+    "approvedRevision": {
       "absoluteCostUsd": 350,
-      "providerAuthorizationUnitsMaximum": 2122,
+      "providerAuthorizationUnitsMaximum": 2123,
       "directProviderRequestsMaximum": 2115,
       "workflowDispatchesMaximumIncludingConsumed": 37,
-      "checkerTasksMaximum": 7,
+      "checkerTasksMaximum": 8,
       "mergeCommitsMaximum": 8
     },
     "consumedOrReservedAtPreparation": {
       "directProviderRequests": 2,
-      "checkerTasks": 2,
-      "providerAuthorizationUnits": 4,
+      "checkerTasks": 3,
+      "providerAuthorizationUnits": 5,
       "workflowDispatches": 2,
-      "mergeCommits": 2,
-      "costUsd": 6
+      "mergeCommits": 3,
+      "costUsd": 8
     },
-    "remainingAfterPreparationWithoutCheckerPolicyDecision": {
+    "remainingAfterPreparation": {
       "directProviderRequests": 2113,
       "checkerTasks": 5,
       "providerAuthorizationUnits": 2118,
       "workflowDispatches": 35,
-      "mergeCommits": 6,
-      "costUsd": 344
+      "mergeCommits": 5,
+      "costUsd": 342
     },
-    "additionalCheckerOptionWouldRequire": {
+    "additionalCheckerDecision": {
       "checkerTasksMaximum": 8,
       "providerAuthorizationUnitsMaximum": 2123,
       "absoluteCostUsd": 350,
       "governanceOverheadReallocationOnly": true,
-      "selected": false
+      "selected": true
     }
   },
   "unchangedContractSections": [
@@ -277,8 +318,8 @@
     "unknownOrChangedWorkflowPolicy": "STOP"
   },
   "providerAndCostRevision": {
-    "maximumProviderAuthorizationUnitsProposedWithoutCheckerDecision": 2122,
-    "countingRule": "2115 direct Responses API requests plus the seven inherited no-retry named checker authorization units; any eighth checker requires a separate explicit ceiling decision.",
+    "maximumProviderAuthorizationUnits": 2123,
+    "countingRule": "2115 direct Responses API requests plus eight no-retry named checker authorization units, including the separately approved and consumed receipt-persistence checker.",
     "directRequests": {
       "g2Canary": 3,
       "pilot": 576,
@@ -289,18 +330,19 @@
     },
     "checkerTasks": {
       "inheritedMaximum": 7,
-      "consumed": 2,
+      "approvedMaximum": 8,
+      "consumed": 3,
       "remainingByCount": 5,
       "remainingEligibleForReceiptPersistenceRepair": 0,
       "retryOrReplacementAllowed": false,
-      "additionalCheckerDecisionPending": true
+      "additionalCheckerDecisionPending": false
     },
     "costUsd": {
       "contractExperimentCeiling": 330,
       "governanceOverheadCeiling": 20,
       "g2CanaryOverheadAllocationProposed": 3,
-      "inheritedCheckerTaskOverheadAllocationEach": 2,
-      "unallocatedOverheadContingencyProposedWithoutEighthChecker": 3,
+      "checkerTaskOverheadAllocationEach": 2,
+      "unallocatedOverheadContingency": 1,
       "absoluteTotalCeiling": 350,
       "historicalG2Reservation": 2,
       "additionalG2ReservationMaximumProposed": 1,
@@ -308,9 +350,9 @@
     }
   },
   "mandatoryStops": [
-    "This V3 preparation is not activatable and grants no standing authority.",
-    "Any attempt to reuse GS-AUTONOMOUS-G2-EVIDENCE-CHECKER, substitute another stage checker, or merge PR #98 without an explicit checker-policy decision.",
-    "Any drift in PR #98 base, head, tree, body, workflow, host-proxy, technical/control comments, or CI run 31037391229.",
+    "This activation-capable V3 grants no standing authority until its exact UTF-8 SHA-256, frozen commit, and tree receive an immutable OWNER GitHub approval binding.",
+    "Any conflict in PR #98 checker, approval, merge, merge receipt, post-merge CI, or exact main target 4c8442b2b9e9af29fb7755dd6470c92442cbec24.",
+    "Any attempt to reuse, retry, or replace GS-AUTONOMOUS-G2-EVIDENCE-CHECKER or GS-AUTONOMOUS-G2-RECEIPT-PERSISTENCE-CHECKER, or substitute a checker reserved for another stage.",
     "Any attempted reuse or rerun of failed runs 31014045209 or 31032816504.",
     "Any request for more than one additional fresh G2 dispatch or more than one additional direct G2 provider request.",
     "Any retry, rerun, fallback, cross-revision pooling, or unapproved checker replacement.",
@@ -339,7 +381,7 @@
       "benchmark acceptance",
       "final acceptance"
     ],
-    "futureSequenceRequirement": "First resolve the checker identity or explicit one-PR waiver decision. Then review and merge the exact PR #98 candidate under a separately bound authorization. Only after an exact post-merge main commit/tree and workflow hash exist may an activation-capable V3 be frozen and submitted for exact OWNER approval."
+    "futureSequenceRequirement": "Freeze this activation-capable V3 to an exact UTF-8 SHA-256, commit, and tree; publish an immutable OWNER approval binding that cites the exact ceilings, target main commit/tree, workflow hash, one remaining G2 dispatch/request, and mandatory stops. Only then may the exact G2 dispatch and Environment-gated provider request proceed."
   },
-  "selfBinding": "This fail-closed preparation does not self-hash and grants no standing authority. Its immutable identity is the SHA-256 of these exact UTF-8 bytes, externally bound to a frozen Git commit and tree."
+  "selfBinding": "This activation-capable preparation does not self-hash and grants no standing authority before exact OWNER approval. Its immutable identity is the SHA-256 of these exact UTF-8 bytes, externally bound to a frozen Git commit and tree."
 }

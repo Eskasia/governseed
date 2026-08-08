@@ -15,14 +15,16 @@ function sha256(bytes) {
   return createHash('sha256').update(bytes).digest('hex');
 }
 
-test('V3 preparation binds PR #98 and remains non-activatable before merge and exact target', () => {
+test('V3 activation preparation binds merged PR #98 and remains inactive before exact OWNER binding', () => {
   const result = verifyAutonomousCompletionDelegationV3(ROOT);
   assert.equal(result.ok, true, result.errors.join('\n'));
   assert.equal(result.manifest.receiptPersistenceRepairCandidate.pullRequest, 98);
-  assert.equal(result.manifest.receiptPersistenceRepairCandidate.state, 'OPEN_DRAFT');
-  assert.equal(result.manifest.receiptPersistenceRepairCandidate.mergeStatus, 'NOT_AUTHORIZED');
-  assert.equal(result.manifest.activationProposal.authorizedMainCommit, null);
-  assert.equal(result.manifest.activationProposal.authorizedMainTree, null);
+  assert.equal(result.manifest.receiptPersistenceRepairCandidate.state, 'MERGED');
+  assert.equal(result.manifest.receiptPersistenceRepairCandidate.mergeStatus, 'MERGED');
+  assert.equal(result.manifest.receiptPersistenceRepairCandidate.mergeCommit, '4c8442b2b9e9af29fb7755dd6470c92442cbec24');
+  assert.equal(result.manifest.receiptPersistenceRepairCandidate.postMergeCi.runId, 31249042879);
+  assert.equal(result.manifest.activationProposal.authorizedMainCommit, '4c8442b2b9e9af29fb7755dd6470c92442cbec24');
+  assert.equal(result.manifest.activationProposal.authorizedMainTree, 'eaf23456d3d16fc50276844db22dfff3f17d6ebf');
   assert.equal(result.manifest.activationProposal.dispatchAuthorityActive, false);
 });
 
@@ -36,7 +38,7 @@ test('V3 preserves both failed runs and charges both possibly consumed requests'
   assert.equal(manifest.activationProposal.additionalDirectProviderRequestMaximum, 1);
 });
 
-test('V3 fails closed because the only G2 checker name was consumed by PR #95', () => {
+test('V3 records the separately approved no-retry checker and exact ACCEPT evidence', () => {
   const manifest = JSON.parse(readFileSync(path.join(ROOT, MANIFEST), 'utf8'));
   const conflict = manifest.checkerAndMergeConflict;
   assert.equal(conflict.requiredCheckerNameForG2Evidence, 'GS-AUTONOMOUS-G2-EVIDENCE-CHECKER');
@@ -45,8 +47,25 @@ test('V3 fails closed because the only G2 checker name was consumed by PR #95', 
   assert.equal(conflict.eligibleUnusedInheritedChecker, null);
   assert.equal(conflict.checkerReuseAllowed, false);
   assert.equal(conflict.checkerReplacementAllowed, false);
-  assert.equal(conflict.mergePreconditionsSatisfied, false);
-  assert.equal(conflict.preparationSelectsNeitherDecision, true);
+  assert.equal(conflict.selectedDecision, 'ADDITIONAL_UNIQUE_NO_RETRY_CHECKER');
+  assert.equal(conflict.additionalChecker.name, 'GS-AUTONOMOUS-G2-RECEIPT-PERSISTENCE-CHECKER');
+  assert.equal(conflict.additionalChecker.verdict, 'ACCEPT');
+  assert.equal(conflict.additionalChecker.receiptCommentId, 5225371193);
+  assert.equal(conflict.additionalChecker.retryOrReplacementAllowed, false);
+  assert.equal(conflict.mergePreconditionsSatisfied, true);
+  assert.equal(conflict.preparationSelectsNeitherDecision, false);
+});
+
+test('V3 approved ceilings include one added checker without widening direct G2 retries', () => {
+  const manifest = JSON.parse(readFileSync(path.join(ROOT, MANIFEST), 'utf8'));
+  assert.equal(manifest.ceilingProposal.approvedRevision.providerAuthorizationUnitsMaximum, 2123);
+  assert.equal(manifest.ceilingProposal.approvedRevision.directProviderRequestsMaximum, 2115);
+  assert.equal(manifest.ceilingProposal.approvedRevision.checkerTasksMaximum, 8);
+  assert.equal(manifest.ceilingProposal.consumedOrReservedAtPreparation.checkerTasks, 3);
+  assert.equal(manifest.ceilingProposal.consumedOrReservedAtPreparation.mergeCommits, 3);
+  assert.equal(manifest.activationProposal.additionalDispatchMaximum, 1);
+  assert.equal(manifest.activationProposal.additionalDirectProviderRequestMaximum, 1);
+  assert.equal(manifest.activationProposal.automaticRetryAllowed, false);
 });
 
 test('V3 candidate hashes resolve to the exact frozen PR #98 branch', () => {
@@ -60,6 +79,17 @@ test('V3 candidate hashes resolve to the exact frozen PR #98 branch', () => {
   assert.equal(tree, candidate.treeSha);
   assert.equal(sha256(workflow), candidate.workflowSha256);
   assert.equal(sha256(hostProxy), candidate.hostProxySha256);
+});
+
+test('V3 activation target resolves to the exact post-merge main object and workflow', () => {
+  const manifest = JSON.parse(readFileSync(path.join(ROOT, MANIFEST), 'utf8'));
+  const activation = manifest.activationProposal;
+  const main = execFileSync('git', ['rev-parse', 'origin/main'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const tree = execFileSync('git', ['rev-parse', 'origin/main^{tree}'], { cwd: ROOT, encoding: 'utf8' }).trim();
+  const workflow = execFileSync('git', ['show', `${main}:.github/workflows/external-oss-v8-runtime-identity.yml`], { cwd: ROOT });
+  assert.equal(main, activation.authorizedMainCommit);
+  assert.equal(tree, activation.authorizedMainTree);
+  assert.equal(sha256(workflow), activation.candidateWorkflowSha256);
 });
 
 test('V3 keeps workflow 322642963 non-dispatchable under the timeout conflict', () => {

@@ -33,8 +33,8 @@ export function verifyAutonomousCompletionDelegationV3(root) {
   );
   requireValue(manifest.schemaVersion === 3, 'schemaVersion must equal 3', errors);
   requireValue(
-    manifest.status === 'BLOCKED_CHECKER_IDENTITY_AND_MERGE_TARGET_DECISION_REQUIRED',
-    'V3 preparation status is not fail-closed',
+    manifest.status === 'PENDING_EXACT_OWNER_APPROVAL_BINDING',
+    'V3 activation preparation status is not fail-closed',
     errors,
   );
   requireValue(sha256(previousBytes) === manifest.previousManifest.sha256, 'V2 manifest hash mismatch', errors);
@@ -52,11 +52,25 @@ export function verifyAutonomousCompletionDelegationV3(root) {
     'an experiment-contract field is marked changed',
     errors,
   );
-  requireValue(manifest.receiptPersistenceRepairCandidate.state === 'OPEN_DRAFT', 'repair candidate is not frozen as draft', errors);
-  requireValue(manifest.receiptPersistenceRepairCandidate.mergeStatus === 'NOT_AUTHORIZED', 'repair merge became authorized', errors);
+  requireValue(manifest.receiptPersistenceRepairCandidate.state === 'MERGED', 'repair candidate is not merged', errors);
+  requireValue(manifest.receiptPersistenceRepairCandidate.mergeStatus === 'MERGED', 'repair merge is not recorded', errors);
   requireValue(manifest.receiptPersistenceRepairCandidate.ci.conclusion === 'success', 'candidate CI is not successful', errors);
-  requireValue(manifest.activationProposal.authorizedMainCommit === null, 'post-merge commit was inferred before merge', errors);
-  requireValue(manifest.activationProposal.authorizedMainTree === null, 'post-merge tree was inferred before merge', errors);
+  requireValue(
+    manifest.activationProposal.authorizedMainCommit === manifest.receiptPersistenceRepairCandidate.mergeCommit,
+    'activation commit does not match the repair merge commit',
+    errors,
+  );
+  requireValue(
+    manifest.activationProposal.authorizedMainTree === manifest.receiptPersistenceRepairCandidate.mergedMainTree,
+    'activation tree does not match the merged repair tree',
+    errors,
+  );
+  requireValue(
+    manifest.receiptPersistenceRepairCandidate.postMergeCi.runId === 31249042879
+      && manifest.receiptPersistenceRepairCandidate.postMergeCi.conclusion === 'success',
+    'post-merge CI evidence mismatch',
+    errors,
+  );
   requireValue(manifest.activationProposal.dispatchAuthorityActive === false, 'dispatch authority activated early', errors);
   requireValue(manifest.activationProposal.additionalDispatchMaximum === 1, 'additional G2 dispatch ceiling is not one', errors);
   requireValue(
@@ -79,39 +93,44 @@ export function verifyAutonomousCompletionDelegationV3(root) {
 
   const conflict = manifest.checkerAndMergeConflict;
   requireValue(conflict.requiredCheckerAlreadyConsumed === true, 'consumed G2 checker was not recorded', errors);
+  requireValue(conflict.approvedCheckerTaskMaximum === 8, 'approved eighth checker ceiling is missing', errors);
   requireValue(conflict.eligibleUnusedInheritedChecker === null, 'an ineligible inherited checker was substituted', errors);
   requireValue(conflict.checkerReuseAllowed === false, 'checker reuse was enabled', errors);
   requireValue(conflict.checkerReplacementAllowed === false, 'checker replacement was enabled', errors);
-  requireValue(conflict.mergePreconditionsSatisfied === false, 'merge preconditions were claimed complete', errors);
-  requireValue(conflict.preparationSelectsNeitherDecision === true, 'preparation silently selected a checker policy', errors);
+  requireValue(conflict.selectedDecision === 'ADDITIONAL_UNIQUE_NO_RETRY_CHECKER', 'approved checker option was not selected', errors);
+  requireValue(conflict.additionalChecker.verdict === 'ACCEPT', 'additional checker ACCEPT is missing', errors);
+  requireValue(conflict.additionalChecker.retryOrReplacementAllowed === false, 'additional checker became retryable', errors);
+  requireValue(conflict.mergePreconditionsSatisfied === true, 'merge preconditions are not recorded complete', errors);
+  requireValue(conflict.decisionRequired.length === 0, 'resolved checker decision remains open', errors);
+  requireValue(conflict.preparationSelectsNeitherDecision === false, 'approved checker decision was discarded', errors);
 
-  const proposal = manifest.ceilingProposal.withoutCheckerPolicyDecision;
+  const proposal = manifest.ceilingProposal.approvedRevision;
   requireValue(
     proposal.absoluteCostUsd === 350
-      && proposal.providerAuthorizationUnitsMaximum === 2122
+      && proposal.providerAuthorizationUnitsMaximum === 2123
       && proposal.directProviderRequestsMaximum === 2115
       && proposal.workflowDispatchesMaximumIncludingConsumed === 37
-      && proposal.checkerTasksMaximum === 7
+      && proposal.checkerTasksMaximum === 8
       && proposal.mergeCommitsMaximum === 8,
-    'V3 no-checker-decision ceiling proposal mismatch',
+    'V3 approved ceiling revision mismatch',
     errors,
   );
   const consumed = manifest.ceilingProposal.consumedOrReservedAtPreparation;
   requireValue(
     consumed.directProviderRequests === 2
-      && consumed.checkerTasks === 2
-      && consumed.providerAuthorizationUnits === 4
+      && consumed.checkerTasks === 3
+      && consumed.providerAuthorizationUnits === 5
       && consumed.workflowDispatches === 2
-      && consumed.mergeCommits === 2
-      && consumed.costUsd === 6,
+      && consumed.mergeCommits === 3
+      && consumed.costUsd === 8,
     'V3 consumed or reserved accounting mismatch',
     errors,
   );
   const direct = manifest.providerAndCostRevision.directRequests;
   requireValue(direct.total === direct.g2Canary + direct.pilot + direct.confirmatory, 'direct request arithmetic mismatch', errors);
   requireValue(
-    manifest.providerAndCostRevision.maximumProviderAuthorizationUnitsProposedWithoutCheckerDecision
-      === direct.total + manifest.providerAndCostRevision.checkerTasks.inheritedMaximum,
+    manifest.providerAndCostRevision.maximumProviderAuthorizationUnits
+      === direct.total + manifest.providerAndCostRevision.checkerTasks.approvedMaximum,
     'provider authorization unit arithmetic mismatch',
     errors,
   );
