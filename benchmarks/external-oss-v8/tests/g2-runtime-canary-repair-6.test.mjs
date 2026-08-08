@@ -29,9 +29,9 @@ const ATTEMPT_6_TEMPLATE = `${ATTEMPT_5_ROOT}/human-approval-repair-2-attempt-6.
 const ATTEMPT_6_ADDENDUM = `${ATTEMPT_5_ROOT}/human-approval-repair-2-attempt-6.addendum.json`;
 const ATTEMPT_6_APPROVAL = `${ATTEMPT_5_ROOT}/human-approval-repair-2-attempt-6.json`;
 const ATTEMPT_6_SOURCE = `${ATTEMPT_5_ROOT}/human-approval-repair-2-attempt-6-source.json`;
-const ATTEMPT_7_ROOT = `${ATTEMPT_5_ROOT}/repair-2/attempt-7`;
-const ATTEMPT_7_AUTHORIZATION = `${ATTEMPT_7_ROOT}/authorization-source.json`;
-const ATTEMPT_7_MANIFEST = `${ATTEMPT_7_ROOT}/technical-manifest.json`;
+const ATTEMPT_8_ROOT = `${ATTEMPT_5_ROOT}/repair-2/attempt-8`;
+const ATTEMPT_8_AUTHORIZATION = `${ATTEMPT_8_ROOT}/authorization-source.json`;
+const ATTEMPT_8_MANIFEST = `${ATTEMPT_8_ROOT}/technical-manifest.json`;
 const IMAGE = 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5';
 const MODEL = 'gpt-5.6-luna';
 const FIXED_INPUT = 'Return exactly the JSON object {"runtime_canary":"PASS"}.';
@@ -174,7 +174,7 @@ test('repair-6 workflow is manual, main-bound, environment-gated, and single-att
   assert.doesNotMatch(workflow, /fallback[_ -]?model|modelFallback|\bretry\b|\bretries\b/iu);
 });
 
-test('valid diagnostic authorization/source passes the active attempt-7 binding validator', () => {
+test('valid diagnostic authorization/source passes the active attempt-8 binding validator', () => {
   const workflow = readFileSync(path.join(ROOT, WORKFLOW), 'utf8');
   const result = runAuthorizationAndBinding(workflow);
   assert.equal(result.status, 0, result.output);
@@ -186,25 +186,25 @@ test('valid diagnostic authorization/source passes the active attempt-7 binding 
   rmSync(result.runRoot, { recursive: true, force: true });
 });
 
-test('attempt-7 authorization and manifest failures are fail-closed with stable codes', (t) => {
+test('attempt-8 authorization and manifest failures are fail-closed with stable codes', (t) => {
   const workflow = readFileSync(path.join(ROOT, WORKFLOW), 'utf8');
   const script = extractNodeScript(workflow, '- name: Validate diagnostic repair authorization and technical bindings');
   const missingAuthorizationRoot = copyBindingFixture(t);
-  rmSync(path.join(missingAuthorizationRoot, ATTEMPT_7_AUTHORIZATION));
+  rmSync(path.join(missingAuthorizationRoot, ATTEMPT_8_AUTHORIZATION));
   const missing = runInlineScript(script, { root: missingAuthorizationRoot });
   assert.equal(missing.status, 1);
   assert.match(missing.output, /ENOENT/u);
   const authorizationTamperedRoot = copyBindingFixture(t);
-  const authorization = readJson(ATTEMPT_7_AUTHORIZATION, authorizationTamperedRoot);
+  const authorization = readJson(ATTEMPT_8_AUTHORIZATION, authorizationTamperedRoot);
   authorization.commentBodySha256 = '0'.repeat(64);
-  writeFileSync(path.join(authorizationTamperedRoot, ATTEMPT_7_AUTHORIZATION), `${JSON.stringify(authorization, null, 2)}\n`);
+  writeFileSync(path.join(authorizationTamperedRoot, ATTEMPT_8_AUTHORIZATION), `${JSON.stringify(authorization, null, 2)}\n`);
   const tamperedAuthorization = runInlineScript(script, { root: authorizationTamperedRoot });
   assert.equal(tamperedAuthorization.status, 1);
   assert.equal(diagnostic(tamperedAuthorization.runRoot, 'validation-diagnostic.json').failureCode, 'DIAGNOSTIC_REPAIR_AUTHORIZATION_SOURCE_MISMATCH');
   const manifestTamperedRoot = copyBindingFixture(t);
-  const manifest = readJson(ATTEMPT_7_MANIFEST, manifestTamperedRoot);
+  const manifest = readJson(ATTEMPT_8_MANIFEST, manifestTamperedRoot);
   manifest.entries[0].sha256 = '0'.repeat(64);
-  writeFileSync(path.join(manifestTamperedRoot, ATTEMPT_7_MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`);
+  writeFileSync(path.join(manifestTamperedRoot, ATTEMPT_8_MANIFEST), `${JSON.stringify(manifest, null, 2)}\n`);
   const tamperedManifest = runInlineScript(script, { root: manifestTamperedRoot });
   assert.equal(tamperedManifest.status, 1);
   assert.equal(diagnostic(tamperedManifest.runRoot, 'validation-diagnostic.json').failureCode, 'DIAGNOSTIC_TECHNICAL_MANIFEST_MISMATCH');

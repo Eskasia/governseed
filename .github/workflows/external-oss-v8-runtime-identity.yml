@@ -133,7 +133,7 @@ jobs:
             process.exit(1);
           };
           const expectedRuntimeImage = 'node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5';
-          const attemptRoot = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-7';
+          const attemptRoot = 'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-8';
           const manifestPath = `${attemptRoot}/technical-manifest.json`;
           const packetPath = `${attemptRoot}/review-packet.json`;
           const authorizationPath = `${attemptRoot}/authorization-source.json`;
@@ -150,8 +150,8 @@ jobs:
             manifest.schemaVersion !== 1
             || manifest.benchmarkId !== 'GS-OSS-2026-08-02-V8'
             || manifest.gate !== 'G2'
-            || manifest.repair !== 'non-2xx-diagnostic-repair'
-            || manifest.attempt !== 7
+            || manifest.repair !== 'diagnostic-receipt-persistence-repair'
+            || manifest.attempt !== 8
             || !Array.isArray(manifest.entries)
             || manifest.entries.length === 0
             || manifest.entries.some((entry) => (
@@ -161,25 +161,33 @@ jobs:
             ))
           ) fail('DIAGNOSTIC_TECHNICAL_MANIFEST_MISMATCH', ['technicalManifestMatches']);
           if (
-            authorization.commentId !== 5193631262
-            || authorization.commentUrl !== 'https://github.com/Eskasia/governseed/issues/92#issuecomment-5193631262'
+            authorization.authorization !== 'G2_V2_DIAGNOSTIC_RECEIPT_PERSISTENCE_REPAIR_PREPARATION'
+            || authorization.commentId !== 5195989683
+            || authorization.commentUrl !== 'https://github.com/Eskasia/governseed/issues/92#issuecomment-5195989683'
             || authorization.commentAuthor !== 'Eskasia'
-            || authorization.commentCreatedAt !== '2026-08-05T15:15:50Z'
-            || authorization.commentUpdatedAt !== '2026-08-05T15:15:50Z'
-            || authorization.commentBodySha256 !== '0cacc6164223196ea46f13b2101bae8622c9b172bf90feeb2de60d6e35bfca0a'
+            || authorization.commentCreatedAt !== '2026-08-05T18:52:13Z'
+            || authorization.commentUpdatedAt !== '2026-08-05T18:52:13Z'
+            || authorization.commentBodySha256 !== '076b252e94ebd00825de6c298621632c704f7d7fc4021a758a2f56a788f95a32'
+            || authorization.authorizedBaseCommit !== '9c83280cec2d9f8fedd15455cfa261680452969f'
+            || authorization.authorizedBaseTree !== 'f1f89f4dcb1d06cfd4e9af76df8fbaf7722cd64b'
+            || authorization.repairImplementationAuthorized !== true
             || authorization.providerRequestAuthorized !== false
             || authorization.workflowDispatchAuthorized !== false
+            || authorization.environmentApprovalAuthorized !== false
+            || authorization.mergeAuthorized !== false
           ) fail('DIAGNOSTIC_REPAIR_AUTHORIZATION_SOURCE_MISMATCH', ['authorizationSourceMatches']);
           if (
             failedRun.workflowId !== 325585082
-            || failedRun.runId !== 31014045209
+            || failedRun.runId !== 31032816504
             || failedRun.runAttempt !== 1
-            || failedRun.headSha !== '4e1347e510a0068efbdff6942748671490c798ea'
-            || failedRun.failureReceiptCommentId !== 5193562726
-            || failedRun.failureReceiptBodySha256 !== '4a1d95b883a90bc98faadae41c4cf4bea656d5e3cf390fb3cc5625485f08e361'
-            || failedRun.artifactId !== 8935651599
-            || failedRun.artifactDigest !== 'sha256:567ca3d9e79d72da8c69508b686f85ea0baabdf61d860495001478f5f12777be'
-            || failedRun.failureArtifactSha256 !== '1cc4353eef786e8541d55a8d2b9a39770518037b132a60e68c0aaa50141c99fd'
+            || failedRun.headSha !== '9c83280cec2d9f8fedd15455cfa261680452969f'
+            || failedRun.conclusion !== 'failure'
+            || failedRun.failureCode !== 'CANARY_UPSTREAM_NON_2XX'
+            || failedRun.failureReceiptCommentId !== 5195468651
+            || failedRun.failureReceiptBodySha256 !== '7a3eaf3778422a8452a19d3063601670bd100f7c9435d536215af5f6d4cc6a4f'
+            || failedRun.artifactId !== 8941397535
+            || failedRun.artifactDigest !== 'sha256:6aec10269a8914befdb889c028b1e32d4ecfe204be282ae055f52367a6b04c85'
+            || failedRun.failureArtifactSha256 !== '353b6f2856a1ad3bfb37bef469cbe4e9b184673648e1a6b164bae9380ecfa0cb'
             || failedRun.providerRequestAttempt !== 'INDETERMINATE'
             || failedRun.possiblyConsumedRequestCount !== 1
             || failedRun.rerunPermitted !== false
@@ -188,6 +196,8 @@ jobs:
             packet.schemaVersion !== 1
             || packet.status !== 'PENDING_OWNER_REVIEW'
             || packet.benchmarkId !== 'GS-OSS-2026-08-02-V8'
+            || packet.repair !== 'diagnostic-receipt-persistence-repair'
+            || packet.attempt !== 8
             || packet.modelBinding?.provider !== 'OpenAI'
             || packet.modelBinding?.modelId !== 'gpt-5.6-luna'
             || packet.modelBinding?.aliasAllowed !== false
@@ -198,6 +208,14 @@ jobs:
             || packet.transport?.retryAllowed !== false
             || packet.transport?.tokenCeiling !== 8192
             || packet.runtime?.image !== expectedRuntimeImage
+            || packet.persistenceContract?.summaryPersistedExactlyOnce !== true
+            || packet.persistenceContract?.sigtermRequiredForFailurePersistence !== false
+            || packet.persistenceContract?.rawProviderDataPersisted !== false
+            || packet.protocolChange !== false
+            || packet.providerRequestAuthorized !== false
+            || packet.workflowDispatchAuthorized !== false
+            || packet.environmentApprovalAuthorized !== false
+            || packet.mergeAuthorized !== false
             || packet.hashes?.workflowSha256 !== sha256(workflowPath)
             || packet.hashes?.technicalManifestSha256 !== sha256(manifestPath)
             || packet.hashes?.authorizationSourceSha256 !== sha256(authorizationPath)
