@@ -17,6 +17,7 @@ import {
   CREDENTIAL_PROXY_TOKEN_CEILING,
   createHostCredentialProxy,
 } from '../../../experimental/governance-impact/lib/credential-proxy.mjs';
+import { createProxyRecordPersistence } from '../control/G2/runtime-canary-prep/host-proxy.mjs';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..', '..', '..');
 const WORKFLOW = path.join(ROOT, '.github/workflows/external-oss-v8-runtime-identity.yml');
@@ -29,7 +30,7 @@ const RUN_ID = 'non-2xx-diagnostic-synthetic-run';
 const TASK_ID = 'runtime-identity-canary';
 const ATTEMPT_ROOT = path.join(
   ROOT,
-  'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-7',
+  'benchmarks/external-oss-v8/credential-transport/repair-2/attempt-8',
 );
 
 function sha256(filePath) {
@@ -233,7 +234,71 @@ test('failure artifact assembly exports safe diagnostics and explicit non-persis
   assert.match(workflow, /test -s "\$RUN_ROOT\/proxy-receipt\.json"/u);
 });
 
-test('attempt-7 technical packet and active workflow validator bind the authorized repair only', (t) => {
+test('host proxy persists one safe summary after self-close without waiting for SIGTERM', async (t) => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'governseed-g2-proxy-summary-'));
+  t.after(() => fs.rmSync(root, { recursive: true, force: true }));
+  const socketPath = path.join(root, 'proxy.sock');
+  const outputPath = path.join(root, 'proxy-receipt.json');
+  let completionCalls = 0;
+  let resolveCompletion;
+  const completion = new Promise((resolve) => { resolveCompletion = resolve; });
+  const proxy = createHostCredentialProxy({
+    policy: policy(),
+    socketPath,
+    socketOwnerUid: process.getuid?.() ?? 0,
+    socketOwnerGid: process.getgid?.() ?? 0,
+    upstreamKey: 'synthetic-host-only-key',
+    dependencies: {
+      upstreamTransport: async () => ({
+        statusCode: 429,
+        headers: { 'content-type': 'application/json' },
+        body: Buffer.from(JSON.stringify({
+          error: {
+            type: 'rate_limit_error',
+            code: 'insufficient_quota',
+            message: 'forbidden raw provider message sk-secret-value',
+          },
+        })),
+      }),
+    },
+  });
+  await proxy.start();
+  const persistence = createProxyRecordPersistence({
+    proxy,
+    receipts: [],
+    outputPath,
+    pollIntervalMs: 5,
+    onComplete(exitCode) {
+      completionCalls += 1;
+      resolveCompletion(exitCode);
+    },
+  });
+
+  assert.equal(await requestProxy(socketPath), 502);
+  assert.equal(await completion, 1);
+  assert.equal(completionCalls, 1);
+  const record = JSON.parse(fs.readFileSync(outputPath, 'utf8'));
+  assert.equal(record.schemaVersion, 3);
+  assert.equal(record.clientRequestObservedCount, 1);
+  assert.equal(record.upstreamAttemptCount, 1);
+  assert.equal(record.upstreamResponseCount, 1);
+  assert.equal(record.successfulReceiptCount, 0);
+  assert.equal(record.proxyCleanupObserved, true);
+  assert.equal(record.providerHttpStatus, 429);
+  assert.equal(record.providerErrorType, 'rate_limit_error');
+  assert.equal(record.providerErrorCode, 'insufficient_quota');
+  assert.equal(record.requestObservationState, 'UPSTREAM_RESPONSE_OBSERVED');
+  assert.equal(record.failureClassification, 'RATE_LIMIT_OR_QUOTA');
+  assert.equal(record.providerRequestAttempt, 'YES');
+  assert.equal(record.receipt, null);
+  assert.equal(JSON.stringify(record).includes('forbidden raw provider message'), false);
+  assert.equal(JSON.stringify(record).includes('sk-secret-value'), false);
+
+  assert.equal(await persistence.shutdown(0), 1);
+  assert.equal(completionCalls, 1);
+});
+
+test('attempt-8 technical packet and active workflow validator bind the authorized repair only', (t) => {
   const workflow = fs.readFileSync(WORKFLOW, 'utf8');
   const manifestPath = path.join(ATTEMPT_ROOT, 'technical-manifest.json');
   const packetPath = path.join(ATTEMPT_ROOT, 'review-packet.json');

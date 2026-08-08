@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "benchmarkId": "GS-OSS-2026-08-02-V8",
+  "gate": "G2",
+  "repair": "diagnostic-receipt-persistence-repair",
+  "attempt": 8,
+  "status": "PENDING_OWNER_REVIEW",
+  "authorizedBase": {
+    "commit": "9c83280cec2d9f8fedd15455cfa261680452969f",
+    "tree": "f1f89f4dcb1d06cfd4e9af76df8fbaf7722cd64b"
+  },
+  "modelBinding": {
+    "provider": "OpenAI",
+    "modelId": "gpt-5.6-luna",
+    "aliasAllowed": false,
+    "fallbackAllowed": false
+  },
+  "transport": {
+    "endpoint": "https://api.openai.com/v1/responses",
+    "requestLimit": 1,
+    "timeoutMs": 30000,
+    "retryAllowed": false,
+    "tokenCeiling": 8192,
+    "fixedInput": "Return exactly the JSON object {\"runtime_canary\":\"PASS\"}."
+  },
+  "runtime": {
+    "image": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+    "workflowId": 325585082,
+    "environment": "governseed-v8-runtime",
+    "runAttemptMustEqual": 1
+  },
+  "failedRun": {
+    "runId": 31032816504,
+    "attempt": 1,
+    "providerRequestAttempt": "INDETERMINATE",
+    "possiblyConsumedRequestCount": 1,
+    "cumulativePossiblyConsumedG2RequestCount": 2,
+    "rerunPermitted": false
+  },
+  "persistenceContract": {
+    "summaryPersistedExactlyOnce": true,
+    "selfClosedProxyObserved": true,
+    "sigtermRequiredForFailurePersistence": false,
+    "explicitSignalShutdownStillSupported": true,
+    "duplicateWriteAllowed": false,
+    "rawProviderDataPersisted": false
+  },
+  "diagnosticContract": {
+    "allowedFields": [
+      "providerHttpStatus",
+      "providerErrorType",
+      "providerErrorCode",
+      "requestObservationState",
+      "failureClassification"
+    ],
+    "unknownProviderValue": "UNRECOGNIZED",
+    "rawProviderBodyPersisted": false,
+    "providerErrorMessagePersisted": false,
+    "promptPersisted": false,
+    "responsePersisted": false,
+    "providerHeadersPersisted": false,
+    "authorizationDataPersisted": false,
+    "credentialValuesPersisted": false,
+    "environmentDumpPersisted": false
+  },
+  "v3ProposalBoundary": {
+    "additionalFreshG2DispatchMaximumProposed": 1,
+    "additionalProviderRequestMaximumProposed": 1,
+    "executionAuthorized": false,
+    "exactV3ApprovalRequired": true
+  },
+  "protocolChange": false,
+  "providerRequestAuthorized": false,
+  "workflowDispatchAuthorized": false,
+  "environmentApprovalAuthorized": false,
+  "checkerReplacementAuthorized": false,
+  "mergeAuthorized": false,
+  "hashes": {
+    "workflowSha256": "8af7fd123fd1e9357f39d9142775f5d766b155f0e19e3e88a4335937b2a36453",
+    "technicalManifestSha256": "2d9492470fb444be4ff62b54a8de1282bb61cc655f09d6704a05340dc4d8e0ca",
+    "authorizationSourceSha256": "2cd2bd7c53837d5813099bfb7a195ff0c0c936acd5f2c51adb03981b10266843",
+    "failedRunSourceSha256": "d2062c40eb6191118705961a7af56412e4d6d341521525ab9289c31116104e11"
+  }
+}
