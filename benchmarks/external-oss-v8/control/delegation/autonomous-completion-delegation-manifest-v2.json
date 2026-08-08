@@ -1,0 +1,250 @@
+{
+  "schemaVersion": 2,
+  "manifestId": "GS-EFFECT-R2-AUTONOMOUS-COMPLETION-DELEGATION-V2",
+  "status": "PENDING_EXACT_OWNER_APPROVAL_BINDING",
+  "repository": "Eskasia/governseed",
+  "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
+  "experimentRevision": 2,
+  "baseManifest": {
+    "path": "benchmarks/external-oss-v8/control/delegation/autonomous-completion-delegation-manifest.json",
+    "sha256": "480b30d6f01ca529eb095a58075959a2abc08bf1a9acb9f864371df17c7b59d7",
+    "approvedCommit": "bb8adc4b5203cd235ca4542ef8511090deeace2a",
+    "approvedTree": "bc118138747195712585adcefe9d92e0550f123b",
+    "approvedOwnerBindingRequired": true,
+    "inheritanceRule": "Every base-manifest field is inherited byte-semantically unless its top-level section is explicitly replaced by this V2 document. No implicit deletion, fallback, widening, or reinterpretation is permitted."
+  },
+  "canonicalContract": {
+    "path": "benchmarks/external-oss-effectiveness-r2/experiment-contract.json",
+    "sha256": "994ca60db879d0ea9966a5dbb1b76ebb63f5e00d1d3bdf2f552e1765f8bcadcc",
+    "experimentFieldsChanged": false,
+    "providerChanged": false,
+    "modelChanged": false,
+    "endpointChanged": false,
+    "taskChanged": false,
+    "seedChanged": false,
+    "oracleChanged": false,
+    "scorerChanged": false,
+    "thresholdChanged": false,
+    "protocolChanged": false
+  },
+  "diagnosticRepairCandidate": {
+    "pullRequest": 95,
+    "url": "https://github.com/Eskasia/governseed/pull/95",
+    "baseSha": "3e0cca4fd86ba0aad735249dcefa6df15514b40d",
+    "headSha": "bd1722922efb7c825ef4d621ab0e8a1f7595cb61",
+    "treeSha": "f1f89f4dcb1d06cfd4e9af76df8fbaf7722cd64b",
+    "pullRequestBodySha256": "423181bef720d826eff51264e627e9d03300a6ae92b4cf79e9572f17bb664dda",
+    "workflowSha256": "8c95e3251ca8473f2401ac115f6da0cf88cc1207099ef834446c262ff710a2af",
+    "technicalComment": {
+      "id": 5193737644,
+      "url": "https://github.com/Eskasia/governseed/pull/95#issuecomment-5193737644",
+      "author": "Eskasia",
+      "authorAssociation": "OWNER",
+      "createdAt": "2026-08-05T15:24:46Z",
+      "updatedAt": "2026-08-05T15:24:46Z",
+      "bodySha256": "0759016aba35cf1e062024610ce1c426e1128ac8943000aad4929dbde3228510"
+    },
+    "controlComment": {
+      "id": 5193740634,
+      "url": "https://github.com/Eskasia/governseed/issues/92#issuecomment-5193740634",
+      "author": "Eskasia",
+      "authorAssociation": "OWNER",
+      "createdAt": "2026-08-05T15:25:02Z",
+      "updatedAt": "2026-08-05T15:25:02Z",
+      "bodySha256": "7498629dd0afa3130c2cd313aae26918b20437b4de0bfb3ccfbcc57da4506194"
+    },
+    "ci": {
+      "experimentalRun": 31020127005,
+      "experimentalConclusion": "success",
+      "crossPlatformRun": 31020127157,
+      "ubuntuConclusion": "success",
+      "macosConclusion": "success",
+      "windowsConclusion": "success",
+      "controlCommentId": 5193774911,
+      "controlCommentBodySha256": "3c6008c6b20d9e45f19e9d9c7538d4cba4c2283061df54507eb3c26bb2be7065"
+    },
+    "mergeStatus": "MERGED",
+    "mergeCommit": "9c83280cec2d9f8fedd15455cfa261680452969f",
+    "mergedMainTree": "f1f89f4dcb1d06cfd4e9af76df8fbaf7722cd64b",
+    "mergedAt": "2026-08-05T16:23:32Z",
+    "mergedBy": "Eskasia",
+    "mergeReceipt": {
+      "id": 5194456585,
+      "url": "https://github.com/Eskasia/governseed/issues/92#issuecomment-5194456585",
+      "author": "Eskasia",
+      "authorAssociation": "OWNER",
+      "createdAt": "2026-08-05T16:27:33Z",
+      "updatedAt": "2026-08-05T16:27:33Z",
+      "bodySha256": "084af4bbfa7e6495498984f01c1c27e921e16123e8bfbff7562a3e35fb66478f"
+    },
+    "postMergeCi": {
+      "runId": 31025047970,
+      "headSha": "9c83280cec2d9f8fedd15455cfa261680452969f",
+      "conclusion": "success",
+      "ubuntuConclusion": "success",
+      "macosConclusion": "success",
+      "windowsConclusion": "success"
+    }
+  },
+  "immutableFailedRunAccounting": {
+    "workflowId": 325585082,
+    "runId": 31014045209,
+    "runAttempt": 1,
+    "headSha": "4e1347e510a0068efbdff6942748671490c798ea",
+    "conclusion": "failure",
+    "failureReceiptCommentId": 5193562726,
+    "failureReceiptBodySha256": "4a1d95b883a90bc98faadae41c4cf4bea656d5e3cf390fb3cc5625485f08e361",
+    "artifactId": 8935651599,
+    "artifactDigest": "sha256:567ca3d9e79d72da8c69508b686f85ea0baabdf61d860495001478f5f12777be",
+    "failureArtifactSha256": "1cc4353eef786e8541d55a8d2b9a39770518037b132a60e68c0aaa50141c99fd",
+    "providerRequestAttempt": "INDETERMINATE",
+    "directProviderRequestsChargedConservatively": 1,
+    "g2CostUsdReserved": 1,
+    "rerunPermitted": false,
+    "crossRevisionPoolingPermitted": false
+  },
+  "activationTarget": {
+    "workflowId": 325585082,
+    "workflowSha256": "8c95e3251ca8473f2401ac115f6da0cf88cc1207099ef834446c262ff710a2af",
+    "ref": "main",
+    "authorizedMainCommit": "9c83280cec2d9f8fedd15455cfa261680452969f",
+    "authorizedMainTree": "f1f89f4dcb1d06cfd4e9af76df8fbaf7722cd64b",
+    "runtimeImage": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+    "inputName": "authorized_main_commit",
+    "runAttemptMustEqual": 1,
+    "freshRunRequired": true,
+    "historicalRunRerunForbidden": true,
+    "providerRequestMaximum": 1,
+    "automaticRetryAllowed": false,
+    "fallbackAllowed": false,
+    "dispatchAuthorityActive": false,
+    "blockedReason": "The exact merged main target is bound, but this V2 manifest has not received an exact SHA-256 OWNER approval binding. Dispatch authority remains inactive."
+  },
+  "ceilingRevision": {
+    "absoluteCostUsd": 350,
+    "providerAuthorizationUnitsMaximum": 2121,
+    "directProviderRequestsMaximum": 2114,
+    "workflowDispatchesMaximumIncludingConsumed": 36,
+    "checkerTasksMaximum": 7,
+    "mergeCommitsMaximum": 8,
+    "consumedOrReservedAtPreparation": {
+      "directProviderRequests": 1,
+      "checkerTasks": 2,
+      "providerAuthorizationUnits": 3,
+      "workflowDispatches": 1,
+      "mergeCommits": 2,
+      "costUsd": 5
+    },
+    "remainingAfterPreparation": {
+      "directProviderRequests": 2113,
+      "checkerTasks": 5,
+      "providerAuthorizationUnits": 2118,
+      "workflowDispatches": 35,
+      "mergeCommits": 6,
+      "costUsd": 345
+    }
+  },
+  "unchangedContractSections": [
+    "candidateControlPlanePolicyBinding",
+    "canonicalArtifactInventory",
+    "taskPlan",
+    "treatmentContract",
+    "runtimeAndProvider",
+    "timeoutsTokensAndFailureRules",
+    "mergeAuthority",
+    "formalLockPreconditions",
+    "stageTransitions",
+    "scoringAndAcceptance",
+    "safetyVetoes",
+    "evidenceRetentionAndClaimBoundary"
+  ],
+  "workflowRevision": {
+    "totalManualDispatchCeilingIncludingPreActivation": 36,
+    "preActivationDispatchesConsumed": 1,
+    "g2RuntimeIdentity": {
+      "id": 325585082,
+      "path": ".github/workflows/external-oss-v8-runtime-identity.yml",
+      "sha256": "8c95e3251ca8473f2401ac115f6da0cf88cc1207099ef834446c262ff710a2af",
+      "manualDispatchCeiling": 2,
+      "dispatchesConsumed": 1,
+      "remainingDispatches": 1,
+      "additionalDispatchMayBeAuthorizedOnlyAfterExactTargetIsBound": true
+    },
+    "formalLockPreflight": {
+      "id": 322642961,
+      "manualDispatchCeiling": 1,
+      "dispatchesConsumed": 0
+    },
+    "pairedEvaluator": {
+      "id": 322642963,
+      "manualDispatchCeiling": 33,
+      "dispatchesConsumed": 0,
+      "compatibilityStatus": "BLOCKED_PROTOCOL_CHANGE_REQUIRED",
+      "dispatchAuthorized": false,
+      "blockingConflict": "The workflow accepts at most 600000 ms and has a 30-minute job timeout, while the canonical R2 contract requires 2700 seconds per arm for a paired two-arm attempt."
+    },
+    "unknownOrChangedWorkflowPolicy": "STOP"
+  },
+  "providerAndCostRevision": {
+    "maximumProviderAuthorizationUnits": 2121,
+    "countingRule": "2114 direct Responses API requests plus seven no-retry named checker authorization units.",
+    "directRequests": {
+      "g2Canary": 2,
+      "pilot": 576,
+      "confirmatory": 1536,
+      "total": 2114,
+      "g2HistoricalPossiblyConsumed": 1,
+      "g2AdditionalMaximum": 1
+    },
+    "checkerTasks": {
+      "maximum": 7,
+      "consumed": 2,
+      "remaining": 5,
+      "retryOrReplacementAllowed": false,
+      "namesInheritedExactlyFromV1": true
+    },
+    "costUsd": {
+      "contractExperimentCeiling": 330,
+      "governanceOverheadCeiling": 20,
+      "g2CanaryOverheadAllocation": 2,
+      "checkerTaskOverheadAllocationEach": 2,
+      "unallocatedOverheadContingency": 4,
+      "absoluteTotalCeiling": 350,
+      "historicalG2Reservation": 1,
+      "additionalG2ReservationMaximum": 1,
+      "hardStopOnUnknownOrUnboundedCost": true
+    }
+  },
+  "mandatoryStops": [
+    "This preparation is not activatable until its exact UTF-8 SHA-256, frozen commit, and tree receive an immutable OWNER GitHub approval binding.",
+    "Any conflict in PR #95 merge provenance, merge receipt 5194456585, post-merge CI run 31025047970, or exact main target 9c83280cec2d9f8fedd15455cfa261680452969f.",
+    "Any attempted reuse or rerun of failed run 31014045209.",
+    "Any request for more than one additional G2 diagnostic canary dispatch or more than one additional G2 provider request.",
+    "Any retry, rerun, replacement attempt, fallback, or replacement checker.",
+    "Any model, provider, endpoint, task, seed, oracle, scorer, threshold, runtime, randomization, blinding, metric, acceptance, or experiment-protocol change.",
+    "Manifest drift, budget exhaustion, unresolved checker rejection, safety veto, missing credential or Environment approval, evidence conflict, identity or artifact unavailability, ineligible attempt, failed Pilot transition, incomplete confirmatory evidence, or unsupported final acceptance.",
+    "Workflow 322642963 remains non-dispatchable until its timeout conflict is resolved by a separately approved protocol decision."
+  ],
+  "authorityBoundary": {
+    "preparationAuthorizes": [
+      "read-only reconciliation",
+      "deterministic local validation",
+      "draft pull requests",
+      "append-only control comments"
+    ],
+    "preparationDoesNotAuthorize": [
+      "provider request",
+      "workflow dispatch or rerun",
+      "Environment approval",
+      "merge",
+      "formal lock",
+      "Pilot",
+      "confirmatory execution",
+      "scoring",
+      "benchmark acceptance",
+      "final acceptance"
+    ],
+    "futureV2ActivationRequirement": "Freeze this completed V2 preparation to an exact SHA-256/commit/tree, publish its exact OWNER GitHub approval binding, and revalidate every inherited and revised ceiling before any additional G2 dispatch. PR #96 activation or merge remains a separate unauthorized action until that binding exists."
+  },
+  "selfBinding": "This preparation does not self-hash and grants no standing authority. Its immutable identity is the SHA-256 of these exact UTF-8 bytes, externally bound to a frozen Git commit and tree."
+}
