@@ -1,0 +1,387 @@
+{
+  "schemaVersion": 3,
+  "manifestId": "GS-EFFECT-R2-AUTONOMOUS-COMPLETION-DELEGATION-V3",
+  "status": "PENDING_EXACT_OWNER_APPROVAL_BINDING",
+  "repository": "Eskasia/governseed",
+  "experimentId": "GS-OSS-2026-08-05-EFFECT-R2",
+  "experimentRevision": 2,
+  "previousManifest": {
+    "path": "benchmarks/external-oss-v8/control/delegation/autonomous-completion-delegation-manifest-v2.json",
+    "sha256": "1dfc6a73651030fd75658e61df3e022c8354976e36803a03f8165c2af287c29f",
+    "commit": "9bd3371147726b5274ea6ad528f0ca4a35b017ec",
+    "tree": "6b8e8252e012ac10857188f13be76de6cf3e0079",
+    "ownerActivationBinding": {
+      "id": 5195423147,
+      "url": "https://github.com/Eskasia/governseed/issues/92#issuecomment-5195423147",
+      "author": "Eskasia",
+      "authorAssociation": "OWNER",
+      "createdAt": "2026-08-05T18:01:24Z",
+      "updatedAt": "2026-08-05T18:01:24Z",
+      "bodySha256": "48db6a6867d3849bde052b9fab3a5a477138d24f599e274a45a78a8dbceb9b1a"
+    },
+    "inheritanceRule": "Every V1 and V2 field remains byte-semantically inherited unless this V3 document explicitly replaces its section. V3 preparation grants no authority and cannot silently delete, widen, reinterpret, or activate an inherited field."
+  },
+  "canonicalContract": {
+    "path": "benchmarks/external-oss-effectiveness-r2/experiment-contract.json",
+    "sha256": "994ca60db879d0ea9966a5dbb1b76ebb63f5e00d1d3bdf2f552e1765f8bcadcc",
+    "experimentFieldsChanged": false,
+    "providerChanged": false,
+    "modelChanged": false,
+    "endpointChanged": false,
+    "taskChanged": false,
+    "seedChanged": false,
+    "oracleChanged": false,
+    "scorerChanged": false,
+    "thresholdChanged": false,
+    "protocolChanged": false
+  },
+  "repairAuthorization": {
+    "id": 5195989683,
+    "url": "https://github.com/Eskasia/governseed/issues/92#issuecomment-5195989683",
+    "author": "Eskasia",
+    "authorAssociation": "OWNER",
+    "createdAt": "2026-08-05T18:52:13Z",
+    "updatedAt": "2026-08-05T18:52:13Z",
+    "bodySha256": "076b252e94ebd00825de6c298621632c704f7d7fc4021a758a2f56a788f95a32",
+    "providerRequestAuthorized": false,
+    "workflowDispatchAuthorized": false,
+    "environmentApprovalAuthorized": false,
+    "checkerReplacementAuthorized": false,
+    "mergeAuthorized": false,
+    "optionAOwnerDecision": {
+      "id": 5225354025,
+      "url": "https://github.com/Eskasia/governseed/issues/92#issuecomment-5225354025",
+      "author": "Eskasia",
+      "authorAssociation": "OWNER",
+      "createdAt": "2026-08-08T08:37:07Z",
+      "updatedAt": "2026-08-08T08:37:07Z",
+      "bodySha256": "4c667b067f2ddc2e21648a408a3760218326de92061c513f9a13d24fa97118bc",
+      "selectedOption": "ADDITIONAL_UNIQUE_NO_RETRY_CHECKER"
+    }
+  },
+  "receiptPersistenceRepairCandidate": {
+    "pullRequest": 98,
+    "url": "https://github.com/Eskasia/governseed/pull/98",
+    "state": "MERGED",
+    "baseSha": "9c83280cec2d9f8fedd15455cfa261680452969f",
+    "headSha": "32d8478a8cfcb5d524e3da823630c523f35e613e",
+    "treeSha": "eaf23456d3d16fc50276844db22dfff3f17d6ebf",
+    "pullRequestBodySha256": "55ec994c3d99fc7095383a24a4be531d86825cf740db949d141cb0199476d6b9",
+    "workflowSha256": "8af7fd123fd1e9357f39d9142775f5d766b155f0e19e3e88a4335937b2a36453",
+    "hostProxySha256": "e43a2d764d7286857a4fdad39dce4cccd17e37262ee5c9d2ea80c26c1ee8884c",
+    "attemptTechnicalManifestSha256": "2d9492470fb444be4ff62b54a8de1282bb61cc655f09d6704a05340dc4d8e0ca",
+    "attemptReviewPacketSha256": "5489d055f87a82ff862b61fbdca6683857b50979800a733ef68cd34ed42214ea",
+    "technicalComment": {
+      "id": 5196122248,
+      "url": "https://github.com/Eskasia/governseed/pull/98#issuecomment-5196122248",
+      "author": "Eskasia",
+      "authorAssociation": "OWNER",
+      "createdAt": "2026-08-05T19:03:48Z",
+      "updatedAt": "2026-08-05T19:03:48Z",
+      "bodySha256": "0c26b99af660a1624bfb9875f133fd1cf3a2b95881ee6f3fbae66c248d5dec7d"
+    },
+    "controlComment": {
+      "id": 5196125256,
+      "url": "https://github.com/Eskasia/governseed/issues/92#issuecomment-5196125256",
+      "author": "Eskasia",
+      "authorAssociation": "OWNER",
+      "createdAt": "2026-08-05T19:04:06Z",
+      "updatedAt": "2026-08-05T19:04:06Z",
+      "bodySha256": "a4c2412c880930b1c5d8f819cb0fc4ed5381b6ac77178a630157028b44516cde"
+    },
+    "ci": {
+      "runId": 31037391229,
+      "headSha": "32d8478a8cfcb5d524e3da823630c523f35e613e",
+      "conclusion": "success",
+      "ubuntuConclusion": "success",
+      "macosConclusion": "success",
+      "windowsConclusion": "success"
+    },
+    "localValidation": {
+      "focusedG2TestsPassed": 56,
+      "externalOssV8TestsPassed": 91,
+      "experimentalTestsPassed": 122,
+      "npmCi": "PASS",
+      "diffCheck": "PASS"
+    },
+    "behavioralScope": "Persist the already-sanitized proxy summary exactly once after request-failure self-close without relying on a later SIGTERM.",
+    "privacyForbidden": [
+      "raw provider body",
+      "provider error message",
+      "prompt",
+      "response",
+      "headers",
+      "authorization data",
+      "credentials",
+      "environment dumps",
+      "secrets"
+    ],
+    "mergeStatus": "MERGED",
+    "mergeCommit": "4c8442b2b9e9af29fb7755dd6470c92442cbec24",
+    "mergedMainTree": "eaf23456d3d16fc50276844db22dfff3f17d6ebf",
+    "mergedAt": "2026-08-08T08:44:13Z",
+    "mergedBy": "Eskasia",
+    "mergeReceipt": {
+      "id": 5225376792,
+      "url": "https://github.com/Eskasia/governseed/issues/92#issuecomment-5225376792",
+      "author": "Eskasia",
+      "authorAssociation": "OWNER",
+      "createdAt": "2026-08-08T08:44:37Z",
+      "updatedAt": "2026-08-08T08:44:37Z",
+      "bodySha256": "8e0dc1527bb30c4b85b4c54d8b43bfc292bbf616bf9fc2cbfa56e79e05ce309b"
+    },
+    "postMergeCi": {
+      "runId": 31249042879,
+      "headSha": "4c8442b2b9e9af29fb7755dd6470c92442cbec24",
+      "conclusion": "success",
+      "ubuntuConclusion": "success",
+      "macosConclusion": "success",
+      "windowsConclusion": "success",
+      "receiptCommentId": 5225385802,
+      "receiptBodySha256": "3cc0571349a603a98baf0629057b59fa286a6dbf6cf4e6bf30304ccaf50c8723"
+    }
+  },
+  "immutableFailedRunAccounting": {
+    "runs": [
+      {
+        "workflowId": 325585082,
+        "runId": 31014045209,
+        "runAttempt": 1,
+        "headSha": "4e1347e510a0068efbdff6942748671490c798ea",
+        "conclusion": "failure",
+        "failureReceiptCommentId": 5193562726,
+        "failureReceiptBodySha256": "4a1d95b883a90bc98faadae41c4cf4bea656d5e3cf390fb3cc5625485f08e361",
+        "artifactId": 8935651599,
+        "artifactDigest": "sha256:567ca3d9e79d72da8c69508b686f85ea0baabdf61d860495001478f5f12777be",
+        "failureArtifactSha256": "1cc4353eef786e8541d55a8d2b9a39770518037b132a60e68c0aaa50141c99fd",
+        "providerRequestAttempt": "INDETERMINATE",
+        "directProviderRequestsChargedConservatively": 1,
+        "costUsdReserved": 1,
+        "rerunPermitted": false
+      },
+      {
+        "workflowId": 325585082,
+        "runId": 31032816504,
+        "runAttempt": 1,
+        "headSha": "9c83280cec2d9f8fedd15455cfa261680452969f",
+        "conclusion": "failure",
+        "failureReceiptCommentId": 5195468651,
+        "failureReceiptBodySha256": "7a3eaf3778422a8452a19d3063601670bd100f7c9435d536215af5f6d4cc6a4f",
+        "artifactId": 8941397535,
+        "artifactDigest": "sha256:6aec10269a8914befdb889c028b1e32d4ecfe204be282ae055f52367a6b04c85",
+        "failureArtifactSha256": "353b6f2856a1ad3bfb37bef469cbe4e9b184673648e1a6b164bae9380ecfa0cb",
+        "providerRequestAttempt": "INDETERMINATE",
+        "directProviderRequestsChargedConservatively": 1,
+        "costUsdReserved": 1,
+        "rerunPermitted": false
+      }
+    ],
+    "conservativeTotals": {
+      "failedRuns": 2,
+      "directProviderRequests": 2,
+      "workflowDispatches": 2,
+      "costUsd": 2
+    },
+    "crossRevisionPoolingPermitted": false
+  },
+  "checkerAndMergeConflict": {
+    "inheritedCheckerTaskMaximum": 7,
+    "approvedCheckerTaskMaximum": 8,
+    "inheritedCheckerNamesAreClosed": true,
+    "requiredCheckerNameForG2Evidence": "GS-AUTONOMOUS-G2-EVIDENCE-CHECKER",
+    "requiredCheckerAlreadyConsumed": true,
+    "consumptionEvidence": {
+      "pullRequest": 95,
+      "commentId": 5194383174,
+      "url": "https://github.com/Eskasia/governseed/pull/95#issuecomment-5194383174",
+      "author": "Eskasia",
+      "authorAssociation": "OWNER",
+      "createdAt": "2026-08-05T16:20:40Z",
+      "updatedAt": "2026-08-05T16:20:40Z",
+      "bodySha256": "f48c8e20e62b9ca257252407138d2c415a54204eb881e80e95bbd253f737c241"
+    },
+    "candidateRequiresFreshNamedChecker": true,
+    "eligibleUnusedInheritedChecker": null,
+    "checkerReuseAllowed": false,
+    "checkerRetryAllowed": false,
+    "checkerReplacementAllowed": false,
+    "substitutionWithAnotherStageCheckerAllowed": false,
+    "selectedDecision": "ADDITIONAL_UNIQUE_NO_RETRY_CHECKER",
+    "additionalChecker": {
+      "name": "GS-AUTONOMOUS-G2-RECEIPT-PERSISTENCE-CHECKER",
+      "authorizationCommentId": 5225354025,
+      "authorizationBodySha256": "4c667b067f2ddc2e21648a408a3760218326de92061c513f9a13d24fa97118bc",
+      "verdict": "ACCEPT",
+      "receiptCommentId": 5225371193,
+      "receiptUrl": "https://github.com/Eskasia/governseed/pull/98#issuecomment-5225371193",
+      "receiptBodySha256": "ba3e9967090233f2438b5514b21c080025c85536325636dea0e53b8614f4a1c4",
+      "controlCommentId": 5225372078,
+      "controlBodySha256": "cf18ddf8ded753be6fde53601163ecb1320b9f064bd0909e44319a556451251f",
+      "retryOrReplacementAllowed": false
+    },
+    "mergePreconditionsSatisfied": true,
+    "decisionRequired": [],
+    "preparationSelectsNeitherDecision": false
+  },
+  "activationProposal": {
+    "workflowId": 325585082,
+    "candidateWorkflowSha256": "8af7fd123fd1e9357f39d9142775f5d766b155f0e19e3e88a4335937b2a36453",
+    "ref": "main",
+    "authorizedMainCommit": "4c8442b2b9e9af29fb7755dd6470c92442cbec24",
+    "authorizedMainTree": "eaf23456d3d16fc50276844db22dfff3f17d6ebf",
+    "runtimeImage": "node@sha256:3cb89926a7a025953446306a17c3e044768c35a1245a57ec38a61ef4c59373a5",
+    "inputName": "authorized_main_commit",
+    "runAttemptMustEqual": 1,
+    "freshRunRequired": true,
+    "historicalRunRerunForbidden": true,
+    "additionalDispatchMaximum": 1,
+    "additionalDirectProviderRequestMaximum": 1,
+    "automaticRetryAllowed": false,
+    "fallbackAllowed": false,
+    "environmentApprovalIncludedInPreparation": false,
+    "dispatchAuthorityActive": false,
+    "blockedReasons": [
+      "This activation-capable V3 has not received an exact SHA-256, commit, and tree OWNER approval binding."
+    ]
+  },
+  "ceilingProposal": {
+    "approvedRevision": {
+      "absoluteCostUsd": 350,
+      "providerAuthorizationUnitsMaximum": 2123,
+      "directProviderRequestsMaximum": 2115,
+      "workflowDispatchesMaximumIncludingConsumed": 37,
+      "checkerTasksMaximum": 8,
+      "mergeCommitsMaximum": 8
+    },
+    "consumedOrReservedAtPreparation": {
+      "directProviderRequests": 2,
+      "checkerTasks": 3,
+      "providerAuthorizationUnits": 5,
+      "workflowDispatches": 2,
+      "mergeCommits": 3,
+      "costUsd": 8
+    },
+    "remainingAfterPreparation": {
+      "directProviderRequests": 2113,
+      "checkerTasks": 5,
+      "providerAuthorizationUnits": 2118,
+      "workflowDispatches": 35,
+      "mergeCommits": 5,
+      "costUsd": 342
+    },
+    "additionalCheckerDecision": {
+      "checkerTasksMaximum": 8,
+      "providerAuthorizationUnitsMaximum": 2123,
+      "absoluteCostUsd": 350,
+      "governanceOverheadReallocationOnly": true,
+      "selected": true
+    }
+  },
+  "unchangedContractSections": [
+    "candidateControlPlanePolicyBinding",
+    "canonicalArtifactInventory",
+    "taskPlan",
+    "treatmentContract",
+    "runtimeAndProvider",
+    "timeoutsTokensAndFailureRules",
+    "formalLockPreconditions",
+    "stageTransitions",
+    "scoringAndAcceptance",
+    "safetyVetoes",
+    "evidenceRetentionAndClaimBoundary"
+  ],
+  "workflowRevision": {
+    "totalManualDispatchCeilingIncludingPreActivationProposed": 37,
+    "preActivationDispatchesConsumed": 2,
+    "g2RuntimeIdentity": {
+      "id": 325585082,
+      "path": ".github/workflows/external-oss-v8-runtime-identity.yml",
+      "candidateSha256": "8af7fd123fd1e9357f39d9142775f5d766b155f0e19e3e88a4335937b2a36453",
+      "manualDispatchCeilingProposed": 3,
+      "dispatchesConsumed": 2,
+      "remainingDispatchesProposed": 1,
+      "dispatchAuthorized": false
+    },
+    "formalLockPreflight": {
+      "id": 322642961,
+      "manualDispatchCeiling": 1,
+      "dispatchesConsumed": 0
+    },
+    "pairedEvaluator": {
+      "id": 322642963,
+      "manualDispatchCeiling": 33,
+      "dispatchesConsumed": 0,
+      "compatibilityStatus": "BLOCKED_PROTOCOL_CHANGE_REQUIRED",
+      "dispatchAuthorized": false,
+      "blockingConflict": "The workflow accepts at most 600000 ms and has a 30-minute job timeout, while the canonical R2 contract requires 2700 seconds per arm for a paired two-arm attempt."
+    },
+    "unknownOrChangedWorkflowPolicy": "STOP"
+  },
+  "providerAndCostRevision": {
+    "maximumProviderAuthorizationUnits": 2123,
+    "countingRule": "2115 direct Responses API requests plus eight no-retry named checker authorization units, including the separately approved and consumed receipt-persistence checker.",
+    "directRequests": {
+      "g2Canary": 3,
+      "pilot": 576,
+      "confirmatory": 1536,
+      "total": 2115,
+      "g2HistoricalPossiblyConsumed": 2,
+      "g2AdditionalMaximumProposed": 1
+    },
+    "checkerTasks": {
+      "inheritedMaximum": 7,
+      "approvedMaximum": 8,
+      "consumed": 3,
+      "remainingByCount": 5,
+      "remainingEligibleForReceiptPersistenceRepair": 0,
+      "retryOrReplacementAllowed": false,
+      "additionalCheckerDecisionPending": false
+    },
+    "costUsd": {
+      "contractExperimentCeiling": 330,
+      "governanceOverheadCeiling": 20,
+      "g2CanaryOverheadAllocationProposed": 3,
+      "checkerTaskOverheadAllocationEach": 2,
+      "unallocatedOverheadContingency": 1,
+      "absoluteTotalCeiling": 350,
+      "historicalG2Reservation": 2,
+      "additionalG2ReservationMaximumProposed": 1,
+      "hardStopOnUnknownOrUnboundedCost": true
+    }
+  },
+  "mandatoryStops": [
+    "This activation-capable V3 grants no standing authority until its exact UTF-8 SHA-256, frozen commit, and tree receive an immutable OWNER GitHub approval binding.",
+    "Any conflict in PR #98 checker, approval, merge, merge receipt, post-merge CI, or exact main target 4c8442b2b9e9af29fb7755dd6470c92442cbec24.",
+    "Any attempt to reuse, retry, or replace GS-AUTONOMOUS-G2-EVIDENCE-CHECKER or GS-AUTONOMOUS-G2-RECEIPT-PERSISTENCE-CHECKER, or substitute a checker reserved for another stage.",
+    "Any attempted reuse or rerun of failed runs 31014045209 or 31032816504.",
+    "Any request for more than one additional fresh G2 dispatch or more than one additional direct G2 provider request.",
+    "Any retry, rerun, fallback, cross-revision pooling, or unapproved checker replacement.",
+    "Any model, provider, endpoint, task, seed, oracle, scorer, threshold, runtime, randomization, blinding, metric, acceptance, or experiment-protocol change.",
+    "Manifest drift, budget exhaustion, unresolved checker rejection, safety veto, missing credential or Environment approval, evidence conflict, identity or artifact unavailability, ineligible attempt, failed Pilot transition, incomplete confirmatory evidence, or unsupported final acceptance.",
+    "Workflow 322642963 remains non-dispatchable until its timeout conflict is resolved by a separately approved protocol decision."
+  ],
+  "authorityBoundary": {
+    "preparationAuthorizes": [
+      "read-only reconciliation",
+      "deterministic local validation",
+      "draft pull requests",
+      "append-only control comments"
+    ],
+    "preparationDoesNotAuthorize": [
+      "provider request",
+      "workflow dispatch or rerun",
+      "Environment approval",
+      "checker or checker replacement",
+      "pull-request readiness",
+      "merge",
+      "formal lock",
+      "Pilot",
+      "confirmatory execution",
+      "scoring",
+      "benchmark acceptance",
+      "final acceptance"
+    ],
+    "futureSequenceRequirement": "Freeze this activation-capable V3 to an exact UTF-8 SHA-256, commit, and tree; publish an immutable OWNER approval binding that cites the exact ceilings, target main commit/tree, workflow hash, one remaining G2 dispatch/request, and mandatory stops. Only then may the exact G2 dispatch and Environment-gated provider request proceed."
+  },
+  "selfBinding": "This activation-capable preparation does not self-hash and grants no standing authority before exact OWNER approval. Its immutable identity is the SHA-256 of these exact UTF-8 bytes, externally bound to a frozen Git commit and tree."
+}
